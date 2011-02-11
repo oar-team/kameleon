@@ -8,6 +8,7 @@ BINDIR=$(PREFIX)/bin
 SBINDIR=$(PREFIX)/sbin
 DOCDIR=$(PREFIX)/share/doc/kameleon
 VARLIBDIR=/var/lib
+DIST=
 
 install-engine:
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
@@ -37,3 +38,24 @@ uninstall:
 	rm -rf $(DESTDIR)$(KAMELEON_DIR)
 	rm -f $(DESTDIR)$(BINDIR)/kameleon
 	rm -rf $(DESTDIR)/$(DOCDIR)
+
+dist-snapshot:
+	$(MAKE) -e dist DIST="kameleon-$$(cat VERSION)+snapshot.$$(git log --format=oneline|wc -l).$$(git log -1 --format=%h)"
+
+dist-release:
+	$(MAKE) -e dist DIST="kameleon-$$(cat VERSION)"
+
+dist: dist-clean
+ifdef DIST
+	mkdir -p build/$(DIST)
+	cp -af -t build/$(DIST) \
+	    AUTHORS COPYING Documentation.rst \
+	    kameleon.rb Makefile recipes steps redist VERSION
+	tar czvf ../$(DIST).tar.gz -C build $(DIST)
+	rm -rf build
+else
+	echo "You need to specify the 'DIST'. Use dist-snapshot or dist-release targets"
+endif
+
+dist-clean:
+	rm -rf build
