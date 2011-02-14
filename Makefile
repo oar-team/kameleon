@@ -51,8 +51,9 @@ ifdef DIST
 	cp -af -t build/$(DIST) \
 	    AUTHORS COPYING Documentation.rst \
 	    kameleon.rb Makefile recipes steps redist VERSION
-	tar czvf ../$(DIST).tar.gz -C build $(DIST)
+	tar czf ../$(DIST).tar.gz -C build $(DIST)
 	rm -rf build
+	echo "../$(DIST).tar.gz"
 else
 	echo "You need to specify the 'DIST'. Use dist-snapshot or dist-release targets"
 endif
