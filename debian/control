@@ -4,8 +4,8 @@ Priority: extra
 Maintainer: Bruno Bzeznik <Bruno.Bzeznik@imag.fr>
 Build-Depends: debhelper (>= 7.0.50)
 Standards-Version: 3.8.4
-Vcs-Svn: svn://scm.gforge.inria.fr/svn/oar/trunk/kameleon
-Vcs-Browser: https://gforge.inria.fr/scm/viewvc.php/trunk/kameleon/?root=oar
+Vcs-Git: git://scm.gforge.inria.fr/kameleon/kameleon.git
+Vcs-Browser: https://gforge.inria.fr/plugins/scmgit/cgi-bin/gitweb.cgi?p=kameleon/kameleon.git;a=summary
 Homepage: http://wiki-oar.imag.fr/Kameleon
 
 Package: kameleon
