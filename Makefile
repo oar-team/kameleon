@@ -37,7 +37,7 @@ install-data:
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)/steps
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)/recipes
 	for dir in steps/*; do [ $$dir != "steps/old" ] && cp -r $$dir $(DESTDIR)$(KAMELEON_DIR)/steps || true; done
-	for file in recipes/*; do [ $$file != "recipes/old" ] && install $$file $(DESTDIR)$(KAMELEON_DIR)/recipes || true; done
+	for file in recipes/*; do [ $$file != "recipes/old" ] && install -m 0644 $$file $(DESTDIR)$(KAMELEON_DIR)/recipes || true; done
 	install -d -m 755 $(DESTDIR)$(VARLIBDIR)/kameleon/steps
 	install -d -m 755 $(DESTDIR)$(VARLIBDIR)/kameleon/recipes
 
