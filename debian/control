@@ -3,7 +3,7 @@ Section: admin
 Priority: extra
 Maintainer: Bruno Bzeznik <Bruno.Bzeznik@imag.fr>
 Uploaders: Philippe Le Brouster <philippe.le-brouster@imag.fr>
-Build-Depends: debhelper (>= 7.0.50)
+Build-Depends: debhelper (>= 7.0.50), rdtool
 Standards-Version: 3.9.1
 Vcs-Git: git://scm.gforge.inria.fr/kameleon/kameleon.git
 Vcs-Browser: https://gforge.inria.fr/plugins/scmgit/cgi-bin/gitweb.cgi?p=kameleon/kameleon.git;a=summary
