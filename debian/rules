@@ -6,3 +6,6 @@
 
 override_dh_auto_install:
 	dh_auto_install -- PREFIX=/usr DESTDIR=debian/tmp
+
+override_dh_installdocs:
+	dh_installdocs -XCOPYING
