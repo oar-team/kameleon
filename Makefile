@@ -1,14 +1,26 @@
 #/usr/bin/make
 SHELL=/bin/bash
-DESTDIR=
-PREFIX=/usr/local
+
+# Define PREFIX only if needed
+ifndef PREFIX
+  PREFIX=/usr/local
+endif
+
+# Define DESTDIR only if needed
+ifndef DESTDIR
+   DESTDIR=
+endif
+
 KAMELEON_DIR=$(PREFIX)/share/kameleon
-MANDIR=$(PREFIX)/man
+MANDIR=$(PREFIX)/share/man
 BINDIR=$(PREFIX)/bin
 SBINDIR=$(PREFIX)/sbin
 DOCDIR=$(PREFIX)/share/doc/kameleon
 VARLIBDIR=/var/lib
 DIST=
+
+build:
+	echo "Nothing to do"
 
 install-engine:
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
@@ -27,17 +39,17 @@ install-data:
 	install -d -m 755 $(DESTDIR)$(VARLIBDIR)/kameleon/recipes
 
 install-doc:
-	install -d -m 0755 $(DESTDIR)/$(DOCDIR)
-	install Documentation.rst $(DESTDIR)/$(DOCDIR)
-	install COPYING $(DESTDIR)/$(DOCDIR)
-	install AUTHORS $(DESTDIR)/$(DOCDIR)
+	install -d -m 0755 $(DESTDIR)$(DOCDIR)
+	install Documentation.rst $(DESTDIR)$(DOCDIR)
+	install COPYING $(DESTDIR)$(DOCDIR)
+	install AUTHORS $(DESTDIR)$(DOCDIR)
 
 install: install-engine install-data install-doc
 
 uninstall: 
 	rm -rf $(DESTDIR)$(KAMELEON_DIR)
 	rm -f $(DESTDIR)$(BINDIR)/kameleon
-	rm -rf $(DESTDIR)/$(DOCDIR)
+	rm -rf $(DESTDIR)$(DOCDIR)
 
 dist-snapshot:
 	$(MAKE) -e dist DIST="kameleon-$$(cat VERSION)+snapshot.$$(git log --format=oneline|wc -l).$$(git log -1 --format=%h)"
