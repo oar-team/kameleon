@@ -11,7 +11,8 @@ Homepage: http://wiki-oar.imag.fr/Kameleon
 
 Package: kameleon
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ruby
+Depends: ${misc:Depends}, ruby, rubygems
+Recommends: debootstrap, rsync, parted, kpartx, dmsetup, qemu-utils, grub-pc
 Description: Simple appliances image builder
  Kameleon is a very simple tool to create initial virtual machines images or 
  live-cd. It works as a bash script generator using recipes written in YAML.
