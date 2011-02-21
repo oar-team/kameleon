@@ -19,8 +19,10 @@ DOCDIR=$(PREFIX)/share/doc/kameleon
 VARLIBDIR=/var/lib
 DIST=
 
-build:
-	echo "Nothing to do"
+build: build-man
+
+build-man:
+	rd2 -rrd/rd2man-lib.rb kameleon.rb > kameleon.1
 
 install-engine:
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
@@ -44,12 +46,19 @@ install-doc:
 	install COPYING $(DESTDIR)$(DOCDIR)
 	install AUTHORS $(DESTDIR)$(DOCDIR)
 
-install: install-engine install-data install-doc
+install-man:
+	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
+	install kameleon.1 $(DESTDIR)$(MANDIR)/man1
+
+install: install-engine install-data install-doc install-man
 
 uninstall: 
 	rm -rf $(DESTDIR)$(KAMELEON_DIR)
 	rm -f $(DESTDIR)$(BINDIR)/kameleon
 	rm -rf $(DESTDIR)$(DOCDIR)
+
+clean:
+	rm -f kameleon.1
 
 dist-snapshot:
 	$(MAKE) -e dist DIST="kameleon-$$(cat VERSION)+snapshot.$$(git log --format=oneline|wc -l).$$(git log -1 --format=%h)"
