@@ -1,6 +1,8 @@
 This work was packaged for Debian by:
 
-    Bruno Bzeznik <Bruno Bzeznik <Bruno.Bzeznik@imag.fr>> on Fri, 23 Apr 2010 14:22:01 +0200
+    Bruno Bzeznik <Bruno.Bzeznik@imag.fr> on Fri, 23 Apr 2010 14:22:01 +0200
+    and
+    Philippe Le Brouster <philippe.le-brouster@imag.fr> on 21 Feb 2011
 
 It was downloaded from:
 
@@ -28,12 +30,13 @@ License:
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 
 
 The Debian packaging is:
 
-    Copyright (C) 2010 Bruno Bzeznik <Bruno Bzeznik <Bruno.Bzeznik@imag.fr>>
+    Copyright (C) 2010 Bruno Bzeznik <Bruno.Bzeznik@imag.fr>
+    Copyright (C) 2011 Philippe Le Brouster <philippe.le-brouster@imag.fr>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +50,7 @@ The Debian packaging is:
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 
     On Debian GNU/Linux systems, the complete text of the GNU General
     Public License can be found in `/usr/share/common-licenses/GPL'.
