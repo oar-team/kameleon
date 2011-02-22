@@ -119,12 +119,15 @@ def cmd_parse(cmd,step)
     return "export " + cmd.values[0][0] + "=\"" + cmd.values[0][1] + "\""
   elsif cmd.keys[0]=="breakpoint"
     return "KML-breakpoint " + cmd.values[0]
+  elsif cmd.keys[0]=="exec_ctxt" || cmd.keys[0]=="exec_context"
+    return context_parse(cmd.values[0])
   else
     printf("Step %s: no such command %s\n", step, cmd.keys[0])
     exit(9)
   end
 end
 
+# Global variables parsing
 def var_parse(str, path)
   str.gsub(/\$\$[a-zA-Z0-9\-_]*/) do
     |c|
@@ -135,6 +138,36 @@ def var_parse(str, path)
       exit(6)
     end
     return $` + c + var_parse($', path)
+  end
+end
+
+# Context parsing
+def context_parse(str)
+  str.gsub(/^\w+/) do
+    |context|
+    unless $recipe['contexts']
+      printf("Missing [contexts] array into recipe\n")
+      exit(6)
+    end
+    if $recipe['contexts'][context]
+      if $recipe['contexts'][context]['cmd']
+        cmd=$recipe['contexts'][context]['cmd']
+        args=$'.strip
+      else
+        printf("cmd not found in [contexts][%s] array\n", context)
+        exit(6)
+      end
+    else
+      printf("context %s not found in [contexts] array\n", context)
+      exit(6)
+    end
+    if $recipe['contexts'][context]['escape']
+      escape=$recipe['contexts'][context]['escape']
+      args=args.gsub(/[#{escape}]/,"\\\\#{escape}")
+    end
+    cmd=cmd.gsub(/%%/, args)
+    return cmd
+    
   end
 end
 

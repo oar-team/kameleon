@@ -43,6 +43,18 @@ global:
  # 
  # OAR specific
  #oar_repository: "deb http://oar.imag.fr/debian/2.5 unstable main"
+
+# Here are some example contexts
+# You can use a context into a microstep like this:
+#    - exec_context: root_ssh echo "Hello world" 
+contexts:
+ root:
+  cmd: cd / ; %%
+ root_chroot:
+  cmd: chroot $$chroot %%
+ root_ssh:
+  cmd: ssh -T -n localhost "%%"
+  escape: \\"
  
 steps:
  - debian_check_deps
