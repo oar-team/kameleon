@@ -4,4 +4,3 @@ global:
 steps:
  - irb
  - test_irb
- - clean
