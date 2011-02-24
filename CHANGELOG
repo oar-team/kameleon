@@ -1,0 +1,7 @@
+KAMELEON CHANGELOG
+==================
+
+1.2.2:
+------
+  - Now support contexts (see example into debian.yaml recipe)
+  - New "exec_on_clean" microstep command to ease cleaning (reverse order execution)
