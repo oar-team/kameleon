@@ -28,7 +28,7 @@ install-engine:
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)
 	install -m 755 kameleon.rb $(DESTDIR)$(KAMELEON_DIR)
-	echo "#! /usr/bin/ruby" > $(DESTDIR)$(BINDIR)/kameleon
+	echo "#! /bin/bash" > $(DESTDIR)$(BINDIR)/kameleon
 	echo "RUBYOPT=rubygems $(KAMELEON_DIR)/kameleon.rb \$$*" >> $(DESTDIR)$(BINDIR)/kameleon
 	-chmod 755 $(DESTDIR)$(BINDIR)/kameleon
 
