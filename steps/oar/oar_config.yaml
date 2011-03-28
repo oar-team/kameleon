@@ -46,7 +46,7 @@ oar_config:
    - append_file: 
      - /etc/default/oar-server
      - |
-       cat /etc/hosts | grep node1 || echo '127.0.0.2 node1 node2' >> /etc/hosts
+       cat /etc/hosts | grep node1 2>/dev/null|| echo '127.0.0.2 node1 node2' >> /etc/hosts
  - create_resources:
    - exec_chroot: oarproperty -a core
    - exec_chroot: oarproperty -a cpu
