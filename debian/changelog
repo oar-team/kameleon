@@ -1,3 +1,9 @@
+kameleon (1.2.3-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Bruno Bzeznik <Bruno.Bzeznik@imag.fr>  Mon, 28 Mar 2011 13:37:24 +0200
+
 kameleon (1.2.2-1) unstable; urgency=low
 
   * Bump the version for ours conveniences (repository switching)
