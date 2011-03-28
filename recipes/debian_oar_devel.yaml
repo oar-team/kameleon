@@ -69,7 +69,6 @@ steps:
 # - kameleon/kameleon_debian_install
  - autologin
  - strip
- - umount_proc
 # - xen_domu
 # - oar/oar_build_tgz
  - build_appliance:
@@ -88,5 +87,5 @@ steps:
 #   - save_as_qcow2
 #   - save_as_vdi
 #   - save_as_iso
- - clean
+# - clean
 

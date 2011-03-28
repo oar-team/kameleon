@@ -53,6 +53,10 @@ require 'pp'
 $histfile="#{ENV['HOME']}/.kameleon_history"
 $history=[]
 
+# Cleaning script
+$clean_script=`mktemp`
+$clean_script.strip!
+
 ############################
 ### function definitions ###
 ############################
@@ -119,12 +123,17 @@ def cmd_parse(cmd,step)
     return "export " + cmd.values[0][0] + "=\"" + cmd.values[0][1] + "\""
   elsif cmd.keys[0]=="breakpoint"
     return "KML-breakpoint " + cmd.values[0]
+  elsif cmd.keys[0]=="exec_ctxt" || cmd.keys[0]=="exec_context"
+    return context_parse(cmd.values[0])
+  elsif cmd.keys[0]=="exec_on_clean"
+    return "echo \"" + cmd.values[0] + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
   else
     printf("Step %s: no such command %s\n", step, cmd.keys[0])
     exit(9)
   end
 end
 
+# Global variables parsing
 def var_parse(str, path)
   str.gsub(/\$\$[a-zA-Z0-9\-_]*/) do
     |c|
@@ -135,6 +144,36 @@ def var_parse(str, path)
       exit(6)
     end
     return $` + c + var_parse($', path)
+  end
+end
+
+# Context parsing
+def context_parse(str)
+  str.gsub(/^\w+/) do
+    |context|
+    unless $recipe['contexts']
+      printf("Missing [contexts] array into recipe\n")
+      exit(6)
+    end
+    if $recipe['contexts'][context]
+      if $recipe['contexts'][context]['cmd']
+        cmd=$recipe['contexts'][context]['cmd']
+        args=$'.strip
+      else
+        printf("cmd not found in [contexts][%s] array\n", context)
+        exit(6)
+      end
+    else
+      printf("context %s not found in [contexts] array\n", context)
+      exit(6)
+    end
+    if $recipe['contexts'][context]['escape']
+      escape=$recipe['contexts'][context]['escape']
+      args=args.gsub(/[#{escape}]/,"\\\\#{escape}")
+    end
+    cmd=cmd.gsub(/%%/, args)
+    return cmd
+    
   end
 end
 
@@ -198,9 +237,8 @@ end
 ### Cleaning function
 def clean()
   puts red("Running cleaning script...")
-  system("bash " + $chroot + "/clean.sh")
-  system("umount " + $workdir + "/chroot/proc 2>/dev/null")
-  system("umount " + $workdir + "/mnt/proc 2>/dev/null")
+  system("bash " + $clean_script)
+  FileUtils.rm($clean_script)
 end 
 
 ### print usage info
@@ -225,7 +263,7 @@ end
 $cur_dir=Dir.pwd
 $var_dir="/var/lib/kameleon"
 $kameleon_dir=File.dirname($0)
-version="1.2.1"
+version="1.2.2"
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
 
@@ -287,6 +325,7 @@ $timestamp=Time.now.strftime("%Y-%m-%d-%H-%M-%S")
 $recipe['global']['workdir'] = $workdir = $recipe['global']['workdir_base']+"/"+$timestamp
 $recipe['global']['chroot'] = $chroot = $workdir + "/chroot"
 $recipe['global']['bindir'] = $cur_dir
+$recipe['global']['clean'] = $clean_script
 begin
   FileUtils.mkdir_p($chroot)
 rescue
@@ -481,7 +520,6 @@ end
 
 puts blue("\n ### ") + green("Welcome to Kameleon " + version) + blue(" ###\n")
 
-system("touch " + $chroot + "/clean.sh")
 
 trap("INT") {
   puts red("Interrupted.")
@@ -552,3 +590,14 @@ script.each do
   end
 end
 save_history
+clean
+
+=begin
+
+=DESCRIPTION
+
+=USAGE
+
+=SEE ALSO
+
+=end

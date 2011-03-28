@@ -60,7 +60,6 @@ steps:
  - checkpoint
 # - breakpoint
  - strip
- - umount_proc
 # - xen_domu
  - build_appliance:
    - clean_udev
@@ -79,5 +78,5 @@ steps:
 #   - save_as_vdi
 #   - save_as_iso
  - save_as_g5k
- - clean
+# - clean
 
