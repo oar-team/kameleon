@@ -22,7 +22,7 @@ build_appliance:
    - exec_appliance:       mount ${NBD_DEVICE}p1 $$workdir/mnt
    - exec_on_clean:        umount ${NBD_DEVICE}p1 ||true
  - copy_system_tree:
-   - exec_appliance:       rsync -a $$chroot/* $$workdir/mnt
+   - exec_appliance:       rsync -a --exclude "/proc/" $$chroot/* $$workdir/mnt && mkdir $$workdir/mnt/proc
  - grub_197_workaround:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot/grub
    - exec_appliance:       echo "(hd0,1) ${NBD_DEVICE}p1" > $$workdir/mnt/boot/grub/device.map
