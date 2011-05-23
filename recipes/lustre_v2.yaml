@@ -1,0 +1,81 @@
+# ### lustre.yaml Kameleon recipe ###
+# This recipe can be used to create a Debian appliance running
+# a Lustre kernel and Lustre tools
+#
+global:
+ #
+ # Where Kameleon stores tmp files and appliances
+ workdir_base: /var/tmp/kameleon
+ # 
+ # Debian specific
+ distrib: debian
+ debian_version_name: squeeze
+ distrib_repository: http://ftp.fr.debian.org/debian/
+ lustre_repository: http://oar.imag.fr/debian/mirrors/pkg-lustre.alioth.debian.org/lustre/
+ lustre_mds_partition_size: 10G
+ lustre_oss_partition_size: 128G
+ lustre_partition: /dev/sda5
+ include_dir: /var/lib/kameleon/scripts
+ #lustre_g5kutils_repository: http://oar.imag.fr/debian/lustre/
+ #
+ # Architecture
+ arch: amd64
+ kernel_arch: "amd64"
+ #
+ # Extra packages to install on the minimal base system
+ extra_packages: "vim less bzip2 openssh-server rsync gnupg locales debian-keyring console-tools mingetty perl e2fsprogs ntp ntpdate lustre-utils lvm2 iozone3"
+ #
+ # Network configuration
+ network_hostname: kameleon
+ # Following variables are used by the "network_config_static" step
+ #network_eth0_ip: 129.88.70.251
+ #network_eth0_mask: 255.255.255.248
+ #network_gateway: 129.88.70.249
+ #network_dns: 129.88.30.10
+ #network_domain: imag.fr
+ #
+ # If you're building a Xen appliance, it may help:
+ #xen_domu_modules: /lib/modules/2.6.32-4-xen-amd64
+ # 
+ # You can start with a "checkpoint_resume" step if you want
+ # to start form a pre-built image. The image can be made
+ # with the "checkpoint" step.
+ checkpoint_file: /var/tmp/kameleon/checkpoints/lustre_checkpoint.tgz
+ #checkpoint_file: /var/tmp/kameleon/checkpoints/g5k/squeeze-x64-big-0.8.tgz
+ #  
+steps:
+# - debian_check_deps
+# - check_deps:
+#   - rsync
+#   - building_appliance
+#   - building_kvm_images
+ - checkpoint_resume
+# - rm_proxy
+# - bootstrap
+# - system_config
+# - network_config_static
+# - root_passwd
+# - mount_proc
+# - software_install:
+#   - extra_packages
+# - kernel_install:
+#   - kernel-img_conf
+# - checkpoint
+ - infiniband_g5k
+ #- lustre_kernel_install
+ - lustre_utils
+###############################
+ - strip
+ - build_appliance:
+   - clean_udev
+   - create_raw_image
+   - create_nbd_device
+   - mkfs
+   - mount_image
+   - copy_system_tree
+   - install_grub
+   - umount_image
+   - save_as_raw
+ - save_as_g5k
+# - clean
+

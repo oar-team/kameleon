@@ -1,0 +1,8 @@
+infiniband_g5k:
+ - install_packages:
+   - exec_chroot: apt-get update
+   - exec_chroot: apt-get -f install -y --force-yes ibverbs-utils libibverbs-dev libcxgb3-dev libipathverbs-dev libmlx4-dev libmthca-dev librdmacm-dev rdmacm-utils ibutils infiniband-diags perftest qlvnictools rds-tools sdpnetstat srptools
+ - write_openibd:
+   - exec_current: cp $$include_dir/etc/init.d/openibd $$chroot/etc/init.d/
+ - write_infniband_conf:
+   - exec_current: cp $$include_dir/etc/infiniband/* $$chroot/etc/infiniband/

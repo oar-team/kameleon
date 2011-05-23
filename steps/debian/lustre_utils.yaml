@@ -1,0 +1,62 @@
+lustre_utils:
+ - write_lustre_client_init:
+   - write_file:
+     - /usr/sbin/lustre_client_init
+     - |    
+       #!/bin/bash
+       set -e
+       if [ \"\$1\" = \"\" ]
+       then
+         echo \"usage: lustre_client_init mds\"
+         exit 1
+       fi
+       modprobe lustre
+       mkdir -p /mnt/lustre
+       mount -t lustre \$1@tcp0:/lustre /mnt/lustre
+ - write_lustre_mds_init:
+   - write_file:
+     - /usr/sbin/lustre_mds_init
+     - |
+       #!/bin/bash
+       set -e
+       #TMP_PART=`df /tmp|tail -1|awk '{print \$1}'`
+       TMP_PART=$$lustre_partition
+       umount \$TMP_PART
+       pvcreate \$TMP_PART
+       vgcreate vg00 \$TMP_PART
+       lvcreate --name vg00/mdt --size $$lustre_mds_partition_size
+       mkfs.lustre --fsname lustre --mdt --mgs /dev/vg00/mdt
+       mkdir /mdt
+       mount -t lustre /dev/vg00/mdt /mdt
+ - write_lustre_oss_init:
+   - write_file:
+     - /usr/sbin/lustre_oss_init
+     - |
+       #!/bin/bash
+       set -e
+       if [ \"\$1\" = \"\" ]
+       then
+         echo \"usage: lustre_oss_init mds\"
+         exit 1
+       fi
+       #TMP_PART=`df /tmp|tail -1|awk '{print $1}'`
+       TMP_PART=$$lustre_partition
+       umount \$TMP_PART
+       pvcreate \$TMP_PART
+       vgcreate vg00 \$TMP_PART
+       lvcreate --name vg00/ost --size $$lustre_oss_partition_size
+       mkfs.lustre --fsname lustre --ost --mgsnode=\$1@tcp0 /dev/vg00/ost
+       mkdir /mnt/ost
+       mount -t lustre /dev/vg00/ost /mnt/ost
+ - thats_all:
+   - exec_current: echo "Done"
+##########old version###################################################
+#lustre_g5kutils_install:
+# - lustre_g5kutils_apt_config:
+#   - append_file:
+#     - /etc/apt/sources.list
+#     - |
+#       deb $$lustre_g5kutils_repository unstable main
+#   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+# - lustre_g5kutils_install:
+#   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install lustre-g5kutils"

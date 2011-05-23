@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo prefix=/usr
+echo Kernel=2.6.26-2-amd64
+echo
+echo "Configure options: --with-core-mod --with-user_mad-mod --with-user_access-mod --with-addr_trans-mod --with-mthca-mod --with-mlx4-mod --with-mlx4_en-mod --with-cxgb3-mod --with-nes-mod --with-ipoib-mod --without-modprobe"
+echo
