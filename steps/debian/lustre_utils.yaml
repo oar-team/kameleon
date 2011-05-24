@@ -13,6 +13,7 @@ lustre_utils:
        modprobe lustre
        mkdir -p /mnt/lustre
        mount -t lustre \$1@tcp0:/lustre /mnt/lustre
+   - exec_chroot: chmod +x /usr/sbin/lustre_client_init
  - write_lustre_mds_init:
    - write_file:
      - /usr/sbin/lustre_mds_init
@@ -28,6 +29,7 @@ lustre_utils:
        mkfs.lustre --fsname lustre --mdt --mgs /dev/vg00/mdt
        mkdir /mdt
        mount -t lustre /dev/vg00/mdt /mdt
+   - exec_chroot: chmod +x /usr/sbin/lustre_mds_init
  - write_lustre_oss_init:
    - write_file:
      - /usr/sbin/lustre_oss_init
@@ -48,15 +50,5 @@ lustre_utils:
        mkfs.lustre --fsname lustre --ost --mgsnode=\$1@tcp0 /dev/vg00/ost
        mkdir /mnt/ost
        mount -t lustre /dev/vg00/ost /mnt/ost
- - thats_all:
-   - exec_current: echo "Done"
-##########old version###################################################
-#lustre_g5kutils_install:
-# - lustre_g5kutils_apt_config:
-#   - append_file:
-#     - /etc/apt/sources.list
-#     - |
-#       deb $$lustre_g5kutils_repository unstable main
-#   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
-# - lustre_g5kutils_install:
-#   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install lustre-g5kutils"
+   - exec_chroot: chmod +x /usr/sbin/lustre_oss_init
+
