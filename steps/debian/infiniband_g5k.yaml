@@ -11,4 +11,5 @@ infiniband_g5k:
      - /etc/modules
      - |
        ib_ipoib
-
+ - write_ip_over_ib_script:
+   - exec_current: cp $$include_dir/etc/network/if-up.d/ip_over_ib $$chroot/etc/network/if-up.d/
