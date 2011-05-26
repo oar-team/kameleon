@@ -51,8 +51,3 @@ lustre_utils:
        mkdir /mnt/ost
        mount -t lustre /dev/vg00/ost /mnt/ost
    - exec_chroot: chmod +x /usr/sbin/lustre_oss_init
- - write_modprobe_ib0:
-   - write_file:
-     - /etc/modprobe.d/lustre_use_IPoIB.conf
-     - |
-       options lnet networks=tcp0(ib0)
