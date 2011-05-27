@@ -17,7 +17,7 @@ global:
  lustre_mds_partition_size: 10G
  lustre_oss_partition_size: 128G
  lustre_partition: /dev/sda5
- nfs_partition_size: 30G
+ nfs_partition_size: 128G
  nfs_partition: /dev/sda5
  #
  include_dir: /var/lib/kameleon/scripts
@@ -68,6 +68,8 @@ steps:
 # - checkpoint
  - g5k/infiniband_g5k
  - g5k/g5k-update-host-name
+# - lustre_kernel_install:
+#   - lustre_apt_config
  - lustre_kernel_install
  - lustre_utils
  - lustre_IPoIB
