@@ -43,9 +43,9 @@ lustre_utils:
        fi
        #TMP_PART=\`df /tmp|tail -1|awk '{print $1}'\`
        TMP_PART=$$lustre_partition
-       umount \$TMP_PARTT || true
-       pvcreate \$TMP_PARTT || true
-       vgcreate vg00 \$TMP_PARTT || true
+       umount \$TMP_PART || true
+       pvcreate \$TMP_PART || true
+       vgcreate vg00 \$TMP_PART || true
        lvcreate --name vg00/ost --size $$lustre_oss_partition_size
        mkfs.lustre --fsname lustre --ost --mgsnode=\$1@tcp0 /dev/vg00/ost
        mkdir /mnt/ost

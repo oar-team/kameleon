@@ -11,7 +11,9 @@ global:
  distrib: debian
  debian_version_name: squeeze
  distrib_repository: http://ftp.fr.debian.org/debian/
- lustre_repository: http://oar.imag.fr/debian/mirrors/pkg-lustre.alioth.debian.org/lustre/
+ #lustre_repository: http://oar.imag.fr/debian/mirrors/pkg-lustre.alioth.debian.org/lustre/
+ #lustre_repository: http://pkg-lustre.alioth.debian.org/lustre
+ lustre_apt_source: 'deb http://pkg-lustre.alioth.debian.org/lustre lenny main'
  lustre_mds_partition_size: 10G
  lustre_oss_partition_size: 128G
  lustre_partition: /dev/sda5
@@ -53,22 +55,20 @@ steps:
 #   - building_appliance
 #   - building_kvm_images
  - checkpoint_resume
-# - rm_proxy
 # - bootstrap
 # - system_config
-# - network_config_static
 # - root_passwd
- - mount_proc
- - software_install:
-   - extra_packages
- - nfs_install
- - umount_proc
+# - mount_proc
+# - software_install:
+#   - extra_packages
+# - nfs_install
+# - umount_proc
 # - kernel_install:
 #   - kernel-img_conf
 # - checkpoint
  - g5k/infiniband_g5k
  - g5k/g5k-update-host-name
- #- lustre_kernel_install
+ - lustre_kernel_install
  - lustre_utils
  - lustre_IPoIB
 ###############################
