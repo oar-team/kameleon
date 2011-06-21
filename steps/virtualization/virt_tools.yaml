@@ -15,27 +15,25 @@ virt_tools:
      - |
        #!/bin/bash
        set -e
-       INTERFACE=\$1
-       if [ -z \"\$INTERFACE\" ]
+       INTERFACE=$1
+       if [ -z "$INTERFACE" ]
        then
-         INTERFACE=\"eth0\"
+         INTERFACE="eth0"
        fi
-       BRIDGE=\$2
-       if [ -z \"\$BRIDGE\" ]
+       BRIDGE=$2
+       if [ -z "$BRIDGE" ]
        then
-         BRIDGE=\"br0\"
+         BRIDGE="br0"
        fi
-       cat >> /etc/network/interfaces <<EOF
+       #TAPDEV=\`/usr/sbin/tunctl -b\`
+       #brctl addif \$BRIDGE \$TAPDEV
+       #ip link set \$TAPDEV up
 
-       auto \$BRIDGE
-       iface \$BRIDGE inet dhcp
-         bridge_ports \$INTERFACE
-         bridge_stp off
-         bridge_maxwait 0
-         bridge_fd 0
+       touch /etc/kvm/kvm-ifup
+       chmod +x /etc/kvm/kvm-ifup
+       cat > /etc/kvm/kvm-ifup <<EOF
+       #!/bin/bash
+       /sbin/ifconfig \\$1 0.0.0.0 up
+       /usr/sbin/brctl addif \$BRIDGE \\$1
        EOF
-       /etc/init.d/networking restart
-       TAPDEV=\`/usr/sbin/tunctl -b\`
-       brctl addif \$BRIDGE \$TAPDEV
-       ip link set \$TAPDEV up
    - exec_chroot: chmod +x /usr/bin/create_bridge.sh
