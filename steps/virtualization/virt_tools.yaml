@@ -37,5 +37,5 @@ virt_tools:
        /etc/init.d/networking restart
        TAPDEV=\`/usr/sbin/tunctl -b\`
        brctl addif \$BRIDGE \$TAPDEV
-       ip link set $TAPDEV up
+       ip link set \$TAPDEV up
    - exec_chroot: chmod +x /usr/bin/create_bridge.sh
