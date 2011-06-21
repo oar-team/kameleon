@@ -21,7 +21,7 @@ nfs_install:
        pvcreate \$TMP_PART || true
        vgcreate vg00 \$TMP_PART || true
        lvcreate --name vg00/nfs --size $$nfs_partition_size
-       mkfs.ext3 /dev/vg00/nfs
+       mkfs.$$nfs_export_file_system_type /dev/vg00/nfs
        mkdir /nfs
        mount /dev/vg00/nfs /nfs
        chmod 777 /nfs

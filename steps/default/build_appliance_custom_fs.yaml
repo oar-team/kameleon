@@ -1,4 +1,4 @@
-build_appliance:
+build_appliance_custom_fs:
  - clean_udev:
    - exec_appliance:       rm -f etc/udev/rules.d/*persistent-net.rules*
  - save_as_tgz:

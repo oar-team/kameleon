@@ -2,16 +2,6 @@ virt_tools:
  - install_virt_tools_kvm:
    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kvm libvirt-bin uml-utilities"
- - modify_interfaces_file:
-   - append_file:
-     - /etc/network/interfaces
-     - |
-       auto br0 
-       iface br0 inet dhcp
-         bridge_ports eth0
-         bridge_stp off
-         bridge_maxwait 0
-         bridge_fd 0
  - create_random_mac_generator_script:
    - write_file:
      - /usr/bin/random_mac.sh
@@ -25,11 +15,27 @@ virt_tools:
      - |
        #!/bin/bash
        set -e
-       BRIDGE=\$1
+       INTERFACE=\$1
+       if [ -z \"\$INTERFACE\" ]
+       then
+         INTERFACE=\"eth0\"
+       fi
+       BRIDGE=\$2
        if [ -z \"\$BRIDGE\" ]
        then
          BRIDGE=\"br0\"
        fi
-       TAPDEV=\`/usr/sbin/tunctl\`
+       cat >> /etc/network/interfaces <<EOF
+
+       auto \$BRIDGE
+       iface \$BRIDGE inet dhcp
+         bridge_ports \$INTERFACE
+         bridge_stp off
+         bridge_maxwait 0
+         bridge_fd 0
+       EOF
+       /etc/init.d/networking restart
+       TAPDEV=\`/usr/sbin/tunctl -b\`
        brctl addif \$BRIDGE \$TAPDEV
+       ip link set $TAPDEV up
    - exec_chroot: chmod +x /usr/bin/create_bridge.sh

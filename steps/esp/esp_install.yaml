@@ -7,8 +7,8 @@ esp_install:
    - exec_chroot: bash -c "cd /root/tools ; git clone $$esp_repository"
    - exec_chroot: bash -c "cd /root/tools/esp ; git checkout -b esp_v3 remotes/origin/esp_v3"
  - esp_install:
-   - exec_chroot: bash -c "cd /root/tools/esp ; ./configure"
-   - exec_chroot: bash -c "cd /root/tools/esp ; make || true"
+   #- exec_chroot: bash -c "cd /root/tools/esp ; ./configure"
+   #- exec_chroot: bash -c "cd /root/tools/esp ; make || true"
    - exec_chroot: chmod 777 /root/tools
    - exec_chroot: chmod 777 /root/tools/esp
    - exec_chroot: chmod 777 /root/tools/esp/jobmix
