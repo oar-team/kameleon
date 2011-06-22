@@ -25,6 +25,16 @@ virt_tools:
        then
          BRIDGE=\"br0\"
        fi
+
+       cat >> /etc/network/interfaces <<EOF
+       auto \$BRIDGE
+       iface \$BRIDGE inet dhcp
+         bridge_ports \$INTERFACE
+         bridge_stp off
+         bridge_maxwait 0
+         bridge_fd 0
+       EOF
+
        #TAPDEV=\`/usr/sbin/tunctl -b\`
        #brctl addif \$BRIDGE \$TAPDEV
        #ip link set \$TAPDEV up
