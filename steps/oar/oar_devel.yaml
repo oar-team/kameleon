@@ -12,8 +12,11 @@ oar_devel:
        ScriptAlias /oarapi-priv /usr/lib/cgi-bin/oarapi/oarapi.cgi
        ScriptAlias /oarapi-priv-debug /usr/lib/cgi-bin/oarapi/oarapi.cgi
 
+       FastCgiServer /usr/lib/cgi-bin/oarapi/oarapi.cgi
+
        <Directory /usr/lib/cgi-bin/oarapi>
          Options ExecCGI -MultiViews FollowSymLinks
+         AddHandler fcgid-script .cgi
        </Directory>
 
        <Location /oarapi-priv>

@@ -11,6 +11,8 @@ oar_debian_install:
    - exec_chroot: apt-get install -y --force-yes oar-server oar-user oar-node oar-doc oar-admin oar-web-status oar-keyring
  - install_oar_api:
    - exec_chroot: apt-get install -y --force-yes oar-api
+   - exec_chroot: apt-get install -y --force-yes libapache2-mod-fastcgi
    - exec_chroot: a2enmod ident
    - exec_chroot: a2enmod headers
    - exec_chroot: a2enmod rewrite
+   - exec_chroot: a2enmod fastcgi
