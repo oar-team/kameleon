@@ -1,0 +1,9 @@
+ior_install:
+ - install_dependencies:
+   - exec_chroot: apt-get update
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install mpi-default-dev openmpi-common openmpi-bin libhdf5-mpi-dev hdf5-tools "
+ - ior_install:
+   - exec_chroot: bash -c "cd /root/ ; wget $$ior_repository/$$ior_version/$$ior_version.tgz"
+   - exec_chroot: bash -c "cd /root/ ; tar xvzf $$ior_version.tgz -C ."
+   - exec_chroot: bash -c "cd /root/IOR ; make hdf5"
+   - exec_chroot: bash -c "cp /root/IOR/src/C/IOR /usr/bin/"
