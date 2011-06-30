@@ -7,3 +7,10 @@ ior_install:
    - exec_chroot: bash -c "cd /root/ ; tar xvzf $$ior_version.tgz -C ."
    - exec_chroot: bash -c "cd /root/IOR ; make hdf5"
    - exec_chroot: bash -c "cp /root/IOR/src/C/IOR /usr/bin/"
+ - set_kameleon_ior_sudoer:
+   - append_file:
+     - /etc/sudoers
+     - |
+       %users ALL=NOPASSWD: /usr/bin/IOR
+   - exec_chroot: adduser kameleon users
+

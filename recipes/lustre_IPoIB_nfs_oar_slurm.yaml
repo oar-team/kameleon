@@ -31,7 +31,7 @@ global:
  kernel_arch: "amd64"
  #
  # Extra packages to install on the minimal base system
- extra_packages: "vim less bzip2 openssh-server rsync gnupg locales debian-keyring console-tools mingetty lsof perl e2fsprogs ntp ntpdate lustre-utils lvm2 iozone3 iperf htop subversion git git-svn ruby rubygems libyaml-perl libjson-perl mysql-server mysql-client sudo libdbi-perl libdbd-mysql-perl perl-suid taktuk pidentd curl munge libmunge2 libmunge-dev build-essential libreadline6-dev gcc python gawk libmath-random-perl"
+ extra_packages: "vim less strace bzip2 openssh-server rsync gnupg locales debian-keyring console-tools mingetty lsof perl e2fsprogs ntp ntpdate lustre-utils lvm2 iozone3 iperf htop subversion git git-svn ruby rubygems libyaml-perl libjson-perl mysql-server mysql-client sudo libdbi-perl libdbd-mysql-perl perl-suid taktuk pidentd curl munge libmunge2 libmunge-dev build-essential libreadline6-dev gcc python gawk libmath-random-perl"
  #
  # Network configuration
  network_hostname: kameleon
@@ -63,6 +63,11 @@ global:
  cmdctrl_repository: "https://scm.gforge.inria.fr/svn/cmdctrl"
  rctrl_repository: "https://scm.gforge.inria.fr/svn/rctrl"
  xionee_repository: "https://scm.gforge.inria.fr/svn/xionee"
+ #
+ # IOR
+ ior_repository: 'http://sourceforge.net/projects/ior-sio/files/IOR%20latest/'
+ ior_version: "IOR-2.10.3"
+ #
  #  
 steps:
 # - debian_check_deps
@@ -97,6 +102,7 @@ steps:
    - config_taktuk
    - config_cpuset
    - oar_init
+   - add_properties
  - oar/oar_devel
  - oar/oar_clean
  - slurm/slurm_install:
@@ -106,6 +112,7 @@ steps:
  - esp/esp_install:
    - esp_v3_git_clone
    - esp_install 
+ - io_benchmarks/ior_install
  - virtualization/virt_tools
 # - xionee/xionee_install
 ###############################
