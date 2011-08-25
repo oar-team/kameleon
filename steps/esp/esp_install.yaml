@@ -19,4 +19,7 @@ esp_install:
    - exec_chroot: bash -c "cp /root/tools/esp/scripts/* /usr/local/bin/"
    - exec_chroot: chmod 777 /usr/local/bin/disco_utilized_cores
    - exec_chroot: chmod 777 /usr/local/bin/oarnodes_utilized_cores
+ - kameleon_user_configuration_for_esp:
+   - exec_chroot: addgroup admin
+   - exec_chroot: adduser kameleon admin
 

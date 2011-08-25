@@ -12,3 +12,4 @@ lustre_kernel_install:
      - |
        lustre
        ldiskfs
+

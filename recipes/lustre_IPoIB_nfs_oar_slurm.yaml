@@ -10,6 +10,7 @@ global:
  # Debian specific
  distrib: debian
  debian_version_name: squeeze
+ #debian_version_name: wheezy
  distrib_repository: http://ftp.fr.debian.org/debian/
  output_environment_file_system_type: ext4
  #lustre_repository: http://oar.imag.fr/debian/mirrors/pkg-lustre.alioth.debian.org/lustre/
@@ -31,7 +32,7 @@ global:
  kernel_arch: "amd64"
  #
  # Extra packages to install on the minimal base system
- extra_packages: "vim less strace bzip2 openssh-server rsync gnupg locales debian-keyring console-tools mingetty lsof perl e2fsprogs ntp ntpdate lustre-utils lvm2 iozone3 iperf htop subversion git git-svn ruby rubygems libyaml-perl libjson-perl mysql-server mysql-client sudo libdbi-perl libdbd-mysql-perl perl-suid taktuk pidentd curl munge libmunge2 libmunge-dev build-essential libreadline6-dev gcc python gawk libmath-random-perl"
+ extra_packages: "vim less screen strace bzip2 openssh-server rsync gnupg locales debian-keyring console-tools mingetty lsof perl e2fsprogs ntp ntpdate lustre-utils lvm2 iozone3 iperf htop subversion git git-svn ruby rubygems libyaml-perl libjson-perl mysql-server mysql-client sudo libdbi-perl libdbd-mysql-perl perl-suid taktuk pidentd curl munge libmunge2 libmunge-dev build-essential libreadline6-dev gcc python gawk libmath-random-perl hwloc"
  #
  # Network configuration
  network_hostname: kameleon
@@ -80,8 +81,8 @@ steps:
 # - system_config
 # - root_passwd
 # - mount_proc
-# - software_install:
-#   - extra_packages
+ - software_install:
+   - extra_packages
  - nfs_install
 # - umount_proc
 # - kernel_install:
@@ -90,9 +91,9 @@ steps:
  - g5k/infiniband_g5k
  - g5k/g5k-update-host-name
 # - g5k/g5k-ldap-config
-# - lustre_kernel_install:
-#   - lustre_apt_config
- - lustre_kernel_install
+ - lustre_kernel_install:
+   - lustre_apt_config
+   - lustre_kernel_install
  - lustre_utils
  - lustre_IPoIB
  - oar/oar_debian_install
@@ -100,6 +101,7 @@ steps:
  - oar/oar_config:
    - config_mysql
    - config_taktuk
+   - config_oar_log_level
    - config_cpuset
    - oar_init
    - add_properties
@@ -112,7 +114,9 @@ steps:
  - esp/esp_install:
    - esp_v3_git_clone
    - esp_install 
+   - kameleon_user_configuration_for_esp
  - io_benchmarks/ior_install
+ - mpi/increase_memlock_limits
  - virtualization/virt_tools
 # - xionee/xionee_install
 ###############################
