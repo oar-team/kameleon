@@ -112,13 +112,14 @@ steps:
    - slurm_install
    - write_conf_file
  - esp/esp_install:
-   - esp_v3_git_clone
+   #- esp-xionee_git_clone
+   - esp-v2_git_clone
    - esp_install 
    - kameleon_user_configuration_for_esp
  - io_benchmarks/ior_install
  - mpi/increase_memlock_limits
  - virtualization/virt_tools
-# - xionee/xionee_install
+ - xionee/xionee_install
 ###############################
  - autologin
  - fix_locales

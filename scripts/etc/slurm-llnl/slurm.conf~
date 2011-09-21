@@ -1,0 +1,57 @@
+#
+# Sample /etc/slurm.conf
+#
+ControlMachine=localhost
+#ControlAddr=localhost
+#BackupController=
+#BackupAddr=
+#
+AuthType=auth/munge
+CryptoType=crypto/munge
+#Prolog=/usr/local/slurm/etc/prolog
+#Epilog=/usr/local/slurm/etc/epilog
+FastSchedule=1
+PluginDir=/usr/local/slurm/lib/slurm
+#
+#
+# SCHEDULING
+SchedulerType=sched/backfill
+SelectType=select/linear
+#
+#SwitchType=switch/none
+SlurmUser=slurm
+SlurmctldPort=7002
+SlurmctldTimeout=300
+SlurmdPort=7003
+SlurmdSpoolDir=/var/tmp/slurmd.spool
+SlurmdTimeout=300
+StateSaveLocation=/tmp/slurm.state
+#TaskPlugin=task/affinity
+#TaskPluginParam=Cpusets
+#
+#
+# DEBUG
+SlurmctldDebug=9
+SlurmctldLogFile=/var/log/slurmctldlog
+SlurmdDebug=9
+#SlurmdLogFile=/var/log/slurmdlog-%h
+#
+#
+# MULTI DAEMON
+SlurmdLogFile=/var/log/slurm/slurmd.%n.log
+SlurmdPidFile=/var/run/slurmd.%n.pid
+SlurmdSpoolDir=/var/spool/slurmd.%n
+#
+#
+#
+# Nodes Configurations
+#
+#NodeName=DEFAULT Procs=2 RealMemory=2000 TmpDisk=64000 State=UNKNOWN
+#NodeName=mcr[0-1151] NodeAddr=emcr[0-1151]
+#
+# Partitions Configurations
+#
+#PartitionName=DEFAULT State=UP
+#PartitionName=pdebug Nodes=mcr[0-191] MaxTime=30 MaxNodes=32 Default=YES
+#PartitionName=pbatch Nodes=mcr[192-1151]
+
