@@ -6,7 +6,7 @@ lustre_kernel_install:
        $$lustre_apt_source
    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
  - lustre_kernel_install:
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install lustre-modules-2.6.27.39+lustre1.8.4+0.credativ.lenny.1 linux-image-2.6.27.39+lustre1.8.4+0.credativ.lenny.1"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install lustre-utils lustre-modules-2.6.27.39+lustre1.8.4+0.credativ.lenny.1 linux-image-2.6.27.39+lustre1.8.4+0.credativ.lenny.1"
    - append_file:
      - /etc/modules
      - |

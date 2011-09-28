@@ -2,10 +2,10 @@ esp_install:
  - esp-v2_git_clone:
    - exec_chroot: mkdir /root/tools || true
    - exec_chroot: bash -c "cd /root/tools ; git clone $$esp_repository"
- - esp-xionee_git_clone:
-   - exec_chroot: mkdir /root/tools || true
-   - exec_chroot: bash -c "cd /root/tools ; git clone $$esp_repository"
-   - exec_chroot: bash -c "cd /root/tools/esp ; git checkout -b esp-xionee remotes/origin/esp-xionee"
+ #- esp-xionee_git_clone:
+   #- exec_chroot: mkdir /root/tools || true
+   #- exec_chroot: bash -c "cd /root/tools ; git clone $$esp_repository"
+   #- exec_chroot: bash -c "cd /root/tools/esp ; git checkout -b esp-xionee remotes/origin/esp-xionee"
  - esp_install:
    - exec_chroot: chmod 777 /root/tools
    - exec_chroot: chmod 777 /root/tools/esp
