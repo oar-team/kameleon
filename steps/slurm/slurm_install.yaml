@@ -21,6 +21,12 @@ slurm_install:
  - write_dbd_conf_file:
    - exec_current: cp $$include_dir/etc/slurm-llnl/slurmdbd.conf  $$chroot/etc/slurm-llnl/slurmdbd.conf  
    - exec_chroot: bash -c "ln -s /etc/slurm-llnl/slurmdbd.conf /usr/local/etc/slurmdbd.conf"
+ - init_dbd:
+   - write_file:
+     - /etc/slurm-llnl/grant_dbd.sql
+     - |
+       grant all on slurm_acct_db.* TO 'slurm'@'localhost' identified by 'slurm' with grant option;  
+   - exec_chroot: /etc/init.d/mysql start ; mysql -p'kameleon' < /etc/slurm-llnl/grant_dbd.sql ; /etc/init.d/mysql stop
  - create_resources:
    - append_file:
      - /etc/slurm-llnl/slurm.conf

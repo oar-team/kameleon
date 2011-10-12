@@ -12,4 +12,11 @@ lustre_kernel_install:
      - |
        lustre
        ldiskfs
+ - kernel_rename:
+   - exec_chroot: bash -c "cd /boot ; mv vmlinuz-2.6.27.39+lustre1.8.4+0.credativ.lenny.1 vmlinuz-2.6.27.39-lustre"
+   - exec_chroot: bash -c "cd /boot ; mv initrd.img-2.6.27.39+lustre1.8.4+0.credativ.lenny.1 initrd.img-2.6.27.39-lustre"
+   - exec_chroot: bash -c "cd /boot ; mv config-2.6.27.39+lustre1.8.4+0.credativ.lenny.1 config-2.6.27.39-lustre"
+   - exec_chroot: bash -c "cd /boot ; mv System.map-2.6.27.39+lustre1.8.4+0.credativ.lenny.1 System.map-2.6.27.39-lustre"
+   - exec_chroot: bash -c "cd / ; ln -sf boot/vmlinuz-2.6.27.39-lustre vmlinuz" 
+   - exec_chroot: bash -c "cd / ; ln -sf boot/initrd.img-2.6.27.39-lustre initrd.img"
 

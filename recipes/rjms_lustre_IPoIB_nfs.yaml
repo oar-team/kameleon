@@ -1,4 +1,4 @@
-# ### lustre.yaml Kameleon recipe ###
+# ### lustr.yaml Kameleon recipe ###
 # This recipe can be used to create a Debian appliance running
 # a Lustre kernel and Lustre tools
 #
@@ -94,6 +94,7 @@ steps:
  - lustre_kernel_install:
    - lustre_apt_config
    - lustre_kernel_install
+   - kernel_rename
  - lustre_utils
  - lustre_IPoIB
  - oar/oar_debian_install
@@ -113,6 +114,7 @@ steps:
    - slurm_install
    - write_conf_file
    - write_dbd_conf_file
+   - init_dbd
  #- esp/esp_install:
    #- esp-xionee_git_clone
    #- esp-v2_git_clone
@@ -121,7 +123,9 @@ steps:
  - io_benchmarks/ior_install
  - mpi/increase_memlock_limits
  - virtualization/virt_tools
- - xionee/xionee_install
+ - xionee/xionee_install:
+   - xionee_checkout_trunk_only
+   - xionee_checkout_R-branch_only
 ###############################
  - autologin
  - fix_locales
