@@ -1,6 +1,7 @@
 oar_config:
  - config_mysql:
    - exec_chroot: /etc/init.d/mysql start || service mysql start || true
+   - exec_on_clean: chroot $$chroot bash -c "/etc/init.d/mysql stop || service mysql stop || true"
    - exec_chroot: echo "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('kameleon')" | chroot $$chroot mysql --user=root
  - config_taktuk:
    - exec_chroot: mv /etc/oar/oar.conf /etc/oar/oar.conf.or
@@ -19,7 +20,7 @@ oar_config:
    - exec_chroot: perl -pi -e 's/^ssh-/environment="OAR_KEY=1" ssh-/' /var/lib/oar/.ssh/authorized_keys
  - oar_init:
    - write_file:
-     - /usr/lib/oar/init.sql
+     - /tmp/init.sql
      - |
        CREATE DATABASE IF NOT EXISTS oar;
 
@@ -36,7 +37,7 @@ oar_config:
        GRANT SELECT ON oar.* TO oarreader@localhost;
        GRANT SELECT ON oar.* TO oarreader@'%';
        FLUSH PRIVILEGES;
-   - exec_chroot: mysql -u root -p"kameleon" < $$chroot/usr/lib/oar/init.sql
+   - exec_chroot: mysql -u root -p"kameleon" < $$chroot/tmp/init.sql
    - exec_chroot: mysql -u root -p"kameleon" oar < $$chroot/usr/lib/oar/mysql_structure.sql
    - exec_chroot: mysql -u root -p"kameleon" oar < $$chroot/usr/lib/oar/mysql_default_admission_rules.sql
    - exec_chroot: mysql -u root -p"kameleon" oar < $$chroot/usr/lib/oar/default_data.sql || true
