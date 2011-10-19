@@ -3,7 +3,7 @@ kameleon_debian_install:
    - append_file:
      - /etc/apt/sources.list
      - |
-       deb http://oar-ftp.imag.fr/kameleon/debian squeeze-proposed-updates main
+       deb http://oar-ftp.imag.fr/kameleon/debian squeeze-snapshots main
    - exec_chroot: apt-get update
  - install:
    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kameleon rubygems debootstrap kvm grub2 mingetty curl"
