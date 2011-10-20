@@ -1,0 +1,28 @@
+chef_install:
+ - install_deps:
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install debian-archive-keyring ruby ruby-dev libopenssl-ruby libshadow-ruby1.8 rdoc ri irb build-essential wget ssl-cert rubygems"
+ - install_gems:
+   #- exec_chroot: bash -c "cd /tmp ; wget http://production.cf.rubygems.org/rubygems/rubygems-1.8.5.tgz > /dev/null"
+   #- exec_chroot: bash -c "cd /tmp ; tar xzf rubygems-1.8.5.tgz"
+   #- exec_chroot: bash -c "cd /tmp/rubygems-1.8.5 ; ruby setup.rb"
+   #- exec_chroot: bash -c "ln -sfv /usr/bin/gem1.8 /usr/bin/gem"
+   #- exec_chroot: bash -c "gem sources -a http://gems.rubyforge.org/"
+   #- exec_chroot: bash -c "gem install --no-ri --no-rdoc rest-client --version 1.6.1"
+   #- exec_chroot: bash -c "gem install --no-ri --no-rdoc json --version 1.5.1"
+   #- exec_chroot: bash -c "gem install --no-ri --no-rdoc mixlib-authentication --version 1.1.4"
+   #- exec_chroot: bash -c "gem install --no-ri --no-rdoc net-ssh-multi --version 1.1"
+   #- exec_chroot: bash -c "gem install chef --no-ri --no-rdoc --version 0.9.12"
+   - exec_chroot: bash -c "gem sources -a http://gems.rubyforge.org/"
+   - exec_chroot: bash -c "gem install --no-ri --no-rdoc rest-client"
+   - exec_chroot: bash -c "gem install --no-ri --no-rdoc json"
+   - exec_chroot: bash -c "gem install --no-ri --no-rdoc mixlib-authentication"
+   - exec_chroot: bash -c "gem install --no-ri --no-rdoc net-ssh-multi"
+   - exec_chroot: bash -c "gem install --no-ri --no-rdoc chef"
+ - write_config:
+   - write_file:
+     - /root/chef-solo-config
+     - |
+       file_cache_path '/tmp/chef-solo'
+       cookbook_path '/tmp/chef-solo/cookbooks'
+

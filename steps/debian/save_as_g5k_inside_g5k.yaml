@@ -31,7 +31,7 @@ save_as_g5k_inside_g5k:
 #       postinstall : /grid5000/postinstalls/sid-x64-base-1.1-post.tgz|tgz|traitement.ash /rambin
 #       kernel : /boot/vmlinuz-2.6.32-3-686
 #       initrd : /boot/initrd.img-2.6.32-3-686
-#       filesystem : ext2
+#       filesystem : ext3
 #       environment_kind : linux
 #       fdisktype : 83
 #   - exec_appliance:       cp $$chroot/tmp/$$distrib.g5k.dsc3 $$workdir

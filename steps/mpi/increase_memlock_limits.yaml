@@ -1,0 +1,18 @@
+increase_memlock_limits:
+ - write_limits_file:
+   - append_file:
+     - /etc/security/limits.conf
+     - |
+       * soft memlock unlimited
+       * hard memlock unlimited
+ - write_profile_root:
+   - append_file:
+     - /root/.profile
+     - |
+       ulimit -l unlimited
+ - write_profile_kameleon:
+   - append_file:
+     - /home/kameleon/.profile
+     - |
+       ulimit -l unlimited
+
