@@ -263,7 +263,7 @@ end
 $cur_dir=Dir.pwd
 $var_dir="/var/lib/kameleon"
 $kameleon_dir=File.dirname($0)
-version="1.2.2"
+version="1.2.3"
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
 
