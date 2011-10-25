@@ -10,9 +10,8 @@ increase_memlock_limits:
      - /root/.profile
      - |
        ulimit -l unlimited
- - write_profile_kameleon:
-   - append_file:
-     - /home/kameleon/.profile
-     - |
-       ulimit -l unlimited
-
+# - write_profile_kameleon:
+#   - append_file:
+#     - /home/kameleon/.profile
+#     - |
+#       ulimit -l unlimited

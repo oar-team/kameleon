@@ -96,7 +96,7 @@ steps:
    - lustre_kernel_install
    - kernel_rename
  - lustre/lustre_utils_IPoIB
- - lustre/lustre_IPoIB
+ - lustre_IPoIB
  - oar/oar_debian_install
  - oar/oar_system_config
  - oar/oar_config:
