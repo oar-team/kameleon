@@ -2,6 +2,7 @@ ior_install:
  - ior_install:
    - exec_chroot: bash -c "cd /root/ ; wget $$ior_repository/$$ior_version/$$ior_version.tgz"
    - exec_chroot: bash -c "cd /root/ ; tar xvzf $$ior_version.tgz -C ."
+   - exec_chroot: bash -c "cd /root/ ; rm $$ior_version.tgz"
    - exec_chroot: bash -c "cd /root/IOR ; make hdf5"
    - exec_chroot: bash -c "cp /root/IOR/src/C/IOR /usr/bin/"
  - set_kameleon_ior_sudoer:
