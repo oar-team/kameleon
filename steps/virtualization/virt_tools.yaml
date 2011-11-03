@@ -1,7 +1,4 @@
 virt_tools:
-#  - install_virt_tools_kvm:
-#    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
-#    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kvm libvirt-bin uml-utilities"
  - create_random_mac_generator_script:
    - write_file:
      - /usr/bin/random_mac.sh

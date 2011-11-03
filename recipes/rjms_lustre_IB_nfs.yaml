@@ -1,6 +1,3 @@
-# ### lustr.yaml Kameleon recipe ###
-# This recipe can be used to create a Debian appliance running
-# a Lustre kernel and Lustre tools
 #
 global:
  #
@@ -10,22 +7,20 @@ global:
  # Debian specific
  distrib: debian
  debian_version_name: squeeze
- #debian_version_name: wheezy
  distrib_repository: http://ftp.fr.debian.org/debian/
  output_environment_file_system_type: ext4
- #lustre_repository: http://oar.imag.fr/debian/mirrors/pkg-lustre.alioth.debian.org/lustre/
- #lustre_repository: http://pkg-lustre.alioth.debian.org/lustre
+ #
  lustre_apt_source: 'deb http://pkg-lustre.alioth.debian.org/lustre lenny main'
  lustre_mds_partition_size: 10G
  lustre_oss_partition_size: 128G
  lustre_partition: /dev/sda5
+ #
  nfs_partition_size: 128G
  nfs_partition: /dev/sda5
  nfs_export_file_system_type: ext4
  #
  #
  include_dir: /var/lib/kameleon/scripts
- #lustre_g5kutils_repository: http://oar.imag.fr/debian/lustre/
  #
  # Architecture
  arch: amd64
@@ -36,33 +31,23 @@ global:
  #
  # Network configuration
  network_hostname: kameleon
- # Following variables are used by the "network_config_static" step
- #network_eth0_ip: 129.88.70.251
- #network_eth0_mask: 255.255.255.248
- #network_gateway: 129.88.70.249
- #network_dns: 129.88.30.10
- #network_domain: imag.fr
- #
- # If you're building a Xen appliance, it may help:
- #xen_domu_modules: /lib/modules/2.6.32-4-xen-amd64
  # 
- # You can start with a "checkpoint_resume" step if you want
- # to start form a pre-built image. The image can be made
- # with the "checkpoint" step.
  checkpoint_file: /var/tmp/kameleon/checkpoints/lustre_checkpoint.tgz
- #checkpoint_file: /var/tmp/kameleon/checkpoints/g5k/squeeze-x64-big-0.8.tgz
  #
  # RJMS specific
  oar_repository: "deb http://oar.imag.fr/debian/2.5 unstable main"
- slurm_repository: "http://sourceforge.net/projects/slurm/files/under_development"
- slurm_version: "slurm-2.3.0-0.pre5"
+ #oar_repository: "deb http://oar-ftp.imag.fr/oar/2.5/debian/ squeeze-snapshots main"
+ #
+ # slurm_repository: "http://sourceforge.net/projects/slurm/files/under_development"
+ # slurm_version: "slurm-2.3.0-0.pre5"
+ slurm_git_repository: "git://github.com/SchedMD/slurm.git"
  #
  # ESP
  esp_repository: "git://scm.gforge.inria.fr/kameleon/esp.git"
  #
  # Xionee specific
- cmdctrl_repository: "https://scm.gforge.inria.fr/svn/cmdctrl"
- rctrl_repository: "https://scm.gforge.inria.fr/svn/rctrl"
+#  cmdctrl_repository: "https://scm.gforge.inria.fr/svn/cmdctrl"
+#  rctrl_repository: "https://scm.gforge.inria.fr/svn/rctrl"
  xionee_repository: "https://scm.gforge.inria.fr/svn/xionee"
  #
  # IOR
@@ -71,11 +56,11 @@ global:
  #
  #  
 steps:
-# - debian_check_deps
-# - check_deps:
-#   - rsync
-#   - building_appliance
-#   - building_kvm_images
+ - debian_check_deps
+ - check_deps:
+   - rsync
+   - building_appliance
+   - building_kvm_images
  - checkpoint_resume
 # - bootstrap
 # - system_config
@@ -83,18 +68,16 @@ steps:
 # - mount_proc
  - software_install:
    - extra_packages
+ - nfs_deps_install
  - nfs_install
 # - umount_proc
 # - kernel_install:
 #   - kernel-img_conf
 # - checkpoint
- - g5k/infiniband_g5k
- - g5k/g5k-update-host-name
+ - debian/g5k/infiniband_g5k
+ - debian/g5k/g5k-update-host-name
 # - g5k/g5k-ldap-config
- - lustre_kernel_install:
-   - lustre_apt_config
-   - lustre_kernel_install
-   - kernel_rename
+ - lustre_kernel_install
  - lustre/lustre_utils_IB
  - lustre/lustre_IB
  - oar/oar_debian_install
@@ -108,20 +91,17 @@ steps:
    - add_properties
  - oar/oar_devel
  - oar/oar_clean
+ - slurm_deps_install
  - slurm/slurm_install:
-   - install_deps
    - create_munge_key
-   - slurm_install
-   - write_conf_file
-   - write_dbd_conf_file
+   - slurm_install_from_git
+   - slurm_config
+   - write_conf_files
    - init_dbd
- #- esp/esp_install:
-   #- esp-xionee_git_clone
-   #- esp-v2_git_clone
-   #- esp_install 
-   #- kameleon_user_configuration_for_esp
+ - ior_deps_install
  - io_benchmarks/ior_install
  - mpi/increase_memlock_limits
+ - virt_tools_deps_install
  - virtualization/virt_tools
  - xionee/xionee_install:
    - xionee_checkout_trunk_only
@@ -130,7 +110,7 @@ steps:
  - autologin
  - fix_locales
  - strip
- - build_appliance_custom_fs:
+ - build_appliance:
    - clean_udev
    - create_raw_image
    - create_nbd_device
@@ -145,4 +125,3 @@ steps:
    #- save_as_vdi
  - save_as_g5k
 # - clean
-

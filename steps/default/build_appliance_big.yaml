@@ -1,4 +1,4 @@
-build_appliance_custom_fs_big:
+build_appliance_big:
  - clean_udev:
    - exec_appliance:       rm -f etc/udev/rules.d/*persistent-net.rules*
  - save_as_tgz:
@@ -23,6 +23,8 @@ build_appliance_custom_fs_big:
    - exec_on_clean:        umount ${NBD_DEVICE}p1 ||true
  - copy_system_tree:
    - exec_appliance:       rsync -a --exclude "/proc/" $$chroot/* $$workdir/mnt && mkdir $$workdir/mnt/proc
+ - remove_old_device_map:
+   - exec_appliance:       echo "" > $$workdir/mnt/boot/grub/device.map
  - grub_197_workaround:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot/grub
    - exec_appliance:       echo "(hd0,1) ${NBD_DEVICE}p1" > $$workdir/mnt/boot/grub/device.map

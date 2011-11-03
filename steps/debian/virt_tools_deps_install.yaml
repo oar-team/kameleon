@@ -1,0 +1,4 @@
+virt_tools_deps_install:
+ - install_virt_tools_kvm:
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kvm libvirt-bin uml-utilities"

@@ -11,6 +11,7 @@ save_as_g5k:
        ib_mthca
    - exec_chroot:          useradd g5k -m -p "\$1\$EHMIS4yo\$I2YpHDD6PkrQR3FQmq1Pv1" || true
    - exec_chroot:          mkdir /mnt/image || true
+   - exec_chroot:          rm /etc/udev/rules.d/*-persistent-net.rules
    - exec_chroot:          mount -o bind / /mnt
    - exec_appliance:       cd $$chroot/mnt/image; tar --posix --numeric-owner --one-file-system -zcf - * $$workdir/$$distrib.g5k.tgz
    - exec_chroot:          umount /mnt/image

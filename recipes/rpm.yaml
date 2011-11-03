@@ -16,6 +16,7 @@ global:
  distrib: rpm
  rpm_distrib_name: centos-5
  rinse_config_directory: /usr/local/share/kameleon/steps/rpm/rinse
+ output_environment_file_system_type: ext4
  #
  # You may have to provide a yum.conf file 
  #  (activate the "yum_provided_conf" microstep)
