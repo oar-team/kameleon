@@ -1,4 +1,4 @@
-infiniband_g5k:
+g5k_infiniband:
  - install_packages:
    - exec_chroot: apt-get update
    - exec_chroot: apt-get -f install -y --force-yes ibverbs-utils libibverbs-dev libcxgb3-dev libipathverbs-dev libmlx4-dev libmthca-dev librdmacm-dev rdmacm-utils ibutils infiniband-diags perftest qlvnictools rds-tools sdpnetstat srptools syslinux
@@ -8,6 +8,11 @@ infiniband_g5k:
  - write_infniband_conf:
    - exec_current: cp $$include_dir/etc/infiniband/* $$chroot/etc/infiniband/
    - exec_chroot: chmod +x /etc/infiniband/info
+#  - blacklist_ko2iblnd:
+#    - append_file:
+#      - /etc/modprobe.d/blacklist.conf
+#      - |
+#        ko2iblnd
  - write_etc_modules:
    - append_file:
      - /etc/modules

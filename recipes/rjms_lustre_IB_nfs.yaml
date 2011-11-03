@@ -74,9 +74,9 @@ steps:
 # - kernel_install:
 #   - kernel-img_conf
 # - checkpoint
- - debian/g5k/infiniband_g5k
- - debian/g5k/g5k-update-host-name
-# - g5k/g5k-ldap-config
+ - g5k_infiniband
+ - g5k-update-host-name
+# - g5k-ldap-config
  - lustre_kernel_install
  - lustre/lustre_utils_IB
  - lustre/lustre_IB
