@@ -3,6 +3,8 @@ root_ssh_config:
    - exec_chroot: bash -c "ssh-keygen -f /root/.ssh/id_rsa -N ''"
  - copy_key_to_auth_file:
    - exec_chroot: bash -c "cd /root/.ssh ; cat id_rsa.pub >> authorized_keys"
+ - copy_key_to_auth2_file:
+   - exec_chroot: bash -c "cd /root/.ssh ; cat id_rsa.pub >> authorized_keys2"
  - root_ssh_config:
    - append_file:
      - /root/.ssh/config

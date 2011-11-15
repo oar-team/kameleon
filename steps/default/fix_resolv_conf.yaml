@@ -1,0 +1,3 @@
+fix_resolv_conf:
+ - fix_resolv_conf:
+   - exec_appliance: cat /etc/resolv.conf > $$chroot/etc/resolv.conf

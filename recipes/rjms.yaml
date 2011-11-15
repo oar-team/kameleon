@@ -27,7 +27,7 @@ global:
  kernel_arch: "amd64"
  #
  # Extra packages to install on the minimal base system
- extra_packages: "vim less screen strace bzip2 openssh-server rsync gnupg locales debian-keyring console-tools mingetty lsof perl e2fsprogs ntp ntpdate lvm2 iozone3 iperf htop subversion git git-svn ruby rubygems libyaml-perl libjson-perl mysql-server mysql-client sudo libdbi-perl libdbd-mysql-perl perl-suid taktuk pidentd curl hwloc"
+ extra_packages: "screen strace lsof e2fsprogs ntp ntpdate lvm2 iozone3 iperf htop subversion git git-svn rubygems hwloc vim less bzip2 openssh-server rsync gnupg locales debian-keyring ruby libyaml-perl libjson-perl mysql-server mysql-client sudo libdbi-perl libdbd-mysql-perl perl-suid taktuk pidentd console-tools mingetty curl librestclient-ruby librspec-ruby libjson-ruby apache2-utils apache2 libapache2-mod-fastcgi libcgi-fast-perl libwww-perl libsort-naturally-perl libappconfig-perl libtie-ixhash-perl libgd-ruby libdbd-mysql-ruby libmodule-util-perl make"
  #
  # Network configuration
  network_hostname: kameleon
@@ -36,6 +36,7 @@ global:
  #
  # RJMS specific
  oar_repository: "deb http://oar.imag.fr/debian/2.5 unstable main"
+ oar_tgz: "file:/home/emeras/git/build-area/2.5.0+dev498.fb74a13/oar-2.5.0+dev498.fb74a13.tar.gz"
  #oar_repository: "deb http://oar-ftp.imag.fr/oar/2.5/debian/ squeeze-snapshots main"
  #
  # slurm_repository: "http://sourceforge.net/projects/slurm/files/under_development"
@@ -62,6 +63,7 @@ steps:
    - building_appliance
    - building_kvm_images
  - checkpoint_resume
+ - fix_resolv_conf
 # - bootstrap
 # - system_config
 # - root_passwd
@@ -90,6 +92,7 @@ steps:
 # - lustre/lustre_utils_IB
 # - lustre/lustre_IB
  - oar/oar_debian_install
+ #- oar/oar_tgz_install
  - oar/oar_system_config
  - oar/oar_config:
    - config_mysql
