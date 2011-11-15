@@ -1,0 +1,14 @@
+root_ssh_config:
+ - ssh_key_create:
+   - exec_chroot: bash -c "ssh-keygen -f /root/.ssh/id_rsa -N ''"
+ - copy_key_to_auth_file:
+   - exec_chroot: bash -c "cd /root/.ssh ; cat id_rsa.pub >> authorized_keys"
+ - root_ssh_config:
+   - append_file:
+     - /root/.ssh/config
+     - | 
+       Host *
+       PasswordAuthentication yes
+       RSAAuthentication yes
+       StrictHostKeyChecking no
+       NoHostAuthenticationForLocalhost yes

@@ -73,21 +73,22 @@ steps:
  - nfs_deps_install
  - nfs_install
 # - umount_proc
-# - kernel_install:
-#   - kernel-img_conf
+ - kernel_install:
+   - kernel-img_conf
+   - kernel_install
 # - checkpoint
+ - root_ssh_config
  - g5k_infiniband
  - g5k-update-host-name
 # - g5k-ldap-config
- - lustre_kernel_install:
-   - lustre_apt_config
+# - lustre_kernel_install:
+#   - lustre_apt_config
    #- lustre_kernel_install_test
-   - lustre_kernel_install_2.6.27
-   - lustre_add_modules
+#   - lustre_kernel_install_2.6.27
+#   - lustre_add_modules
    #- kernel_rename
- - root_ssh_config
- - lustre/lustre_utils_IB
- - lustre/lustre_IB
+# - lustre/lustre_utils_IB
+# - lustre/lustre_IB
  - oar/oar_debian_install
  - oar/oar_system_config
  - oar/oar_config:
