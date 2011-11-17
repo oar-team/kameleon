@@ -15,7 +15,8 @@ global:
  lustre_oss_partition_size: 128G
  lustre_partition: /dev/sda5
  #
- nfs_partition_size: 128G
+ # nfs_lvm_partition_size: 128G
+ nfs_lvm_partition_size: 60G
  nfs_partition: /dev/sda5
  nfs_export_file_system_type: ext4
  #
@@ -35,9 +36,9 @@ global:
  checkpoint_file: /var/tmp/kameleon/checkpoints/lustre_checkpoint.tgz
  #
  # RJMS specific
- oar_repository: "deb http://oar.imag.fr/debian/2.5 unstable main"
- oar_tgz: "file:/home/emeras/git/build-area/2.5.0+dev498.fb74a13/oar-2.5.0+dev498.fb74a13.tar.gz"
- #oar_repository: "deb http://oar-ftp.imag.fr/oar/2.5/debian/ squeeze-snapshots main"
+ #oar_repository: "deb http://oar.imag.fr/debian/2.5 unstable main"
+ oar_tgz: "file:/var/tmp/kameleon/checkpoints/oar-2.5.0+dev465.76b4e75.tar.gz"
+ oar_repository: "deb http://oar-ftp.imag.fr/oar/2.4/debian/ squeeze-snapshots main"
  #
  # slurm_repository: "http://sourceforge.net/projects/slurm/files/under_development"
  # slurm_version: "slurm-2.3.0-0.pre5"
@@ -73,13 +74,12 @@ steps:
  - software_install:
    - extra_packages
  - nfs_deps_install
- - nfs_install
+ - nfs/nfs_install
 # - umount_proc
  - kernel_install:
    - kernel-img_conf
    - kernel_install
 # - checkpoint
- - root_ssh_config
  - g5k_infiniband
  - g5k-update-host-name
 # - g5k-ldap-config
@@ -91,8 +91,8 @@ steps:
    #- kernel_rename
 # - lustre/lustre_utils_IB
 # - lustre/lustre_IB
- - oar/oar_debian_install
- #- oar/oar_tgz_install
+ #- oar/oar_debian_install
+ - oar/oar_tgz_install
  - oar/oar_system_config
  - oar/oar_config:
    - config_mysql
@@ -112,7 +112,7 @@ steps:
    - init_dbd
  - ior_deps_install
  - io_benchmarks/ior_install
- - mpi/increase_memlock_limits
+ - tuning/increase_system_limits
  - virt_tools_deps_install
  - virtualization/virt_tools
  - xionee/xionee_install:
@@ -120,6 +120,8 @@ steps:
    - xionee_checkout_R-branch_only
 ###############################
  - autologin
+ - root_dir_owner_fix
+ - root_ssh_config
  - fix_locales
  - strip
  - build_appliance:
