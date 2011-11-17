@@ -2,10 +2,10 @@ oar_tgz_install:
  - get_oar_tgz:
    - exec_appliance: cd root && curl $$oar_tgz > oar.tgz
  - untar_oar_tgz:
-   - exec_chroot: bash -c "cd /root && tar zxf oar.tgz && rm oar.tgz"
+   - exec_chroot: bash -c "cd /root && tar zxf oar.tgz --no-same-owner && rm oar.tgz"
  - make_oar_tgz:
-   - exec_chroot: bash -c "cd /root/oar-* && make server-install user-install node-install oar-web-status-install api-install database-install tools-install"
-   - exec_chroot: bash -c "cd /root/oar-* && make server-setup user-setup node-setup oar-web-status-setup api-setup database-setup"
+   - exec_chroot: bash -c "cd /root/oar-* && make server-install user-install node-install api-install database-install tools-install monika-install draw-gantt-install poar-install"
+   - exec_chroot: bash -c "cd /root/oar-* && make server-setup user-setup node-setup api-setup database-setup tools-setup monika-setup draw-gantt-setup poar-setup" 
 # The following links make standard steps compatible to this method of installation
 # because oar is located into /usr/local/lib instead of /usr/lib 
  - dirty_links:
