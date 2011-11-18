@@ -2,7 +2,7 @@
 
 set -e
 
-modprobe -r ko2iblnd
+rmmod ko2iblnd || true
 
 if [ "$IFACE" != "ib0" ]; then
     exit 0
