@@ -44,6 +44,13 @@ global:
  # slurm_version: "slurm-2.3.0-0.pre5"
  slurm_git_repository: "git://github.com/SchedMD/slurm.git"
  #
+ # TORQUE and MAUI
+ torque_repository: "http://www.adaptivecomputing.com/resources/downloads/torque/"
+ torque_version: "torque-3.0.3"
+ maui_repository: "file:/var/tmp/kameleon/checkpoints/"
+ maui_version: "maui-3.3.1"
+ #
+ #
  # ESP
  # esp_repository: "git://scm.gforge.inria.fr/kameleon/esp.git"
  #
@@ -63,14 +70,14 @@ steps:
    - rsync
    - building_appliance
    - building_kvm_images
- - checkpoint_resume
- - fix_resolv_conf
-# - bootstrap
-# - system_config
-# - root_passwd
-#  - mount_proc
-#  - mount_dev
-#  - mount_sys
+# - checkpoint_resume
+# - fix_resolv_conf
+ - bootstrap
+ - system_config
+ - root_passwd
+ - mount_proc
+ #- mount_dev
+ #- mount_sys
  - software_install:
    - extra_packages
  - nfs_deps_install
@@ -110,6 +117,7 @@ steps:
    - slurm_config
    - write_conf_files
    - init_dbd
+ - torque/torque_install
  - ior_deps_install
  - io_benchmarks/ior_install
  - tuning/increase_system_limits
