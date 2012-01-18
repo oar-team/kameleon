@@ -1,4 +1,4 @@
 mount_proc:
  - mount_proc:
    - exec_appliance: mount -o bind /proc  $$chroot/proc
-   - exec_on_clean: umount $$chroot/proc 2>/dev/null
+   - exec_on_clean: umount $$chroot/proc 2>/dev/null || true
