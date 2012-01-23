@@ -127,6 +127,22 @@ def cmd_parse(cmd,step)
     return context_parse(cmd.values[0])
   elsif cmd.keys[0]=="exec_on_clean"
     return "echo \"" + cmd.values[0] + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+  elsif cmd.keys[0]=="on_clean"
+    cmd.values[0].each do |entry|
+      entry.each do |clean_cmd,val|
+        if clean_cmd == "exec_current"
+          return "echo \"" + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+        elsif clean_cmd == "exec_appliance"
+          return "echo \"" + "cd " + $chroot + "; " + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+        elsif clean_cmd == "exec_chroot"
+          return "echo \"" + "chroot " + $chroot + " " + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+        else
+          printf("Step %s: no such on_clean command: %s\n", step, clean_cmd)
+          exit(9)
+        end
+      end
+    end
+    exit
   else
     printf("Step %s: no such command %s\n", step, cmd.keys[0])
     exit(9)
