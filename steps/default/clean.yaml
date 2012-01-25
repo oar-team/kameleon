@@ -4,4 +4,4 @@ clean:
    #- exec_chroot:         umount /proc 2>/dev/null|| true
    - exec_current: 	  bash $$clean
  - remove_workdir:
-   - exec_current:        rm -rf $$chroot
+   - exec_current:        rm -rf --one-file-system $$chroot
