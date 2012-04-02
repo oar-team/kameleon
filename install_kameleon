@@ -1,7 +1,0 @@
-#!/bin/bash
-
-aptitude update
-aptitude install -y rubygems ruby-full
-mkdir /usr/local/lib/site_ruby/ || true
-mkdir /usr/local/lib/site_ruby/1.8 || true
-cd ./redist/session-2.4.0/ ; ruby ./install.rb
