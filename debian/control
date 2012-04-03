@@ -17,7 +17,7 @@ Description: Simple appliances image builder
  live-cd. It works as a bash script generator using recipes written in YAML.
 
 Package: kameleon-data
-Architecture: any
+Architecture: all
 Depends: ${misc:Depends}
 Description: Simple appliances image builder (data)
  Kameleon is a very simple tool to create initial virtual machines images or 
