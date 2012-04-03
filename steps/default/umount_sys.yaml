@@ -1,0 +1,3 @@
+umount_sys:
+ - umount_sys:
+   - exec_chroot: umount /sys

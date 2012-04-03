@@ -26,17 +26,21 @@ require 'yaml'
 # required for making directories
 require 'fileutils'
 
+# required for command parsing
+require 'optparse'
+
 # required for opening bash session in the background
 begin
  require 'session'
 rescue LoadError => e
  warn "The \"session\" module is not found. You need to install it."
+ warn "To install session as a debian package (since wheezy), type 'apt-get install ruby-session'."
  warn "To install session as a rubygem, type 'gem install session'."
  begin
    Gem.ruby_version
  rescue
-   warn "\nFurthermore, Rubygems does not seems to be loaded."
-   warn "You maybe have to enable rubygems, by setting RUBYOPT=rubygems"
+   warn "\nFurthermore, if you plan to use the \"session\" module with rubygems,"
+   warn "you maybe have to enable rubygems, by setting RUBYOPT=-rubygems"
    warn "or starting ruby with the -rubygems option."
    exit 1
  end
@@ -110,7 +114,7 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="check_cmd_chroot"
     return "chroot " + $chroot + " which " + cmd.values[0]
   elsif cmd.keys[0]=="exec_current"
-    return "cd " + $cur_dir + "; " + cmd.values[0]
+    return "cd " + $current_dir + "; " + cmd.values[0]
   elsif cmd.keys[0]=="exec_appliance"
     return "cd " + $chroot + "; " + cmd.values[0]
   elsif cmd.keys[0]=="exec_chroot"
@@ -127,6 +131,25 @@ def cmd_parse(cmd,step)
     return context_parse(cmd.values[0])
   elsif cmd.keys[0]=="exec_on_clean"
     return "echo \"" + cmd.values[0] + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+  elsif cmd.keys[0]=="on_clean"
+    output=[]
+    cmd.values.each do |clean_entry|
+      clean_entry.each do |entry|
+        entry.each do |clean_cmd,val|
+          if clean_cmd == "exec_current"
+            output << "echo \"" + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+          elsif clean_cmd == "exec_appliance"
+            output << "echo \"" + "cd " + $chroot + "; " + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+          elsif clean_cmd == "exec_chroot"
+            output << "echo \"" + "chroot " + $chroot + " " + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+          else
+            printf("Step %s: no such on_clean command: %s\n", step, clean_cmd)
+            exit(9)
+          end
+        end
+      end
+    end
+    return output.join(';')
   else
     printf("Step %s: no such command %s\n", step, cmd.keys[0])
     exit(9)
@@ -250,20 +273,47 @@ end
 ### parsing command line arguments ###
 ######################################
 
-if ARGV.length != 1
-  usage()
+@options = {
+  :include_path => []
+}
+
+option_parser = OptionParser.new do |opts|
+  opts.banner = <<BANNER
+* Usage
+  kameleon [-i data_path] recipe[.yaml]
+* Options
+BANNER
+
+  opts.on("-i=", "--include=", "Include the given path in the kameleon search path") do |i|
+    @options[:include_path].push(File.expand_path(i))
+  end
+
+  opts.on("-h","--help", "Show this message.") do
+    puts opts
+    exit(0)
+  end
+end
+
+if ARGV.length < 1
+  puts option_parser
   exit(1)
 end
+
+
+option_parser.parse!
+
 
 ######################
 ### initialization ###
 ######################
 
 # define global vars
-$cur_dir=Dir.pwd
-$var_dir="/var/lib/kameleon"
-$kameleon_dir=File.dirname($0)
-version="1.2.3"
+$current_dir=Dir.pwd
+$kameleon_bindir=File.expand_path(File.dirname(__FILE__))
+$kameleon_datadir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
+
+
+version="1.2.4"
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
 
@@ -284,7 +334,9 @@ end
 # load recipe
 path=""
 searched_pathes=""
-[$cur_dir,"#{$cur_dir}/recipes","#{$var_dir}/recipes","#{$kameleon_dir}/recipes"].each do |dir|
+pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$current_dir}/recipes" << "#{$kameleon_datadir}/recipes"
+
+pathes_to_search.each do |dir|
   if File.file?(search_path1 = dir + "/" + ARGV[0])
     path=search_path1
     break
@@ -292,11 +344,11 @@ searched_pathes=""
     path=search_path2
     break
   else
-    searched_pathes=searched_pathes + " * " + search_path1 + "\n * " + search_path2 + "\n"
+    searched_pathes=searched_pathes + " * " + search_path1 + "[.yaml]" + "\n"
   end
 end
 if path == ""
-  printf("%s: could not find recipe in none of the following files: \n%s", ARGV[0], searched_pathes)
+  printf("%s: could not find recipe in none of the following files : \n%s", ARGV[0], searched_pathes)
   exit(2)
 end
 begin
@@ -324,7 +376,7 @@ end
 $timestamp=Time.now.strftime("%Y-%m-%d-%H-%M-%S")
 $recipe['global']['workdir'] = $workdir = $recipe['global']['workdir_base']+"/"+$timestamp
 $recipe['global']['chroot'] = $chroot = $workdir + "/chroot"
-$recipe['global']['bindir'] = $cur_dir
+$recipe['global']['bindir'] = $current_dir
 $recipe['global']['clean'] = $clean_script
 begin
   FileUtils.mkdir_p($chroot)
@@ -407,8 +459,9 @@ $recipe['steps'].each do
   # check for macrostep file (distro-specific or default)
   path=""
   searched_pathes=""
+  pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$kameleon_datadir}"
   if dist != ""
-    [$cur_dir,$var_dir,$kameleon_dir].each do |dir|
+    pathes_to_search.each do |dir|
       if File.file?(search_path = dir + "/steps/" + dist + "/" + step + ".yaml")
         path=search_path
         break
@@ -417,7 +470,7 @@ $recipe['steps'].each do
       end
     end
   else
-    [$cur_dir,$var_dir,$kameleon_dir].each do |dir|
+    pathes_to_search.each do |dir|
       if File.file?(search_path1 = dir + "/steps/" + $recipe['global']['distrib'] + "/" + step + ".yaml")
         path=search_path1
         break
@@ -449,7 +502,7 @@ $recipe['steps'].each do
     if microstep.keys[0] == "include"
       # load macrostep file
       begin
-        macrostep_include_yaml = YAML.load(File.open($cur_dir + "/steps/" + microstep.values[0]))
+        macrostep_include_yaml = YAML.load(File.open($current_dir + "/steps/" + microstep.values[0]))
       rescue
         print "Failed to open macrostep file. ", $!, "\n"
         exit(7)

@@ -1,0 +1,14 @@
+torque_install:
+ - torque_install_from_http:
+   - exec_chroot: bash -c "cd /root/ && curl $$torque_repository/$$torque_version.tar.gz > $$torque_version.tar.gz"
+   - exec_chroot: bash -c "cd /root/ && tar xvzf $$torque_version.tar.gz -C ."
+   - exec_chroot: bash -c "cd /root/ && ln -s $$torque_version torque"
+   - exec_chroot: bash -c "cd /root/torque ; ./configure"
+   - exec_chroot: bash -c "cd /root/torque ; make"
+   - exec_chroot: bash -c "cd /root/torque ; make install"
+ - maui_install_from_http:
+   - exec_chroot: bash -c "cd /root/ && curl $$maui_repository/$$maui_version.tar.gz > ./$$maui_version.tar.gz"
+   - exec_chroot: bash -c "cd /root/ && tar xvzf $$maui_version.tar.gz -C ."
+   - exec_chroot: bash -c "cd /root/ && ln -s $$maui_version maui"
+   - exec_chroot: bash -c "cd /root/maui ; ./configure"
+   - exec_chroot: bash -c "cd /root/maui ; make"

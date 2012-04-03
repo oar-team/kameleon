@@ -1,18 +1,18 @@
-build_appliance:
+build_appliance_big:
  - clean_udev:
    - exec_appliance:       rm -f etc/udev/rules.d/*persistent-net.rules*
  - save_as_tgz:
    - exec_current:         cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
  - create_raw_image:
    - check_cmd:            /sbin/sfdisk
-   - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=5000
-   - exec_appliance:       echo -e "1,574,83,*\n575,,82" | /sbin/sfdisk $$workdir/image.raw
+   - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=10000
+   - exec_appliance:       echo -e "1,1200,83,*\n1201,,82" | /sbin/sfdisk $$workdir/image.raw
  - create_nbd_device:
    - check_cmd:            kvm-nbd
    - exec_appliance:       modprobe nbd max_part=8
    - exec_appliance:       export NBD_DEVICE=/dev/nbd11 # Need a way to automatically find a free one 
    - exec_appliance:       kvm-nbd -c $NBD_DEVICE $$workdir/image.raw
-   - exec_on_clean:        kvm-nbd -d $NBD_DEVICE || true
+   - exec_on_clean:        kvm-nbd -d $NBD_DEVICE
    - exec_appliance:       sleep 5
  - mkfs:
    - exec_appliance:       mkfs.$$output_environment_file_system_type ${NBD_DEVICE}p1
@@ -23,6 +23,8 @@ build_appliance:
    - exec_on_clean:        umount ${NBD_DEVICE}p1 ||true
  - copy_system_tree:
    - exec_appliance:       rsync -a --exclude "/proc/" $$chroot/* $$workdir/mnt && mkdir $$workdir/mnt/proc
+ - remove_old_device_map:
+   - exec_appliance:       echo "" > $$workdir/mnt/boot/grub/device.map
  - grub_197_workaround:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot/grub
    - exec_appliance:       echo "(hd0,1) ${NBD_DEVICE}p1" > $$workdir/mnt/boot/grub/device.map
@@ -39,7 +41,7 @@ build_appliance:
    - exec_appliance:       echo "set root='(hd0,1)'" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "menuentry \"$kernel\" {" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "  linux /boot/vmlinuz-$kernel root=UUID=$hda1 ro" >> $$workdir/mnt/boot/grub/grub.cfg
-   - exec_appliance:       export INITRD=`find ./boot -name "init*$kernel*"|head -1|tail -c +2`
+   - exec_appliance:       export INITRD=`find ./boot -name "initrd*$kernel*"|head -1|tail -c +2`
    - exec_appliance:       echo "  initrd $INITRD" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "}" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "(hd0) /dev/hda" > $$workdir/mnt/boot/grub/device.map

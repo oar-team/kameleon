@@ -1,0 +1,4 @@
+slurm_deps_install:
+ - install_deps:
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install build-essential libreadline6-dev gcc python gawk mysql-server mysql-client libmysqld-dev munge libmunge2 libmunge-dev"

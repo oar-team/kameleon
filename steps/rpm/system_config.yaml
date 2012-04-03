@@ -14,6 +14,12 @@ system_config:
      - /etc/hostname
      - |
        $$network_hostname
+ - network:
+   - write_file:
+     - /etc/sysconfig/network
+     - |
+       NETWORKING=yes
+       HOSTNAME=oar
  - network_interfaces:
    - write_file:
      - /etc/sysconfig/network-scripts/ifcfg-eth0

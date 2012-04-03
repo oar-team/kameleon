@@ -1,0 +1,3 @@
+root_dir_owner_fix:
+ - root_dir_owner_fix:
+   - exec_chroot: bash -c "chown -R root:root /root"
