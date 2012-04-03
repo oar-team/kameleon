@@ -2,7 +2,7 @@ oar_config:
  - config_mysql:
    - exec_chroot: /etc/init.d/mysql start || service mysql start || true
    - exec_on_clean: chroot $$chroot bash -c "/etc/init.d/mysql stop || service mysql stop || true"
-   - exec_chroot: echo "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('kameleon')" | chroot $$chroot mysql --user=root
+   - exec_chroot: mysqladmin password kameleon
  - config_taktuk:
    - exec_chroot: mv /etc/oar/oar.conf /etc/oar/oar.conf.or
    - exec_chroot: sed -e 's/^#\(TAKTUK_CMD\=\"\/usr\/bin\/taktuk \-t 30 \-s\".*\)/\1/' /etc/oar/oar.conf.or > $$chroot/etc/oar/oar.conf.tmp
@@ -17,30 +17,10 @@ oar_config:
    - exec_chroot: sed -e 's/^#\(JOB_RESOURCE_MANAGER_FILE\=\"\/etc\/oar\/job_resource_manager\.pl\".*\)/\1/' /etc/oar/oar.conf.tmp > $$chroot/etc/oar/oar.conf
    - exec_chroot: mv /etc/oar/oar.conf /etc/oar/oar.conf.tmp
    - exec_chroot: sed -e 's/^#\(CPUSET_PATH\=\"\/oar\".*\)/\1/' /etc/oar/oar.conf.tmp > $$chroot/etc/oar/oar.conf
+   - exec_chroot: perl -pi -e 's/^DETACH_JOB_FROM_SERVER="0"/DETACH_JOB_FROM_SERVER="1"/' /etc/oar/oar.conf
    - exec_chroot: perl -pi -e 's/^ssh-/environment="OAR_KEY=1" ssh-/' /var/lib/oar/.ssh/authorized_keys
  - oar_init:
-   - write_file:
-     - /tmp/init.sql
-     - |
-       CREATE DATABASE IF NOT EXISTS oar;
-
-       CONNECT mysql;
-       INSERT INTO user (Host,User,Password) VALUES('localhost','oar',PASSWORD('oar'));
-
-       INSERT INTO user (Host,User,Password) VALUES('%','oar',PASSWORD('oar'));
-       INSERT INTO db  (Host,Db,User,Select_priv,Insert_priv,Update_priv,Delete_priv, Create_priv,Drop_priv) VALUES ('localhost','oar','oar','Y','Y','Y','Y','Y','Y');
-       INSERT INTO db  (Host,Db,User,Select_priv,Insert_priv,Update_priv,Delete_priv, Create_priv,Drop_priv) VALUES ('%','oar','oar','Y','Y','Y','Y','Y','Y');
-       FLUSH PRIVILEGES;
-
-       GRANT ALL ON oar.* TO oar@localhost;
-       GRANT ALL ON oar.* TO oar@'%';
-       GRANT SELECT ON oar.* TO oarreader@localhost;
-       GRANT SELECT ON oar.* TO oarreader@'%';
-       FLUSH PRIVILEGES;
-   - exec_chroot: mysql -u root -p"kameleon" < $$chroot/tmp/init.sql
-   - exec_chroot: mysql -u root -p"kameleon" oar < $$chroot/usr/lib/oar/mysql_structure.sql
-   - exec_chroot: mysql -u root -p"kameleon" oar < $$chroot/usr/lib/oar/mysql_default_admission_rules.sql
-   - exec_chroot: mysql -u root -p"kameleon" oar < $$chroot/usr/lib/oar/default_data.sql || true
+   - exec_chroot: oar-database --create --db-admin-user root --db-admin-pass kameleon --db-ro-user oar_ro --db-ro-pass oar_ro
  - update_hostfile:
    - append_file:
      - /etc/hosts

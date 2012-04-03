@@ -1,6 +1,7 @@
 clean:
+ - clean_exec:
+   #- breakpoint:          Take another look before cleaning :)
+   #- exec_chroot:         umount /proc 2>/dev/null|| true
+   - exec_current: 	  sh $$clean
  - remove_workdir:
-   - breakpoint:          Take another look before cleaning :)
-   - exec_chroot:         umount /proc 2>/dev/null|| true
-   - exec_current: 	  bash $$clean
-   - exec_current:        rm -rf $$chroot
+   - exec_current:        rm -rf --one-file-system $$chroot

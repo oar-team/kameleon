@@ -1,0 +1,4 @@
+mount_dev:
+ - mount_dev:
+   - exec_appliance: mount -o bind /dev  $$chroot/dev
+   - exec_on_clean: if mountpoint -q $$chroot/dev; then umount $$chroot/dev; fi

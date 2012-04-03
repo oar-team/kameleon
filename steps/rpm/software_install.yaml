@@ -1,3 +1,6 @@
 software_install:
- - extra_packages:
-   - exec_chroot: yum -y install $$extra_packages
+  - epel_repository:
+    - exec_appliance: chroot $$chroot bash -c "if [ '$$arch' = 'amd64' ]; then rpm -i http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-5.noarch.rpm; fi"
+    - exec_appliance: chroot $$chroot bash -c "if [ '$$arch' = 'i386' ]; then rpm -i http://download.fedoraproject.org/pub/epel/6/x86/epel-release-6-5.noarch.rpm; fi"
+  - extra_packages:
+    - exec_chroot: yum -y install $$extra_packages
