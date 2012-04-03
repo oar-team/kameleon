@@ -1,8 +1,9 @@
-kameleon (1.2.3+snapshot.161.c582391-1) UNRELEASED; urgency=low
+kameleon (1.2.4-1~1) UNRELEASED; urgency=low
 
-  * Snapshot. 
+  * New upstream version
+  * Split into two packages (kameleon, kameleon-data)
 
- -- Philippe Le Brouster <philippe.le-brouster@imag.fr>  Thu, 20 Oct 2011 16:11:19 +0200
+ -- Philippe Le Brouster <plb@nebkha.net>  Tue, 03 Apr 2012 15:12:12 +0200
 
 kameleon (1.2.3-1) unstable; urgency=low
 
