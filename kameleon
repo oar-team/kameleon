@@ -114,7 +114,7 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="check_cmd_chroot"
     return "chroot " + $chroot + " which " + cmd.values[0]
   elsif cmd.keys[0]=="exec_current"
-    return "cd " + $cur_dir + "; " + cmd.values[0]
+    return "cd " + $current_dir + "; " + cmd.values[0]
   elsif cmd.keys[0]=="exec_appliance"
     return "cd " + $chroot + "; " + cmd.values[0]
   elsif cmd.keys[0]=="exec_chroot"
@@ -309,7 +309,7 @@ option_parser.parse!
 
 # define global vars
 $current_dir=Dir.pwd
-$current_bindir=File.expand_path(File.dirname(__FILE__))
+$kameleon_bindir=File.expand_path(File.dirname(__FILE__))
 $kameleon_datadir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
 
 
@@ -335,7 +335,6 @@ end
 path=""
 searched_pathes=""
 pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$current_dir}/recipes" << "#{$kameleon_datadir}/recipes"
-pathes_to_search.push("#{$current_bindir}/recipes") unless $current_dir == $current_bindir
 
 pathes_to_search.each do |dir|
   if File.file?(search_path1 = dir + "/" + ARGV[0])
@@ -377,7 +376,7 @@ end
 $timestamp=Time.now.strftime("%Y-%m-%d-%H-%M-%S")
 $recipe['global']['workdir'] = $workdir = $recipe['global']['workdir_base']+"/"+$timestamp
 $recipe['global']['chroot'] = $chroot = $workdir + "/chroot"
-$recipe['global']['bindir'] = $cur_dir
+$recipe['global']['bindir'] = $current_dir
 $recipe['global']['clean'] = $clean_script
 begin
   FileUtils.mkdir_p($chroot)
@@ -460,8 +459,9 @@ $recipe['steps'].each do
   # check for macrostep file (distro-specific or default)
   path=""
   searched_pathes=""
+  pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$kameleon_datadir}"
   if dist != ""
-    [$cur_dir,$var_dir,$kameleon_dir].each do |dir|
+    pathes_to_search.each do |dir|
       if File.file?(search_path = dir + "/steps/" + dist + "/" + step + ".yaml")
         path=search_path
         break
@@ -470,7 +470,7 @@ $recipe['steps'].each do
       end
     end
   else
-    [$cur_dir,$var_dir,$kameleon_dir].each do |dir|
+    pathes_to_search.each do |dir|
       if File.file?(search_path1 = dir + "/steps/" + $recipe['global']['distrib'] + "/" + step + ".yaml")
         path=search_path1
         break
@@ -502,7 +502,7 @@ $recipe['steps'].each do
     if microstep.keys[0] == "include"
       # load macrostep file
       begin
-        macrostep_include_yaml = YAML.load(File.open($cur_dir + "/steps/" + microstep.values[0]))
+        macrostep_include_yaml = YAML.load(File.open($current_dir + "/steps/" + microstep.values[0]))
       rescue
         print "Failed to open macrostep file. ", $!, "\n"
         exit(7)
