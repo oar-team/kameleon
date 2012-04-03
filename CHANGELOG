@@ -1,6 +1,10 @@
 KAMELEON CHANGELOG
 ==================
 
+1.2.4:
+------
+  - Remove the rubygem dependency (the package ruby-session exist now in debian)
+
 1.2.2:
 ------
   - Now support contexts (see example into debian.yaml recipe)
