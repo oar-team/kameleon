@@ -48,7 +48,7 @@ install-man:
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
 	install kameleon.1 $(DESTDIR)$(MANDIR)/man1
 
-install: install-engine install-data install-doc install-man
+install: build install-engine install-data install-doc install-man
 
 uninstall: 
 	rm -rf $(DESTDIR)$(KAMELEON_DIR)
