@@ -26,17 +26,21 @@ require 'yaml'
 # required for making directories
 require 'fileutils'
 
+# required for command parsing
+require 'optparse'
+
 # required for opening bash session in the background
 begin
  require 'session'
 rescue LoadError => e
  warn "The \"session\" module is not found. You need to install it."
+ warn "To install session as a debian package (since wheezy), type 'apt-get install ruby-session'."
  warn "To install session as a rubygem, type 'gem install session'."
  begin
    Gem.ruby_version
  rescue
-   warn "\nFurthermore, Rubygems does not seems to be loaded."
-   warn "You maybe have to enable rubygems, by setting RUBYOPT=rubygems"
+   warn "\nFurthermore, if you plan to use the \"session\" module with rubygems,"
+   warn "you maybe have to enable rubygems, by setting RUBYOPT=-rubygems"
    warn "or starting ruby with the -rubygems option."
    exit 1
  end
@@ -269,10 +273,35 @@ end
 ### parsing command line arguments ###
 ######################################
 
-if ARGV.length != 1
-  usage()
+@options = {
+  :include_path => []
+}
+
+option_parser = OptionParser.new do |opts|
+  opts.banner = <<BANNER
+* Usage
+  kameleon [-i data_path] recipe[.yaml]
+* Options
+BANNER
+
+  opts.on("-i=", "--include=", "Include the given path in the kameleon search path") do |i|
+    @options[:include_path].push(File.expand_path(i))
+  end
+
+  opts.on("-h","--help", "Show this message.") do
+    puts opts
+    exit(0)
+  end
+end
+
+if ARGV.length < 1
+  puts option_parser
   exit(1)
 end
+
+
+option_parser.parse!
+
 
 ######################
 ### initialization ###
@@ -280,7 +309,9 @@ end
 
 # define global vars
 $cur_dir=Dir.pwd
-$kameleon_dir=File.dirname(__FILE__) + "/../share/kameleon"
+$kameleon_dir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
+
+
 version="1.2.3"
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
@@ -302,7 +333,9 @@ end
 # load recipe
 path=""
 searched_pathes=""
-[$cur_dir,"#{$cur_dir}/recipes","#{$kameleon_dir}/recipes"].each do |dir|
+pathes_to_search = @options[:include_path] << "#{$cur_dir}" << "#{$cur_dir}/recipes" << "#{$kameleon_dir}/recipes"
+
+pathes_to_search.each do |dir|
   if File.file?(search_path1 = dir + "/" + ARGV[0])
     path=search_path1
     break
