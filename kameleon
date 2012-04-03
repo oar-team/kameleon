@@ -280,8 +280,7 @@ end
 
 # define global vars
 $cur_dir=Dir.pwd
-$var_dir="/var/lib/kameleon"
-$kameleon_dir=File.dirname($0)
+$kameleon_dir=File.dirname(__FILE__) + "/../share/kameleon"
 version="1.2.3"
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
@@ -303,7 +302,7 @@ end
 # load recipe
 path=""
 searched_pathes=""
-[$cur_dir,"#{$cur_dir}/recipes","#{$var_dir}/recipes","#{$kameleon_dir}/recipes"].each do |dir|
+[$cur_dir,"#{$cur_dir}/recipes","#{$kameleon_dir}/recipes"].each do |dir|
   if File.file?(search_path1 = dir + "/" + ARGV[0])
     path=search_path1
     break
