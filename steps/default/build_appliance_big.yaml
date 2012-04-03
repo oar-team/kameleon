@@ -32,7 +32,7 @@ build_appliance_big:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot/grub
    - exec_appliance:       echo "(hd0) $NBD_DEVICE" >> $$workdir/mnt/boot/grub/device.map
    - exec_appliance:       grub-install --root-directory=$$workdir/mnt --modules="biosdisk part_msdos" $NBD_DEVICE
-   - exec_appliance:       export kernel=`ls $$workdir/mnt/boot/vmlinuz* | grep -o "2.6.*"`
+   - exec_appliance:       export kernel=`ls $$workdir/mnt/boot/vmlinuz* | grep -o "[[:digit:]]\.[[:digit:]].*"`
    - exec_appliance:       export hda1=`grub-probe -t fs_uuid -d ${NBD_DEVICE}p1`
    - exec_appliance:       echo "UUID=$hda1 / $$output_environment_file_system_type errors=remount-ro 0 1" >> $$workdir/mnt/etc/fstab
    - exec_appliance:       echo "UUID=$SWAP_UUID none swap sw 0 0" >> $$workdir/mnt/etc/fstab
