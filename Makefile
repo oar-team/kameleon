@@ -16,7 +16,6 @@ MANDIR=$(PREFIX)/share/man
 BINDIR=$(PREFIX)/bin
 SBINDIR=$(PREFIX)/sbin
 DOCDIR=$(PREFIX)/share/doc/kameleon
-VARLIBDIR=/var/lib
 DIST=
 
 build: build-man
@@ -26,8 +25,7 @@ build-man:
 
 install-engine:
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
-	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)
-	install -m 755 kameleon $(DESTDIR)$(KAMELEON_DIR)
+	install -m 755 kameleon $(DESTDIR)$(BINDIR)
 
 install-data:
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)
@@ -35,8 +33,6 @@ install-data:
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)/recipes
 	for dir in steps/*; do [ $$dir != "steps/old" ] && cp -r $$dir $(DESTDIR)$(KAMELEON_DIR)/steps || true; done
 	for file in recipes/*; do [ $$file != "recipes/old" ] && install -m 0644 $$file $(DESTDIR)$(KAMELEON_DIR)/recipes || true; done
-	install -d -m 755 $(DESTDIR)$(VARLIBDIR)/kameleon/steps
-	install -d -m 755 $(DESTDIR)$(VARLIBDIR)/kameleon/recipes
 
 install-doc:
 	install -d -m 0755 $(DESTDIR)$(DOCDIR)
