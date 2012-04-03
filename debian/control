@@ -15,6 +15,8 @@ Recommends: debootstrap, rsync, parted, kpartx, dmsetup, qemu-utils, grub-pc
 Description: Simple appliances image builder
  Kameleon is a very simple tool to create initial virtual machines images or 
  live-cd. It works as a bash script generator using recipes written in YAML.
+ .
+ These are the engigne files for kameleon.
 
 Package: kameleon-data
 Architecture: all
@@ -23,4 +25,4 @@ Description: Simple appliances image builder (data)
  Kameleon is a very simple tool to create initial virtual machines images or 
  live-cd. It works as a bash script generator using recipes written in YAML.
  .
- These are the common recipes/steps files for kameeleon
+ These are the common recipes/steps files for kameleon.
