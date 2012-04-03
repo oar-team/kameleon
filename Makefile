@@ -22,15 +22,12 @@ DIST=
 build: build-man
 
 build-man:
-	rd2 -rrd/rd2man-lib.rb kameleon.rb > kameleon.1
+	rd2 -rrd/rd2man-lib.rb kameleon > kameleon.1
 
 install-engine:
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)
-	install -m 755 kameleon.rb $(DESTDIR)$(KAMELEON_DIR)
-	echo "#! /bin/bash" > $(DESTDIR)$(BINDIR)/kameleon
-	echo "RUBYOPT=rubygems $(KAMELEON_DIR)/kameleon.rb \$$*" >> $(DESTDIR)$(BINDIR)/kameleon
-	-chmod 755 $(DESTDIR)$(BINDIR)/kameleon
+	install -m 755 kameleon $(DESTDIR)$(KAMELEON_DIR)
 
 install-data:
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)
