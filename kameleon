@@ -308,8 +308,9 @@ option_parser.parse!
 ######################
 
 # define global vars
-$cur_dir=Dir.pwd
-$kameleon_dir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
+$current_dir=Dir.pwd
+$current_bindir=File.expand_path(File.dirname(__FILE__))
+$kameleon_datadir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
 
 
 version="1.2.3"
@@ -333,7 +334,8 @@ end
 # load recipe
 path=""
 searched_pathes=""
-pathes_to_search = @options[:include_path] << "#{$cur_dir}" << "#{$cur_dir}/recipes" << "#{$kameleon_dir}/recipes"
+pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$current_dir}/recipes" << "#{$kameleon_datadir}/recipes"
+pathes_to_search.push("#{$current_bindir}/recipes") unless $current_dir == $current_bindir
 
 pathes_to_search.each do |dir|
   if File.file?(search_path1 = dir + "/" + ARGV[0])
