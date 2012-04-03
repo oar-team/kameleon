@@ -345,11 +345,11 @@ pathes_to_search.each do |dir|
     path=search_path2
     break
   else
-    searched_pathes=searched_pathes + " * " + search_path1 + "\n * " + search_path2 + "\n"
+    searched_pathes=searched_pathes + " * " + search_path1 + "[.yaml]" + "\n"
   end
 end
 if path == ""
-  printf("%s: could not find recipe in none of the following files: \n%s", ARGV[0], searched_pathes)
+  printf("%s: could not find recipe in none of the following files : \n%s", ARGV[0], searched_pathes)
   exit(2)
 end
 begin
