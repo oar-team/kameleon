@@ -1,8 +1,7 @@
 Source: kameleon
 Section: admin
 Priority: extra
-Maintainer: Bruno Bzeznik <Bruno.Bzeznik@imag.fr>
-Uploaders: Philippe Le Brouster <philippe.le-brouster@imag.fr>
+Maintainer: Philippe Le Brouster <plb@nebkha.net>
 Build-Depends: debhelper (>= 7.0.50), rdtool
 Standards-Version: 3.9.1
 Vcs-Git: git://scm.gforge.inria.fr/kameleon/kameleon.git
