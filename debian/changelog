@@ -4,6 +4,8 @@ kameleon (1.2.4-1~1) UNRELEASED; urgency=low
   * Split into two packages (kameleon, kameleon-data)
   * Set the maintainer as myself
   * Bump the standard version. 
+  * Update the copyright file.
+  * Add a watch file.
 
  -- Philippe Le Brouster <plb@nebkha.net>  Tue, 03 Apr 2012 15:12:12 +0200
 
