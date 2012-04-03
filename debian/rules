@@ -13,7 +13,7 @@ override_dh_auto_install:
 	
 	# kameleon-data
 	mkdir -p debian/kameleon-data
-	make PREFIX=/usr DESTDIR=debian/kameleon install-data
+	make PREFIX=/usr DESTDIR=debian/kameleon-data install-data
 	
 	dh_install -i -XCOPYING
 
