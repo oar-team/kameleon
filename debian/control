@@ -3,7 +3,7 @@ Section: admin
 Priority: extra
 Maintainer: Philippe Le Brouster <plb@nebkha.net>
 Build-Depends: debhelper (>= 7.0.50), rdtool
-Standards-Version: 3.9.1
+Standards-Version: 3.9.3
 Vcs-Git: git://scm.gforge.inria.fr/kameleon/kameleon.git
 Vcs-Browser: https://gforge.inria.fr/plugins/scmgit/cgi-bin/gitweb.cgi?p=kameleon/kameleon.git;a=summary
 Homepage: http://wiki-oar.imag.fr/Kameleon
