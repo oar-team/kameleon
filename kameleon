@@ -302,6 +302,7 @@ end
 
 option_parser.parse!
 
+@options[:recipe] = ARGV[0]
 
 ######################
 ### initialization ###
@@ -337,10 +338,10 @@ searched_pathes=""
 pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$current_dir}/recipes" << "#{$kameleon_datadir}/recipes"
 
 pathes_to_search.each do |dir|
-  if File.file?(search_path1 = dir + "/" + ARGV[0])
+  if File.file?(search_path1 = dir + "/" + @options[:recipe])
     path=search_path1
     break
-  elsif File.file?(search_path2 = dir + "/" + ARGV[0] + ".yaml")
+  elsif File.file?(search_path2 = dir + "/" + @options[:recipe] + ".yaml")
     path=search_path2
     break
   else
@@ -348,7 +349,7 @@ pathes_to_search.each do |dir|
   end
 end
 if path == ""
-  printf("%s: could not find recipe in none of the following files : \n%s", ARGV[0], searched_pathes)
+  printf("%s: could not find recipe in none of the following files : \n%s", @options[:recipe], searched_pathes)
   exit(2)
 end
 begin
@@ -551,7 +552,7 @@ $recipe['steps'].each do
       end
 
       if not found
-        printf("Microstep %s required by %s missing in %s.\n", microstep, ARGV[0], path)
+        printf("Microstep %s required by %s missing in %s.\n", microstep, @options[:recipe], path)
         exit(8)
       end
 
