@@ -1,4 +1,4 @@
-kameleon (1.2.4-1~2) UNRELEASED; urgency=low
+kameleon (1.2.5-1~1) UNRELEASED; urgency=low
 
   * New upstream version
   * Split into two packages (kameleon, kameleon-data)
