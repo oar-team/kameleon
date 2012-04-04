@@ -41,9 +41,6 @@ global:
  # to start form a pre-built image. The image can be made
  # with the "checkpoint" step.
  #checkpoint_file: /var/tmp/kameleon_checkpoint.tgz
- # 
- # OAR specific
- #oar_repository: "deb http://oar.imag.fr/debian/2.5 unstable main"
  
 steps:
  - debian_check_deps
