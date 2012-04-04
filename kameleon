@@ -314,7 +314,7 @@ $kameleon_bindir=File.expand_path(File.dirname(__FILE__))
 $kameleon_datadir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
 
 
-version="1.2.4"
+version="1.2.5"
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
 
