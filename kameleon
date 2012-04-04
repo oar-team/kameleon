@@ -464,7 +464,10 @@ $recipe['steps'].each do
   # check for macrostep file (distro-specific or default)
   path=""
   searched_pathes=""
-  pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$kameleon_datadir}"
+  pathes_to_search = []
+  pathes_to_search += @options[:include_path]
+  pathes_to_search += ["#{$current_dir}",  "#{$kameleon_datadir}"]
+
   if dist != ""
     pathes_to_search.each do |dir|
       if File.file?(search_path = dir + "/steps/" + dist + "/" + step + ".yaml")
