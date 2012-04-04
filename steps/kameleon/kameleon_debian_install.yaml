@@ -1,14 +1,13 @@
 kameleon_debian_install:
  - config_apt:
-   - append_file:
-     - /etc/apt/sources.list
+   - write_file:
+     - /etc/apt/sources.list.d/kameleon.list
      - |
-       deb http://oar-ftp.imag.fr/kameleon/debian squeeze-snapshots main
+       $$kameleon_repository
+   - exec_chroot: bash -c "curl http://oar-ftp.imag.fr/kameleon/debian/oar-archive-keyring.asc | apt-key add -"
    - exec_chroot: apt-get update
  - install:
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kameleon rubygems debootstrap kvm grub2 mingetty curl"
- - install_session_gem:
-   - exec_chroot: gem install session
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kameleon debootstrap grub2 mingetty curl rinse"
  - motd_config:
    - append_file:
      - /etc/motd.tail
@@ -17,8 +16,8 @@ kameleon_debian_install:
        ********************** WELCOME TO THE KAMELEON APPLIANCE ***********************
        To create a new appliance, based on Debian for example, you can follow those 
        simple steps:
-         'cp /usr/share/kameleon/recipes/debian.yaml /var/lib/kameleon/recipes/'
-         'vim /var/lib/kameleon/recipes/debian.yaml'
+         'cp /usr/share/kameleon/recipes/debian.yaml $HOME/debian.yaml'
+         'vim $HOME/debian.yaml'
               customize...
          'kameleon debian'
               wait and get your newly created image(s) into /var/tmp/kameleon
