@@ -1,6 +1,11 @@
 KAMELEON CHANGELOG
 ==================
 
+1.2.5:
+------
+  - Add the possibility to include steps/recipes path with the option '-i'
+  - "checkpoint_resume" copy the resolv.conf
+
 1.2.4:
 ------
   - Remove the rubygem dependency (the package ruby-session exist now in debian)
