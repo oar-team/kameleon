@@ -335,7 +335,11 @@ end
 # load recipe
 path=""
 searched_pathes=""
-pathes_to_search = @options[:include_path] << "#{$current_dir}" << "#{$current_dir}/recipes" << "#{$kameleon_datadir}/recipes"
+pathes_to_search = []
+pathes_to_search += @options[:include_path]
+pathes_to_search += @options[:include_path].collect! { |p|  p + "/recipes" }
+pathes_to_search += ["#{$current_dir}", "#{$current_dir}/recipes", "#{$kameleon_datadir}/recipes"]
+
 
 pathes_to_search.each do |dir|
   if File.file?(search_path1 = dir + "/" + @options[:recipe])
