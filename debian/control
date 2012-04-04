@@ -10,7 +10,7 @@ Homepage: http://wiki-oar.imag.fr/Kameleon
 
 Package: kameleon
 Architecture: all
-Depends: ${misc:Depends}, ruby, rubygems, kameleon-data
+Depends: ${misc:Depends}, ruby, rubygems, kameleon-data, ruby-session
 Recommends: debootstrap, rsync, parted, kpartx, dmsetup, qemu-utils, grub-pc
 Description: Simple appliances image builder
  Kameleon is a very simple tool to create initial virtual machines images or 
