@@ -1,7 +1,7 @@
 KAMELEON CHANGELOG
 ==================
 
-1.2.5:
+1.2.6:
 ------
   - Add the possibility to include steps/recipes path with the option '-i'
   - "checkpoint_resume" copy the resolv.conf
