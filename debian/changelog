@@ -1,4 +1,4 @@
-kameleon (1.2.5+snapshot.219.663111f-1) UNRELEASED; urgency=low
+kameleon (1.2.6-1) unstable; urgency=low
 
   * New upstream version
   * Split into two packages (kameleon, kameleon-data)
@@ -8,7 +8,7 @@ kameleon (1.2.5+snapshot.219.663111f-1) UNRELEASED; urgency=low
   * Add a watch file.
   * Add Depends to ruby-session 
 
- -- Philippe Le Brouster <plb@nebkha.net>  Wed, 04 Apr 2012 16:06:49 +0200
+ -- Philippe Le Brouster <plb@nebkha.net>  Wed, 04 Apr 2012 16:15:39 +0200
 
 kameleon (1.2.3-1) unstable; urgency=low
 
