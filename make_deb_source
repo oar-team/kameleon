@@ -124,8 +124,8 @@ log_info "Using the Git tree-ish   '$GIT_TREEISH'"
 
 
 last_tag=$(git describe $GIT_TREEISH --match "debian/*" --abbrev=0)
-last_tag_hash=$(git log --oneline -n 1 "$last_tag" | cut -d' ' -f 1)
-git_treeish_hash=$(git log --oneline -n 1 "$GIT_TREEISH" | cut -d' ' -f 1)
+last_tag_hash=$(git log --oneline -n 1 "$last_tag" -- | cut -d' ' -f 1)
+git_treeish_hash=$(git log --oneline -n 1 "$GIT_TREEISH" -- | cut -d' ' -f 1)
 
 is_snapshot=
 if [ "$last_tag_hash" = "$git_treeish_hash" ] && [ -n "$(git tag -l $GIT_TREEISH)" ]; then
@@ -149,8 +149,8 @@ if [ "$is_snapshot" = "yes" ]; then
     fi
      
 
-    debian_revision_number=$(git log --oneline --ancestry-path --no-merges $upstream_version_tag..$GIT_TREEISH | wc -l)
-    debian_revision_hash=$(git log --oneline -n 1 $GIT_TREEISH | cut -d' ' -f 1)
+    debian_revision_number=$(git log --oneline --ancestry-path --no-merges $upstream_version_tag..$GIT_TREEISH -- | wc -l)
+    debian_revision_hash=$(git log --oneline -n 1 $GIT_TREEISH -- | cut -d' ' -f 1)
     debian_revision="$debian_revision+$debian_revision_number.g$debian_revision_hash"
 else
     debian_revision=$(echo "$GIT_TREEISH" | sed -e "s/.*-//")
