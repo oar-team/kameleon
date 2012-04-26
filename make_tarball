@@ -1,0 +1,126 @@
+#!/bin/bash
+# build a package (debian) using a git repository
+set -e
+
+usage() {
+    N=$(basename $0)
+    cat <<EOF
+  $N [-h]
+  $N [-q] [-d <directory>] -r [-u <git_uri>] [-t <git_treeish>]
+  $N [-q] [-d <directory>] [-f]
+
+Options:
+  -d   target directory
+  -h   print this message and exit
+  -q   quiet (only write relevant information for automation to stdout)
+  -u   specify the git uri to use
+  -b   specify the git treeish to use
+  -r   use a remote repository
+  -f   make the tarball even if there are uncommited changes (only for local repository)
+EOF
+exit 1
+}
+
+log_info() {
+    if [ "$QUIET" != "yes" ]; then
+        echo "$*" >&2
+    fi
+}
+
+check_if_uncommited_changes() {
+    if [ "$FORCE" != "yes" ] && [ -d ".git" ] && [ "$(git status |grep 'working directory clean')" = "" ]; then
+        echo "You have uncommited local changes. check with 'git status'."
+        echo "(or force the generation with '-f')"
+        exit 1
+    fi
+
+}
+
+set_version_file() {
+    local dir version
+    dir="$1"
+    version="$2"
+
+    echo "$version" > $dir/VERSION
+    sed -e "s/^version=.*/version=\"$version\";/" -i "$dir/kameleon"
+}
+
+QUIET=no
+TARGET_DIRECTORY=../tarballs
+REMOTE=no
+FORCE=no
+
+NAME=kameleon
+
+GIT_URI=git://scm.gforge.inria.fr/kameleon/kameleon.git
+GIT_TREEISH=master
+
+while getopts "hqrfu:b:d:" options; do
+  case $options in
+    q) QUIET=yes ;;
+    r) REMOTE=yes ;;
+    f) FORCE=yes ;; 
+    u) GIT_URI="$OPTARG";;
+    b) GIT_TREEISH="$OPTARG" ;;
+    d) TARGET_DIRECTORY="$OPTARG";;
+    *) usage ;;
+  esac
+done
+
+
+shift $(($OPTIND - 1))
+
+if [ -z "$TARGET_DIRECTORY" ]; then
+    log_info "you must provide a non-empty target directory"
+    exit 1
+fi
+
+cur_dir=$(pwd)
+
+if [ "$REMOTE" != "yes" ]; then
+    git_dir=$(pwd)
+
+    if [ ! -d "$git_dir/.git" ]; then
+        echo "$git_dir is not a working git directory. Fail."
+        exit 1;
+    fi
+
+    check_if_uncommited_changes
+    log_info "Using the Git repository '$(pwd)'"
+
+fi
+
+TMPDIR=$(mktemp -d)
+
+if [ "$REMOTE" = "yes" ]; then
+    git_dir="$TMPDIR/git"
+    mkdir -p "$git_dir"
+    log_info "Using the Git repository '$GIT_URI'"
+    git clone -q  $GIT_URI "$git_dir"
+fi
+
+
+
+cd "$git_dir"
+
+log_info "Using the Git tree-ish   '$GIT_TREEISH'"
+last_tag=$(git describe $GIT_TREEISH --abbrev=0)
+version=$(git describe $GIT_TREEISH | sed -e "s/^$last_tag-\([[:digit:]]\+\)-/$last_tag+\1./")
+
+tarball_dir="$TMPDIR/tarball"
+tarball_prefix=${NAME}-$version
+tarball_srcdir="$tarball_dir/$tarball_prefix"
+
+mkdir "$tarball_dir"
+
+git archive --format tar --prefix "$tarball_prefix/" "$GIT_TREEISH"  | tar xf - -C "$tarball_dir" --exclude .gitignore
+set_version_file "$tarball_srcdir" "$version"
+
+cd "$cur_dir"
+
+mkdir -p "$TARGET_DIRECTORY"
+tar czf "$TARGET_DIRECTORY/$tarball_prefix.tar.gz" -C "$tarball_dir" .
+echo "$TARGET_DIRECTORY/$tarball_prefix.tar.gz"
+
+[ -d "$TMPDIR" ] && rm -rf "$TMPDIR"
+
