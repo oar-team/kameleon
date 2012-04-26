@@ -1,6 +1,12 @@
 KAMELEON CHANGELOG
 ==================
 
+1.2.8:
+------
+  - Closes the bash session and wait 1 second before starting the cleaning
+    script even if not interrupted.  
+  - Some modifications in the kameleon appliance recipe.
+
 1.2.7:
 ------
   - Add a new step 'build_appliance_kpartx' for build appliance that use kpartx
