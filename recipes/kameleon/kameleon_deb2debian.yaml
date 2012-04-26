@@ -72,7 +72,6 @@ steps:
  - strip
 # - xen_domu
 # - oar/oar_build_tgz
- - umount_proc
  - build_appliance:
    - clean_udev
 #   - save_as_tgz
