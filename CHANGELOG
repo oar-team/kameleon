@@ -1,0 +1,25 @@
+KAMELEON CHANGELOG
+==================
+
+1.2.7:
+------
+  - Add a new step 'build_appliance_kpartx' for build appliance that use kpartx
+    instead of kvm-nbd (speed up the copy)
+  - 'build_appliance_kpartx': the rsync *never* copy /proc
+  - Add a new step 'chroot_in_tmpfs' to put the chroot in tmpfs at the beginning
+  - Fix a bug in the path searching for the recipes/steps
+  - Closes the bash session and wait 1 second before starting the cleaning script.  
+
+1.2.6:
+------
+  - Add the possibility to include steps/recipes path with the option '-i'
+  - "checkpoint_resume" copy the resolv.conf
+
+1.2.4:
+------
+  - Remove the rubygem dependency (the package ruby-session exist now in debian)
+
+1.2.2:
+------
+  - Now support contexts (see example into debian.yaml recipe)
+  - New "exec_on_clean" microstep command to ease cleaning (reverse order execution)
