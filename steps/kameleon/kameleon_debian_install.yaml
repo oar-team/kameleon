@@ -8,6 +8,8 @@ kameleon_debian_install:
    - exec_chroot: apt-get update
  - install:
    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kameleon debootstrap grub2 mingetty curl rinse"
+   - on_clean:
+     - exec_chroot: /etc/init.d/dbus stop
  - motd_config:
    - append_file:
      - /etc/motd.tail

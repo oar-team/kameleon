@@ -314,7 +314,7 @@ $kameleon_bindir=File.expand_path(File.dirname(__FILE__))
 $kameleon_datadir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
 
 
-version="1.2.7";
+version="1.2.8";
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
 
@@ -639,7 +639,12 @@ script.each do
                 print green("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
               elsif answer=="a"
                 puts red("Aborting execution ...")
-                clean()
+                begin
+		  bash.close!()
+		rescue
+		end
+		sleep(1)
+		clean()
                 puts red("You should clean workdir: " + $workdir)
                 exit(10)
               end
@@ -660,6 +665,11 @@ script.each do
   end
 end
 save_history
+begin
+  bash.close!()
+rescue
+end
+sleep(1)
 clean
 
 =begin
