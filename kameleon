@@ -262,7 +262,7 @@ def clean()
   puts red("Running cleaning script...")
   system("bash " + $clean_script)
   FileUtils.rm($clean_script)
-end 
+end
 
 ### print usage info
 def usage()
@@ -314,7 +314,7 @@ $kameleon_bindir=File.expand_path(File.dirname(__FILE__))
 $kameleon_datadir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
 
 
-version="1.2.6"
+version="1.2.7";
 required_globals = ["distrib", "workdir_base"]
 required_commands = ["chroot", "which", "cat", "echo"]
 
@@ -331,6 +331,7 @@ rescue
   print "Failed to open bash session. ", $!, "\n"
   exit(3)
 end
+
 
 # load recipe
 path=""
@@ -581,13 +582,21 @@ end
 
 puts blue("\n ### ") + green("Welcome to Kameleon " + version) + blue(" ###\n")
 
-
+trapped=false
 trap("INT") {
-  puts red("Interrupted.")
-  clean()
-  puts("Exiting kameleon.")
-  save_history
-  exit
+  if not trapped
+    trapped=true
+    begin
+      bash.close!()
+    rescue
+    end
+    puts red("Interrupted.")
+    sleep(1)
+    clean()
+    puts("Exiting kameleon.")
+    save_history
+    exit
+  end
 }
 
 # traverse macrostep->microstep->command structure
