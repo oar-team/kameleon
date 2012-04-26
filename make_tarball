@@ -113,7 +113,7 @@ tarball_srcdir="$tarball_dir/$tarball_prefix"
 
 mkdir "$tarball_dir"
 
-git archive --format tar --prefix "$tarball_prefix/" "$GIT_TREEISH"  | tar xf - -C "$tarball_dir" --exclude .gitignore
+git archive --format tar --prefix "$tarball_prefix/" "$GIT_TREEISH"  | tar xf - -C "$tarball_dir" --exclude .gitignore --exclude scripts
 set_version_file "$tarball_srcdir" "$version"
 
 cd "$cur_dir"
