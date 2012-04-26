@@ -639,7 +639,12 @@ script.each do
                 print green("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
               elsif answer=="a"
                 puts red("Aborting execution ...")
-                clean()
+                begin
+		  bash.close!()
+		rescue
+		end
+		sleep(1)
+		clean()
                 puts red("You should clean workdir: " + $workdir)
                 exit(10)
               end
@@ -660,6 +665,11 @@ script.each do
   end
 end
 save_history
+begin
+  bash.close!()
+rescue
+end
+sleep(1)
 clean
 
 =begin
