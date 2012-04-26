@@ -53,7 +53,7 @@ steps:
    - building_kvm_images
 # - oar/oar_precheck
 # - checkpoint_resume
- - bootstrap
+ - bootstrap_if_needed
  - system_config
 # - network_config_static
  - root_passwd
