@@ -26,7 +26,7 @@ build_appliance_kpartx:
    - exec_appliance:       mount ${LO_DEVICE_PARTBASE}p1 $$workdir/mnt
    - exec_appliance:       echo "umount $LO_DEVICE_PARTBASE ||true" >> $$workdir/clean.sh
  - copy_system_tree:
-   - exec_appliance:       rsync -a $$chroot/* $$workdir/mnt
+   - exec_appliance:       rsync -a --one-file-system $$chroot/ $$workdir/mnt
  - grub_197_workaround:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot/grub
    - exec_appliance:       echo "(hd0,1) ${LO_DEVICE_PARTBASE}p1" > $$workdir/mnt/boot/grub/device.map
