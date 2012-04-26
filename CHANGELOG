@@ -1,6 +1,15 @@
 KAMELEON CHANGELOG
 ==================
 
+1.2.7:
+------
+  - Add a new step 'build_appliance_kpartx' for build appliance that use kpartx
+    instead of kvm-nbd (speed up the copy)
+  - 'build_appliance_kpartx': the rsync *never* copy /proc
+  - Add a new step 'chroot_in_tmpfs' to put the chroot in tmpfs at the beginning
+  - Fix a bug in the path searching for the recipes/steps
+  - Closes the bash session and wait 1 second before starting the cleaning script.  
+
 1.2.6:
 ------
   - Add the possibility to include steps/recipes path with the option '-i'
