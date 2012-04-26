@@ -591,6 +591,7 @@ trap("INT") {
     rescue
     end
     puts red("Interrupted.")
+    sleep(1)
     clean()
     puts("Exiting kameleon.")
     save_history
