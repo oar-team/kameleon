@@ -45,6 +45,7 @@ global:
  kameleon_repository: "deb http://oar-ftp.imag.fr/kameleon/debian/ sid main"
  
 steps:
+ - chroot_in_tmpfs
  - debian_check_deps
  - check_deps:
    - rsync
