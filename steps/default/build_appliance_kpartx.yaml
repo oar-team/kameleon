@@ -13,7 +13,7 @@ build_appliance_kpartx:
    - exec_appliance:       echo -e "1,319,83,*\n320,,82" | /sbin/sfdisk $$workdir/image.raw
  - attach_kpartx_device:
    - check_cmd:            kpartx
-   - exec_appliance:       export LO_DEVICE=`kpartx -s -a -v $$workdir/image.raw | head -n 1 | cut -d' ' -f 8`
+   - exec_appliance:       export LO_DEVICE=`kpartx -a -v $$workdir/image.raw | head -n 1 | cut -d' ' -f 8`
    - exec_appliance:       export LO_DEVICE_PARTBASE=/dev/mapper/`basename ${LO_DEVICE}`
    - exec_appliance:       ln -s ${LO_DEVICE} ${LO_DEVICE_PARTBASE}
    - exec_on_clean:        rm ${LO_DEVICE_PARTBASE}
