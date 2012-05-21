@@ -380,6 +380,7 @@ end
 # Example: /var/tmp/kameleon/2009-07-10-18-55-34/chroot
 # We also define two global vars here: $workdir and $chroot
 $timestamp=Time.now.strftime("%Y-%m-%d-%H-%M-%S")
+$recipe['global']['recipedir'] = File.basename(path, ".yaml")
 $recipe['global']['workdir'] = $workdir = $recipe['global']['workdir_base']+"/"+$timestamp
 $recipe['global']['chroot'] = $chroot = $workdir + "/chroot"
 $recipe['global']['bindir'] = $current_dir
@@ -525,6 +526,9 @@ $recipe['steps'].each do
       macrostep_yaml[step].delete_at(key)
     end
   end
+
+  # Define the variable stepdir before parsing the yaml file.
+  $recipe['global']['stepdir'] = File.basename(path,'.yaml')
 
   # traverse macrosteps->microsteps->commands structure, parse commands;
   # test if we're dealing with the list of microsteps
