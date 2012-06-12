@@ -1,6 +1,11 @@
 KAMELEON CHANGELOG
 ==================
 
+1.2.9: (unreleased)
+------
+  - debian/system_config: the keyboard layout is now defined by the one used on
+    the build system.
+
 1.2.8:
 ------
   - Closes the bash session and wait 1 second before starting the cleaning
