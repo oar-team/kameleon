@@ -206,7 +206,7 @@ def error_prompt()
   $stdout.flush
   answer=$stdin.gets
   $log.stdin_write(answer)
-  while (not ["r\n","c\n","a\n","s\n"].include?(answer)):
+  while (not ["r\n","c\n","a\n","s\n"].include?(answer))
     print red("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
     $stdout.flush
     answer=$stdin.gets
@@ -368,7 +368,7 @@ end
 # check for required globals in the recipe file
 required_globals.each do
   |var|
-  if not $recipe['global'][var]:
+  if not $recipe['global'][var]
     printf("Recipe misses required variable: %s \n", var)
     exit(4)
   end
@@ -615,7 +615,7 @@ script.each do
       |command|
       begin
         next_cmd=0
-        while next_cmd!=1:
+        while next_cmd!=1
           # check for special command "KML-breakpoint"
           if command[0,14] == "KML-breakpoint"
             puts green("  |-> Breakpoint: " + command[15,command.length])
@@ -635,7 +635,7 @@ script.each do
             puts red("Error executing command.")
             print red("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
             # offer three options: continue, abort, switch to shell (manually fix the error and then continue)
-            while not ["c","r"].include?(answer=error_prompt):
+            while not ["c","r"].include?(answer=error_prompt)
               if answer=="s"
                 save_history 
                 start_shell(bash,$histfile)
