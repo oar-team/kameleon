@@ -2,7 +2,7 @@ build_appliance:
  - clean_udev:
    - exec_appliance:       rm -f etc/udev/rules.d/*persistent-net.rules*
  - save_as_tgz:
-   - exec_current:         cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
+   - exec_current:         cd $$workdir; tar -czf $$distrib.tar.gz -C chroot --exclude proc/* --exclude dev/* .
  - create_raw_image:
    - check_cmd:            /sbin/sfdisk
    - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=5000
