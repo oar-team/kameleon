@@ -30,6 +30,7 @@ require 'fileutils'
 require 'optparse'
 
 # required for opening bash session in the background
+original_verbose,$VERBOSE = $VERBOSE, nil
 begin
  require 'session'
 rescue LoadError => e
@@ -46,6 +47,7 @@ rescue LoadError => e
  end
  exit 1
 end
+$VERBOSE = original_verbose
 
 # required by exec_shell() function
 require 'tempfile'
