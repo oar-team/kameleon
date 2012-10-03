@@ -11,7 +11,6 @@ build_appliance:
    - check_cmd:            /sbin/sfdisk
    - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=10000
    - exec_appliance:       echo -e "1,1200,83,*\n1201,,82" | /sbin/sfdisk $$workdir/image.raw
-
  - create_nbd_device:
    - check_cmd:            kvm-nbd
    - exec_appliance:       modprobe nbd max_part=8
