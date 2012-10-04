@@ -1,16 +1,12 @@
-build_appliance:
+build_appliance_big:
  - clean_udev:
    - exec_appliance:       rm -f etc/udev/rules.d/*persistent-net.rules*
  - save_as_tgz:
    - exec_current:         cd $$workdir; tar -czf $$distrib.tar.gz -C chroot --exclude proc/* --exclude dev/* .
- - create_raw_image:
+ - create_raw_image_bigger:
    - check_cmd:            /sbin/sfdisk
-   - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=5000
-   - exec_appliance:       echo -e "1,574,83,*\n575,,82" | /sbin/sfdisk $$workdir/image.raw
-# - create_raw_image_bigger:
-#   - check_cmd:            /sbin/sfdisk
-#   - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=10000
-#   - exec_appliance:       echo -e "1,1200,83,*\n1201,,82" | /sbin/sfdisk $$workdir/image.raw
+   - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=10000
+   - exec_appliance:       echo -e "1,1200,83,*\n1201,,82" | /sbin/sfdisk $$workdir/image.raw
  - create_nbd_device:
    - check_cmd:            qemu-nbd
    - exec_appliance:       modprobe nbd max_part=8
