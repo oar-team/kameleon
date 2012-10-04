@@ -1,0 +1,12 @@
+debian_update_system:
+ - change_apt_conf:
+   - write_file:
+     - /etc/apt/apt.conf.d/local-dpkg_force-confold
+     - |
+       DPkg::Options {"--force-confold";};
+ - update:
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get --fix-broken --fix-missing --yes --force-yes  safe-upgrade || true "
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get autoremove --yes --force-yes"
+ - reset_apt_conf:
+   - exec_chroot: rm -f /etc/apt/apt.conf.d/local-dpkg_force-confold

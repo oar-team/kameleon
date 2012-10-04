@@ -1,4 +1,7 @@
 debian_slurm_dependencies:
+ - install_basics_deps:
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install build-essential libreadline6-dev gcc python gawk mysql-server mysql-client libmysqld-dev munge libmunge2 libmunge-dev"
  - change_apt_conf:
    - write_file:
      - /etc/apt/apt.conf.d/local-dpkg_force-confold
@@ -9,9 +12,7 @@ debian_slurm_dependencies:
    - exec_chroot: chown root:root /etc/cgconfig.conf
    - exec_chroot: chmod 664 /etc/cgconfig.conf
    - exec_chroot: mkdir /cgroup || true
- - install_deps:
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install build-essential libreadline6-dev gcc python gawk mysql-server mysql-client libmysqld-dev munge libmunge2 libmunge-dev"
+ - install_cgroups:
    - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install cgroup-bin libcgroup-dev"
  - reset_apt_conf:
    - exec_chroot: rm -f /etc/apt/apt.conf.d/local-dpkg_force-confold

@@ -9,4 +9,4 @@ ocaml_scheduler:
    - exec_chroot: bash -c "/etc/init.d/mysql stop"
  - configure_oar_conf:
    - exec_chroot: bash -c "mv /etc/oar/oar.conf /etc/oar/oar.conf.or"
-   - exec_chroot: bash -c "sed -e 's/^#HIERARCHY_LABELS\=\"node,cpu,core\"/HIERARCHY_LABELS\=\"node,cpu,core\"/' /etc/oar/oar.conf.or > /etc/oar/oar.conf"
+   - exec_chroot: bash -c "sed -e 's/^#HIERARCHY_LABELS\=\"node,cpu,core\"/HIERARCHY_LABELS\=\"resource_id,network_address,cpu,core\"/' /etc/oar/oar.conf.or > /etc/oar/oar.conf"

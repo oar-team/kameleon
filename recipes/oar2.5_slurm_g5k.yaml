@@ -30,7 +30,7 @@ global:
  oar_prefix_install: /usr
  # 
  #
- #include_dir: /home/emeras/repositories/git/evalys-tools/kameleon_recipes/scripts 
+ include_dir: /home/emeras/repositories/git/evalys-tools/kameleon_recipes/scripts 
  #
  # TORQUE and MAUI
 #  torque_repository: "http://www.adaptivecomputing.com/resources/downloads/torque/"
@@ -64,6 +64,7 @@ steps:
 # - fix_resolv_conf
  - g5k/g5k_unset_http_proxy
  - g5k/g5k_unset_apt_proxy
+ - tuning/target/debian_update_system
 #  - bootstrap
 #  - system_config
 #  - root_passwd
@@ -108,9 +109,10 @@ steps:
  - oar/ocaml_scheduler
  - oar/oar_tuning
  - oar/add_submission_user
- - slurm/target/debian_slurm_dependencies
+ - slurm/target/debian_slurm_dependencies:
+   - install_basics_deps
  - slurm/slurm_install
- - ior/target/debian_ior_deps_install
+ #- ior/target/debian_ior_deps_install
  - ior/ior_install
 # - evalys-tools/evalys-tools_repo
 #  - virtualization/target/debian_virt_tools
@@ -124,7 +126,7 @@ steps:
 #############################################################################
  - autologin
  - strip
- - build_appliance:
+ - build_appliance_big:
    - clean_udev
    - create_raw_image_bigger
    - create_nbd_device
