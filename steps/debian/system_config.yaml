@@ -5,7 +5,7 @@ system_config:
      - |
        proc /proc proc defaults 0 0
  - kbconfig:
-   - exec_appliance: sh -c "[ -f /etc/default/keyboard ] && . /etc/default/keyboard; sed -e \"s/^XKBLAYOUT.*/XKBLAYOUT='$XKBLAYOUT'/\"    -i $$chroot/etc/default/keyboard"
+   - exec_appliance: sh -c "[ -f /etc/default/keyboard ] && cp /etc/default/keyboard $$chroot/etc/default/keyboard"
  - etc_hosts:
    - write_file:
      - /etc/hosts

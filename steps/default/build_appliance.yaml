@@ -12,11 +12,11 @@ build_appliance:
    - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=10000
    - exec_appliance:       echo -e "1,1200,83,*\n1201,,82" | /sbin/sfdisk $$workdir/image.raw
  - create_nbd_device:
-   - check_cmd:            kvm-nbd
+   - check_cmd:            qemu-nbd
    - exec_appliance:       modprobe nbd max_part=8
    - exec_appliance:       export NBD_DEVICE=/dev/nbd11 # Need a way to automatically find a free one 
-   - exec_appliance:       kvm-nbd -c $NBD_DEVICE $$workdir/image.raw
-   - exec_on_clean:        kvm-nbd -d $NBD_DEVICE || true
+   - exec_appliance:       qemu-nbd -c $NBD_DEVICE $$workdir/image.raw
+   - exec_on_clean:        qemu-nbd -d $NBD_DEVICE || true
    - exec_appliance:       sleep 5
  - mkfs:
    - exec_appliance:       mkfs.$$output_environment_file_system_type ${NBD_DEVICE}p1
@@ -54,7 +54,7 @@ build_appliance:
  - umount_image:
    - exec_appliance:       umount $$workdir/mnt
    - exec_appliance:       rm -rf $$workdir/mnt
-   - exec_appliance:       kvm-nbd -d ${NBD_DEVICE}
+   - exec_appliance:       qemu-nbd -d ${NBD_DEVICE}
  - save_as_raw:
    - exec_appliance:       mv $$workdir/image.raw $$workdir/$$distrib.raw
    - exec_appliance:       cd $$workdir; ln -s $$distrib.raw image.raw
