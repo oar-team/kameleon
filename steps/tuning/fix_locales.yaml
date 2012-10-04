@@ -1,0 +1,7 @@
+fix_locales:
+ - fix_locales:
+   - append_file:
+     - /etc/environment
+     - |
+       LC_ALL=C
+       LANG=en_US 

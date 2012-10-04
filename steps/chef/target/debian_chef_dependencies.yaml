@@ -1,0 +1,4 @@
+debian_chef_dependencies:
+ - install_deps:
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install debian-archive-keyring ruby ruby-dev libopenssl-ruby libshadow-ruby1.8 rdoc ri irb build-essential wget ssl-cert rubygems"

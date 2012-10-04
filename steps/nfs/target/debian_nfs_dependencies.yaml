@@ -1,0 +1,9 @@
+debian_nfs_dependencies:
+ - force_new_conf_dpkg:
+   - write_file:
+     - /etc/apt/apt.conf.d/local-dpkg_force-confnew
+     - |
+       DPkg::Options {"--force-confnew";};
+ - install_nfs_packages:
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install nfs-kernel-server nfs-common"

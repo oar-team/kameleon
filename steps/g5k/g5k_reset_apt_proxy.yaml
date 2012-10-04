@@ -1,0 +1,3 @@
+g5k_reset_apt_proxy:
+ - g5k_reset_apt_proxy:
+   - exec_chroot: mv /etc/apt/apt.conf.d.old/proxy-guess /etc/apt/apt.conf.d/

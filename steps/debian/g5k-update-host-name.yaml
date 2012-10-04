@@ -1,4 +1,0 @@
-g5k-update-host-name:
- - write_g5k-update-host-name:
-   - exec_current: cp $$include_dir/etc/dhcp/dhclient-exit-hooks.d/g5k-update-host-name  $$chroot/etc/dhcp/dhclient-exit-hooks.d/g5k-update-host-name 
-   - exec_chroot: chmod +x /etc/dhcp/dhclient-exit-hooks.d/g5k-update-host-name 

@@ -1,0 +1,5 @@
+debian_slurm_dependencies_cgroup_bug_reset_as_before:
+ - change_apt_conf:
+   - exec_chroot: rm -f /etc/apt/apt.conf.d/local-dpkg_force-confold
+
+

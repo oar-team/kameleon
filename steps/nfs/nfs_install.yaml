@@ -43,8 +43,6 @@ nfs_install:
          echo \"usage: nfs_client_init server\"
          exit 1
        fi
-       #bash -c \"DEBIAN_FRONTEND=noninteractive apt-get update\"
-       #bash -c \"DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install nfs-common\"
        mkdir /mnt/nfs
        mount \$1:/nfs /mnt/nfs
    - exec_chroot: chmod +x /usr/sbin/nfs_client_init

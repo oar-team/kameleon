@@ -1,4 +1,0 @@
-rm_proxy:
- - rm_apt_proxy:
-   - exec_chroot: rm /etc/apt/apt.conf.d/proxy-guess
-

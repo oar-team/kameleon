@@ -1,0 +1,16 @@
+add_submission_user:
+ - add_submission_user:
+   - exec_chroot: addgroup admin
+   - exec_chroot: mkdir /var/lib/user
+   - exec_chroot: useradd user -g admin
+   - exec_chroot: chown user:admin /var/lib/user
+   - exec_chroot: usermod -p \$1\$KkIWr.cK\$cue3GT8UYBVfEVIvMCBLF0 user -d /var/lib/user
+   - exec_chroot: su user -c "ssh-keygen -t dsa -f /var/lib/user/.ssh/id_dsa -N ''"
+   - exec_chroot: su user -c "cat /var/lib/user/.ssh/id_dsa.pub >> /var/lib/user/.ssh/authorized_keys"
+   - write_file:
+     - /var/lib/user/.ssh/config
+     - | 
+       Host *
+       StrictHostKeyChecking no
+       NoHostAuthenticationForLocalhost yes
+

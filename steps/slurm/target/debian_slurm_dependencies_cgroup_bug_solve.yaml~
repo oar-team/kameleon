@@ -1,0 +1,7 @@
+debian_slurm_dependencies_cgroup_bug_solve:
+ - change_apt_conf:
+   - write_file:
+     - /etc/apt/apt.conf.d/local-dpkg_force-confold
+     - |
+       DPkg::Options {"--force-confold";};
+
