@@ -64,7 +64,7 @@ Kameleon commands are:
      - \|
 
        lines_to_append
-  - write_file:							=> Write a content into a file of the appliance. If the file already exists, erase it. Else, create it. This commands takes an array of 2 elements as an argument: the first element is the name of the file and the second one is the content to be writed into the file. 
+  - write_file:							=> Write a content into a file of the appliance. If the file already exists, erase it. Else, create it. This commands takes an array of 2 elements as an argument: the first element is the name of the file and the second one is the content to be written into the file. 
 
      - file_path
      - \|
@@ -99,7 +99,7 @@ and others may be custom variables used into microsteps. In the steps part,
 if no microsteps are given, then it means that all the microsteps are executed in the 
 order they have been defined into the corresponding macrostep file. 
 
-Here is a simple example of e recipe file: ::
+Here is a simple example of a recipe file: ::
 
   global:
     distrib: debian-lenny
