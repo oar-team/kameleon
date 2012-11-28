@@ -8,7 +8,7 @@
 global:
  #
  # Where Kameleon stores tmp files and appliances
- workdir_base: /var/tmp/kameleon
+ workdir_base: /home/cristian/tmp/kameleon/
  # 
  # Debian specific
  distrib: debian
@@ -96,7 +96,7 @@ steps:
    - install_grub
    - umount_image
    - save_as_raw
-#   - save_as_vmdk
+   - save_as_vmdk
    - save_as_qcow2
 #   - save_as_vdi
 #   - save_as_iso
