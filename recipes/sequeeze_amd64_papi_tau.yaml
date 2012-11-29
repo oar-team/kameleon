@@ -30,11 +30,7 @@ global:
 
 steps:
     - checkpoint_resume
-    #- system_config:
-    #   - fstab
-    #- root_passwd
     - mount_proc
-
     - software_install:
         - extra_packages
     - PAPI/papi
@@ -50,7 +46,6 @@ steps:
         - mkfs
         - mount_image
         - copy_system_tree
-        - install_grub
         - umount_image
         - save_as_raw 
     - save_as_g5k

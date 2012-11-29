@@ -1,7 +1,7 @@
 #### Basic Debian Kameleon recipe ###
 global:
-  workdir_base: /home/cristian/tmp/kameleon
-  workdir: /home/cristian/tmp/kameleon
+  workdir_base: ~/tmp/kameleon
+  workdir: ~/tmp/kameleon
   distrib: debian
   debian_version_name: squeeze
   distrib_repository: http://ftp.fr.debian.org/debian/ 
@@ -16,7 +16,6 @@ steps:
   - debian_check_deps
   - check_deps:
      - rsync
-     - building_appliance
      - building_kvm_images
 # Creation of the debian base system using debootstap 
   - bootstrap
@@ -27,7 +26,6 @@ steps:
   - mount_proc
 # Grid5000 network management
   - g5k/g5k-update-host-name
-
   - kernel_install
   - strip
   - umount_proc
@@ -39,7 +37,6 @@ steps:
      - mkfs
      - mount_image
      - copy_system_tree
-     - install_grub
      - umount_image
      - save_as_raw 
 # Creating Grid5000 deployable image
