@@ -53,10 +53,7 @@ contexts:
   cmd: cd / ; %%
  root_chroot:
   cmd: chroot $$chroot %%
- root_ssh:
-  cmd: ssh -T -n localhost "%%"
-  escape: \\"
- 
+  
 steps:
  - debian_check_deps
  - check_deps:
@@ -87,7 +84,7 @@ steps:
  - build_appliance:
    - clean_udev
 #   - save_as_tgz
-   - create_raw_image
+   - create_raw_image_bigger
    - create_nbd_device
    - mkfs
    - mount_image

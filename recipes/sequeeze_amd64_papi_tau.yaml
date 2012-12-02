@@ -1,7 +1,7 @@
 global:
-   workdir_base: /home/cristian/tmp/kameleon
+   workdir_base: /tmp/kameleon
    # Debian specific
-   workdir: /home/cristian/tmp/kameleon
+   workdir: /tmp/kameleon
    distrib: debian
    debian_version_name: squeeze
    distrib_repository: http://ftp.fr.debian.org/debian/

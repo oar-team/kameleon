@@ -1,7 +1,7 @@
 #### Basic Debian Kameleon recipe ###
 global:
-  workdir_base: ~/tmp/kameleon
-  workdir: ~/tmp/kameleon
+  workdir_base: /tmp/kameleon
+  workdir: /tmp/kameleon
   distrib: debian
   debian_version_name: squeeze
   distrib_repository: http://ftp.fr.debian.org/debian/ 
@@ -9,7 +9,6 @@ global:
   include_dir: scripts
   arch: amd64
   kernel_arch: "amd64"
-  network_hostname: kameleon
 
 steps:
 # Checking availability of tools used during the process
@@ -32,7 +31,7 @@ steps:
 #Building the appliance
   - build_appliance:
      - clean_udev
-     - create_raw_image
+     - create_raw_image_bigger
      - create_nbd_device
      - mkfs
      - mount_image
