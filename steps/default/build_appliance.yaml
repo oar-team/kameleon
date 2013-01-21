@@ -33,7 +33,7 @@ build_appliance:
  - install_grub:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot/grub
    - exec_appliance:       echo "(hd0) $NBD_DEVICE" >> $$workdir/mnt/boot/grub/device.map
-   - exec_appliance:       grub-install --root-directory=$$workdir/mnt --modules="biosdisk part_msdos" $NBD_DEVICE
+   - exec_appliance:       grub-install --root-directory=$$workdir/mnt --modules="biosdisk part_msdos" $NBD_DEVICE --recheck
    - exec_appliance:       export kernel=`ls $$workdir/mnt/boot/vmlinuz* | grep -o "[[:digit:]]\.[[:digit:]].*"`
    - exec_appliance:       export hda1=`grub-probe -t fs_uuid -d ${NBD_DEVICE}p1`
    - exec_appliance:       echo "UUID=$hda1 / $$output_environment_file_system_type errors=remount-ro 0 1" >> $$workdir/mnt/etc/fstab
@@ -59,8 +59,8 @@ build_appliance:
    - exec_appliance:       mv $$workdir/image.raw $$workdir/$$distrib.raw
    - exec_appliance:       cd $$workdir; ln -s $$distrib.raw image.raw
  - save_as_vmdk:
-   - check_cmd:            kvm-img
-   - exec_appliance:       kvm-img convert -f raw $$workdir/image.raw -O vmdk $$workdir/$$distrib.vmdk
+   - check_cmd:            qemu-img
+   - exec_appliance:       qemu-img convert -f raw $$workdir/image.raw -O vmdk $$workdir/$$distrib.vmdk
    - write_file:
      - /tmp/$$distrib.vmx
      - |
@@ -125,8 +125,8 @@ build_appliance:
    - exec_appliance: if [ "$$arch" = "amd64" ]; then echo '       guestOS = "other26xlinux-64" ' >> $$chroot/tmp/$$distrib.vmx; else echo '       guestOS = "other26xlinux" ' >> $$chroot/tmp/$$distrib.vmx; fi
    - exec_appliance:       mv $$chroot/tmp/$$distrib.vmx $$workdir/
  - save_as_qcow2:
-   - check_cmd:            kvm-img
-   - exec_appliance:       kvm-img convert -c -f raw $$workdir/image.raw -O qcow2 $$workdir/$$distrib.qcow2
+   - check_cmd:            qemu-img
+   - exec_appliance:       qemu-img convert -c -f raw $$workdir/image.raw -O qcow2 $$workdir/$$distrib.qcow2
  - save_as_vdi:
    - check_cmd:            VBoxManage
    - exec_appliance:       VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib.vdi
