@@ -1,4 +1,4 @@
-#!/usr/bin/ruby -w
+#!/usr/bin/ruby 
 #    Kameleon: a tool to build virtual machines or livecd images
 #    Copyright (C) 2009-2010 LIG <http://lig.imag.fr/>
 #
@@ -19,7 +19,6 @@
 ###############
 ### loading ###
 ###############
-
 # required for parsing config files
 require 'yaml'
 
@@ -109,18 +108,31 @@ def green(text); colorize(text, "\e[32m\e[1m"); end
 def blue(text); colorize(text, "\e[34m\e[1m"); end
 def cyan(text); colorize(text, "\e[36m"); end
 
+### verifies if the command has to be cached
+$cacheable_cmds=[/.*apt-get .* install .*/,/\.*wget \.*/,/\.*git \.*/,]
+def cmd_cache?(cmd_value)
+  open("#{$workdir}/cache_file",'a') do |cache_file|
+    $cacheable_cmds.each{ |c_cmd|
+      cache_file.puts cmd_value if cmd_value.match c_cmd 
+    }
+  end
+  return cmd_value
+end
+
 ### function for converting command definitions into bash commands
 def cmd_parse(cmd,step)
   if cmd.keys[0]=="check_cmd"
     return "which " + cmd.values[0] + " >/dev/null"
   elsif cmd.keys[0]=="check_cmd_chroot"
     return "chroot " + $chroot + " which " + cmd.values[0]
+  elsif cmd.keys[0]=="depens"
+    return "echo \"OK\""
   elsif cmd.keys[0]=="exec_current"
-    return "cd " + $current_dir + "; " + cmd.values[0]
+    return "cd " + $current_dir + "; " + cmd_cache?(cmd.values[0])
   elsif cmd.keys[0]=="exec_appliance"
-    return "cd " + $chroot + "; " + cmd.values[0]
+    return "cd " + $chroot + "; " + cmd_cache?(cmd.values[0])
   elsif cmd.keys[0]=="exec_chroot"
-    return "chroot " + $chroot + " " + cmd.values[0]
+    return "chroot " + $chroot + " " + cmd_cache?(cmd.values[0])
   elsif cmd.keys[0]=="append_file"
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]
   elsif cmd.keys[0]=="write_file"
@@ -225,6 +237,31 @@ def save_history
   $history = []
 end
 
+### starting cache
+def start_cache(shell,cache_dir)
+  polipo_bin_path=$current_dir+"/redist/bin"
+  shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
+  shell.execute("export http_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
+  shell.execute("export https_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
+  # out,err=shell.execute(" echo \"starting cache \"")
+  # puts "Starting the cache"
+  # puts out
+  if @options[:path_to_cache].nil?
+    #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
+    out, err= shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &")
+    # puts "printing errors if there are "
+    # puts err
+  else
+    shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" proxyOffline=\"true\"  chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
+  end
+  shell.execute("export polipo_pid=$!")
+end
+
+### stoping cache
+def stop_cache(shell,cache_dir)
+  shell.execute("sleep 2")
+  shell.execute("kill -9 $polipo_pid",:stdout => $stdout, :stderr => $stderr)
+end
 ### open prompt in the same enviromnent (shell) where the execution takes place
 def start_shell(shell,histfile)
   puts green("Starting shell. Enter 'exit' to return to kameleon.")
@@ -293,6 +330,14 @@ BANNER
   opts.on("-h","--help", "Show this message.") do
     puts opts
     exit(0)
+  end
+
+  opts.on("-c","--cache", "Generate cache for the the image created") do |c|
+    @options[:cache_flag] = true
+  end
+
+  opts.on("--from_cache=","Using cache specified to create the image") do |cache_file|
+    @options[:path_to_cache] = cache_file
   end
 end
 
@@ -382,6 +427,7 @@ end
 # Example: /var/tmp/kameleon/2009-07-10-18-55-34/chroot
 # We also define two global vars here: $workdir and $chroot
 $timestamp=Time.now.strftime("%Y-%m-%d-%H-%M-%S")
+start_time=Time.now.to_i
 $recipe['global']['recipedir'] = File.basename(path, ".yaml")
 $recipe['global']['workdir'] = $workdir = $recipe['global']['workdir_base']+"/"+$timestamp
 $recipe['global']['chroot'] = $chroot = $workdir + "/chroot"
@@ -605,10 +651,15 @@ trap("INT") {
   end
 }
 
+bash.execute("mkdir #{$recipe['global']['workdir']}/cache/",:stdout => $stdout, :stderr => $stderr)
 # traverse macrostep->microstep->command structure
 script.each do
   |macrostep|
+  ## including temporally caching for each step
   macrostep_name=macrostep[0]
+
+  cache_dir=@options[:path_to_cache].nil? ? $recipe['global']['workdir']+"/cache/"+macrostep_name : @options[:path_to_cache]+macrostep_name
+  start_cache(bash,cache_dir)
   macrostep[1].each do
     |microstep|
     microstep_name=microstep[0]
@@ -669,6 +720,7 @@ script.each do
       end
     end
   end
+  stop_cache(bash,cache_dir)
 end
 save_history
 begin
@@ -678,6 +730,9 @@ end
 sleep(1)
 clean
 
+### Printing time spend on the whole process
+total_time = Time.now.to_i - start_time
+puts green("Total time spend on the process: #{total_time} secs")
 =begin
 
 =DESCRIPTION

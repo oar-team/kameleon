@@ -1,15 +1,24 @@
 chef_install:
  - install_gems:
+   - exec_appliance: export HOME=/root/
+   - exec_appliance: export PATH=$PATH:/var/lib/gems/1.8/bin/
    - exec_chroot: bash -c "gem sources -a http://gems.rubyforge.org/"
    - exec_chroot: bash -c "gem install --no-ri --no-rdoc rest-client"
    - exec_chroot: bash -c "gem install --no-ri --no-rdoc json"
    - exec_chroot: bash -c "gem install --no-ri --no-rdoc mixlib-authentication"
    - exec_chroot: bash -c "gem install --no-ri --no-rdoc net-ssh-multi"
    - exec_chroot: bash -c "gem install --no-ri --no-rdoc chef"
+   - exec_chroot: mkdir /etc/chef
  - write_config:
    - write_file:
-     - /root/chef-solo-config
+     - /etc/chef/solo.rb
      - |
        file_cache_path '/tmp/chef-solo'
-       cookbook_path '/tmp/chef-solo/cookbooks'
+       cookbook_path '/tmp/chef_solo/cookbooks'
+
+
+#       cookbook_path File.expand_path(File.join(\"/tmp/chef-solo/cookbooks/\"))
+
+
+
 

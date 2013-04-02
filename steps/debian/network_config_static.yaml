@@ -18,3 +18,4 @@ network_config_static:
        search $$network_domain
        nameserver $$network_dns
 
+       

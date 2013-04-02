@@ -1,5 +1,7 @@
 build_appliance:
  - clean_udev:
+   - depens:
+       - install_grub
    - exec_appliance:       rm -f etc/udev/rules.d/*persistent-net.rules*
  - save_as_tgz:
    - exec_current:         cd $$workdir; tar -czf $$distrib.tar.gz -C chroot --exclude proc/* --exclude dev/* .
@@ -18,6 +20,11 @@ build_appliance:
    - exec_appliance:       qemu-nbd -c $NBD_DEVICE $$workdir/image.raw
    - exec_on_clean:        qemu-nbd -d $NBD_DEVICE || true
    - exec_appliance:       sleep 5
+ - create_loop_device:
+   - exec_appliance:       losetup -f --show $$workdir/image.raw
+   - exec_appliance:       kpartx -a /dev/loop0
+ - mkfs_loop:
+   - exec_appliance:       mkfs.ext3 /dev/mapper/loop0p1
  - mkfs:
    - exec_appliance:       mkfs.$$output_environment_file_system_type ${NBD_DEVICE}p1
    - exec_appliance:       export SWAP_UUID=`mkswap ${NBD_DEVICE}p2|egrep -o "UUID=(.*)"|cut -d= -f2`
@@ -25,6 +32,9 @@ build_appliance:
    - exec_appliance:       mkdir $$workdir/mnt
    - exec_appliance:       mount ${NBD_DEVICE}p1 $$workdir/mnt
    - exec_on_clean:        umount ${NBD_DEVICE}p1 ||true
+ - mount_image_on_loop:
+   - exec_appliance:       mkdir $$workdir/mnt
+   - exec_appliance:       mount /dev/mapper/loop0p1 $$workdir/mnt
  - copy_system_tree:
    - exec_appliance:       rsync -a --exclude "/proc/" $$chroot/* $$workdir/mnt && mkdir $$workdir/mnt/proc
  - grub_197_workaround:
@@ -47,6 +57,18 @@ build_appliance:
    - exec_appliance:       echo "  initrd $INITRD" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "}" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "(hd0) /dev/hda" > $$workdir/mnt/boot/grub/device.map
+ - install_extlinux:
+   - exec_appliance:       mkdir -p $$workdir/mnt/boot
+   - exec_appliance:       export UIID=`blkid -s UUID -o value /dev/mapper/loop0p1`
+   - exec_appliance:       echo "UIID=$UIID   /   ext3 defaults  0  1" >> $$workdir/mnt/etc/fstab
+   - exec_appliance:       extlinux --install $$workdir/mnt/boot/
+   - exec_appliance:       dd if=/usr/lib/syslinux/mbr.bin conv=notrunc bs=440 count=1 of=/dev/loop0
+   - exec_appliance:       echo "DEFAULT debian-etch" > $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "LABEL   debian-etch" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "SAY     Booting Arch Linux" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "LINUX   /boot/vmlinuz-2.6.18-6-686" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "APPEND  root=/dev/disk/by-uuid/$UIID" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "INITRD  /boot/initrd.img-2.6.18-6-686" >> $$workdir/mnt/boot/extlinux.conf
  - old_kernel_workaround:
    - exec_appliance:       perl -pi -e "s,UUID=.*$$output_environment_file_system_type,/dev/hda1 / $$output_environment_file_system_type," $$workdir/mnt/etc/fstab
    - exec_appliance:       perl -pi -e "s,UUID=.*swap,/dev/hda2 none swap," $$workdir/mnt/etc/fstab
@@ -55,6 +77,10 @@ build_appliance:
    - exec_appliance:       umount $$workdir/mnt
    - exec_appliance:       rm -rf $$workdir/mnt
    - exec_appliance:       qemu-nbd -d ${NBD_DEVICE}
+ - umount_image_on_loop:
+   - exec_appliance:      umount $$workdir/mnt
+   - exec_appliance:      kpartx -d /dev/loop0
+   - exec_appliance:      losetup -d /dev/loop0
  - save_as_raw:
    - exec_appliance:       mv $$workdir/image.raw $$workdir/$$distrib.raw
    - exec_appliance:       cd $$workdir; ln -s $$distrib.raw image.raw
