@@ -4,3 +4,5 @@ bootstrap:
    - exec_appliance:  "[ -f $RINSE_DIR/$$rpm_distrib_name.packages ] || (echo \"Could not find $RINSE_DIR/$$rpm_distrib_name.packages!\"; exit 2)"
    - exec_appliance:  "[ -d /usr/lib/rinse/$$rpm_distrib_name ] || (echo \"Rinse requires an empty directory /usr/lib/rinse/$$rpm_distrib_name\"; exit 2)"
    - exec_appliance:  rinse --config $RINSE_DIR/rinse.conf --arch=$$arch --pkgs-dir $RINSE_DIR --distribution $$rpm_distrib_name --directory $$chroot --post-install /bin/true
+ - rinse_new:
+   - exec_appliance:  rinse --arch=$$arch --distribution $$rpm_distrib_name --directory $$chroot 

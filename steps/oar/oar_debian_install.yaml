@@ -1,10 +1,10 @@
 oar_debian_install:
  - install_oar:
    - append_file:
-     - /etc/apt/sources.list
-     - |
-       $$oar_repository
-   - exec_chroot: curl http://oar-ftp.imag.fr/oar/oarmaster.asc | apt-key add -
+      - /etc/apt/sources.list
+      - |
+        $$oar_repository
+   #- exec_chroot: curl http://oar-ftp.imag.fr/oar/oarmaster.asc | apt-key add -
    - exec_chroot: apt-get update
    - exec_chroot: apt-get -f install -y --force-yes mime-support || true
    - exec_appliance: rm $$chroot/var/lib/dpkg/info/mime-support.*

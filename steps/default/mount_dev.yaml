@@ -1,4 +1,8 @@
 mount_dev:
  - mount_dev:
    - exec_appliance: mount -o bind /dev  $$chroot/dev
+     ### This was added for archlinux
+   - exec_appliance: mount -o bind /dev/pts $$chroot/dev/pts
    - exec_on_clean: if mountpoint -q $$chroot/dev; then umount $$chroot/dev; fi
+   - exec_on_clean: if mountpoint -q $$chroot/dev/pts; then umount $$chroot/dev/pts; fi
+

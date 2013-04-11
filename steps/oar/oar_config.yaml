@@ -1,8 +1,8 @@
 oar_config:
  - config_mysql:
    - exec_chroot: /etc/init.d/mysql start || service mysql start || true
-   - exec_on_clean: chroot $$chroot bash -c "/etc/init.d/mysql stop || service mysql stop || true"
    - exec_chroot: mysqladmin password kameleon
+   - exec_on_clean: chroot $$chroot bash -c "/etc/init.d/mysql stop || service mysql stop || true"
  - config_taktuk:
    - exec_chroot: mv /etc/oar/oar.conf /etc/oar/oar.conf.or
    - exec_chroot: sed -e 's/^#\(TAKTUK_CMD\=\"\/usr\/bin\/taktuk \-t 30 \-s\".*\)/\1/' /etc/oar/oar.conf.or > $$chroot/etc/oar/oar.conf.tmp
@@ -15,6 +15,8 @@ oar_config:
    - exec_chroot: sed -e 's/^#\(JOB_RESOURCE_MANAGER_PROPERTY_DB_FIELD\=\"cpuset\".*\)/\1/' /etc/oar/oar.conf.tmp > $$chroot/etc/oar/oar.conf
    - exec_chroot: mv /etc/oar/oar.conf /etc/oar/oar.conf.tmp
    - exec_chroot: sed -e 's/^#\(JOB_RESOURCE_MANAGER_FILE\=\"\/etc\/oar\/job_resource_manager\.pl\".*\)/\1/' /etc/oar/oar.conf.tmp > $$chroot/etc/oar/oar.conf
+#   - exec_chroot: mv /etc/oar/oar.conf /etc/oar/oar.conf.tmp
+#   - exec_chroot: sed -e 's/^DB_BASE_PASSWD\=\"\"/DB_BASE_PASSWD\=\"kameleon\"/' /etc/oar/oar.conf.tmp > $$chroot/etc/oar/oar.conf
    - exec_chroot: mv /etc/oar/oar.conf /etc/oar/oar.conf.tmp
    - exec_chroot: sed -e 's/^#\(CPUSET_PATH\=\"\/oar\".*\)/\1/' /etc/oar/oar.conf.tmp > $$chroot/etc/oar/oar.conf
    - exec_chroot: perl -pi -e 's/^DETACH_JOB_FROM_SERVER="0"/DETACH_JOB_FROM_SERVER="1"/' /etc/oar/oar.conf

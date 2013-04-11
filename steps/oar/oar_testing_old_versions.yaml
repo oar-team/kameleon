@@ -1,0 +1,27 @@
+oar_testing_old_versions:
+ - create_old_repo:
+     - exec_chroot: mkdir /var/repo_oar/
+#     - exec_chroot: wget -nd -r -l1 -A  2.5.0+rc1-1_amd64.deb http://oar-ftp.imag.fr/oar/2.5/debian/pool/main/o/oar/ -P /var/repo_oar/
+#     - exec_chroot: wget -nd -r -l1 -A 2.5.0+dev505.cf96221-62+squeeze_amd64.deb http://oar-ftp.imag.fr/oar/2.5/debian/pool/main/o/oar/ -P /var/repo_oar/
+#     - exec_chroot: wget -nd -r -l1 -A 2.5.0+dev397.6e1d80b-14+squeeze_amd64.deb http://oar-ftp.imag.fr/oar/2.5/debian/pool/main/o/oar/ -P /var/repo_oar/
+     - exec_chroot: wget -nd -r -l1 -A 2.5.0+dev522.584b93b-72+squeeze_amd64.deb http://oar-ftp.imag.fr/oar/2.5/debian/pool/main/o/oar/ -P /var/repo_oar/
+     - exec_appliance: cd $$chroot/var/repo_oar/ ; dpkg-scanpackages . /dev/null > Packages
+     - exec_appliance: cd $$chroot/var/repo_oar/ ; gzip Packages
+     - append_file:
+         - /etc/apt/sources.list
+         - |
+           deb file:/var/repo_oar/ /
+     - exec_chroot: apt-get update 
+ - install_oar:
+     - exec_chroot: apt-get -f install -y --force-yes mime-support || true
+     - exec_appliance: rm $$chroot/var/lib/dpkg/info/mime-support.*
+     - exec_chroot: apt-get -f install -y --force-yes mime-support
+     - exec_chroot: apt-get install -y --force-yes oar-server oar-server-mysql oar-user oar-user-mysql oar-node oar-admin
+
+ # - install_oar_api:
+ #   - exec_chroot: apt-get install -y --force-yes oar-api
+ #   - exec_chroot: apt-get install -y --force-yes libapache2-mod-fastcgi
+ #   - exec_chroot: a2enmod ident
+ #   - exec_chroot: a2enmod headers
+ #   - exec_chroot: a2enmod rewrite
+ #   - exec_chroot: a2enmod fastcgi

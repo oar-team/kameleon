@@ -1,0 +1,8 @@
+chef_run:
+  - prepare_cookbooks:
+      - exec_appliance:   cp -r $$cookbook_dir/ $$chroot/tmp/chef_solo/
+      - exec_appliance:  cp $$script_dir/run_list_generator.rb $$chroot/tmp/
+  - generate_confing_file:
+      - exec_chroot: bash -c "/tmp/run_list_generator.rb $$chef_recipes"
+  - run_chef_solo:
+      - exec_chroot: bash -c "chef-solo -c /etc/chef/solo.rb -j /tmp/node.json"

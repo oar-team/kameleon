@@ -1,0 +1,5 @@
+gems_install:
+  - install_gems:
+      - exec_appliance: export HOME=/root/
+      - exec_chroot: bash -c "gem sources -a http://gems.rubyforge.org/"
+      - exec_chroot: bash -c "gem install --no-ri --no-rdoc serializable_proc"

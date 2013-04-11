@@ -28,6 +28,9 @@ require 'fileutils'
 # required for command parsing
 require 'optparse'
 
+# require for injecting configuration
+require 'erb'
+
 # required for opening bash session in the background
 original_verbose,$VERBOSE = $VERBOSE, nil
 begin
@@ -137,6 +140,8 @@ def cmd_parse(cmd,step)
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]
   elsif cmd.keys[0]=="write_file"
     return "echo \"" + cmd.values[0][1] + "\" > " + $chroot + "/" + cmd.values[0][0]
+  elsif cmd.keys[0]=="erb_config"
+    return "ERB-config,#{cmd.values[0][0]},#{cmd.values[0][1]}"
   elsif cmd.keys[0]=="set_var"
     return "export " + cmd.values[0][0] + "=\"" + cmd.values[0][1] + "\""
   elsif cmd.keys[0]=="breakpoint"
@@ -240,6 +245,8 @@ end
 ### starting cache
 def start_cache(shell,cache_dir)
   polipo_bin_path=$current_dir+"/redist/bin"
+  # Fix me
+  ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
   shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
   shell.execute("export http_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
   shell.execute("export https_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
@@ -253,6 +260,7 @@ def start_cache(shell,cache_dir)
     # puts err
   else
     shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" proxyOffline=\"true\"  chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
+    #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
   end
   shell.execute("export polipo_pid=$!")
 end
@@ -261,6 +269,47 @@ end
 def stop_cache(shell,cache_dir)
   shell.execute("sleep 2")
   shell.execute("kill -9 $polipo_pid",:stdout => $stdout, :stderr => $stderr)
+end
+
+### ERB interaction
+def config_inject(template_name,output_file)
+  ## global variables have to be putted like this global['var']
+  # global['distrib'] = "debian"
+  # global['arch'] = "amd64"
+  begin
+    global = {}
+    global = $recipe['global'] 
+    template_path=$kameleon_templatedir+"/"+template_name
+    template_file = File.open(template_path, 'r').read
+    erb = ERB.new(template_file)
+    File.open(output_file,'w+') { |file|
+      file.write(erb.result(binding))
+    }
+    
+    return "ERB done, configuration file: #{output_file} generated"
+  rescue
+    puts "Cleaning the environment"
+    clean
+  end
+end
+
+### orgmode history saving
+def save_orgmode(script_step_hash)
+  ## org mode file path 
+  org_mode_file=$recipe['global']['workdir']+"/building_flow.org" 
+  File.open(org_mode_file,'w') do |file|
+    script_step_hash.each do |macrostep|
+      macrostep_name = macrostep[0]
+      file.puts "* #{macrostep_name}"
+      macrostep[1].each do |microstep|
+        microstep_name = microstep[0]
+        file.puts "** #{microstep_name}"
+        microstep[1].each do |command|
+          file.puts command
+        end
+      end
+    end
+  end  
 end
 ### open prompt in the same enviromnent (shell) where the execution takes place
 def start_shell(shell,histfile)
@@ -332,13 +381,22 @@ BANNER
     exit(0)
   end
 
-  opts.on("-c","--cache", "Generate cache for the the image created") do |c|
-    @options[:cache_flag] = true
+  opts.on("-c","--cache", "Generate cache for the the image created") do 
+    @options[:cache] = true
   end
 
-  opts.on("--from_cache=","Using cache specified to create the image") do |cache_file|
+  opts.on("--from_cache=","Using specific cache to create the image") do |cache_file|
     @options[:path_to_cache] = cache_file
   end
+  
+  opts.on("--checkpoint=","Checkpoint after given step") do |step|
+    @options[:checkpoint] = step
+  end
+
+  opts.on("--chkp_file","Checkpoint from a file") do 
+    @options[:checkpoint_file] = true
+  end
+
 end
 
 if ARGV.length < 1
@@ -359,7 +417,7 @@ option_parser.parse!
 $current_dir=Dir.pwd
 $kameleon_bindir=File.expand_path(File.dirname(__FILE__))
 $kameleon_datadir=File.expand_path(File.dirname(__FILE__) + "/../share/kameleon")
-
+$kameleon_templatedir = File.expand_path(File.dirname(__FILE__) + "/config")
 
 version="1.2.8"
 required_globals = ["distrib", "workdir_base"]
@@ -411,6 +469,20 @@ rescue
   print "Failed to open recipe file. ", $!, "\n"
   exit(2)
 end
+
+# inserting checkpoint if checkpint is enable
+
+if @options[:checkpoint]
+  if @options[:checkpoint_file]
+    $recipe["steps"].insert($recipe["steps"].index(@options[:checkpoint])+1,'checkpoint_resume')
+    while $recipe["steps"].shift!=@options[:checkpoint]
+    end    
+  else
+    puts "step to checkpoint: #{@options[:checkpoint]}"
+    $recipe["steps"].insert($recipe["steps"].index(@options[:checkpoint])+1,'checkpoint')
+  end
+end
+
 
 # check for required globals in the recipe file
 required_globals.each do
@@ -516,7 +588,7 @@ $recipe['steps'].each do
   searched_pathes=""
   pathes_to_search = []
   pathes_to_search += @options[:include_path]
-  pathes_to_search += ["#{$current_dir}",  "#{$kameleon_datadir}"]
+  pathes_to_search += ["#{$current_dir}",  "#{$kameleon_datadir}","#{$kameleon_bindir}"]
 
   if dist != ""
     pathes_to_search.each do |dir|
@@ -651,15 +723,17 @@ trap("INT") {
   end
 }
 
-bash.execute("mkdir #{$recipe['global']['workdir']}/cache/",:stdout => $stdout, :stderr => $stderr)
+# creating the cache directory
+bash.execute("mkdir #{$recipe['global']['workdir']}/cache/",:stdout => $stdout, :stderr => $stderr) if not @options[:cache].nil?
 # traverse macrostep->microstep->command structure
 script.each do
   |macrostep|
   ## including temporally caching for each step
   macrostep_name=macrostep[0]
-
-  cache_dir=@options[:path_to_cache].nil? ? $recipe['global']['workdir']+"/cache/"+macrostep_name : @options[:path_to_cache]+macrostep_name
-  start_cache(bash,cache_dir)
+  if not @options[:cache].nil? then
+    cache_dir=@options[:path_to_cache].nil? ? $recipe['global']['workdir']+"/cache/"+macrostep_name : @options[:path_to_cache]+macrostep_name
+    start_cache(bash,cache_dir)
+  end
   macrostep[1].each do
     |microstep|
     microstep_name=microstep[0]
@@ -675,6 +749,11 @@ script.each do
             # open interactive shell instead of executing a command
             save_history
             start_shell(bash,$histfile)
+          elsif command[0,10] == "ERB-config"
+            puts green("  |-> Calling ERB config")
+            template=command.split(",")[1]
+            output_file=command.split(",")[2]
+            puts green(" |-> "+ config_inject(template,output_file))
           else
             puts green("  |-> " + command)
             # execute the command in the background bash session, connecting
@@ -720,7 +799,7 @@ script.each do
       end
     end
   end
-  stop_cache(bash,cache_dir)
+  stop_cache(bash,cache_dir) if not @options[:cache].nil?
 end
 save_history
 begin
@@ -733,6 +812,10 @@ clean
 ### Printing time spend on the whole process
 total_time = Time.now.to_i - start_time
 puts green("Total time spend on the process: #{total_time} secs")
+
+puts green("Saving everything as org mode complaint file")
+save_orgmode(script)
+
 =begin
 
 =DESCRIPTION
