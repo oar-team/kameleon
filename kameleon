@@ -381,6 +381,10 @@ BANNER
     exit(0)
   end
 
+  opts.on("-o=","--output","Where to save the image" ) do |o|
+    @options[:output_path].puth(File.expand_path(o))
+  end
+
   opts.on("-c","--cache", "Generate cache for the the image created") do 
     @options[:cache] = true
   end
@@ -541,6 +545,10 @@ end
 $log=KLogger.new($workdir + ".log")
 $stdout=$log
 $stderr=$log
+
+## creating the cache directory if caching is enabled
+#bash.execute("mkdir #{$recipe['global']['workdir']}/cache/",:stdout => $stdout, :stderr => $stderr) if not @options[:cache].nil?
+FileUtils.mkdir_p($recipe['global']['workdir']+"/cache/") if not @options[:cache].nil?
 #Readline.output=log
 
 ###################
@@ -617,6 +625,12 @@ $recipe['steps'].each do
     exit(6)
   end
 
+  ### loading steps from cache if is activated
+  if @options[:path_to_cache]
+    step_name = File.basename(path)
+    path = @options[:path_to_cache]+step_name#+".yaml"
+    puts green(" Loaing from cache !!!")
+  end
   # load macrostep file
   begin
     puts green("  | Loading " + path)
@@ -625,7 +639,16 @@ $recipe['steps'].each do
     print "Failed to open macrostep file. ", $!, "\n"
     exit(7)
   end
+  
 
+  ### saving steps if cache is activated
+  if @options[:cache] and not @options[:path_to_cache]
+    step_name=File.basename(path)
+    FileUtils.cp(path,$recipe['global']['workdir']+"/cache/"+step_name)
+    # File.open($recipe['global']['workdir']}+"/cache/"+step_name) do |step_file|
+    #   YAML.dump(macrostep_yaml,step_file)
+    # end
+  end
   macrostep_yaml[step].each_index do
     |key|
     microstep=macrostep_yaml[step][key]
@@ -724,7 +747,6 @@ trap("INT") {
 }
 
 # creating the cache directory
-bash.execute("mkdir #{$recipe['global']['workdir']}/cache/",:stdout => $stdout, :stderr => $stderr) if not @options[:cache].nil?
 # traverse macrostep->microstep->command structure
 script.each do
   |macrostep|

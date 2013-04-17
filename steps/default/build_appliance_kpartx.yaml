@@ -9,24 +9,22 @@ build_appliance_kpartx:
    - exec_current:         cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
  - create_raw_image:
    - check_cmd:            /sbin/sfdisk
-   - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=3000
-   - exec_appliance:       echo -e "1,319,83,*\n320,,82" | /sbin/sfdisk $$workdir/image.raw
+   - exec_appliance:       dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=5000 # seek=3000
+   - exec_appliance:       echo -e "1,574,83,*\n575,,82" | /sbin/sfdisk $$workdir/image.raw
  - attach_kpartx_device:
    - check_cmd:            kpartx
    - exec_appliance:       export LO_DEVICE=`kpartx -a -v $$workdir/image.raw | head -n 1 | cut -d' ' -f 8`
    - exec_appliance:       export LO_DEVICE_PARTBASE=/dev/mapper/`basename ${LO_DEVICE}`
-   - exec_appliance:       ln -s ${LO_DEVICE} ${LO_DEVICE_PARTBASE}
-   - exec_on_clean:        rm ${LO_DEVICE_PARTBASE}
-   - exec_on_clean:        kpartx -d $$workdir/image.raw
+ #  - exec_on_clean:        rm ${LO_DEVICE_PARTBASE}
  - mkfs:
-   - exec_appliance:       mkfs.ext3 ${LO_DEVICE_PARTBASE}p1
+   - exec_appliance:       mkfs.$$output_environment_file_system_type ${LO_DEVICE_PARTBASE}p1
    - exec_appliance:       export SWAP_UUID=`mkswap ${LO_DEVICE_PARTBASE}p2|egrep -o "UUID=(.*)"|cut -d= -f2`
  - mount_image:
    - exec_appliance:       mkdir $$workdir/mnt
    - exec_appliance:       mount ${LO_DEVICE_PARTBASE}p1 $$workdir/mnt
    - exec_appliance:       echo "umount $LO_DEVICE_PARTBASE ||true" >> $$workdir/clean.sh
  - copy_system_tree:
-   - exec_appliance:       rsync -a --one-file-system $$chroot/ $$workdir/mnt
+   - exec_appliance:       rsync -a --exclude "/proc/" --exclude "/sys/" $$chroot/* $$workdir/mnt && mkdir $$workdir/mnt/proc && mkdir $$workdir/mnt/sys
  - grub_197_workaround:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot/grub
    - exec_appliance:       echo "(hd0,1) ${LO_DEVICE_PARTBASE}p1" > $$workdir/mnt/boot/grub/device.map
@@ -36,7 +34,7 @@ build_appliance_kpartx:
    - exec_appliance:       grub-install --root-directory=$$workdir/mnt --modules="biosdisk part_msdos" $LO_DEVICE
    - exec_appliance:       export kernel=`ls $$workdir/mnt/boot/vmlinuz* | grep -o "2.6.*"`
    - exec_appliance:       export hda1=`grub-probe -t fs_uuid -d ${LO_DEVICE_PARTBASE}p1`
-   - exec_appliance:       echo "UUID=$hda1 / ext3 errors=remount-ro 0 1" >> $$workdir/mnt/etc/fstab
+   - exec_appliance:       echo "UUID=$hda1 / $$output_environment_file_system_type  errors=remount-ro 0 1" >> $$workdir/mnt/etc/fstab
    - exec_appliance:       echo "UUID=$SWAP_UUID none swap sw 0 0" >> $$workdir/mnt/etc/fstab
    - exec_appliance:       echo "set default=0" > $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "set timeout=3" >> $$workdir/mnt/boot/grub/grub.cfg
@@ -47,12 +45,47 @@ build_appliance_kpartx:
    - exec_appliance:       echo "  initrd $INITRD" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "}" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "(hd0) /dev/hda" > $$workdir/mnt/boot/grub/device.map
+ - get_kernel_initrd:
+   - exec_appliance:       export kernel=`basename $$workdir/mnt/boot/vmlinuz*`
+   - exec_appliance:       export initrd=`basename $$workdir/mnt/boot/initrd.img*`
+ - get_kernel_initrd_arch:
+   - exec_appliance:       export kernel=`basename $$workdir/mnt/boot/vmlinuz*`
+   - exec_appliance:       export initrd=`basename $$workdir/mnt/boot/*linux.img`
+ - install_extlinux:
+   - exec_appliance:       mkdir -p $$workdir/mnt/boot
+   - exec_appliance:       export UIID=`blkid -s UUID -o value ${LO_DEVICE_PARTBASE}p1`
+   - exec_appliance:       echo "UIID=$UIID   /   $$output_environment_file_system_type defaults  0  1" >> $$workdir/mnt/etc/fstab
+   - exec_appliance:       extlinux --install $$workdir/mnt/boot/
+   - exec_appliance:       dd if=/usr/lib/syslinux/mbr.bin conv=notrunc bs=440 count=1 of=$LO_DEVICE
+   - exec_appliance:       echo "DEFAULT kameleon" > $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "LABEL   kameleon" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "SAY     Booting appliance" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "LINUX   /boot/$kernel" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "APPEND  root=/dev/disk/by-uuid/$UIID" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "INITRD  /boot/$initrd" >> $$workdir/mnt/boot/extlinux.conf
+ - install_extlinux_for_arch:
+   - exec_appliance:       mkdir -p $$workdir/mnt/boot
+   - exec_appliance:       export UIID=`blkid -s UUID -o value /dev/mapper/loop0p1`
+   - exec_appliance:       export kernel="vmlinuz-linux"
+   - exec_appliance:       export initrd="initramfs-linux.img"
+   - exec_appliance:       echo "UIID=$UIID   /   $$output_environment_file_system_type defaults  0  1" >> $$workdir/mnt/etc/fstab
+   - exec_appliance:       extlinux --install $$workdir/mnt/boot/
+   - exec_appliance:       dd if=/usr/lib/syslinux/mbr.bin conv=notrunc bs=440 count=1 of=/dev/$LOOP_DEVICE
+   - exec_appliance:       echo "DEFAULT debian" > $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "LABEL   debian" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "SAY     Booting debian" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "LINUX   /boot/$kernel" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "APPEND  root=/dev/disk/by-uuid/$UIID" >> $$workdir/mnt/boot/extlinux.conf
+   - exec_appliance:       echo "INITRD  /boot/$initrd" >> $$workdir/mnt/boot/extlinux.conf
+
  - old_kernel_workaround:
    - exec_appliance:       perl -pi -e "s,UUID=.*ext3,/dev/hda1 / ext3," $$workdir/mnt/etc/fstab
    - exec_appliance:       perl -pi -e "s,UUID=.*swap,/dev/hda2 none swap," $$workdir/mnt/etc/fstab
    - exec_chroot:          mkinitrd -f /boot/initrd-$kernel.img $kernel
  - umount_image:
    - exec_appliance:       umount $$workdir/mnt
+   - exec_appliance:       kpartx -d $LO_DEVICE
+   - exec_appliance:       losetup -d $LO_DEVICE
    - exec_appliance:       rm -rf $$workdir/mnt
  - save_as_raw:
    - exec_appliance:       mv $$workdir/image.raw $$workdir/$$distrib.raw
@@ -60,68 +93,9 @@ build_appliance_kpartx:
  - save_as_vmdk:
    - check_cmd:            kvm-img
    - exec_appliance:       kvm-img convert -f raw $$workdir/image.raw -O vmdk $$workdir/$$distrib.vmdk
-   - write_file:
-     - /tmp/$$distrib.vmx
-     - |
-       #!/usr/bin/vmplayer
-       
-       # This is a Workstation 5 or 5.5 config file
-       # It can be used with Player
-       config.version = \"8\"
-       virtualHW.version = \"4\"
-       
-       displayName = \"OAR Appliance - $$distrib $$arch\"
-       numvcpus = \"1\"
-       memsize = \"256\"
-       MemAllowAutoScaleDown = \"FALSE\"
-       MemTrimRate = \"-1\"
-       uuid.action = \"create\"
-       # Startup hints interfers with automatic startup of a virtual machine
-       # This setting has no effect in VMware Player
-       hints.hideAll = \"TRUE\"
-       
-       # Enable time synchronization between computer
-       # and virtual machine
-       tools.syncTime = \"TRUE\"
-       
-       serial0.present = \"FALSE\"
-       serial1.present = \"FALSE\"
-       parallel0.present = \"FALSE\"
-       
-       isolation.tools.hgfs.disable = \"FALSE\"
-       isolation.tools.dnd.disable = \"FALSE\"
-       isolation.tools.copy.enable = \"TRUE\"
-       isolation.tools.paste.enabled = \"TRUE\"
-       
-       # First network interface card
-       # Change this address if you need to create several virtual machines.
-       # See http://www.vmware.com/support/esx21/doc/esx21admin_MACaddress.html
-       ethernet0.present = \"TRUE\"
-       ethernet0.virtualDev = \"e1000\"
-       ethernet0.connectionType = \"nat\"
-       ethernet0.addressType = \"static\"
-       ethernet0.address = \"00:50:56:3F:12:00\"
-       
-       floppy0.present = \"FALSE\"
-       
-       # First IDE disk
-       ide0:0.present = \"TRUE\"
-       ide0:0.fileName = \"$$distrib.vmdk\"
-       ide0:0.mode = \"persistent\"
-       ide0:0.startConnected = \"TRUE\"
-       ide0:0.writeThrough = \"TRUE\"
-       
-       tools.remindInstall = \"TRUE\"
-       
-       extendedConfigFile = \"$$distrib.vmxf\"
-       virtualHW.productCompatibility = \"hosted\"
-       tools.upgrade.policy = \"manual\"
-       
-       uuid.location = \"56 4d 82 82 8e ce 66 fb-e1 28 4f d3 7c 6b a3 d0\"
-       uuid.bios = \"56 4d 82 82 8e ce 66 fb-e1 28 4f d3 7c 6b a3 d0\"
-       
-       ide0:0.redo = \"\"
-   - exec_appliance: if [ "$$arch" = "amd64" ]; then echo '       guestOS = "other26xlinux-64" ' >> $$chroot/tmp/$$distrib.vmx; else echo '       guestOS = "other26xlinux" ' >> $$chroot/tmp/$$distrib.vmx; fi
+   - erb_config:
+     - config.vmx.erb
+     - $$chroot/tmp/$$distrib.vmx
    - exec_appliance:       mv $$chroot/tmp/$$distrib.vmx $$workdir/
  - save_as_qcow2:
    - check_cmd:            kvm-img

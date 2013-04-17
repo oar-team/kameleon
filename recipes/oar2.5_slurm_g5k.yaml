@@ -22,7 +22,7 @@ global:
  network_hostname: kameleon
  # 
  #checkpoint_file: /var/tmp/kameleon/checkpoints/lustre_checkpoint.tgz
- checkpoint_file: /home/emeras/kameleon_checkpoints/squeeze-x64-big-1.4.tgz
+ #checkpoint_file: /home/emeras/kameleon_checkpoints/squeeze-x64-big-1.4.tgz
  #
  # OAR specific
  oar_deb_repository: "deb http://oar.imag.fr/mirror/oar/2.5/debian squeeze-unstable main"

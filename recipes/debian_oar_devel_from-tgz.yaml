@@ -46,8 +46,8 @@ global:
  # 
  # OAR specific
  # If you don't change the following, big chance this link is broken!
- oar_tgz: "file:/home/bzizou/git/oar/build-area/2.5.0+dev459.79e60f4/oar-2.5.0+dev459.79e60f4.tar.gz"
- #oar_tgz: "http://oar-ftp.imag.fr/oar/2.5/debian/pool/main/o/oar/oar_2.5.0+dev450.fa79101.orig.tar.gz"
+ #oar_tgz: "file:/home/bzizou/git/oar/build-area/2.5.0+dev459.79e60f4/oar-2.5.0+dev459.79e60f4.tar.gz"
+ oar_tgz: "http://oar-ftp.imag.fr/oar/2.5/debian/pool/main/o/oar/oar_2.5.0+dev450.fa79101.orig.tar.gz"
 
  
 steps:
