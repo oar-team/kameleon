@@ -640,7 +640,6 @@ $recipe['steps'].each do
     exit(7)
   end
   
-
   ### saving steps if cache is activated
   if @options[:cache] and not @options[:path_to_cache]
     step_name=File.basename(path)
