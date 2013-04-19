@@ -381,19 +381,19 @@ BANNER
     exit(0)
   end
 
-  opts.on("-o=","--output","Where to save the image" ) do |o|
-    @options[:output_path].puth(File.expand_path(o))
+  opts.on("-o","--output [FILE]",String,"Where to save the image" ) do |o|
+     @options[:output_path].puth(File.expand_path(o))
   end
 
-  opts.on("-c","--cache", "Generate cache for the the image created") do 
-    @options[:cache] = true
+  opts.on("-c","--cache [PATH]","Generate cache for the the image created") do |path| 
+    @options[:cache] = path || ""
   end
 
-  opts.on("--from_cache=","Using specific cache to create the image") do |cache_file|
+  opts.on("--from_cache [FILE]","Using specific cache to create the image") do |cache_file|
     @options[:path_to_cache] = cache_file
   end
   
-  opts.on("--checkpoint=","Checkpoint after given step") do |step|
+  opts.on("--checkpoint [STEP]",String,"Checkpoint after given step") do |step|
     @options[:checkpoint] = step
   end
 
@@ -407,7 +407,6 @@ if ARGV.length < 1
   puts option_parser
   exit(1)
 end
-
 
 option_parser.parse!
 
@@ -548,7 +547,16 @@ $stderr=$log
 
 ## creating the cache directory if caching is enabled
 #bash.execute("mkdir #{$recipe['global']['workdir']}/cache/",:stdout => $stdout, :stderr => $stderr) if not @options[:cache].nil?
-FileUtils.mkdir_p($recipe['global']['workdir']+"/cache/") if not @options[:cache].nil?
+if @options[:cache]
+  cache_dir = @options[:cache].empty? ? $recipe['global']['workdir']+"/cache/" : @options[:cache]+"/cache/"
+  FileUtils.mkdir_p(cache_dir)
+end
+
+## if from cache is activated, decompress the tar cache file into the workdir directory
+if @options[:path_to_cache] 
+  puts green("Untaring cache file into the workdir directory")
+  bash.execute("tar -xvf #{@options[:path_to_cache]} -C #{$recipe['global']['workdir']}", :stdout => $stdout, :stderr => $stderr)
+end
 #Readline.output=log
 
 ###################
@@ -628,7 +636,8 @@ $recipe['steps'].each do
   ### loading steps from cache if is activated
   if @options[:path_to_cache]
     step_name = File.basename(path)
-    path = @options[:path_to_cache]+step_name#+".yaml"
+    #path = @options[:path_to_cache]+step_name#+".yaml"
+    path = $recipe['global']['workdir']+"/cache/"+step_name
     puts green(" Loaing from cache !!!")
   end
   # load macrostep file
@@ -643,7 +652,7 @@ $recipe['steps'].each do
   ### saving steps if cache is activated
   if @options[:cache] and not @options[:path_to_cache]
     step_name=File.basename(path)
-    FileUtils.cp(path,$recipe['global']['workdir']+"/cache/"+step_name)
+    FileUtils.cp(path,cache_dir+step_name)
     # File.open($recipe['global']['workdir']}+"/cache/"+step_name) do |step_file|
     #   YAML.dump(macrostep_yaml,step_file)
     # end
@@ -751,10 +760,14 @@ script.each do
   |macrostep|
   ## including temporally caching for each step
   macrostep_name=macrostep[0]
-  if not @options[:cache].nil? then
-    cache_dir=@options[:path_to_cache].nil? ? $recipe['global']['workdir']+"/cache/"+macrostep_name : @options[:path_to_cache]+macrostep_name
-    start_cache(bash,cache_dir)
+  if @options[:cache] then
+    cache_dir_step = cache_dir + macrostep_name
+    start_cache(bash,cache_dir_step)
+  elsif @options[:path_to_cache] 
+    cache_dir_step = $recipe['global']['workdir']+"/cache/" + macrostep_name
+    start_cache(bash,cache_dir_step)
   end
+
   macrostep[1].each do
     |microstep|
     microstep_name=microstep[0]
@@ -820,9 +833,11 @@ script.each do
       end
     end
   end
-  stop_cache(bash,cache_dir) if not @options[:cache].nil?
+  stop_cache(bash,cache_dir_step) if @options[:cache] || @options[:path_to_cache]
 end
 save_history
+## creating a tar file with the cache contents
+bash.execute("cd #{@options[:cache]} ; tar -cf #{@options[:cache]}cache-#{$timestamp}.tar cache/", :stdout => $stdout, :stderr => $stderr) if @options[:cache]
 begin
   bash.close!()
 rescue
