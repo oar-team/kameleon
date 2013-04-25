@@ -372,7 +372,7 @@ option_parser = OptionParser.new do |opts|
 * Options
 BANNER
 
-  opts.on("-i=", "--include=", "Include the given path in the kameleon search path") do |i|
+  opts.on("-i", "--include [PATH]", "Include the given path in the kameleon search path") do |i|
     @options[:include_path].push(File.expand_path(i))
   end
 
@@ -385,7 +385,7 @@ BANNER
      @options[:output_path].puth(File.expand_path(o))
   end
 
-  opts.on("-c","--cache [PATH]","Generate cache for the the image created") do |path| 
+  opts.on("-c","--cache [PATH]","Generate cache for the image created") do |path| 
     @options[:cache] = path || ""
   end
 
@@ -546,7 +546,6 @@ $stdout=$log
 $stderr=$log
 
 ## creating the cache directory if caching is enabled
-#bash.execute("mkdir #{$recipe['global']['workdir']}/cache/",:stdout => $stdout, :stderr => $stderr) if not @options[:cache].nil?
 if @options[:cache]
   cache_dir = @options[:cache].empty? ? $recipe['global']['workdir']+"/cache/" : @options[:cache]+"/cache/"
   FileUtils.mkdir_p(cache_dir)
@@ -692,6 +691,7 @@ $recipe['steps'].each do
         cmd_string=var_parse(cmd_parse(command,step+"->"+microstep.keys[0]),path)
         script[step][microstep.keys[0]].push(cmd_string)
         cmd_string=cmd_string.gsub(/['()]/,"\\\\\0")
+        puts " printing command string #{cmd_string}"
         append_to_env_file("alias #{step}_#{microstep.keys[0]}='#{cmd_string}'")
       end
     end
@@ -836,7 +836,7 @@ script.each do
   stop_cache(bash,cache_dir_step) if @options[:cache] || @options[:path_to_cache]
 end
 save_history
-## creating a tar file with the cache contents
+## Creating a tar file with the cache contents
 bash.execute("cd #{@options[:cache]} ; tar -cf #{@options[:cache]}cache-#{$timestamp}.tar cache/", :stdout => $stdout, :stderr => $stderr) if @options[:cache]
 begin
   bash.close!()
