@@ -134,7 +134,7 @@ def cmd_cache?(cmd_value,step)
         ### Generation of the command used for cache it
         cmd_for_cache = "cp #{path.chop} $$cache_dir/#{step}/data/"
         ### redirecting the scrip in the step file
-        new_executable = "$$cache_dir/#{step}/data/#{executable}"
+        new_executable = "$$cache_dir/#{step}/data/#{File.basename(executable)}"
         return cmd_for_cache, executable, new_executable
       end
     end
@@ -270,7 +270,6 @@ def start_cache(shell,cache_dir)
   ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
   ##shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
   shell.execute("export http_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
-  shell.execute("export https_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
   # out,err=shell.execute(" echo \"starting cache \"")
   # puts "Starting the cache"
   # puts out
@@ -341,6 +340,7 @@ def save_orgmode(script_step_hash)
     end
   end  
 end
+
 ### open prompt in the same enviromnent (shell) where the execution takes place
 def start_shell(shell,histfile)
   puts green("Starting shell. Enter 'exit' to return to kameleon.")
@@ -738,14 +738,15 @@ $recipe['steps'].each do
             #script[step][microstep.keys[0]].push(var_parse(action,path))
             puts "Printing actions #{var_parse(action,path)}"
             cache_cmd.push(var_parse(action,path))
-            # temp = macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]
-            # temp[old_exec]="acache_dirsdeboo"
-            # puts temp
-            # macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]= temp
-            # puts macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]
-            # sleep 10
+            puts "old : #{old_exec}, new_exec: #{new_exec}"
+            puts "  yaml: #{macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]}"
+            k = macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0].split(" ")
+            k.shift
+            puts " sol:#{new_exec} #{k.join(" ")}"
+            sleep 5
+#            macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0][old_exec]=new_exec
+            macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]="#{new_exec} #{k.join(" ")}"
             
-            macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0][old_exec]=new_exec
           end
         end
         cmd_string=cmd_string.gsub(/['()]/,"\\\\\0")
@@ -918,7 +919,7 @@ clean
 total_time = Time.now.to_i - start_time
 puts green("Total time spend on the process: #{total_time} secs")
 
-puts green("Saving everything as org mode complaint file")
+puts green("Saving everything as org mode format file")
 save_orgmode(script)
 
 =begin
