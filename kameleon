@@ -113,13 +113,34 @@ def cyan(text); colorize(text, "\e[36m"); end
 
 ### verifies if the command has to be cached
 $cacheable_cmds=[/.*apt-get .* install .*/,/\.*wget \.*/,/\.*git \.*/,]
-def cmd_cache?(cmd_value)
+## This will be used for caching version control systems that cannot be cached
+## using the proxy approach.
+## Additionally for putting all the scripts used into the cache.
+def cmd_cache?(cmd_value,step)
+  return nil if cmd_value.nil?
   open("#{$workdir}/cache_file",'a') do |cache_file|
     $cacheable_cmds.each{ |c_cmd|
-      cache_file.puts cmd_value if cmd_value.match c_cmd 
+      cache_file.puts "#{step}: #{cmd_value}" if cmd_value.match c_cmd
     }
+    ### the lines below are to keep track of the scripts used and put them into the cache.
+    executable = cmd_value.split(" ")[0]
+    ## Fix-me  it's a dirty way of doing it 
+    path = `which #{executable}`
+    if $?.exitstatus == 0
+      final_cmd="file `which #{executable}`"
+      output = IO.popen(final_cmd)
+      if output.readline["text executable"]
+        cache_file.puts "#{step}: #{path.chop}"
+        ### Generation of the command used for cache it
+        cmd_for_cache = "cp #{path.chop} $$cache_dir/#{step}/data/"
+        ### redirecting the scrip in the step file
+        new_executable = "$$cache_dir/#{step}/data/#{executable}"
+        return cmd_for_cache, executable, new_executable
+      end
+    end
+    
   end
-  return cmd_value
+  return nil
 end
 
 ### function for converting command definitions into bash commands
@@ -131,11 +152,11 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="depens"
     return "echo \"OK\""
   elsif cmd.keys[0]=="exec_current"
-    return "cd " + $current_dir + "; " + cmd_cache?(cmd.values[0])
+    return "cd " + $current_dir + "; " + cmd.values[0] #cmd_cache?(cmd.values[0],step)
   elsif cmd.keys[0]=="exec_appliance"
-    return "cd " + $chroot + "; " + cmd_cache?(cmd.values[0])
+    return "cd " + $chroot + "; " + cmd.values[0] #cmd_cache?(cmd.values[0],step)
   elsif cmd.keys[0]=="exec_chroot"
-    return "chroot " + $chroot + " " + cmd_cache?(cmd.values[0])
+    return "chroot " + $chroot + " " + cmd.values[0] #cmd_cache?(cmd.values[0],step)
   elsif cmd.keys[0]=="append_file"
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]
   elsif cmd.keys[0]=="write_file"
@@ -247,7 +268,7 @@ def start_cache(shell,cache_dir)
   polipo_bin_path=$current_dir+"/redist/bin"
   # Fix me
   ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
-  shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
+  ##shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
   shell.execute("export http_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
   shell.execute("export https_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
   # out,err=shell.execute(" echo \"starting cache \"")
@@ -271,6 +292,15 @@ def stop_cache(shell,cache_dir)
   shell.execute("kill -9 $polipo_pid",:stdout => $stdout, :stderr => $stderr)
 end
 
+## finish up with the cache
+def cache_up(list_cmd)
+  sleep 1
+  puts green("Copying last files to create the cache")
+  list_cmd.each{ |cmd|
+    system(cmd)
+  }
+  ### need to change the steps files
+end
 ### ERB interaction
 def config_inject(template_name,output_file)
   ## global variables have to be putted like this global['var']
@@ -549,12 +579,21 @@ $stderr=$log
 if @options[:cache]
   cache_dir = @options[:cache].empty? ? $recipe['global']['workdir']+"/cache/" : @options[:cache]+"/cache/"
   FileUtils.mkdir_p(cache_dir)
+  ## When creating the cache it is important to save the cache directory as a global variable
+  ## to generate actions to cache commands after
+  $recipe['global']['cache_dir'] = cache_dir
+  ### list of command to be executed so as to complete the cache.
+  cache_cmd=[]
 end
 
 ## if from cache is activated, decompress the tar cache file into the workdir directory
 if @options[:path_to_cache] 
   puts green("Untaring cache file into the workdir directory")
   bash.execute("tar -xvf #{@options[:path_to_cache]} -C #{$recipe['global']['workdir']}", :stdout => $stdout, :stderr => $stderr)
+  ## to keep the cache direcory in the global variables and have acces form a recipe
+  $recipe['global']['cache_dir'] = $recipe['global']['workdir']+"/cache/"
+  ## so from the recipe I can do something like:
+  ## $$cache/step/archilinux.sh --arch i386    
 end
 #Readline.output=log
 
@@ -635,14 +674,14 @@ $recipe['steps'].each do
   ### loading steps from cache if is activated
   if @options[:path_to_cache]
     step_name = File.basename(path)
-    #path = @options[:path_to_cache]+step_name#+".yaml"
-    path = $recipe['global']['workdir']+"/cache/"+step_name
-    puts green(" Loaing from cache !!!")
+    path = $recipe['global']['workdir']+"/cache/#{step}/"+step_name
+    puts green("  | Loading from cache !!!")
   end
   # load macrostep file
   begin
     puts green("  | Loading " + path)
     macrostep_yaml = YAML.load(File.open(path))
+    macrostep_yaml_cache =  YAML.load(File.open(path)) if @options[:cache]
   rescue
     print "Failed to open macrostep file. ", $!, "\n"
     exit(7)
@@ -651,7 +690,9 @@ $recipe['steps'].each do
   ### saving steps if cache is activated
   if @options[:cache] and not @options[:path_to_cache]
     step_name=File.basename(path)
-    FileUtils.cp(path,cache_dir+step_name)
+    FileUtils.mkdir(cache_dir+step)
+    FileUtils.mkdir(cache_dir+step+"/data/") ## to save scrips used during the creation of the image
+    FileUtils.cp(path,cache_dir+"/#{step}/"+step_name)
     # File.open($recipe['global']['workdir']}+"/cache/"+step_name) do |step_file|
     #   YAML.dump(macrostep_yaml,step_file)
     # end
@@ -679,19 +720,35 @@ $recipe['steps'].each do
 
   # Define the variable stepdir before parsing the yaml file.
   $recipe['global']['stepdir'] = File.basename(path,'.yaml')
-
+ 
   # traverse macrosteps->microsteps->commands structure, parse commands;
   # test if we're dealing with the list of microsteps
   if macrostep.kind_of?(String)
-    macrostep_yaml[step].each do
-      |microstep|
+    macrostep_yaml[step].each_with_index do
+      |microstep,ind_micro|
       script[step][microstep.keys[0]] = Array.new()
-      microstep.values[0].each do
-        |command|
+      microstep.values[0].each_with_index do
+        |command,ind_cmd|
         cmd_string=var_parse(cmd_parse(command,step+"->"+microstep.keys[0]),path)
         script[step][microstep.keys[0]].push(cmd_string)
+        ## we test here if we must cache the command executed.
+        if @options[:cache]
+          action,old_exec,new_exec = cmd_cache?(cmd_string.split(";")[1],step)
+          if not action.nil?
+            #script[step][microstep.keys[0]].push(var_parse(action,path))
+            puts "Printing actions #{var_parse(action,path)}"
+            cache_cmd.push(var_parse(action,path))
+            # temp = macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]
+            # temp[old_exec]="acache_dirsdeboo"
+            # puts temp
+            # macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]= temp
+            # puts macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]
+            # sleep 10
+            
+            macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0][old_exec]=new_exec
+          end
+        end
         cmd_string=cmd_string.gsub(/['()]/,"\\\\\0")
-        puts " printing command string #{cmd_string}"
         append_to_env_file("alias #{step}_#{microstep.keys[0]}='#{cmd_string}'")
       end
     end
@@ -727,6 +784,13 @@ $recipe['steps'].each do
         append_to_env_file("alias #{step}_#{microstep}='#{cmd_string}'")
       end
 
+    end
+  end
+  ### we have to save the macrostep
+  if @options[:cache] 
+    step_name=File.basename(path)
+    File.open(cache_dir+"/#{step}/"+step_name,'w') do |step_file|
+      step_file.write(macrostep_yaml_cache.to_yaml)
     end
   end
 end
@@ -836,8 +900,13 @@ script.each do
   stop_cache(bash,cache_dir_step) if @options[:cache] || @options[:path_to_cache]
 end
 save_history
-## Creating a tar file with the cache contents
-bash.execute("cd #{@options[:cache]} ; tar -cf #{@options[:cache]}cache-#{$timestamp}.tar cache/", :stdout => $stdout, :stderr => $stderr) if @options[:cache]
+## Finishing to generate cache, put it additional files
+if @options[:cache]
+  cache_up(cache_cmd)
+  ## Creating a tar file with the cache contents
+  cache_updir=File.dirname(cache_dir) ## the upper dir for cache
+  bash.execute("cd #{cache_updir} ; tar -cf cache-#{$timestamp}.tar cache/", :stdout => $stdout, :stderr => $stderr) 
+end
 begin
   bash.close!()
 rescue
