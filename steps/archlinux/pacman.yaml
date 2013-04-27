@@ -9,7 +9,7 @@ pacman:
           - pacman.conf.erb
           - $$chroot/etc/pacman.conf
   - initial_pacman:
-      - exec_chroot: bash -c "pacman -Sy"
+      - exec_chroot: bash -c "pacman --noconfirm -Sy"
   - install_linux:
       - exec_chroot: bash -c "pacman --noconfirm -Sy --force linux"
   - install_base:

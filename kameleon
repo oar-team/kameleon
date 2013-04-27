@@ -735,18 +735,12 @@ $recipe['steps'].each do
         if @options[:cache]
           action,old_exec,new_exec = cmd_cache?(cmd_string.split(";")[1],step)
           if not action.nil?
-            #script[step][microstep.keys[0]].push(var_parse(action,path))
             puts "Printing actions #{var_parse(action,path)}"
             cache_cmd.push(var_parse(action,path))
-            puts "old : #{old_exec}, new_exec: #{new_exec}"
-            puts "  yaml: #{macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]}"
             k = macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0].split(" ")
             k.shift
-            puts " sol:#{new_exec} #{k.join(" ")}"
-            sleep 5
 #            macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0][old_exec]=new_exec
             macrostep_yaml_cache[step][ind_micro].values[0][ind_cmd].values[0]="#{new_exec} #{k.join(" ")}"
-            
           end
         end
         cmd_string=cmd_string.gsub(/['()]/,"\\\\\0")
