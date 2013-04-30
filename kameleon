@@ -117,12 +117,13 @@ $cacheable_cmds=[/.*apt-get .* install .*/,/\.*wget \.*/,/\.*git \.*/,]
 ## using the proxy approach.
 ## Additionally for putting all the scripts used into the cache.
 def cmd_cache?(cmd_value,step)
+
   return nil if cmd_value.nil?
   open("#{$workdir}/cache_file",'a') do |cache_file|
     $cacheable_cmds.each{ |c_cmd|
       cache_file.puts "#{step}: #{cmd_value}" if cmd_value.match c_cmd
     }
-    ### the lines below are to keep track of the scripts used and put them into the cache.
+    ### the lines below are for keeping track of the scripts used and put them into the cache.
     executable = cmd_value.split(" ")[0]
     ## Fix-me  it's a dirty way of doing it 
     path = `which #{executable}`
@@ -133,7 +134,7 @@ def cmd_cache?(cmd_value,step)
         cache_file.puts "#{step}: #{path.chop}"
         ### Generation of the command used for cache it
         cmd_for_cache = "cp #{path.chop} $$cache_dir/#{step}/data/"
-        ### redirecting the scrip in the step file
+        ### redirecting the script in the step file
         new_executable = "$$cache_dir/#{step}/data/#{File.basename(executable)}"
         return cmd_for_cache, executable, new_executable
       end
@@ -152,11 +153,11 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="depens"
     return "echo \"OK\""
   elsif cmd.keys[0]=="exec_current"
-    return "cd " + $current_dir + "; " + cmd.values[0] #cmd_cache?(cmd.values[0],step)
+    return "cd " + $current_dir + "; " + cmd.values[0] 
   elsif cmd.keys[0]=="exec_appliance"
-    return "cd " + $chroot + "; " + cmd.values[0] #cmd_cache?(cmd.values[0],step)
+    return "cd " + $chroot + "; " + cmd.values[0] 
   elsif cmd.keys[0]=="exec_chroot"
-    return "chroot " + $chroot + " " + cmd.values[0] #cmd_cache?(cmd.values[0],step)
+    return "chroot " + $chroot + " " + cmd.values[0] 
   elsif cmd.keys[0]=="append_file"
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]
   elsif cmd.keys[0]=="write_file"
@@ -270,14 +271,16 @@ def start_cache(shell,cache_dir)
   ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
   ##shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
   shell.execute("export http_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
-  # out,err=shell.execute(" echo \"starting cache \"")
-  # puts "Starting the cache"
-  # puts out
+    
   if @options[:path_to_cache].nil?
     #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
-    out, err= shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &")
-    # puts "printing errors if there are "
-    # puts err
+    shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
+    if shell.exit_status != 0
+      puts red("Error executing polipo proxy")
+      puts red("!! Warning: the cache will be incomple")
+      sleep 2
+    end
+
   else
     shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" proxyOffline=\"true\"  chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
     #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
@@ -575,8 +578,21 @@ $log=KLogger.new($workdir + ".log")
 $stdout=$log
 $stderr=$log
 
-## creating the cache directory if caching is enabled
+## Creating the cache directory and checking the availability of polipo binary if caching is enabled
 if @options[:cache]
+  ## Checking for the existing of polipo binary
+  polipo_bin_path=$current_dir+"/redist/bin/polipo"
+  if not File.exist?(polipo_bin_path)
+    puts red("Error: Polipo binary not found")
+    puts red("Unable to start cache")
+    exit(1)
+  end
+  ## Checking if polipo is running
+  bash.execute("ps cax | grep polipo > /dev/null")
+  if bash.exit_status == 0
+    puts red("Polipo is running, exiting kameleon")
+    exit(1)
+  end
   cache_dir = @options[:cache].empty? ? $recipe['global']['workdir']+"/cache/" : @options[:cache]+"/cache/"
   FileUtils.mkdir_p(cache_dir)
   ## When creating the cache it is important to save the cache directory as a global variable
