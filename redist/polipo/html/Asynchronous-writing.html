@@ -1,0 +1,64 @@
+<html lang="en">
+<head>
+<title>Asynchronous writing - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Disk-cache.html#Disk-cache" title="Disk cache">
+<link rel="prev" href="Disk-cache.html#Disk-cache" title="Disk cache">
+<link rel="next" href="Purging.html#Purging" title="Purging">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Asynchronous-writing"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Purging.html#Purging">Purging</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Disk-cache.html#Disk-cache">Disk cache</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Disk-cache.html#Disk-cache">Disk cache</a>
+<hr>
+</div>
+
+<h4 class="subsection">4.3.1 Asynchronous writing</h4>
+
+<p><a name="index-idleTime-216"></a><a name="index-maxObjectsWhenIdle-217"></a><a name="index-maxWriteoutWhenIdle-218"></a>
+When Polipo runs out of memory (see <a href="Limiting-memory-usage.html#Limiting-memory-usage">Limiting memory usage</a>), it
+will start discarding instances from its memory cache.  If a disk
+cache has been configured, it will write out any instance that it
+discards.  Any memory allocation that prompted the purge must then
+wait for the write to complete.
+
+   <p>In order to avoid the latency hit that this causes, Polipo will
+preemptively write out instances to the disk cache whenever it is
+idle.  The integer <code>idleTime</code> specifies the time during which
+Polipo will remain idle before it starts writing out random objects to
+the on-disk cache; this value defaults to 20<span class="dmn">s</span>.  You may want to
+decrease this value for a busy cache with little memory, or increase
+it if your cache is often idle and has a lot of memory.
+
+   <p>The value <code>maxObjectsWhenIdle</code> (default 32) specifies the maximum
+number of instances that an idle Polipo will write out without
+checking whether there's any new work to do.  The value
+<code>maxWriteoutWhenIdle</code> specifies the maximum amount of data
+(default 64<span class="dmn">kB</span>) that Polipo will write out without checking for
+new activity.  Increasing these values will make asynchronous
+write-out slightly faster, at the cost of possibly increasing Polipo's
+latency in some rare circumstances.
+
+   </body></html>
+

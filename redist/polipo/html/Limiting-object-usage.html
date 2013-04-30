@@ -1,0 +1,63 @@
+<html lang="en">
+<head>
+<title>Limiting object usage - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Limiting-memory-usage.html#Limiting-memory-usage" title="Limiting memory usage">
+<link rel="prev" href="Limiting-chunk-usage.html#Limiting-chunk-usage" title="Limiting chunk usage">
+<link rel="next" href="OS-usage-limits.html#OS-usage-limits" title="OS usage limits">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Limiting-object-usage"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="OS-usage-limits.html#OS-usage-limits">OS usage limits</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Limiting-chunk-usage.html#Limiting-chunk-usage">Limiting chunk usage</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Limiting-memory-usage.html#Limiting-memory-usage">Limiting memory usage</a>
+<hr>
+</div>
+
+<h4 class="subsection">5.3.2 Limiting object usage</h4>
+
+<p><a name="index-objectHighMark-243"></a><a name="index-publicObjectLowMark-244"></a><a name="index-objectHashTableSize-245"></a>
+Besides limiting chunk usage, it is possible to limit Polipo's memory
+usage by bounding the number of objects it keeps in memory at any given
+time.  This is done with <code>objectHighMark</code> and
+<code>publicObjectLowMark</code>.
+
+   <p>The value <code>objectHighMark</code> is the absolute maximum of objects
+held in memory (including resources and server addresses).  When the
+number of in-memory objects that haven't been superseded yet falls
+below <code>publicObjectLowMark</code>, Polipo will stop writing out objects
+to disk (superseded objects are discarded as soon as possible).
+
+   <p>On 32-bit architectures, every object costs 108 bytes of memory, plus
+storage for every globally unique header that is not handled specially
+(hopefully negligible), plus an overhead of one word (4 bytes) for
+every chunk of data in the object.
+
+   <p>You may also want to change <code>objectHashTableSize</code>.  This is the
+size of the hash table used for holding objects; it should be a power
+of two and defaults to eight times <code>objectHighMark</code>.  Increasing
+this value will reduce the number of objects being written out to disk
+due to hash table collisions.  Every hash table entry costs one word.
+
+   </body></html>
+

@@ -1,0 +1,85 @@
+<html lang="en">
+<head>
+<title>Access control - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Client-connections.html#Client-connections" title="Client connections">
+<link rel="prev" href="Client-connections.html#Client-connections" title="Client connections">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Access-control"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Client-connections.html#Client-connections">Client connections</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Client-connections.html#Client-connections">Client connections</a>
+<hr>
+</div>
+
+<h4 class="subsection">3.1.1 Access control</h4>
+
+<p><a name="index-proxyAddress-75"></a><a name="index-authCredentials-76"></a><a name="index-authRealm-77"></a><a name="index-allowedClients-78"></a><a name="index-access-control-79"></a><a name="index-authentication-80"></a><a name="index-loopback-address-81"></a><a name="index-security-82"></a><a name="index-username-83"></a><a name="index-password-84"></a>
+By making it possible to have Polipo listen on a non-routable address
+(for example the loopback address &lsquo;<samp><span class="samp">127.0.0.1</span></samp>&rsquo;), the variable
+<code>proxyAddress</code> provides a very crude form of <dfn>access
+control</dfn>: the ability to decide which hosts are allowed to connect.
+
+   <p>A finer form of access control can be implemented by specifying
+explicitly a number of client addresses or ranges of addresses
+(networks) that a client is allowed to connect from.  This is done
+by setting the variable <code>allowedClients</code>.
+
+   <p>Every entry in <code>allowedClients</code> can be an IP address, for example
+&lsquo;<samp><span class="samp">134.157.168.57</span></samp>&rsquo; or &lsquo;<samp><span class="samp">::1</span></samp>&rsquo;.  It can also be a network
+address, i.e. an IP address and the number of bits in the network
+prefix, for example &lsquo;<samp><span class="samp">134.157.168.0/24</span></samp>&rsquo; or
+&lsquo;<samp><span class="samp">2001:660:116::/48</span></samp>&rsquo;.  Typical uses of &lsquo;<samp><span class="samp">allowedClients</span></samp>&rsquo;
+variable include
+<pre class="example">     allowedClients = 127.0.0.1, ::1, 134.157.168.0/24, 2001:660:116::/48
+</pre>
+   <p>or, for an IPv4-only version of Polipo,
+<pre class="example">     allowedClients = 127.0.0.1, 134.157.168.0/24
+</pre>
+   <p>A different form of access control can be implemented by requiring
+each client to <dfn>authenticate</dfn>, i.e. to prove its identity before
+connecting.  Polipo currently only implements the most insecure form
+of authentication, <dfn>HTTP basic authentication</dfn>, which sends
+usernames and passwords in clear over the network.  HTTP basic
+authentication is required when the variable <code>authCredentials</code> is
+not null; its value should be of the form &lsquo;<samp><span class="samp">username:password</span></samp>&rsquo;.
+
+   <p>Note that both IP-based authentication and HTTP basic authentication
+are insecure: the former is vulnerable to IP address spoofing, the
+latter to replay attacks.  If you need to access Polipo over the
+public Internet, the only secure option is to have it listen over the
+loopback interface only and use an ssh tunnel (see <a href="Parent-proxies.html#Parent-proxies">Parent proxies</a>)<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>.
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> It is not quite clear to me whether HTTP digest
+authentication is worth implementing.  On the one hand, if implemented
+correctly, it appears to provide secure authentication; on the other
+hand, and unlike ssh or SSL, it doesn't make any attempt at ensuring
+privacy, and its optional integrity guarantees are impossible to
+implement without significantly impairing latency.</p>
+
+   <hr></div>
+
+   </body></html>
+

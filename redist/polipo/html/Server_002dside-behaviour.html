@@ -1,0 +1,79 @@
+<html lang="en">
+<head>
+<title>Server-side behaviour - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Network.html#Network" title="Network">
+<link rel="prev" href="Server-statistics.html#Server-statistics" title="Server statistics">
+<link rel="next" href="PMM.html#PMM" title="PMM">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Server-side-behaviour"></a>
+<a name="Server_002dside-behaviour"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="PMM.html#PMM">PMM</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Server-statistics.html#Server-statistics">Server statistics</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Network.html#Network">Network</a>
+<hr>
+</div>
+
+<h3 class="section">3.6 Tweaking server-side behaviour</h3>
+
+<p><a name="index-serverSlots-119"></a><a name="index-serverSlots1-120"></a><a name="index-serverMaxSlots-121"></a><a name="index-smallRequestTime-122"></a><a name="index-replyUnpipelineTime-123"></a><a name="index-replyUnpipelineSize-124"></a><a name="index-maxPipelineTrain-125"></a><a name="index-pipelineAdditionalRequests-126"></a><a name="index-maxSideBuffering-127"></a><a name="index-small-request-128"></a><a name="index-large-request-129"></a><a name="index-breaking-pipelines-130"></a>
+The most important piece of information about a server is whether it
+supports persistent connections.  If this is the case, Polipo will
+open at most <code>serverSlots</code> connections to that server
+(<code>serverSlots1</code> if the server only implements HTTP/1.0), and
+attempt to pipeline; if not, Polipo will hit the server harder,
+opening up to <code>serverMaxSlots</code> connections.
+
+   <p>Another use of server information is to decide whether to pipeline
+additional requests on a connection that already has in-flight
+requests.  This is controlled by the variable
+<code>pipelineAdditionalRequests</code>; if it is <code>false</code>, no
+additional requests will be pipelined.  If it is <code>true</code>,
+additional requests will be pipelined whenever possible.  If it is
+<code>maybe</code> (the default), additional requests will only be pipelined
+following <dfn>small</dfn> requests, where a small request one whose
+download is estimated to take no more than <code>smallRequestTime</code>
+(default 5<span class="dmn">s</span>).
+
+   <p>Sometimes, a request has been pipelined after a request that prompts a
+very large reply from the server; when that happens, the pipeline
+needs be broken in order to reduce latency.  A reply is <dfn>large</dfn>
+and will cause a pipeline to be broken if either its size is at least
+<code>replyUnpipelineSize</code> (default one megabyte) or else the server's
+transfer rate is known and the body is expected to take at least
+<code>replyUnpipelineTime</code> to download (default 15<span class="dmn">s</span>).
+
+   <p>The variable <code>maxPipelineTrain</code> defines the maximum number of
+requests that will be pipelined in a single write (default 10). 
+Setting this variable to a very low value might (or might not) fix
+interaction with some unreliable servers that the normal heuristics
+are unable to detect.
+
+   <p>The variable <code>maxSideBuffering</code> specifies how much data will be
+buffered in a PUT or POST request; it defaults to 1500 bytes.  Setting
+this variable to 0 may cause some media players that abuse the HTTP
+protocol to work.
+
+   </body></html>
+

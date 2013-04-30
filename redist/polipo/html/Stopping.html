@@ -1,0 +1,57 @@
+<html lang="en">
+<head>
+<title>Stopping - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Running.html#Running" title="Running">
+<link rel="prev" href="Browser-configuration.html#Browser-configuration" title="Browser configuration">
+<link rel="next" href="Local-server.html#Local-server" title="Local server">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Stopping"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Local-server.html#Local-server">Local server</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Browser-configuration.html#Browser-configuration">Browser configuration</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Running.html#Running">Running</a>
+<hr>
+</div>
+
+<h3 class="section">2.3 Stopping Polipo and getting it to reload</h3>
+
+<p><a name="index-signals-50"></a><a name="index-shutting-down-51"></a><a name="index-stopping-52"></a>
+Polipo will shut down cleanly if it receives <code>SIGHUP</code>,
+<code>SIGTERM</code> or <code>SIGINT</code> signals; this will normally happen
+when a Polipo in the foreground receives a <code>^C</code> key press, when
+your system shuts down, or when you use the <code>kill</code> command with
+no flags.  Polipo will then write-out all its in-memory data to disk
+and quit.
+
+   <p>If Polipo receives the <code>SIGUSR1</code> signal, it will write out all
+the in-memory data to disk (but won't discard them), reopen the log
+file, and then reload the forbidden URLs file (see <a href="Forbidden.html#Forbidden">Forbidden</a>).
+
+   <p>Finally, if Polipo receives the <code>SIGUSR2</code> signal, it will write
+out all the in-memory data to disk and discard as much of the memory
+cache as possible.  It will then reopen the log file and reload the
+forbidden URLs file.
+
+   </body></html>
+

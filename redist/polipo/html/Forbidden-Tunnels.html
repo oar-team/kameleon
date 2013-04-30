@@ -1,0 +1,94 @@
+<html lang="en">
+<head>
+<title>Forbidden Tunnels - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Forbidden.html#Forbidden" title="Forbidden">
+<link rel="prev" href="External-redirectors.html#External-redirectors" title="External redirectors">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Forbidden-Tunnels"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="External-redirectors.html#External-redirectors">External redirectors</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Forbidden.html#Forbidden">Forbidden</a>
+<hr>
+</div>
+
+<h4 class="subsection">3.8.3 Forbidden Tunnels</h4>
+
+<p>Polipo does by default allow tunnelled connections
+(see <a href="Tunnelling-connections.html#Tunnelling-connections">Tunnelling connections</a>), however sometimes it is desirable to
+block connections selectively.
+
+   <p>Because polipo does only pass through tunnelled connections filtering is
+possible based on hostname and port information only. Filtering based on
+protocol specific types of information like pathname is not possible.
+
+   <p>Obviously the web browser (and other software) must be configured to use
+polipo as tunneling proxy for this to work. The tunnelled traffic is neither
+touched nor inspected in any way by polipo, thus encryption, certification
+and all other security and integrity guarantees implemented in the browser
+are not in any way affected.
+
+   <p>The file pointed at by the variable <code>forbiddenTunnelsFile</code> (defaults to
+<samp><span class="file">~/.polipo-forbiddenTunnels</span></samp> or <samp><span class="file">/etc/polipo/forbiddenTunnels</span></samp>,
+whichever exists) specifies the set of tunnel specifications that should
+be blocked.
+
+   <p>Every line in a file listing forbidden Tunnels can either be a domain
+name &mdash; a string that doesn't contain any of &lsquo;<samp><span class="samp">/</span></samp>&rsquo;, &lsquo;<samp><span class="samp">*</span></samp>&rsquo; or
+&lsquo;<samp><span class="samp">\</span></samp>&rsquo; &mdash;, or a POSIX extended regular expression.  Blank lines are
+ignored, as are those that start with a hash sign &lsquo;<samp><span class="samp">#</span></samp>&rsquo;.
+
+   <p>Entries in the form of regular expressions will be matched against
+tunnel reqeusts of the form <code>hostname:portnumber</code>.
+
+   <p>Tunnelled and blocked connections will be logged if the configuration variable
+<code>logLevel</code> is set to a value such that <code>((logLevel &amp; 0x80) !=0)</code>
+
+   <p>Example <code>forbiddenTunnelsFile</code> :
+<pre class="example">     # simple case, exact match of hostnames
+     www.massfuel.com
+     
+     # match hostname against regexp
+     \.hitbox\.
+     
+     # match hostname and port against regexp
+     # this will block tunnels to example.com but also  www.example.com
+     # for ports in the range 600-999
+     # Also watch for effects of 'tunnelAllowedPorts'
+     example.com\:[6-9][0-9][0-9]
+     
+     # random examples
+     \.liveperson\.
+     \.atdmt\.com
+     .*doubleclick\.net
+     .*webtrekk\.de
+     ^count\..*
+     .*\.offerstrategy\.com
+     .*\.ivwbox\.de
+     .*adwords.*
+     .*\.sitestat\.com
+     \.xiti\.com
+     webtrekk\..*
+</pre>
+   </body></html>
+

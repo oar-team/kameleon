@@ -1,0 +1,90 @@
+<html lang="en">
+<head>
+<title>Tuning POST and PUT - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Network.html#Network" title="Network">
+<link rel="prev" href="Parent-proxies.html#Parent-proxies" title="Parent proxies">
+<link rel="next" href="Tunnelling-connections.html#Tunnelling-connections" title="Tunnelling connections">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Tuning-POST-and-PUT"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Tunnelling-connections.html#Tunnelling-connections">Tunnelling connections</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Parent-proxies.html#Parent-proxies">Parent proxies</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Network.html#Network">Network</a>
+<hr>
+</div>
+
+<h3 class="section">3.11 Tuning POST and PUT requests</h3>
+
+<p><a name="index-POST-request-177"></a><a name="index-PUT-request-178"></a><a name="index-expectContinue-179"></a>
+The main assumption behind the design of the HTTP protocol is that
+requests are idempotent: since a request can be repeated by a client,
+a server is allowed to drop a connection at any time.  This fact, more
+than anything else, explains the amazing scalability of the protocol.
+
+   <p>This assumption breaks down in the case of POST requests.  Indeed, a
+POST request usually causes some action to be performed (a page to be
+printed, a significant amount of money to be transferred from your
+bank account, or, in Florida, a vote to be registered), and such a
+request should not be repeated.
+
+   <p>The only solution to this problem is to reserve HTTP to idempotent
+activities, and use reliable protocols for action-effecting ones. 
+Notwithstanding that, HTTP/1.1 makes a weak attempt at making POST
+requests slightly more reliable and efficient than they are in
+HTTP/1.0.
+
+   <p>When speaking to an HTTP/1.1 server, an HTTP client is allowed to
+request that the server check <em>a priori</em> whether it intends to
+honour a POST request.  This is done by sending <dfn>an expectation</dfn>,
+a specific header with the request, &lsquo;<samp><span class="samp">Expect: 100-continue</span></samp>&rsquo;, and
+waiting for either an error message or a &lsquo;<samp><span class="samp">100 Continue</span></samp>&rsquo; reply
+from the server.  If the latter arrives, the client is welcome to send
+the rest of the POST request<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>.
+
+   <p>Polipo's behaviour w.r.t. client expectations is controlled by the
+variable <code>expectContinue</code>.  If this variable is false, Polipo
+will never send an expectation to the server; if a client sends an
+expectation, Polipo will fail the expectation straight away, causing
+the client (if correctly implemented) to retry with no expectation. 
+If <code>expectContinue</code> is <code>maybe</code> (the default), Polipo will
+behave in a standards-compliant manner: it will forward expectations
+to the server when allowed to do so, and fail client expectations
+otherwise.  Finally, if <code>expectContinue</code> is <code>true</code>, Polipo
+will always send expectations when it is reasonable to do so; this
+violates the relevant standards and will break some websites, but
+might decrease network traffic under some circumstances.
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> This, of course, is only part of
+the story.  Additionally, the server is not required to reply with
+&lsquo;<samp><span class="samp">100 Continue</span></samp>&rsquo;, hence the client must implement a timeout. 
+Furthermore, according to the obsolete RFC2068, the server is
+allowed to spontaneously send &lsquo;<samp><span class="samp">100 Continue</span></samp>&rsquo;, so the client must
+be prepared to ignore such a reply at any time.</p>
+
+   <hr></div>
+
+   </body></html>
+

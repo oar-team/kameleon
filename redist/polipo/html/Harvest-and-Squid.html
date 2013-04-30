@@ -1,0 +1,75 @@
+<html lang="en">
+<head>
+<title>Harvest and Squid - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Other-HTTP-proxies.html#Other-HTTP-proxies" title="Other HTTP proxies">
+<link rel="prev" href="Other-HTTP-proxies.html#Other-HTTP-proxies" title="Other HTTP proxies">
+<link rel="next" href="Apache.html#Apache" title="Apache">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Harvest-and-Squid"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Apache.html#Apache">Apache</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Other-HTTP-proxies.html#Other-HTTP-proxies">Other HTTP proxies</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Other-HTTP-proxies.html#Other-HTTP-proxies">Other HTTP proxies</a>
+<hr>
+</div>
+
+<h4 class="subsection">1.7.1 Harvest and Squid</h4>
+
+<p><a name="index-Harvest-24"></a><a name="index-Squid-25"></a>
+Harvest, the grandfather of all web caches, has since evolved into
+<a href="http://www.squid-cache.org/">Squid</a>.
+
+   <p>Squid sports an elegant single-threaded non-blocking architecture and
+multiplexes multiple clients in a single process.  It also features
+almost complete support for HTTP/1.1, although for some reason it
+doesn't currently advertise it.
+
+   <p>Squid is designed as a large-scale shared proxy running on a dedicated
+machine, and therefore carries certain design decisions which make it
+difficult to use as a personal proxy.  Because Squid keeps all
+resource meta-data in memory, it requires a fair amount of RAM in
+order to manipulate a reasonably sized cache.
+
+   <p>Squid doesn't cache partial instances, and has trouble with instances
+larger than available memory<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>.  If a client connection
+is interrupted, Squid has to decide whether to continue fetching the
+resource (and possibly waste bandwidth) or discard what it already has
+(and possibly waste bandwidth).
+
+   <p>Some versions of squid would, under some circumstances, pipeline up to
+two outgoing requests on a single connection.  At the time of writing,
+this feature appears to have been disabled in the latest version.
+
+   <p>Squid's developers have decided to re-write it in C++.
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> Recent versions of Squid support
+instances larger than available memory by using a hack that the
+authors call a &ldquo;sliding window algorithm&rdquo;.</p>
+
+   <hr></div>
+
+   </body></html>
+

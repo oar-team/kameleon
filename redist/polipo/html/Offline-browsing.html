@@ -1,0 +1,53 @@
+<html lang="en">
+<head>
+<title>Offline browsing - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Network.html#Network" title="Network">
+<link rel="prev" href="HTTP-tuning.html#HTTP-tuning" title="HTTP tuning">
+<link rel="next" href="Server-statistics.html#Server-statistics" title="Server statistics">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Offline-browsing"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Server-statistics.html#Server-statistics">Server statistics</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="HTTP-tuning.html#HTTP-tuning">HTTP tuning</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Network.html#Network">Network</a>
+<hr>
+</div>
+
+<h3 class="section">3.4 Offline browsing</h3>
+
+<p><a name="index-proxyOffline-109"></a><a name="index-offline-browsing-110"></a><a name="index-browsing-offline-111"></a><a name="index-connectivity-112"></a><a name="index-warning-113"></a><a name="index-shift_002dclick-114"></a>
+In an ideal world, all machines would have perfect connectivity to the
+network at all times and servers would never crash.  In the real
+world, it may be necessary to avoid hitting the network and have
+Polipo serve stale objects from its cache.
+
+   <p>Setting <code>proxyOffline</code> to <code>true</code> prevents Polipo from
+contacting remote servers, no matter what.  This setting is suitable
+when you have no network connection whatsoever.
+
+   <p>If <code>proxyOffline</code> is false, Polipo's caching behaviour is
+controlled by a number of variables documented in <a href="Tweaking-validation.html#Tweaking-validation">Tweaking validation</a>.
+
+   </body></html>
+

@@ -1,0 +1,108 @@
+<html lang="en">
+<head>
+<title>Tweaking validation - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Cache-transparency.html#Cache-transparency" title="Cache transparency">
+<link rel="prev" href="Tuning-validation.html#Tuning-validation" title="Tuning validation">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Tweaking-validation"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Tuning-validation.html#Tuning-validation">Tuning validation</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Cache-transparency.html#Cache-transparency">Cache transparency</a>
+<hr>
+</div>
+
+<h4 class="subsection">4.1.2 Further tweaking of validation behaviour</h4>
+
+<p><a name="index-uncachable-200"></a><a name="index-vary-201"></a><a name="index-cacheIsShared-202"></a><a name="index-mindlesslyCacheVary-203"></a><a name="index-uncachableFile-204"></a><a name="index-dontCacheCookies-205"></a><a name="index-dontCacheRedirects-206"></a><a name="index-dontTrustVaryETag-207"></a>
+If <code>cacheIsShared</code> is false (it is true by default), Polipo will
+ignore the server-side &lsquo;<samp><span class="samp">Cache-Control</span></samp>&rsquo; directives &lsquo;<samp><span class="samp">private</span></samp>&rsquo;,
+&lsquo;<samp><span class="samp">s-maxage</span></samp>&rsquo; and &lsquo;<samp><span class="samp">proxy-must-revalidate</span></samp>&rsquo;.  This is highly
+desirable behaviour when the proxy is used by just one user, but might
+break some sites if the proxy is shared.
+
+   <p>When connectivity is very poor, the variable <code>relaxTransparency</code>
+can be used to cause Polipo to serve stale instances under some
+circumstances.  If <code>relaxTransparency</code> is <code>false</code> (the
+default), all stale instances are validated (see <a href="Cache-transparency.html#Cache-transparency">Cache transparency</a>), and failures to connect are reported to the client. 
+This is the default mode of operation of most other proxies, and the
+least likely to surprise the user.
+
+   <p>If <code>relaxTransparency</code> is <code>maybe</code>, all stale instances are
+still validated, but a failure to connect is only reported as an error
+if no data is available in the cache.  If a connection fails and stale
+data is available, it is served to the client with a suitable HTTP/1.1
+&lsquo;<samp><span class="samp">Warning</span></samp>&rsquo; header.  Current user-agents do not provide visible
+indication of such warnings, however, and this setting will typically
+cause the browser to display stale data with no indication that
+anything went wrong.  It is useful when you are consulting a live web
+site but don't want to be bothered with failed revalidations.
+
+   <p>If <code>relaxTransparency</code> is <code>true</code>, missing data is fetched
+from remote servers, but stale data are unconditionally served with no
+validation.  Client-side &lsquo;<samp><span class="samp">Cache-Control</span></samp>&rsquo; directives are still
+honoured, which means that you can force an end-to-end revalidation
+from the browser's interface (typically by shift-clicking on
+&ldquo;reload&rdquo;).  This setting is only useful if you have very bad network
+connectivity or are consulting a very slow web site or one that
+provides incorrect cache control information<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a> and are willing to manually revalidate pages that you suspect
+are stale.
+
+   <p>If <code>mindlesslyCacheVary</code> is true, the presence of a &lsquo;<samp><span class="samp">Vary</span></samp>&rsquo;
+header (which indicates that content-negotiation occurred,
+see <a href="Censor-Accept_002dLanguage.html#Censor-Accept_002dLanguage">Censor Accept-Language</a>) is ignored, and cached negotiated
+instances are mindlessly returned to the client.  If it is false (the
+default), negotiated instances are revalidated on every client
+request.
+
+   <p>Unfortunately, a number of servers (most notably some versions of
+Apache's <code>mod_deflate</code> module) send objects with a &lsquo;<samp><span class="samp">ETag</span></samp>&rsquo;
+header that will confuse Polipo in the presence of a &lsquo;<samp><span class="samp">Vary</span></samp>&rsquo;
+header.  Polipo will make a reasonable check for consistency if
+&lsquo;<samp><span class="samp">dontTrustVaryETag</span></samp>&rsquo; is set to &lsquo;<samp><span class="samp">maybe</span></samp>&rsquo; (the default); it will
+systematically ignore &lsquo;<samp><span class="samp">ETag</span></samp>&rsquo; headers on objects with &lsquo;<samp><span class="samp">Vary</span></samp>&rsquo;
+headers if it is set to &lsquo;<samp><span class="samp">true</span></samp>&rsquo;.
+
+   <p>A number of websites incorrectly mark variable resources as cachable;
+such issues can be worked around in polipo by manually marking given
+categories of objects as uncachable.  If <code>dontCacheCookies</code> is
+true, all pages carrying HTTP cookies will be treated as uncachable. 
+If <code>dontCacheRedirects</code> is true, all redirects (301 and 302) will
+be treated as uncachable.  Finally, if everything else fails, a list
+of uncachable URLs can be given in the file specified by
+<code>uncachableFile</code>, which has the same format as the
+<code>forbiddenFile</code> (see <a href="Internal-forbidden-list.html#Internal-forbidden-list">Internal forbidden list</a>).  If not
+specified, its location defaults to &lsquo;<samp><span class="samp">~/.polipo-uncachable</span></samp>&rsquo; or
+&lsquo;<samp><span class="samp">/etc/polipo/uncachable</span></samp>&rsquo;, whichever exists.
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> This is for
+example the case of <code>www.microsoft.com</code>, and also of websites
+generated by a popular Free content management system written in
+Python.</p>
+
+   <hr></div>
+
+   </body></html>
+

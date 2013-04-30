@@ -1,0 +1,72 @@
+<html lang="en">
+<head>
+<title>Client connections - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Network.html#Network" title="Network">
+<link rel="prev" href="Network.html#Network" title="Network">
+<link rel="next" href="Contacting-servers.html#Contacting-servers" title="Contacting servers">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Client-connections"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Contacting-servers.html#Contacting-servers">Contacting servers</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Network.html#Network">Network</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Network.html#Network">Network</a>
+<hr>
+</div>
+
+<h3 class="section">3.1 Client connections</h3>
+
+<p><a name="index-proxyAddress-62"></a><a name="index-proxyPort-63"></a><a name="index-proxyName-64"></a><a name="index-displayName-65"></a><a name="index-address-66"></a><a name="index-port-67"></a><a name="index-IPv6-68"></a><a name="index-proxy-loop-69"></a><a name="index-loop-70"></a><a name="index-proxy-name-71"></a><a name="index-via-72"></a><a name="index-loopback-address-73"></a><a name="index-security-74"></a>
+There are three fundamental values that control how Polipo speaks to
+clients.  The variable <code>proxyAddress</code>, defines the IP address on
+which Polipo will listen; by default, its value is the <dfn>loopback
+address</dfn> <code>"127.0.0.1"</code>, meaning that Polipo will listen on the
+IPv4 loopback interface (the local host) only.  By setting this
+variable to a global IP address or to one of the special values
+<code>"::"</code> or <code>"0.0.0.0"</code>, it is possible to allow Polipo to
+serve remote clients.  This is likely to be a security hole unless you
+set <code>allowedClients</code> to a reasonable value (see <a href="Access-control.html#Access-control">Access control</a>).
+
+   <p>Note that the type of address that you specify for <code>proxyAddress</code>
+will determine whether Polipo listens to IPv4 or IPv6.  Currently, the
+only way to have Polipo listen to both protocols is to specify the
+IPv6 unspecified address (<code>"::"</code>) for <code>proxyAddress</code>.
+
+   <p>The variable <code>proxyPort</code>, by default 8123, defines the TCP port
+on which Polipo will listen.
+
+   <p>The variable <code>proxyName</code>, which defaults to the host name of the
+machine on which Polipo is running, defines the <dfn>name</dfn> of the
+proxy.  This can be an arbitrary string that should be unique among
+all instances of Polipo that you are running.  Polipo uses it in error
+messages and optionally for detecting proxy loops (by using the
+&lsquo;<samp><span class="samp">Via</span></samp>&rsquo; HTTP header, see <a href="Censoring-headers.html#Censoring-headers">Censoring headers</a>). Finally, the
+<code>displayName</code> variable specifies the name used in user-visible
+error messages (default &ldquo;Polipo&rdquo;).
+
+<ul class="menu">
+<li><a accesskey="1" href="Access-control.html#Access-control">Access control</a>:               Deciding who can connect. 
+</ul>
+
+   </body></html>
+

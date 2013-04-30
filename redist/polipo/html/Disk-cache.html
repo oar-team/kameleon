@@ -1,0 +1,86 @@
+<html lang="en">
+<head>
+<title>Disk cache - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Caching.html#Caching" title="Caching">
+<link rel="prev" href="Memory-cache.html#Memory-cache" title="Memory cache">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Disk-cache"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Memory-cache.html#Memory-cache">Memory cache</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Caching.html#Caching">Caching</a>
+<hr>
+</div>
+
+<h3 class="section">4.3 The on-disk cache</h3>
+
+<p><a name="index-filesystem-208"></a><a name="index-NFS-209"></a><a name="index-diskCacheRoot-210"></a><a name="index-maxDiskEntries-211"></a><a name="index-diskCacheWriteoutOnClose-212"></a><a name="index-diskCacheFilePermissions-213"></a><a name="index-diskCacheDirectoryPermissions-214"></a><a name="index-maxDiskCacheEntrySize-215"></a>
+The on-disk cache consists in a filesystem subtree rooted at
+a location defined by the variable <code>diskCacheRoot</code>, by default
+<code>"/var/cache/polipo/"</code>.  This directory should normally be
+writeable, readable and seekable by the user running Polipo.  While it
+is best to use a local filesystem for the on-disk cache, a NFSv3- or
+AFS-mounted filesystem should be safe in most implementations.  Do not
+use NFSv2, as it will cause cache corruption <a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>.
+
+   <p>If <code>diskCacheRoot</code> is an empty string, no disk cache is used.
+
+   <p>The value <code>maxDiskEntries</code> (32 by default) is the absolute
+maximum of file descriptors held open for on-disk objects.  When this
+limit is reached, Polipo will close descriptors on
+a least-recently-used basis.  This value should be set to be slightly
+larger than the number of resources that you expect to be live at
+a single time; defining the right notion of liveness is left as an
+exercise for the interested reader.
+
+   <p>The value <code>diskCacheWriteoutOnClose</code> (64<span class="dmn">kB</span> by default) is
+the amount of data that Polipo will write out when closing a disk
+file.  Writing out data when closing a file can avoid subsequently
+reopening it, but causes unnecessary work if the instance is later
+superseded.
+
+   <p>The integers <code>diskCacheDirectoryPermissions</code> and
+<code>diskCacheFilePermissions</code> are the Unix filesystem permissions
+with which files and directories are created in the on-disk cache;
+they default to &lsquo;<samp><span class="samp">0700</span></samp>&rsquo; and &lsquo;<samp><span class="samp">0600</span></samp>&rsquo; respectively.
+
+   <p>The variable <code>maxDiskCacheEntrySize</code> specifies the maximum size,
+in bytes, of an instance that is stored in the on-disk cache.  If set
+to -1 (the default), all objects are stored in the on-disk cache,
+
+<ul class="menu">
+<li><a accesskey="1" href="Asynchronous-writing.html#Asynchronous-writing">Asynchronous writing</a>:         Writing out data when idle. 
+<li><a accesskey="2" href="Purging.html#Purging">Purging</a>:                      Purging the on-disk cache. 
+<li><a accesskey="3" href="Disk-format.html#Disk-format">Disk format</a>:                  Format of the on-disk cache. 
+<li><a accesskey="4" href="Modifying-the-on_002ddisk-cache.html#Modifying-the-on_002ddisk-cache">Modifying the on-disk cache</a>
+</ul>
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> Polipo assumes
+that &lsquo;<samp><span class="samp">open(O_CREAT | O_EXCL)</span></samp>&rsquo; works reliably.</p>
+
+   <hr></div>
+
+   </body></html>
+

@@ -1,0 +1,64 @@
+<html lang="en">
+<head>
+<title>PMM - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Network.html#Network" title="Network">
+<link rel="prev" href="Server_002dside-behaviour.html#Server_002dside-behaviour" title="Server-side behaviour">
+<link rel="next" href="Forbidden.html#Forbidden" title="Forbidden">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="PMM"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Forbidden.html#Forbidden">Forbidden</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Server_002dside-behaviour.html#Server_002dside-behaviour">Server-side behaviour</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Network.html#Network">Network</a>
+<hr>
+</div>
+
+<h3 class="section">3.7 Poor Man's Multiplexing</h3>
+
+<p><a name="index-Poor-Man_0027s-Multiplexing-131"></a><a name="index-multiplexing-132"></a><a name="index-pmmSize-133"></a><a name="index-pmmFirstSize-134"></a>
+By default, Polipo does not use Poor Man's Multiplexing (see <a href="Poor-Mans-Multiplexing.html#Poor-Mans-Multiplexing">Poor Mans Multiplexing</a>).  If the variable <code>pmmSize</code> is set to a
+positive value, Polipo will use PMM when speaking to servers that are
+known to support pipelining.  It will request resources by segments of
+<code>pmmSize</code> bytes.  The first segment requested has a size of
+<code>pmmFirstSize</code>, which defaults to twice <code>pmmSize</code>.
+
+   <p>PMM is an intrinsically unreliable technique.  Polipo makes heroic
+efforts to make it at least usable, requesting that the server disable
+PMM when not useful (by using the &lsquo;<samp><span class="samp">If-Range</span></samp>&rsquo; header) and
+disabling it on its own if a resource turns out to be dynamic. 
+Notwithstanding these precautions, unless the server
+cooperates<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>,
+you will see failures when using PMM, which will usually result in
+blank pages and broken image icons; hitting <em>Reload</em> on your
+browser will usually cause Polipo to notice that something went wrong
+and correct the problem.
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> More precisely, unless CGI scripts cooperate.</p>
+
+   <hr></div>
+
+   </body></html>
+

@@ -1,0 +1,73 @@
+<html lang="en">
+<head>
+<title>Pipelining - The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Network-traffic.html#Network-traffic" title="Network traffic">
+<link rel="prev" href="Persistent-connections.html#Persistent-connections" title="Persistent connections">
+<link rel="next" href="Poor-Mans-Multiplexing.html#Poor-Mans-Multiplexing" title="Poor Mans Multiplexing">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 -- 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Pipelining"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Poor-Mans-Multiplexing.html#Poor-Mans-Multiplexing">Poor Mans Multiplexing</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Persistent-connections.html#Persistent-connections">Persistent connections</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Network-traffic.html#Network-traffic">Network traffic</a>
+<hr>
+</div>
+
+<h4 class="subsection">1.4.2 Pipelining</h4>
+
+<p><a name="index-Pipelining-12"></a>
+With persistent connections it becomes possible to <dfn>pipeline</dfn> or
+<dfn>stream</dfn> requests, i.e. to send multiple requests on a single
+connection without waiting for the replies to come back.  Because this
+technique gets the requests to the server faster, it reduces latency. 
+Additionally, because multiple requests can often be sent in a single
+packet, pipelining reduces network traffic.
+
+   <p>Pipelining is a fairly common technique<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>, but it is not supported by
+HTTP/1.0.  HTTP/1.1 makes pipelining support compulsory in every
+server implementation that can use persistent connections, but there
+are a number of buggy servers that claim to implement HTTP/1.1 but
+don't support pipelining.
+
+   <p>Polipo carefully probes for pipelining support in a server and uses
+pipelining if it believes that it is reliable.  Polipo also deeply
+enjoys being pipelined at by a client<a rel="footnote" href="#fn-2" name="fnd-2"><sup>2</sup></a>.
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> The X11 protocol
+fundamentally relies on pipelining.  NNTP does support pipelining. 
+SMTP doesn't, while ESMTP makes it an option.  FTP does support
+pipelining on the control connection.</p>
+
+   <p class="footnote"><small>[<a name="fn-2" href="#fnd-2">2</a>]</small> Other client-side
+implementations of HTTP that make use of pipelining include
+<a href="http://www.opera.com/">Opera</a>, recent versions of
+<a href="http://www.mozilla.org">Mozilla</a>, APT (the package downloader
+used by <a href="http://www.debian.org">Debian</a> GNU/Linux) and LFTP.</p>
+
+   <hr></div>
+
+   </body></html>
+

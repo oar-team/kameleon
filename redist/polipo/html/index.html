@@ -1,0 +1,173 @@
+<html lang="en">
+<head>
+<title>The Polipo Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="The Polipo Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="#Top">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2003 - 2006 by Juliusz Chroboczek.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<h1 class="settitle">The Polipo Manual</h1>
+<div class="contents">
+<h2>Table of Contents</h2>
+<ul>
+<li><a name="toc_Top" href="index.html#Top">Polipo</a>
+<li><a name="toc_Background" href="Background.html#Background">1 Background</a>
+<ul>
+<li><a href="The-web.html#The-web">1.1 The web and HTTP</a>
+<li><a href="Proxies-and-caches.html#Proxies-and-caches">1.2 Proxies and caches</a>
+<li><a href="Latency-and-throughput.html#Latency-and-throughput">1.3 Latency and throughput</a>
+<li><a href="Network-traffic.html#Network-traffic">1.4 Network traffic</a>
+<ul>
+<li><a href="Persistent-connections.html#Persistent-connections">1.4.1 Persistent connections</a>
+<li><a href="Pipelining.html#Pipelining">1.4.2 Pipelining</a>
+<li><a href="Poor-Mans-Multiplexing.html#Poor-Mans-Multiplexing">1.4.3 Poor Man's Multiplexing</a>
+</li></ul>
+<li><a href="Partial-instances.html#Partial-instances">1.5 Caching partial instances</a>
+<li><a href="POST-and-PUT.html#POST-and-PUT">1.6 Other requests</a>
+<li><a href="Other-HTTP-proxies.html#Other-HTTP-proxies">1.7 Other HTTP proxies</a>
+<ul>
+<li><a href="Harvest-and-Squid.html#Harvest-and-Squid">1.7.1 Harvest and Squid</a>
+<li><a href="Apache.html#Apache">1.7.2 The Apache proxy</a>
+<li><a href="WWWOFFLE.html#WWWOFFLE">1.7.3 WWWOFFLE</a>
+<li><a href="Junkbuster.html#Junkbuster">1.7.4 Junkbuster</a>
+<li><a href="Privoxy.html#Privoxy">1.7.5 Privoxy</a>
+<li><a href="Oops.html#Oops">1.7.6 Oops</a>
+</li></ul>
+</li></ul>
+<li><a name="toc_Running" href="Running.html#Running">2 Running Polipo</a>
+<ul>
+<li><a href="Polipo-Invocation.html#Polipo-Invocation">2.1 Starting Polipo</a>
+<ul>
+<li><a href="Configuring-Polipo.html#Configuring-Polipo">2.1.1 Configuration</a>
+<li><a href="Daemon.html#Daemon">2.1.2 Running as a daemon</a>
+<li><a href="Logging.html#Logging">2.1.3 Logging</a>
+</li></ul>
+<li><a href="Browser-configuration.html#Browser-configuration">2.2 Configuring your browser</a>
+<li><a href="Stopping.html#Stopping">2.3 Stopping Polipo and getting it to reload</a>
+<li><a href="Local-server.html#Local-server">2.4 The local web server</a>
+<ul>
+<li><a href="Web-interface.html#Web-interface">2.4.1 The web interface</a>
+</li></ul>
+</li></ul>
+<li><a name="toc_Network" href="Network.html#Network">3 Polipo and the network</a>
+<ul>
+<li><a href="Client-connections.html#Client-connections">3.1 Client connections</a>
+<ul>
+<li><a href="Access-control.html#Access-control">3.1.1 Access control</a>
+</li></ul>
+<li><a href="Contacting-servers.html#Contacting-servers">3.2 Contacting servers</a>
+<ul>
+<li><a href="Allowed-ports.html#Allowed-ports">3.2.1 Allowed ports</a>
+</li></ul>
+<li><a href="HTTP-tuning.html#HTTP-tuning">3.3 Tuning at the HTTP level</a>
+<ul>
+<li><a href="Tuning-the-HTTP-parser.html#Tuning-the-HTTP-parser">3.3.1 Tuning the HTTP parser</a>
+<li><a href="Censoring-headers.html#Censoring-headers">3.3.2 Censoring headers</a>
+<ul>
+<li><a href="Censor-Accept_002dLanguage.html#Censor-Accept_002dLanguage">3.3.2.1 Why censor Accept-Language</a>
+</li></ul>
+<li><a href="Intermediate-proxies.html#Intermediate-proxies">3.3.3 Adjusting intermediate proxy behaviour</a>
+</li></ul>
+<li><a href="Offline-browsing.html#Offline-browsing">3.4 Offline browsing</a>
+<li><a href="Server-statistics.html#Server-statistics">3.5 Server statistics</a>
+<li><a href="Server_002dside-behaviour.html#Server_002dside-behaviour">3.6 Tweaking server-side behaviour</a>
+<li><a href="PMM.html#PMM">3.7 Poor Man's Multiplexing</a>
+<li><a href="Forbidden.html#Forbidden">3.8 Forbidden and redirected URLs</a>
+<ul>
+<li><a href="Internal-forbidden-list.html#Internal-forbidden-list">3.8.1 Internal forbidden list</a>
+<li><a href="External-redirectors.html#External-redirectors">3.8.2 External redirectors</a>
+<li><a href="Forbidden-Tunnels.html#Forbidden-Tunnels">3.8.3 Forbidden Tunnels</a>
+</li></ul>
+<li><a href="DNS.html#DNS">3.9 The domain name service</a>
+<li><a href="Parent-proxies.html#Parent-proxies">3.10 Parent proxies</a>
+<ul>
+<li><a href="HTTP-parent-proxies.html#HTTP-parent-proxies">3.10.1 HTTP parent proxies</a>
+<li><a href="SOCKS-parent-proxies.html#SOCKS-parent-proxies">3.10.2 SOCKS parent proxies</a>
+</li></ul>
+<li><a href="Tuning-POST-and-PUT.html#Tuning-POST-and-PUT">3.11 Tuning POST and PUT requests</a>
+<li><a href="Tunnelling-connections.html#Tunnelling-connections">3.12 Tunnelling connections</a>
+</li></ul>
+<li><a name="toc_Caching" href="Caching.html#Caching">4 Caching</a>
+<ul>
+<li><a href="Cache-transparency.html#Cache-transparency">4.1 Cache transparency and validation</a>
+<ul>
+<li><a href="Tuning-validation.html#Tuning-validation">4.1.1 Tuning validation behaviour</a>
+<li><a href="Tweaking-validation.html#Tweaking-validation">4.1.2 Further tweaking of validation behaviour</a>
+</li></ul>
+<li><a href="Memory-cache.html#Memory-cache">4.2 The in-memory cache</a>
+<li><a href="Disk-cache.html#Disk-cache">4.3 The on-disk cache</a>
+<ul>
+<li><a href="Asynchronous-writing.html#Asynchronous-writing">4.3.1 Asynchronous writing</a>
+<li><a href="Purging.html#Purging">4.3.2 Purging the on-disk cache</a>
+<li><a href="Disk-format.html#Disk-format">4.3.3 Format of the on-disk cache</a>
+<li><a href="Modifying-the-on_002ddisk-cache.html#Modifying-the-on_002ddisk-cache">4.3.4 Modifying the on-disk cache</a>
+</li></ul>
+</li></ul>
+<li><a name="toc_Memory-usage" href="Memory-usage.html#Memory-usage">5 Memory usage</a>
+<ul>
+<li><a href="Chunk-memory.html#Chunk-memory">5.1 Chunk memory</a>
+<li><a href="Malloc-memory.html#Malloc-memory">5.2 Malloc allocation</a>
+<li><a href="Limiting-memory-usage.html#Limiting-memory-usage">5.3 Limiting Polipo's memory usage</a>
+<ul>
+<li><a href="Limiting-chunk-usage.html#Limiting-chunk-usage">5.3.1 Limiting chunk usage</a>
+<li><a href="Limiting-object-usage.html#Limiting-object-usage">5.3.2 Limiting object usage</a>
+<li><a href="OS-usage-limits.html#OS-usage-limits">5.3.3 OS usage limits</a>
+</li></ul>
+</li></ul>
+<li><a name="toc_Copying" href="Copying.html#Copying">Copying</a>
+<li><a name="toc_Variable-index" href="Variable-index.html#Variable-index">Variable index</a>
+<li><a name="toc_Concept-index" href="Concept-index.html#Concept-index">Concept index</a>
+</li></ul>
+</div>
+
+
+
+<div class="node">
+<a name="Top"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Background.html#Background">Background</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="../index.html#dir">(dir)</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="../index.html#dir">(dir)</a>
+<hr>
+</div>
+
+<h2 class="unnumbered">Polipo</h2>
+
+<p>Polipo is a caching web proxy designed to be used as a personal
+cache or a cache shared among a few users.
+
+   <p>The latest version of Polipo can be found on
+<a href="http://www.pps.jussieu.fr/~jch/software/polipo/">the Polipo web page</a>.
+
+   <p>This manual was written by
+<a href="http://www.pps.jussieu.fr/~jch/">Juliusz Chroboczek</a>.
+
+<ul class="menu">
+<li><a accesskey="1" href="Background.html#Background">Background</a>:                   Background information. 
+<li><a accesskey="2" href="Running.html#Running">Running</a>:                      Running Polipo
+<li><a accesskey="3" href="Network.html#Network">Network</a>:                      Polipo and the network. 
+<li><a accesskey="4" href="Caching.html#Caching">Caching</a>:                      Caching. 
+<li><a accesskey="5" href="Memory-usage.html#Memory-usage">Memory usage</a>:                 Limiting Polipo's memory usage. 
+<li><a accesskey="6" href="Copying.html#Copying">Copying</a>:                      Your rights and mine. 
+<li><a accesskey="7" href="Variable-index.html#Variable-index">Variable index</a>:               Variable index. 
+<li><a accesskey="8" href="Concept-index.html#Concept-index">Concept index</a>:                Concept index. 
+</ul>
+
+   </body></html>
+
