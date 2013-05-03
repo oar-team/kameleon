@@ -415,7 +415,7 @@ BANNER
   end
 
   opts.on("-o","--output [FILE]",String,"Where to save the image" ) do |o|
-     @options[:output_path].puth(File.expand_path(o))
+     @options[:output_path].push(File.expand_path(o))
   end
 
   opts.on("-c","--cache [PATH]","Generate cache for the image created") do |path| 
@@ -541,6 +541,18 @@ $recipe['global']['workdir'] = $workdir = $recipe['global']['workdir_base']+"/"+
 $recipe['global']['chroot'] = $chroot = $workdir + "/chroot"
 $recipe['global']['bindir'] = $current_dir
 $recipe['global']['clean'] = $clean_script
+## This is a data directory to make reference in the recipes,
+## It aims at working with the option --include in kameleon.
+
+if @options[:include_path] then
+  @options[:include_path].each do |in_path| 
+    if File.exist?(in_path+"/data/")
+      $recipe['global']['data_dir'] = in_path+"/data/"
+    else
+      puts red("!! Warning the data direcotory is not defined")
+    end
+  end
+end
 begin
   FileUtils.mkdir_p($chroot)
 rescue
