@@ -32,7 +32,7 @@ require 'optparse'
 require 'erb'
 
 # required for opening bash session in the background
-original_verbose,$VERBOSE = $VERBOSE, nil
+# original_verbose,$VERBOSE = $VERBOSE, nil
 begin
  require 'session'
 rescue LoadError => e
@@ -49,7 +49,7 @@ rescue LoadError => e
  end
  exit 1
 end
-$VERBOSE = original_verbose
+# $VERBOSE = original_verbose
 
 # required by exec_shell() function
 require 'tempfile'
@@ -284,6 +284,12 @@ end
 ### starting cache
 def start_cache(shell,cache_dir)
   polipo_bin_path=$current_dir+"/redist/bin"
+  if not File.exist?(cache_dir)
+    puts red("Error: the cache dir does not exist")
+    sleep 10
+  end
+  puts red("Starting cache in directory #{cache_dir}")
+  sleep 1 #This has to be added for polipo to wait a bit. Otherwise it is not able to start.
   # Fix me
   ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
   ##shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
@@ -297,7 +303,7 @@ def start_cache(shell,cache_dir)
       puts red("!! Warning: the cache will be incomple")
       sleep 2
     end
-
+    
   else
     shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" proxyOffline=\"true\"  chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
     #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
@@ -308,6 +314,8 @@ end
 ### stoping cache
 def stop_cache(shell,cache_dir)
   shell.execute("sleep 2")
+  puts red("stoping cache in dir: #{cache_dir}")
+  sleep 1
   shell.execute("kill -9 $polipo_pid",:stdout => $stdout, :stderr => $stderr)
 end
 
