@@ -1,0 +1,49 @@
+#### Basic Debian Kameleon recipe ###
+global:
+  workdir_base: /tmp/kameleon
+  workdir: /tmp/kameleon
+  distrib: debian
+  debian_version_name: squeeze
+ # distrib_repository:  http://archive.debian.org/debian-archive/debian/
+  distrib_repository:  http://ftp.fr.debian.org/debian/
+  output_environment_file_system_type: ext4
+  extra_packages: "mingetty"
+  include_dir: scripts
+  arch: amd64
+  kernel_arch: "amd64"
+  network_hostname: "test"
+  checkpoint_file:  "/home/cristian/Repositories/kameleon/tests/squeeze_debian.tgz"
+steps:
+# Checking availability of tools used during the process
+  - debian_check_deps
+  - check_deps:
+     - rsync
+     - building_kvm_images
+  - bootstrap
+# Some system coniguration
+  - system_config:
+     - fstab
+  - root_passwd
+  - mount_proc
+  - kernel_install
+  - software_install:
+     - extra_packages
+  - autologin
+  - strip
+  - umount_proc
+#Building the appliance
+  - build_appliance:
+     - clean_udev
+     - create_raw_image
+     - create_nbd_device
+     - mkfs
+     - mount_image
+     - copy_system_tree
+     - install_grub
+     - umount_image
+     - save_as_raw 
+     #- save_as_vdi
+     - save_as_vmdk
+# # Creating Grid5000 deployable image
+  - clean
+  
