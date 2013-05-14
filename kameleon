@@ -171,7 +171,9 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="exec_ctxt" || cmd.keys[0]=="exec_context"
     return context_parse(cmd.values[0])
   elsif cmd.keys[0]=="exec_on_clean"
-    return "echo \"" + cmd.values[0] + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+    #return "echo \"" + cmd.values[0] + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+    #add_to_clean(cmd.values[0])
+    return "Clean-command,#{cmd.values[0]}"
   elsif cmd.keys[0]=="on_clean"
     output=[]
     cmd.values.each do |clean_entry|
@@ -241,6 +243,21 @@ def context_parse(str)
   end
 end
 
+### To write command into the clean script
+### It has to be written in reverse order
+def add_to_clean(cmd)
+## Warning !! this solution dont scale well
+## We charge the file into memory, so it wont probably work for large files.
+  f = File.open($clean_script, "r+")
+  lines = f.readlines
+  f.close
+  lines = [cmd+"\n"] + lines
+
+  output = File.new($clean_script, "w")
+  lines.each { |line| output.write line }
+  output.close
+end
+
 ### prompt user in case of command execution error (non-zero exit code)
 def error_prompt()
   answer = String.new
@@ -305,7 +322,7 @@ def cache_up(list_cmd)
 end
 ### ERB interaction
 def config_inject(template_name,output_file)
-  ## global variables have to be putted like this global['var']
+  ## global variables have to be put like this global['var']
   # global['distrib'] = "debian"
   # global['arch'] = "amd64"
   begin
@@ -385,10 +402,7 @@ def clean()
   FileUtils.rm($clean_script)
 end
 
-### print usage info
-def usage()
-  puts "Usage: kameleon.rb recipe[.yaml]"
-end
+
 
 ######################################
 ### parsing command line arguments ###
@@ -553,6 +567,7 @@ if @options[:include_path] then
     end
   end
 end
+
 begin
   FileUtils.mkdir_p($chroot)
 rescue
@@ -599,6 +614,8 @@ if @options[:cache]
     puts red("Unable to start cache")
     exit(1)
   end
+  ## puting cleaning command for polipo
+  add_to_clean("killall polipo")
   ## Checking if polipo is running
   bash.execute("ps cax | grep polipo > /dev/null")
   if bash.exit_status == 0
@@ -872,9 +889,13 @@ script.each do
             start_shell(bash,$histfile)
           elsif command[0,10] == "ERB-config"
             puts green("  |-> Calling ERB config")
-            template=command.split(",")[1]
+            template = command.split(",")[1]
             output_file=command.split(",")[2]
             puts green(" |-> "+ config_inject(template,output_file))
+          elsif command[0,13] == "Clean-command"
+            puts green(" |-> Clean command")
+            clean_cmd = command.split(",")[1]
+            add_to_clean(clean_cmd)
           else
             puts green("  |-> " + command)
             # execute the command in the background bash session, connecting
