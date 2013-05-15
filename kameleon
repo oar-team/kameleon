@@ -448,12 +448,20 @@ BANNER
     @options[:path_to_cache] = cache_file
   end
   
-  opts.on("--checkpoint [STEP]",String,"Checkpoint after given step") do |step|
-    @options[:checkpoint] = step
+  opts.on("--make_ckp [STEP]",String,"Checkpoint given step") do |step|
+    @options[:make_ckp] = step
+    if step.nil? 
+      puts "There is no argument for option --make_ckp"
+      exit(0)
+    end
   end
 
-  opts.on("--chkp_file","Checkpoint from a file") do 
-    @options[:checkpoint_file] = true
+  opts.on("--restart_from_ckp [STEP]",String,"Restart the process form a checkpoint file and a given step") do |step|
+    @options[:restart_from_ckp] = step
+    if step.nil?
+      puts "There is no argument for option --restart_from_ckp"
+      exit(0)
+    end
   end
 
 end
@@ -464,6 +472,8 @@ if ARGV.length < 1
 end
 
 option_parser.parse!
+
+
 
 @options[:recipe] = ARGV[0]
 
@@ -528,17 +538,20 @@ rescue
   exit(2)
 end
 
-# inserting checkpoint if checkpint is enable
 
-if @options[:checkpoint]
-  if @options[:checkpoint_file]
-    $recipe["steps"].insert($recipe["steps"].index(@options[:checkpoint])+1,'checkpoint_resume')
-    while $recipe["steps"].shift!=@options[:checkpoint]
-    end    
-  else
-    puts "step to checkpoint: #{@options[:checkpoint]}"
-    $recipe["steps"].insert($recipe["steps"].index(@options[:checkpoint])+1,'checkpoint')
+
+# restarting from a checkpoint
+if @options[:restart_from_ckp]
+  $recipe["steps"].insert($recipe["steps"].index(@options[:restart_from_ckp])+1,'checkpoint_resume')
+  while $recipe["steps"].shift!=@options[:restart_from_ckp]
   end
+end
+
+# inserting checkpoint if checkpint is enable
+if @options[:make_ckp]
+  puts green("step to checkpoint: #{@options[:make_ckp]}")
+  sleep 2
+  $recipe["steps"].insert($recipe["steps"].index(@options[:make_ckp])+1,'checkpoint')
 end
 
 
