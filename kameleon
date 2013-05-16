@@ -542,6 +542,11 @@ end
 
 # restarting from a checkpoint
 if @options[:restart_from_ckp]
+  ## verifying if the step exists
+  if $recipe["steps"].index(@options[:restart_from_ckp]).nil?
+    puts "Such a step does not exit in the recipe"
+    exit(1)
+  end
   $recipe["steps"].insert($recipe["steps"].index(@options[:restart_from_ckp])+1,'checkpoint_resume')
   while $recipe["steps"].shift!=@options[:restart_from_ckp]
   end
@@ -549,6 +554,12 @@ end
 
 # inserting checkpoint if checkpint is enable
 if @options[:make_ckp]
+  # puts $recipe["steps"].index(@options[:make_ckp]).nil?
+  # sleep 10
+  if $recipe["steps"].index(@options[:make_ckp]).nil?
+    puts "Such a step does not exit in the recipe"
+    exit(1)
+  end
   puts green("step to checkpoint: #{@options[:make_ckp]}")
   sleep 2
   $recipe["steps"].insert($recipe["steps"].index(@options[:make_ckp])+1,'checkpoint')
