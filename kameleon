@@ -785,7 +785,8 @@ $recipe['steps'].each do
   end
 
   # Define the variable stepdir before parsing the yaml file.
-  $recipe['global']['stepdir'] = File.basename(path,'.yaml')
+  $recipe['global']['stepdir'] = File.dirname(path)
+#  $recipe['global']['stepdir'] = File.basename(path,'.yaml')
  
   # traverse macrosteps->microsteps->commands structure, parse commands;
   # test if we're dealing with the list of microsteps
