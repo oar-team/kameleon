@@ -1,4 +1,4 @@
 autologin:
- # The following microstep requires mingetty into the appliance
- - mingetty:
-   - exec_chroot: perl -pi -e 's/getty.*tty1/mingetty --noclear --autologin root tty1/' /etc/inittab
+ - inittab_login:
+   - exec_chroot: perl -pi -e 's;/sbin/getty.*tty1;/bin/login -f $$user_name tty1 </dev/tty1 >/dev/tty1 2>&1;' /etc/inittab
+ #- systemd_login: TODO

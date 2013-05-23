@@ -1,0 +1,11 @@
+create_user:
+ - create_admin_group:
+   - exec_chroot: addgroup admin
+ - add_user:
+   #use the script create_passwd.py to change this
+   - exec_chroot: useradd -g admin -p '$6$KAPpm7XEvaB1dIi9$AcMwQMSG8RGllKzVXLE4wdIP6A0dQVtbNXnaifitjL6WYTOQdM8/0s/IzbKq2uxY27vE.YuwJ69H2KrlEyTxD.' $$user_name -s /bin/bash
+ - add_group_to_sudoers:
+   - append_file:
+     - /etc/sudoers
+     - |
+       %admin ALL=(ALL:ALL) ALL

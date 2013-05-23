@@ -1,0 +1,9 @@
+keyboard_azerty_config:
+ - debian_config:
+   - write_file:
+     - /etc/default/keyboard 
+     - |
+       XKBMODEL="pc105"
+       XKBLAYOUT="fr,us"
+       XKBVARIANT=""
+       XKBOPTIONS=""
