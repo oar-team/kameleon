@@ -769,6 +769,11 @@ $recipe['steps'].each do
     step_name=File.basename(path)
     FileUtils.mkdir(cache_dir+step)
     FileUtils.mkdir(cache_dir+step+"/data/") ## to save scrips used during the creation of the image
+    FileUtils.cp_r(File.dirname(path)+"/data/",cache_dir+"/#{step}/") if File.directory?(File.dirname(path)+"/data/") 
+    ## copying the data directory for the step into the cache
+    ## This method has an issue, it will copy several times the data directory if there exits several steps in the same directory
+    ## E.g.,
+    ## oar_config, oar_system_config, oar_debian_install are under the same directory 
     FileUtils.cp(path,cache_dir+"/#{step}/"+step_name)
     # File.open($recipe['global']['workdir']}+"/cache/"+step_name) do |step_file|
     #   YAML.dump(macrostep_yaml,step_file)
