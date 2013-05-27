@@ -288,7 +288,7 @@ def start_cache(shell,cache_dir)
     puts red("Error: the cache dir does not exist")
     sleep 10
   end
-  puts red("Starting cache in directory #{cache_dir}")
+  puts blue("Starting cache in directory #{cache_dir}")
   sleep 1 #This has to be added for polipo to wait a bit. Otherwise it is not able to start.
   # Fix me
   ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
@@ -314,7 +314,7 @@ end
 ### stoping cache
 def stop_cache(shell,cache_dir)
   shell.execute("sleep 2")
-  puts red("stoping cache in dir: #{cache_dir}")
+  puts blue("Stoping cache in dir: #{cache_dir}")
   sleep 1
   shell.execute("kill -9 $polipo_pid",:stdout => $stdout, :stderr => $stderr)
 end
@@ -743,17 +743,20 @@ $recipe['steps'].each do
       end
     end
   end
-  if path == ""
+ ### Searching steps from cache if is activated
+  if @options[:path_to_cache]
+    if File.file?(search_pathc= $recipe['global']['workdir'] +"/cache/#{step}/"+step+".yaml")
+      path = search_pathc
+      sleep 0.5
+      puts green("  | Loading from cache !!!")
+    end
+  end 
+
+ if path == ""
     printf("%s: macrostep file is missing: \n%s", step, searched_pathes)
     exit(6)
   end
 
-  ### loading steps from cache if is activated
-  if @options[:path_to_cache]
-    step_name = File.basename(path)
-    path = $recipe['global']['workdir']+"/cache/#{step}/"+step_name
-    puts green("  | Loading from cache !!!")
-  end
   # load macrostep file
   begin
     puts green("  | Loading " + path)
