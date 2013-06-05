@@ -1,0 +1,18 @@
+root_ssh_localkey:
+ - ssh_key_create:
+   - exec_chroot: bash -c "ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''"
+   - exec_chroot: bash -c "ssh-keygen -t dsa -f /root/.ssh/id_dsa -N ''"
+ - copy_key_to_auth_file:
+   - exec_appliance: cp -r $$key_dir/id_rsa.pub $$chroot/root/.ssh/   
+   - exec_chroot: bash -c "cd /root/.ssh ; cat id_rsa.pub >> authorized_keys"
+# - copy_key_to_auth2_file:
+#   - exec_chroot: bash -c "cd /root/.ssh ; cat id_dsa.pub >> authorized_keys2"
+ - root_ssh_config:
+   - append_file:
+     - /root/.ssh/config
+     - | 
+       Host *
+       PasswordAuthentication yes
+       RSAAuthentication yes
+       StrictHostKeyChecking no
+       NoHostAuthenticationForLocalhost yes

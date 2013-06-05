@@ -11,7 +11,14 @@ global:
   arch: amd64
   kernel_arch: "amd64"
   network_hostname: "test"
-  checkpoint_file:  "/home/cristian/Repositories/kameleon/tests/squeeze_debian.tgz"
+  extra_packages: "openssh-server "
+  checkpoint_file:  "/tmp/kameleon/squeeze_debian.tgz"
+  extra_packages: "mysql-server mysql-client mingetty"
+  network_hostname: "test"
+  checkpoint_file: /tmp/kameleon/checkpoint.tgz
+#  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.4/debian/stable/ ./"
+  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.4/debian/ lenny main"
+
 steps:
 # Checking availability of tools used during the process
   - debian_check_deps
@@ -20,26 +27,31 @@ steps:
      - building_kvm_images
   - bootstrap
 # Some system coniguration
-  - system_config:
-     - fstab
+  - system_config
+  - software_install
+  - software_install:
+     - extra_packages
+  - oar_2.3/oar_debian_install
+  - oar_2.3/oar_system_config
+  - oar_2.3/oar_config
+  - autologin
   - root_passwd
   - mount_proc
   - kernel_install
   - strip
   - umount_proc
 #Building the appliance
-  - build_appliance:
+  - build_appliance_kpartx:
      - clean_udev
      - create_raw_image
-     - create_nbd_device
+     - create_kpartx_device
      - mkfs
      - mount_image
      - copy_system_tree
-     - install_grub
+     - get_kernel_initrd
+     - install_extlinux
      - umount_image
      - save_as_raw 
-     #- save_as_vdi
-     - save_as_vmdk
-# # Creating Grid5000 deployable image
+     - save_as_vdi
   - clean
   

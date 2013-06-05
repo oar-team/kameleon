@@ -10,7 +10,4 @@ kernel_install:
        do_initrd = yes
        link_in_boot = no
  - kernel_install:
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install linux-image-$$kernel_arch"
-
- # - kernel_install_sarge:
- #   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install kernel-image-2.6-386"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install linux-image"

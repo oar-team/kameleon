@@ -3,16 +3,22 @@ global:
   workdir_base: /tmp/kameleon
   workdir: /tmp/kameleon
   distrib: debian
-  debian_version_name: etch
-  distrib_repository:  http://archive.debian.org/debian-archive/debian/
-  #distrib_repository:  http://ftp.fr.debian.org/debian/
-  output_environment_file_system_type: ext3
+  debian_version_name: squeeze
+ # distrib_repository:  http://archive.debian.org/debian-archive/debian/
+  distrib_repository:  http://ftp.fr.debian.org/debian/
+  output_environment_file_system_type: ext4
   include_dir: scripts
-  arch: i386
-  kernel_arch: "2.6-686"
+  arch: amd64
+  kernel_arch: "amd64"
   network_hostname: "test"
-  extra_packages: "openssh-server"
+  extra_packages: "openssh-server "
+  checkpoint_file:  "/tmp/kameleon/squeeze_debian.tgz"
+  extra_packages: "mysql-server mysql-client mingetty"
+  network_hostname: "test"
   checkpoint_file: /tmp/kameleon/checkpoint.tgz
+#  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.4/debian/stable/ ./"
+  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.5/debian/ squeeze main"
+  user_name: "kameleon"
 steps:
 # Checking availability of tools used during the process
   - debian_check_deps
@@ -23,8 +29,15 @@ steps:
 # Some system coniguration
   - system_config
   - root_passwd
+  - software_install:
+     - extra_packages
+  - oar/oar_testing_old_versions
+#  - oar_2.5/oar_debian_install
+  - oar/oar_system_config
+#  - oar_2.5/oar_config
+  - oar/oar_config
+  - autologin
   - mount_proc
-  - software_install
   - kernel_install
   - strip
   - umount_proc

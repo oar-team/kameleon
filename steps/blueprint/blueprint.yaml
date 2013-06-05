@@ -1,0 +1,7 @@
+blueprint:
+  - clonning:
+      - exec_chroot: bash -c "cd /root/ ; git clone git://github.com/devstructure/blueprint.git"
+      - exec_chroot: bash -c "cd /root/blueprint ; git submodule update --init"
+  - installing:
+      - exec_chroot: make -C /root/blueprint
+      - exec_chroot: make -C /root/blueprint install 

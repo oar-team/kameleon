@@ -11,8 +11,10 @@ global:
   arch: i386
   kernel_arch: "2.6-686"
   network_hostname: "test"
-  extra_packages: "openssh-server"
+  user_name: "kameleon"
   checkpoint_file: /tmp/kameleon/checkpoint.tgz
+  extra_packages: "mysql-server mysql-client mingetty "
+  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.2/debian/stable/ ./"   
 steps:
 # Checking availability of tools used during the process
   - debian_check_deps
@@ -20,11 +22,14 @@ steps:
      - rsync
      - building_kvm_images
   - bootstrap
-# Some system coniguration
   - system_config
-  - root_passwd
   - mount_proc
-  - software_install
+  - software_install:
+     - extra_packages
+  ### - oar_2.2/oar_debian_install
+  ### - oar_2.2/oar_system_config
+  ### - oar_2.2/oar_config
+  - autologin
   - kernel_install
   - strip
   - umount_proc

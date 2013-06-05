@@ -46,15 +46,19 @@ build_appliance_kpartx:
    - exec_appliance:       echo "}" >> $$workdir/mnt/boot/grub/grub.cfg
    - exec_appliance:       echo "(hd0) /dev/hda" > $$workdir/mnt/boot/grub/device.map
  - get_kernel_initrd:
-   - exec_appliance:       export kernel=`basename $$workdir/mnt/boot/vmlinuz*`
-   - exec_appliance:       export initrd=`basename $$workdir/mnt/boot/initrd.img*`
+#   - exec_appliance:       export kernel=`basename $$workdir/mnt/boot/vmlinuz*`
+#   - exec_appliance:       export initrd=`basename $$workdir/mnt/boot/initrd.img*`
+#   - exec_appliance:       export initrd=`basename $$workdir/mnt/boot/init*` need to clean this , probably this will work for every distribution
+   - exec_appliance:       export kernel=`basename $$chroot/boot/vmlinuz*`
+   - exec_appliance:       export initrd=`basename $$chroot/boot/init*`
  - get_kernel_initrd_arch:
-   - exec_appliance:       export kernel=`basename $$workdir/mnt/boot/vmlinuz*`
-   - exec_appliance:       export initrd=`basename $$workdir/mnt/boot/*linux.img`
+   # - exec_appliance:       export kernel=`basename $$workdir/mnt/boot/vmlinuz*`
+   # - exec_appliance:       export initrd=`basename $$workdir/mnt/boot/*linux.img`
  - install_extlinux:
    - exec_appliance:       mkdir -p $$workdir/mnt/boot
    - exec_appliance:       export UIID=`blkid -s UUID -o value ${LO_DEVICE_PARTBASE}p1`
-   - exec_appliance:       echo "UIID=$UIID   /   $$output_environment_file_system_type defaults  0  1" >> $$workdir/mnt/etc/fstab
+   - exec_appliance:       echo "UIID=$UIID   /   $$output_environment_file_system_type defaults  0  0" >> $$workdir/mnt/etc/fstab
+#   - exec_appliance:       echo "/dev/sda1   /   $$output_environment_file_system_type defaults  0  0" >> $$workdir/mnt/etc/fstab
    - exec_appliance:       extlinux --install $$workdir/mnt/boot/
    - exec_appliance:       dd if=/usr/lib/syslinux/mbr.bin conv=notrunc bs=440 count=1 of=$LO_DEVICE
    - exec_appliance:       echo "DEFAULT kameleon" > $$workdir/mnt/boot/extlinux.conf
@@ -63,21 +67,26 @@ build_appliance_kpartx:
    - exec_appliance:       echo "LINUX   /boot/$kernel" >> $$workdir/mnt/boot/extlinux.conf
    - exec_appliance:       echo "APPEND  root=/dev/disk/by-uuid/$UIID" >> $$workdir/mnt/boot/extlinux.conf
    - exec_appliance:       echo "INITRD  /boot/$initrd" >> $$workdir/mnt/boot/extlinux.conf
- - install_extlinux_for_arch:
-   - exec_appliance:       mkdir -p $$workdir/mnt/boot
-   - exec_appliance:       export UIID=`blkid -s UUID -o value /dev/mapper/loop0p1`
-   - exec_appliance:       export kernel="vmlinuz-linux"
-   - exec_appliance:       export initrd="initramfs-linux.img"
-   - exec_appliance:       echo "UIID=$UIID   /   $$output_environment_file_system_type defaults  0  1" >> $$workdir/mnt/etc/fstab
-   - exec_appliance:       extlinux --install $$workdir/mnt/boot/
-   - exec_appliance:       dd if=/usr/lib/syslinux/mbr.bin conv=notrunc bs=440 count=1 of=/dev/$LOOP_DEVICE
-   - exec_appliance:       echo "DEFAULT debian" > $$workdir/mnt/boot/extlinux.conf
-   - exec_appliance:       echo "LABEL   debian" >> $$workdir/mnt/boot/extlinux.conf
-   - exec_appliance:       echo "SAY     Booting debian" >> $$workdir/mnt/boot/extlinux.conf
-   - exec_appliance:       echo "LINUX   /boot/$kernel" >> $$workdir/mnt/boot/extlinux.conf
-   - exec_appliance:       echo "APPEND  root=/dev/disk/by-uuid/$UIID" >> $$workdir/mnt/boot/extlinux.conf
-   - exec_appliance:       echo "INITRD  /boot/$initrd" >> $$workdir/mnt/boot/extlinux.conf
-
+ - save_as_g5k:
+   - exec_appliance:      echo "name:$$distrib.g5k" > /tmp/$$distrib.g5k.dsc
+   - exec_appliance:       echo "tarball:$$distrib.tar.gz|tgz" >> /tmp/$$distrib.g5k.dsc ## we have to add a postinstall
+   - exec_appliance:       echo "kernel:/boot/$kernel" >> /tmp/$$distrib.g5k.dsc
+   - exec_appliance:       echo "initrd:/boot/$initrd" >> /tmp/$$distrib.g5k.dsc
+   - exec_appliance:       echo "filesystem:$$output_environment_file_system_type" >> /tmp/$$distrib.g5k.dsc
+   - exec_appliance:       echo "environment_kind:linux" >> /tmp/$$distrib.g5k.dsc
+   - exec_appliance:       echo "fdisktype:83" >> /tmp/$$distrib.g5k.dsc
+   - exec_appliance:       cp /tmp/$$distrib.g5k.dsc $$workdir  
+# - append_file:
+   #   - /tmp/$$distrib.g5k.dsc
+   #   - |
+   #     name : $$distrib.g5k
+   #     tarball : http://public.site.grid5000.fr/~user/$$distrib.g5k.tgz|tgz
+   #     kernel : /boot/$kernel
+   #     initrd : /boot/$initrd
+   #     filesystem : $$output_environment_file_system_type
+   #     environment_kind : linux
+   #     fdisktype : 83
+#   - exec_appliance:       mv $$chroot/tmp/$$distrib.g5k.tgz $$workdir
  - old_kernel_workaround:
    - exec_appliance:       perl -pi -e "s,UUID=.*ext3,/dev/hda1 / ext3," $$workdir/mnt/etc/fstab
    - exec_appliance:       perl -pi -e "s,UUID=.*swap,/dev/hda2 none swap," $$workdir/mnt/etc/fstab
@@ -102,7 +111,7 @@ build_appliance_kpartx:
    - exec_appliance:       kvm-img convert -c -f raw $$workdir/image.raw -O qcow2 $$workdir/$$distrib.qcow2
  - save_as_vdi:
    - check_cmd:            VBoxManage
-   - exec_appliance:       VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib.vdi
+   - exec_appliance:       VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib\-$$arch.vdi
  - save_as_iso:
    - check_cmd:            wget
    - exec_chroot:          "ldd /lib/libc.so.6 |grep x86-64 && ( echo -e \"\\n\\nERROR: Iso image can only be made with a 32 bits appliance. Please, put 'arch: i386' into your recipe.\\n\\n\" ; exit 1 ) || true" 

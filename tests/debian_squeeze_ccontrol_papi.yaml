@@ -1,0 +1,54 @@
+#### Basic Debian Kameleon recipe ###
+global:
+  workdir_base: /tmp/kameleon
+  workdir: /tmp/kameleon
+  distrib: debian
+  debian_version_name: wheezy
+  distrib_repository:  http://ftp.fr.debian.org/debian/
+  output_environment_file_system_type: ext4
+  include_dir: scripts
+  arch: amd64
+  kernel_arch: "amd64"
+  network_hostname: "ccontrol"
+#  extra_packages: "git mingetty make build-essential libtool automake linux-headers-2.6-amd64 emacs openssh-server"
+  extra_packages: "git make build-essential libtool automake linux-headers-generic emacs openssh-server python"
+  ccontrol_repository: "https://github.com/perarnau/ccontrol.git"
+  checkpoint_file:  "/tmp/kameleon/squeeze_debian.tgz"
+  user_name: "root"
+  key_dir: "/home/cristian/.ssh/"
+  papi_repository: http://icl.cs.utk.edu/projects/papi/downloads/
+  papi_version: 5.1.1 
+steps:
+# Checking availability of tools used during the process
+  - bootstrap
+  - system_config
+  - mount_proc
+  - kernel_install
+  - software_install:
+      - extra_packages
+  - ccontrol/cccontrol
+  - PAPI/papi
+  - blueprint/blueprint
+  - autologin
+  - tuning/root_ssh_localkey
+  - tuning/fix_locales
+  - strip
+  - umount_proc
+#Building the appliance
+  - build_appliance_kpartx:
+     # - save_as_tgz
+     # - get_kernel_initrd
+     # - save_as_g5k
+     - clean_udev
+     - create_raw_image
+     - attach_kpartx_device
+     - mkfs
+     - mount_image
+     - copy_system_tree
+     - get_kernel_initrd
+     - install_extlinux
+     - umount_image
+     - save_as_raw 
+     - save_as_vdi
+  - clean
+  

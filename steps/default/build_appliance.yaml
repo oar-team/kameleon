@@ -86,7 +86,7 @@ build_appliance:
    - exec_appliance:       qemu-img convert -c -f raw $$workdir/image.raw -O qcow2 $$workdir/$$distrib.qcow2
  - save_as_vdi:
    - check_cmd:            VBoxManage
-   - exec_appliance:       VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib.vdi
+   - exec_appliance:       VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib-$$arch.vdi
  - save_as_iso:
    - check_cmd:            wget
    - exec_chroot:          "ldd /lib/libc.so.6 |grep x86-64 && ( echo -e \"\\n\\nERROR: Iso image can only be made with a 32 bits appliance. Please, put 'arch: i386' into your recipe.\\n\\n\" ; exit 1 ) || true" 
