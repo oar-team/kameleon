@@ -157,7 +157,9 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="exec_appliance"
     return "cd " + $chroot + "; " + cmd.values[0] 
   elsif cmd.keys[0]=="exec_chroot"
-    return "chroot " + $chroot + " " + cmd.values[0] 
+    # return "chroot " + $chroot + " " + cmd.values[0] 
+    cmd_chroot="chroot " + $chroot + " " + cmd.values[0] 
+    return "chroot,#{cmd_chroot}"
   elsif cmd.keys[0]=="append_file"
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]
   elsif cmd.keys[0]=="write_file"
@@ -500,6 +502,9 @@ end
 # open bash session in the background
 begin
   bash = Session::Bash.new()
+  bash_chroot = Session::Bash.new()
+  bash_chroot.execute("env -i bash", :stdout => $stdout, :stderr => $stderr)
+  bash_chroot.execute("source #{$kameleon_bindir}/scripts/.bashrc") ## Fix-me
 rescue
   print "Failed to open bash session. ", $!, "\n"
   exit(3)
@@ -601,7 +606,7 @@ if @options[:include_path] then
 end
 
 begin
-  FileUtils.mkdir_p($chroot)
+  FileUtils.mkdir_p($chroot) ### need to change the user to kameleon here
 rescue
   print "Failed to create working directory. ", $!, "\n"
   exit(5)
@@ -933,6 +938,9 @@ script.each do
             template = command.split(",")[1]
             output_file=command.split(",")[2]
             puts green(" |-> "+ config_inject(template,output_file))
+          elsif command[0,6] == "chroot"
+            cmd_chroot = command.split(",")[1]
+            bash_chroot.execute(cmd_chroot, :stdout => $stdout, :stderr => $stderr)
           elsif command[0,13] == "Clean-command"
             puts green(" |-> Clean command")
             clean_cmd = command.split(",")[1]
@@ -999,7 +1007,7 @@ end
 sleep(1)
 clean
 
-### Printing time spend on the whole process
+### Printing time spent on the whole process
 total_time = Time.now.to_i - start_time
 puts green("Total time spend on the process: #{total_time} secs")
 
