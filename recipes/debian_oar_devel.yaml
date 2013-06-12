@@ -28,22 +28,6 @@ global:
  #
  # Network configuration
  network_hostname: oar
- # Following variables are used by the "network_config_static" step
- #network_eth0_ip: 129.88.70.251
- #network_eth0_mask: 255.255.255.248
- #network_gateway: 129.88.70.249
- #network_dns: 129.88.30.10
- #network_domain: imag.fr
- #
- # If you're building a Xen appliance, it may help:
- #xen_domu_modules: /lib/modules/2.6.32-4-xen-amd64
- # 
- # You can start with a "checkpoint_resume" step if you want
- # to start form a pre-built image. The image can be made
- # with the "checkpoint" step.
- #checkpoint_file: /var/tmp/kameleon_checkpoint.tgz
- # 
- # OAR specific
  oar_repository: "deb http://oar.imag.fr/mirror/oar/2.5/debian squeeze-snapshots main"
  #oar_repository: "deb http://ftp.us.debian.org/debian wheezy main contrib non-free"
  
@@ -54,15 +38,13 @@ steps:
    - building_appliance
    - building_kvm_images
  - oar/oar_precheck
-# - checkpoint_resume
  - bootstrap
  - system_config
 # - network_config_static
- - root_passwd
+- root_passwd
  - mount_proc
  - software_install:
    - extra_packages
-# - checkpoint
 # - oar/oar_debian_install 
  - oar/oar_testing_old_versions
  - oar/oar_system_config
@@ -75,16 +57,14 @@ steps:
  - strip
 # - xen_domu
 # - oar/oar_build_tgz
- - build_appliance:
+ - build_appliance_kpartx:
    - clean_udev
-#   - save_as_tgz
    - create_raw_image
-   - create_nbd_device
+   - attach_kpartx_device
    - mkfs
    - mount_image
    - copy_system_tree
-#   - grub_197_workaround
-   - install_grub
+   - install_extlinux
    - umount_image
 #   - save_as_raw
 #   - save_as_vmdk

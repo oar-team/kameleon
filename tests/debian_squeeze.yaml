@@ -13,12 +13,9 @@ global:
   network_hostname: "test"
   extra_packages: "openssh-server "
   checkpoint_file:  "/tmp/kameleon/squeeze_debian.tgz"
-  extra_packages: "mysql-server mysql-client mingetty"
+  extra_packages: " "
   network_hostname: "test"
   checkpoint_file: /tmp/kameleon/checkpoint.tgz
-#  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.4/debian/stable/ ./"
-  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.4/debian/ lenny main"
-
 steps:
 # Checking availability of tools used during the process
   - debian_check_deps
@@ -31,9 +28,6 @@ steps:
   - software_install
   - software_install:
      - extra_packages
-  - oar_2.3/oar_debian_install
-  - oar_2.3/oar_system_config
-  - oar_2.3/oar_config
   - autologin
   - root_passwd
   - mount_proc
