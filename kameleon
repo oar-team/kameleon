@@ -823,7 +823,7 @@ $recipe['steps'].each do
       script[step][microstep.keys[0]] = Array.new()
       microstep.values[0].each_with_index do
         |command,ind_cmd|
-        ## now we possibly return an arry from cmd_parse
+        ## now we possibly return an array from cmd_parse
         ## which enables to represent a kameleon command 
         ## by various bash commands.
         cmd_string = ""

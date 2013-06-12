@@ -9,6 +9,7 @@ global:
   network_hostname: kameleon
   extra_packages: "openssh-server"
   checkpoint_file: "/tmp/kameleon/checkpoint.tgz"
+  HOME
 steps:
   - rpm_check_deps
   - check_deps:

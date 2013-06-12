@@ -1,0 +1,12 @@
+global:
+  workdir_base: /tmp/kameleon
+  workdir: /tmp/kameleon
+  distrib: debian
+  debian_version_name: etch
+  distrib_repository: http://archive.debian.org/debian-archive/debian/
+  output_environment_file_system_type: ext3
+  arch: i386
+  checkpoint_file: /tmp/kameleon/checkpoint.tgz
+steps:
+  - bootstrap
+  - test/export

@@ -16,7 +16,6 @@ global:
   extra_packages: "mysql-server mysql-client mingetty"
   network_hostname: "test"
   checkpoint_file: /tmp/kameleon/checkpoint.tgz
-#  oar_repository: "deb http://oar-ftp.imag.fr/oar/2.4/debian/stable/ ./"
   oar_repository: "deb http://oar-ftp.imag.fr/oar/2.5/debian/ squeeze main"
   user_name: "kameleon"
 steps:
@@ -32,9 +31,9 @@ steps:
   - software_install:
      - extra_packages
   - oar/oar_testing_old_versions
-#  - oar_2.5/oar_debian_install
+  - oar_2.5/oar_debian_install
   - oar/oar_system_config
-#  - oar_2.5/oar_config
+  - oar_2.5/oar_config
   - oar/oar_config
   - autologin
   - mount_proc
