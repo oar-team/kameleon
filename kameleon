@@ -969,8 +969,9 @@ script.each do
             bash.execute(command, :stdout => $stdout, :stderr => $stderr)
             $history << command
           end
+             puts "Exit status: #{bash_chroot.exit_status}"
           # check exit status, and stop execution on non-zero exit code
-          if (bash.exit_status !=0) && (command[0,14] != "KML-breakpoint")
+          if (bash.exit_status + bash_chroot.exit_status !=0) && (command[0,14] != "KML-breakpoint") #&& (bash_chroot.exit_status !=0)
             answer=String.new
             puts red("Error executing command.")
             print red("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
