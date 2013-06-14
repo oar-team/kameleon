@@ -1,4 +1,4 @@
-#!/usr/bin/ruby 
+#!/usr/bin/ruby
 #    Kameleon: a tool to build virtual machines or livecd images
 #    Copyright (C) 2009-2010 LIG <http://lig.imag.fr/>
 #
@@ -125,7 +125,7 @@ def cmd_cache?(cmd_value,step)
     }
     ### the lines below are for keeping track of the scripts used and put them into the cache.
     executable = cmd_value.split(" ")[0]
-    ## Fix-me  it's a dirty way of doing it 
+    ## Fix-me  it's a dirty way of doing it
     path = `which #{executable}`
     if $?.exitstatus == 0
       final_cmd="file `which #{executable}`"
@@ -139,7 +139,7 @@ def cmd_cache?(cmd_value,step)
         return cmd_for_cache, executable, new_executable
       end
     end
-    
+
   end
   return nil
 end
@@ -153,12 +153,12 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="depens"
     return "echo \"OK\""
   elsif cmd.keys[0]=="exec_current"
-    return "cd " + $current_dir + "; " + cmd.values[0] 
+    return "cd " + $current_dir + "; " + cmd.values[0]
   elsif cmd.keys[0]=="exec_appliance"
-    return "cd " + $chroot + "; " + cmd.values[0] 
+    return "cd " + $chroot + "; " + cmd.values[0]
   elsif cmd.keys[0]=="exec_chroot"
-    # return "chroot " + $chroot + " " + cmd.values[0] 
-    cmd_chroot="chroot " + $chroot + " " + cmd.values[0] 
+    # return "chroot " + $chroot + " " + cmd.values[0]
+    cmd_chroot="chroot " + $chroot + " " + cmd.values[0]
     return "chroot,#{cmd_chroot}"
   elsif cmd.keys[0]=="append_file"
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]
@@ -244,7 +244,7 @@ def context_parse(str)
     end
     cmd=cmd.gsub(/%%/, args)
     return cmd
-    
+
   end
 end
 
@@ -299,7 +299,7 @@ def start_cache(shell,cache_dir)
   ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
   ##shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
   shell.execute("export http_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
-    
+
   if @options[:path_to_cache].nil?
     #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
     shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
@@ -308,7 +308,7 @@ def start_cache(shell,cache_dir)
       puts red("!! Warning: the cache will be incomple")
       sleep 2
     end
-    
+
   else
     shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" proxyOffline=\"true\"  chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
     #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
@@ -340,14 +340,14 @@ def config_inject(template_name,output_file)
   # global['arch'] = "amd64"
   begin
     global = {}
-    global = $recipe['global'] 
+    global = $recipe['global']
     template_path=$kameleon_templatedir+"/"+template_name
     template_file = File.open(template_path, 'r').read
     erb = ERB.new(template_file)
     File.open(output_file,'w+') { |file|
       file.write(erb.result(binding))
     }
-    
+
     return "ERB done, configuration file: #{output_file} generated"
   rescue
     puts "Cleaning the environment"
@@ -357,8 +357,8 @@ end
 
 ### orgmode history saving
 def save_orgmode(script_step_hash)
-  ## org mode file path 
-  org_mode_file=$recipe['global']['workdir']+"/building_flow.org" 
+  ## org mode file path
+  org_mode_file=$recipe['global']['workdir']+"/building_flow.org"
   File.open(org_mode_file,'w') do |file|
     script_step_hash.each do |macrostep|
       macrostep_name = macrostep[0]
@@ -371,7 +371,7 @@ def save_orgmode(script_step_hash)
         end
       end
     end
-  end  
+  end
 end
 
 ### open prompt in the same enviromnent (shell) where the execution takes place
@@ -379,19 +379,19 @@ def start_shell(shell,histfile)
   puts green("Starting shell. Enter 'exit' to return to kameleon.")
 #  n = 0
   unless File.file?(rcfile="#{ENV['HOME']}/.kameleon_rc")
-    open(rcfile,'w') do |f| 
-      f.puts "source #{$recipe['global']['workdir_base']}/\$KAMELEON_TIMESTAMP/kameleon_env" 
-      f.puts "PS1='\\e[36;1mKAMELEON \\w # \\e[0m'" 
+    open(rcfile,'w') do |f|
+      f.puts "source #{$recipe['global']['workdir_base']}/\$KAMELEON_TIMESTAMP/kameleon_env"
+      f.puts "PS1='\\e[36;1mKAMELEON \\w # \\e[0m'"
     end
   end
   shell.execute("env |egrep -v '^PWD='|perl -pi -e 's/=/=\"/'|perl -pi -e 's/\$/\"/' >> #{$workdir}/kameleon_env")
   system("cd #{$workdir}; KAMELEON_TIMESTAMP=#{$timestamp} HISTFILE='#{histfile}' bash --rcfile #{rcfile}")
- 
+
  # loop do
  #   print cyan("#{ n }:SHELL> ")
  #   command = $stdin.gets
  #   $log.stdin_"write(command)
- #   #command = Readline.readline(cyan("#{ n }:SHELL> "), true) 
+ #   #command = Readline.readline(cyan("#{ n }:SHELL> "), true)
  #   if command =~ /^\s*\!*history\!*\s*$/
  #     open('shell.history','w'){|f| f.puts shell.history}
  #     next
@@ -445,17 +445,17 @@ BANNER
      @options[:output_path].push(File.expand_path(o))
   end
 
-  opts.on("-c","--cache [PATH]","Generate cache for the image created") do |path| 
+  opts.on("-c","--cache [PATH]","Generate cache for the image created") do |path|
     @options[:cache] = path || ""
   end
 
   opts.on("--from_cache [FILE]","Using specific cache to create the image") do |cache_file|
     @options[:path_to_cache] = cache_file
   end
-  
+
   opts.on("--make_ckp [STEP]",String,"Checkpoint given step") do |step|
     @options[:make_ckp] = step
-    if step.nil? 
+    if step.nil?
       puts "There is no argument for option --make_ckp"
       exit(0)
     end
@@ -507,7 +507,7 @@ begin
   bash = Session::Bash.new()
   bash_chroot = Session::Bash.new()
   bash_chroot.execute("env -i bash", :stdout => $stdout, :stderr => $stderr)
-  bash_chroot.execute("source #{$kameleon_bindir}/scripts/.bashrc") ## Fix-me
+  bash_chroot.execute("source #{$kameleon_datadir}/scripts/.bashrc") ## Fix-me
 rescue
   print "Failed to open bash session. ", $!, "\n"
   exit(3)
@@ -599,7 +599,7 @@ $recipe['global']['clean'] = $clean_script
 ## It aims at working with the option --include in kameleon.
 
 if @options[:include_path] then
-  @options[:include_path].each do |in_path| 
+  @options[:include_path].each do |in_path|
     if File.exist?(in_path+"/data/")
       $recipe['global']['data_dir'] = in_path+"/data/"
     else
@@ -672,13 +672,13 @@ if @options[:cache]
 end
 
 ## if from cache is activated, decompress the tar cache file into the workdir directory
-if @options[:path_to_cache] 
+if @options[:path_to_cache]
   puts green("Untaring cache file into the workdir directory")
   bash.execute("tar -xvf #{@options[:path_to_cache]} -C #{$recipe['global']['workdir']}", :stdout => $stdout, :stderr => $stderr)
   ## to keep the cache direcory in the global variables and have acces form a recipe
   $recipe['global']['cache_dir'] = $recipe['global']['workdir']+"/cache/"
   ## so from the recipe I can do something like:
-  ## $$cache/step/archilinux.sh --arch i386    
+  ## $$cache/step/archilinux.sh --arch i386
 end
 #Readline.output=log
 
@@ -758,7 +758,7 @@ $recipe['steps'].each do
       sleep 0.5
       puts green("  | Loading from cache !!!")
     end
-  end 
+  end
 
  if path == ""
     printf("%s: macrostep file is missing: \n%s", step, searched_pathes)
@@ -774,17 +774,17 @@ $recipe['steps'].each do
     print "Failed to open macrostep file. ", $!, "\n"
     exit(7)
   end
-  
+
   ### saving steps if cache is activated
   if @options[:cache] and not @options[:path_to_cache]
     step_name=File.basename(path)
     FileUtils.mkdir(cache_dir+step)
     FileUtils.mkdir(cache_dir+step+"/data/") ## to save scrips used during the creation of the image
-    FileUtils.cp_r(File.dirname(path)+"/data/",cache_dir+"/#{step}/") if File.directory?(File.dirname(path)+"/data/") 
+    FileUtils.cp_r(File.dirname(path)+"/data/",cache_dir+"/#{step}/") if File.directory?(File.dirname(path)+"/data/")
     ## copying the data directory for the step into the cache
     ## This method has an issue, it will copy several times the data directory if there exits several steps in the same directory
     ## E.g.,
-    ## oar_config, oar_system_config, oar_debian_install are under the same directory 
+    ## oar_config, oar_system_config, oar_debian_install are under the same directory
     FileUtils.cp(path,cache_dir+"/#{step}/"+step_name)
     # File.open($recipe['global']['workdir']}+"/cache/"+step_name) do |step_file|
     #   YAML.dump(macrostep_yaml,step_file)
@@ -814,7 +814,7 @@ $recipe['steps'].each do
   # Define the variable stepdir before parsing the yaml file.
   $recipe['global']['stepdir'] = File.dirname(path)
 #  $recipe['global']['stepdir'] = File.basename(path,'.yaml')
- 
+
   # traverse macrosteps->microsteps->commands structure, parse commands;
   # test if we're dealing with the list of microsteps
   if macrostep.kind_of?(String)
@@ -824,12 +824,12 @@ $recipe['steps'].each do
       microstep.values[0].each_with_index do
         |command,ind_cmd|
         ## now we possibly return an array from cmd_parse
-        ## which enables to represent a kameleon command 
+        ## which enables to represent a kameleon command
         ## by various bash commands.
         cmd_string = ""
         temp_result = cmd_parse(command,step+"->"+microstep.keys[0])
         if temp_result.kind_of?(Array)
-          temp_result.each do |result_ind| 
+          temp_result.each do |result_ind|
             cmd_string = var_parse(result_ind,path)
             script[step][microstep.keys[0]].push(cmd_string)
           end
@@ -837,7 +837,7 @@ $recipe['steps'].each do
           cmd_string=var_parse(temp_result,path)
           script[step][microstep.keys[0]].push(cmd_string)
         end
-        
+
         ## we test here if we must cache the command executed.
         if @options[:cache]
           action,old_exec,new_exec = cmd_cache?(cmd_string.split(";")[1],step)
@@ -889,7 +889,7 @@ $recipe['steps'].each do
     end
   end
   ### we have to save the macrostep
-  if @options[:cache] 
+  if @options[:cache]
     step_name=File.basename(path)
     File.open(cache_dir+"/#{step}/"+step_name,'w') do |step_file|
       step_file.write(macrostep_yaml_cache.to_yaml)
@@ -929,7 +929,7 @@ script.each do
   if @options[:cache] then
     cache_dir_step = cache_dir + macrostep_name
     start_cache(bash,cache_dir_step)
-  elsif @options[:path_to_cache] 
+  elsif @options[:path_to_cache]
     cache_dir_step = $recipe['global']['workdir']+"/cache/" + macrostep_name
     start_cache(bash,cache_dir_step)
   end
@@ -977,7 +977,7 @@ script.each do
             # offer three options: continue, abort, switch to shell (manually fix the error and then continue)
             while not ["c","r"].include?(answer=error_prompt)
               if answer=="s"
-                save_history 
+                save_history
                 start_shell(bash,$histfile)
                 puts green("Getting back to Kameleon ...")
                 print green("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
@@ -1018,7 +1018,7 @@ if @options[:cache]
   cache_up(cache_cmd)
   ## Creating a tar file with the cache contents
   cache_updir=File.dirname(cache_dir) ## the upper dir for cache
-  bash.execute("cd #{cache_updir} ; tar -cf cache-#{$timestamp}.tar cache/", :stdout => $stdout, :stderr => $stderr) 
+  bash.execute("cd #{cache_updir} ; tar -cf cache-#{$timestamp}.tar cache/", :stdout => $stdout, :stderr => $stderr)
 end
 begin
   bash.close!()
