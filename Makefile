@@ -14,14 +14,14 @@ endif
 KAMELEON_DIR=$(PREFIX)/share/kameleon
 MANDIR=$(PREFIX)/share/man
 BINDIR=$(PREFIX)/bin
-SBINDIR=$(PREFIX)/sbin
 DOCDIR=$(PREFIX)/share/doc/kameleon
 DIST=
 
-build: build-man
+#build: build-man
 
-build-man:
-	rd2 -rrd/rd2man-lib.rb kameleon > kameleon.1
+# not a standard executable: should be integrated or removed
+#build-man:
+#	rd2 -rrd/rd2man-lib.rb kameleon > kameleon.1
 
 install-engine:
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
@@ -31,8 +31,10 @@ install-data:
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)/steps
 	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)/recipes
+	install -d -m 0755 $(DESTDIR)$(KAMELEON_DIR)/scripts
 	for dir in steps/*; do [ $$dir != "steps/old" ] && cp -r $$dir $(DESTDIR)$(KAMELEON_DIR)/steps || true; done
 	for file in recipes/*; do [ $$file != "recipes/old" ] && cp -r $$file $(DESTDIR)$(KAMELEON_DIR)/recipes || true; done
+	for file in scripts/*; do [ $$file != "scripts/old" ] && cp -r $$file $(DESTDIR)$(KAMELEON_DIR)/scripts || true; done
 
 install-doc:
 	install -d -m 0755 $(DESTDIR)$(DOCDIR)
@@ -40,19 +42,20 @@ install-doc:
 	install COPYING $(DESTDIR)$(DOCDIR)
 	install AUTHORS $(DESTDIR)$(DOCDIR)
 
-install-man:
-	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
-	install kameleon.1 $(DESTDIR)$(MANDIR)/man1
+#install-man:
+#	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
+#	install kameleon.1 $(DESTDIR)$(MANDIR)/man1
 
-install: build install-engine install-data install-doc install-man
+#install: build install-engine install-data install-doc install-man
+install: install-engine install-data install-doc
 
-uninstall: 
+uninstall:
 	rm -rf $(DESTDIR)$(KAMELEON_DIR)
 	rm -f $(DESTDIR)$(BINDIR)/kameleon
 	rm -rf $(DESTDIR)$(DOCDIR)
 
-clean:
-	rm -f kameleon.1
+#clean:
+#	rm -f kameleon.1
 
 dist-snapshot:
 	$(MAKE) -e dist DIST="kameleon-$$(cat VERSION)+snapshot.$$(git log --format=oneline|wc -l).$$(git log -1 --format=%h)"

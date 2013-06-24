@@ -507,7 +507,7 @@ begin
   bash = Session::Bash.new()
   bash_chroot = Session::Bash.new()
   bash_chroot.execute("env -i bash", :stdout => $stdout, :stderr => $stderr)
-  bash_chroot.execute("source #{$kameleon_datadir}/scripts/.bashrc") ## Fix-me
+  bash_chroot.execute("source #{$kameleon_datadir}/scripts/chroot_env") ## Fix-me
 rescue
   print "Failed to open bash session. ", $!, "\n"
   exit(3)
