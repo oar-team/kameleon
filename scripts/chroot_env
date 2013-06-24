@@ -2,8 +2,8 @@
 
 umask 022
 
-USER=root
-HOME=/root
-PATH=/usr/bin:/usr/sbin:/bin:/sbin
-LC_ALL=POSIX
+export USER=root
+export HOME=/root
+export PATH=/usr/bin:/usr/sbin:/bin:/sbin
+export LC_ALL=POSIX
 
