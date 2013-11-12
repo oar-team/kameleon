@@ -1,0 +1,14 @@
+## Macro steps for installing PAPI 
+### http://icl.cs.utk.edu/projects/papi/downloads/papi-4.4.0.tar.gz
+papi:
+ - get_unpack:
+    - exec_chroot: bash -c "cd /root/ ; wget $$papi_repository/papi-$$papi_version.tar.gz"
+    - exec_chroot: bash -c "cd /root/ ; tar -xzf papi-$$papi_version.tar.gz -C ."
+    - exec_chroot: bash -c "cd /root/ ; rm papi-$$papi_version.tar.gz"
+ - papi_install:
+    - exec_chroot: bash -c "cd /root/papi-$$papi_version/src/ ; ./configure"
+    - exec_chroot: bash -c "cd /root/papi-$$papi_version/src/; make; make install" ### Dont forget to try make test here
+
+
+
+

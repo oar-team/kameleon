@@ -18,20 +18,17 @@ system_config:
     - exec_appliance: source etc/locale.conf
   - etc_hosts:
     - write_file:
-       - /etc/hosts
-       - 127.0.0.1  localhost $$network_hostname
+      - /etc/hosts
+      - |
+        #
+        # /etc/hosts: static lookup table for host names
+        #
+        
+        #<ip-address>	<hostname.domain.org>	<hostname>
+        127.0.0.1	localhost.localdomain	localhost	$$network_hostname
+        ::1		localhost.localdomain	localhost
+
   - etc_hostname:
     - write_file:
       - /etc/hostname
       - $$network_hostname
-  - network_interfaces:
-    - write_file:
-      - /etc/network/interfaces
-      - |
-        auto lo
-        iface lo inet loopback
-
-        auto eth0
-        iface eth0 inet dhcp
-  - add_contribs_source:
-    - exec_appliance: perl -pi -e "s/main$/main contrib non-free/" etc/apt/sources.list

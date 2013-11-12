@@ -1,4 +1,0 @@
-debian_oar_ocaml_dependencies:
- - oar_ocaml_deps_install:
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get update"
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install ocaml-base ocaml-findlib libmysql-ocaml libmysql-ocaml-dev libounit-ocaml-dev"

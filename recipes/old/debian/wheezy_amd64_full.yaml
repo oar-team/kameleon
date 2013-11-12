@@ -1,0 +1,55 @@
+#############################################################################
+###             wheezy_amd64_full.yaml Kameleon recipe                    ###   
+#############################################################################
+# This recipe build an appliance of a complete debian server
+# 
+# the default user password is "toto", edit the create_user step to change it
+# 
+# root password is not set by default. Uncomment the root_passwd step to have
+# a root password set to "kameleon"
+#
+# WARNING: you have to change the global variables to follow your needs
+
+global:
+  # Where Kameleon stores tmp files and appliances
+  workdir_base: /var/tmp/kameleon/wheezy_amd64_full
+  # Where Kameleon store the checkpoint file
+  checkpoint_file: /var/tmp/kameleon/checkpoint/wheezy_amd64_full.tgz
+
+  # Debian specific
+  distrib: debian
+  debian_version_name: wheezy
+  distrib_repository: http://ftp.fr.debian.org/debian/
+
+  # Architecture
+  arch: amd64
+  kernel_arch: "amd64"
+
+  extra_packages: "vim less bzip2 openssh-server rsync gnupg locales \
+    bash-completion debian-keyring console-tools console-data \
+    console-setup sudo"
+
+  # Host config
+  network_hostname: my-host-name
+  user_name: my-user-name
+
+steps:
+  - debian_check_deps
+  - check_deps:
+    - rsync
+    - building_appliance
+  - bootstrap
+  - system_config
+  - mount_proc
+  - software_install:
+    - extra_packages
+  - kernel_install
+  - keyboard_azerty_config
+# - root_passwd
+  - create_user
+  - autologin
+  - strip
+  - umount_proc
+  - build_appliance:
+    - clean_udev
+    - save_as_tgz

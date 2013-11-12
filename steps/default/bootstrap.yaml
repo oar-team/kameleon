@@ -1,3 +1,0 @@
-bootstrap:
- - debootstrap:
-   - exec_appliance:  cdebootstrap-static --arch=$$arch $$debian_version_name $$chroot/ $$distrib_repository

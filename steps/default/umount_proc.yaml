@@ -1,3 +1,0 @@
-umount_proc:
- - umount_proc:
-   - exec_chroot: sh -c "if mountpoint -q /proc; then umount /proc; fi"

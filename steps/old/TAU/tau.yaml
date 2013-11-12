@@ -1,0 +1,21 @@
+## Macro steps for installing TAU profiling tool
+tau:
+ - get_unpack:
+    - exec_chroot: bash -c "cd /root/ ; wget $$pdt_repository/pdt.tgz"
+    - exec_chroot: bash -c "cd /root/ ; wget $$tau_repository/tau.tgz"
+    - exec_chroot: bash -c "cd /root/ ; tar -xzf pdt.tgz -C ."
+    - exec_chroot: bash -c "cd /root/ ; tar -xzf tau.tgz -C ."
+    - exec_chroot: bash -c "cd /root/ ; rm pdt.tgz"
+    - exec_chroot: bash -c "cd /root/ ; rm tau.tgz"
+ - pdt_install:
+    - exec_chroot: bash -c "cd /root/pdtoolkit-$$pdt_version ; ./configure "
+    - exec_chroot: bash -c "cd /root/pdtoolkit-$$pdt_version; make clean install"
+ - tau_install_with_mpi:
+    - exec_chroot: bash -c "cd /root/tau-$$tau_version ; ./configure -pdt=/root/pdtoolkit-$$pdt_version -mpiinc=/usr/include/ -mpilib=/usr/lib/"
+    - exec_chroot: bash -c "cd /root/tau-$$tau_version; make clean install"
+ - tau_install_with_papi:
+    - exec_chroot: bash -c "cd /root/tau-$$tau_version ; ./configure -pdt=/root/pdtoolkit-$$pdt_version -papi=/root/papi-4.4.0/ "
+    - exec_chroot: bash -c "cd /root/tau-$$tau_version; make clean install"
+
+
+

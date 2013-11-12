@@ -1,5 +1,6 @@
 checkpoint_resume:
- - restore_tar:
-   - exec_appliance:  tar zxf $$checkpoint_file -C $$chroot/
-   - exec_appliance:  mkdir -p $$chroot/proc
-   - exec_appliance:  cp -f /etc/resolv.conf $$chroot/etc
+  - restore_tar:
+    - exec_appliance: |
+        tar zxf $$checkpoint_file -C $$chroot/
+        mkdir -p $$chroot/proc
+        cp -f /etc/resolv.conf $$chroot/etc

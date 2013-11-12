@@ -1,0 +1,4 @@
+evalys-tools_repo:
+ - clone_evalys-tools:
+   - exec_chroot: bash -c "cd /root/  ; git clone https://forge.imag.fr/anonscm/git/evalys-tools/evalys-tools.git"
+

@@ -1,0 +1,80 @@
+Debian LUSTRE client
+++++++++++++++++++++
+Here are the steps to compile the Debian LUSTRE client packages::
+
+    export LANG=C
+    
+    mkdir /tmp/lustre-inst
+    cd /tmp/lustre-inst
+    git clone git://git.lustre.org/prime/lustre.git
+    cd lustre
+    git checkout v1_8_6
+    git archive HEAD --prefix=lustre-1.8.6/ --format=tar -o /tmp/lustre-inst/lustre-1.8.6.tar
+    cd /tmp/lustre-inst
+    tar xf /tmp/lustre-inst/lustre-1.8.6.tar
+    
+    apt-get install linux-source-2.6.32
+    apt-get install build-essential module-assistant dh-kpatches lyx automake1.7 texlive-extra-utils texlive-latex-recommended
+    apt-get install debhelper libsnmp-dev quilt
+    
+    tar xf /usr/src/linux-source-2.6.32.tar.bz2
+    cd linux-source-2.6.32
+    cp /boot/config-2.6.32-5-amd64 .config
+    sed -i s/^EXTRAVERSION.*/EXTRAVERSION\ =\ -5-amd64/g Makefile
+    make menuconfig  # charger le .config
+    make -j 12
+    
+    mv /usr/src/linux-headers-2.6.32-5-amd64 /usr/src/linux-headers-2.6.32-5-amd64.orig
+    ln -s /tmp/lustre-inst/linux-source-2.6.32 /usr/src/linux-headers-2.6.32-5-amd64
+    
+    cd /tmp/lustre-inst/lustre-1.8.6
+    chmod +x autogen.sh 
+    ./autogen.sh 
+    mkdir .git  # A script looks for this directory to add a build version to
+                # known the compilation date
+    ./configure --disable-server --with-linux=/tmp/lustre-inst/linux-source-2.6.32
+
+    # Change the file "debian/rules" according to
+    # diff rules /tmp/lustre-1.8.6/debian/rules 
+    46c46
+    < SUPPORTED_KERNELS=2.6.18 2.6.20 2.6.22 2.6.32
+    ---
+    > SUPPORTED_KERNELS=2.6.18 2.6.20 2.6.22
+    48c48
+    < KERNEL_VERSION=2.6.32-5-amd64
+    ---
+    > #KERNEL_VERSION=2.6.27
+    54d53
+    < #KERNEL_TREE=/tmp/lustre-inst/linux-source-2.6.32
+    60c59
+    < KSRC=/tmp/lustre-inst/linux-source-2.6.32
+    ---
+    > KSRC=$(KERNEL_TREE)
+    364c363
+    <   ./configure --with-linux=/tmp/lustre-inst/linux-source-2.6.32 \
+    ---
+    >   ./configure --with-linux=$(KSRC) \
+    
+    
+    make debs
+    # The Debian packages are in the "debs" directory
+
+After this we can install the packages on the whole nodes::
+    
+    dpkg -i liblustre_1.8.6-1_amd64.deb \
+    lustre-client-modules-2.6.32-5-amd64_1.8.6-1_amd64.deb \
+    lustre-utils_1.8.6-1_amd64.deb \
+    lustre-dev_1.8.6-1_amd64.deb lustre-tests_1.8.6-1_amd64.deb
+
+Then we have to create the file "/etc/modprobe.d/lustre.conf" and put::
+
+    options lnet networks=o2ib0(ib0),tcp0(eth0)
+
+We can put in "/etc/fstab"::
+
+    mds1:mds2:/lustrefs     /mnt/lustre     lustre  defaults,auto   0 0
+
+Be careful, it is not automatically mounted at boot time so we must add it in
+"/etc/rc.local".
+
+

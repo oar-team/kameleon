@@ -1,0 +1,14 @@
+ior_install:
+ - ior_install:
+   - exec_chroot: bash -c "cd /root/ ; git clone git://github.com/chaos/ior.git"
+   - exec_chroot: bash -c "cd /root/ior/ ; ./bootstrap"
+   - exec_chroot: bash -c "cd /root/ior/ ; ./configure"
+   - exec_chroot: bash -c "cd /root/ior/ ; make"
+   - exec_chroot: bash -c "cd /root/ior/ ; make install"
+ - set_kameleon_ior_sudoer:
+   - append_file:
+     - /etc/sudoers
+     - |
+       %users ALL=NOPASSWD: /usr/local/bin/ior
+   - exec_chroot: adduser kameleon users
+

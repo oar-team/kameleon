@@ -1,3 +1,0 @@
-umount_dev:
- - umount_dev:
-   - exec_chroot: sh -c "if mountpoint -q /dev; then umount /dev; fi"

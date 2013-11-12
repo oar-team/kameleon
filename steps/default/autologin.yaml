@@ -1,4 +1,18 @@
 autologin:
- - inittab_login:
-   - exec_chroot: perl -pi -e 's;/sbin/getty.*tty1;/bin/login -f $$user_name tty1 </dev/tty1 >/dev/tty1 2>&1;' /etc/inittab
- #- systemd_login: TODO
+  - set_autologin:
+    - exec_chroot: |
+        bash -c "
+        # check SysV init
+        if [ -f /etc/inittab ]
+        then
+            perl -pi -e 's;/sbin/getty.*tty1;/bin/login -f $$user_name tty1 </dev/tty1 >/dev/tty1 2>&1;' /etc/inittab
+        else
+        # use systemd
+            mkdir -p /etc/systemd/system/getty@tty1.service.d
+            cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<EOF
+            [Service]
+            ExecStart=
+            ExecStart=-/usr/bin/agetty --autologin <username> --noclear %I 38400 linux
+            EOF
+        fi"
+

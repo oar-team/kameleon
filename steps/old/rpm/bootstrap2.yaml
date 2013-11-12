@@ -1,0 +1,3 @@
+bootstrap2:
+ - rinse:
+   - exec_appliance: rinse --arch=$$arch --distribution $$rpm_distrib_name --directory $$chroot

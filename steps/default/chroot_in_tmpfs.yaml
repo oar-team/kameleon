@@ -1,7 +1,7 @@
 chroot_in_tmpfs:
  - mount_tmpfs:
-   - exec_appliance:       mount -t tmpfs -o size=4g tmpfs $$chroot
+   - exec_appliance: mount -t tmpfs -o size=4g tmpfs $$chroot
    - on_clean:
-     - exec_current:     bash -c 'umount $$chroot || true'
+     - exec_current: bash -c 'umount $$chroot || true'
 
 

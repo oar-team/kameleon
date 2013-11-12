@@ -1,0 +1,4 @@
+bootstrap:
+  - arch-bootstrap: 
+      - exec_appliance: $$bindir/scripts/archlinux/arch-bootstrap.sh -a $$arch -r $$distrib_repository $$chroot
+

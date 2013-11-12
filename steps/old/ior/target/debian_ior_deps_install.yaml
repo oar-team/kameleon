@@ -1,0 +1,5 @@
+debian_ior_deps_install:
+ - install_hdf5_dependencies:
+   - exec_chroot: apt-get update
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install hdf5-tools"
+   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install libhdf5-mpi-dev"

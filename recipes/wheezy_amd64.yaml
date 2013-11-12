@@ -1,0 +1,54 @@
+#===============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#===============================================================================
+#
+# RECIPE: wheezy_amd64.yaml 
+# 
+# DESCRIPTION: This recipe build an appliance of a complete debian server 
+# 
+# WARNING: autologin means anyone booting this image get root acces WITHOUT
+# password
+#
+#===============================================================================
+---
+global:
+  # Where Kameleon stores tmp files and appliances
+  workdir_base: /img/kameleon/wheezy_amd64/
+  # Where Kameleon store the checkpoint file
+  checkpoint_file:  /img/kameleon/checkpoint/wheezy_amd64.tgz
+
+  # Debian specific
+  distrib: debian
+  debian_version_name: wheezy
+  distrib_repository: http://ftp.fr.debian.org/debian/
+
+  # Architecture
+  arch: amd64
+  output_environment_file_system_type: ext4
+
+  extra_packages: "vim bash-completion"
+
+  # Host config
+  network_hostname: mydebian
+  user_name: kameleon
+  user_group: admin
+  user_password: "thisMustBeACryptedPass"
+  generated_rsa_pub_dir: /img/kameleon/keys
+
+steps:
+  - bootstrap
+  - system_config
+  - make_swap
+  - network_config
+  - mount_proc
+  - software_install
+  - kernel_install
+  - keyboard_azerty_config
+  - create_user
+  - generate_user_ssh_key
+  - autologin
+  - root_passwd
+  - root_ssh_config
+  - clean_appliance
+  - build_appliance
+  - save_appliance

@@ -1,0 +1,5 @@
+gems_install:
+  - install_gems:
+      - exec_appliance: export HOME=/root/ # here the same problem it is using the enviroment variable of the host machine.
+      - exec_chroot: bash -c "gem sources -a http://gems.rubyforge.org/"
+      - exec_chroot: bash -c "gem install --no-ri --no-rdoc serializable_proc"

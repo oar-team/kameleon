@@ -1,0 +1,57 @@
+slurm_install:
+ - create_munge_key:
+   - exec_chroot: /usr/sbin/create-munge-key
+ - slurm_git_clone:
+   - exec_chroot: bash -c "cd /root/ ; git clone https://github.com/SchedMD/slurm.git"
+ - manage_dirs_and_user:
+   - exec_chroot: mkdir /var/lib/slurm
+   - exec_chroot: useradd slurm
+   - exec_chroot: chown slurm:slurm /var/lib/slurm
+   - exec_chroot: usermod -p \$1\$KkIWr.cK\$cue3GT8UYBVfEVIvMCBLF0 slurm -d /var/lib/slurm
+   - exec_chroot: su slurm -c "ssh-keygen -t dsa -f /var/lib/slurm/.ssh/id_dsa -N ''"
+   - exec_chroot: su slurm -c "cat /var/lib/slurm/.ssh/id_dsa.pub >> /var/lib/slurm/.ssh/authorized_keys"
+   - exec_chroot: bash -c "cd /etc ; ln -s /usr/local/etc/ slurm"
+   - exec_chroot: mkdir /var/log/slurm
+ - slurm_ssh_config:
+   - write_file:
+     - /var/lib/slurm/.ssh/config
+     - | 
+       Host *
+       StrictHostKeyChecking no
+       NoHostAuthenticationForLocalhost yes
+ - slurm_compile_and_install:
+   - exec_chroot: bash -c "cd /root/slurm/ ; ./configure --enable-multiple-slurmd"
+   - exec_chroot: bash -c "cd /root/slurm/ ; make"
+   - exec_chroot: bash -c "cd /root/slurm/ ; make install"
+ - write_conf_files:
+   - exec_current: cp -rp $$include_dir/etc/slurm/*  $$chroot/etc/slurm/
+ - init_dbd_script:
+   - write_file:
+     - /etc/slurm/grant_dbd.sql
+     - |
+       grant all on slurmDB.* TO 'slurm'@'localhost' identified by 'slurm' with grant option;
+#  - add_init_script_with_resources:
+#    - write_file:
+#      - /etc/init.d/slurm-server-conf
+#      - |       
+#        #! /bin/sh
+#        # Default-Start:    5
+#        # Default-Stop:     0 1 6
+#        case \"\$1\" in
+#          start)
+#            mkdir /dev/cpuset
+#            mount -t cpuset none /dev/cpuset 
+#            /usr/local/bin/scontrol update NodeName=$$network_hostname State=IDLE
+#            /usr/local/sbin/slurmctld
+#            /usr/local/sbin/slurmd -N node1
+#            /usr/local/sbin/slurmd -N node2
+#            ;;
+#          stop)
+#            ;;
+#          *)
+#            exit 1
+#            ;;
+#        esac
+#        exit 0
+#    - exec_chroot: chmod +x /etc/init.d/slurm-server-conf
+#    - exec_chroot: update-rc.d slurm-server-conf defaults

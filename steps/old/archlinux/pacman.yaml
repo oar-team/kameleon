@@ -1,0 +1,16 @@
+pacman:
+  - fix:
+      - exec_chroot: bash -c "cat /usr/bin/* > /dev/null &"
+      - exec_chroot: bash -c "find / > /dev/null &"
+      - exec_chroot: bash -c "pacman-key --init"
+      - exec_chroot: bash -c "pacman-key --populate archlinux"
+  - key_ring_config:
+      - erb_config:
+          - pacman.conf.erb
+          - $$chroot/etc/pacman.conf
+  - initial_pacman:
+      - exec_chroot: bash -c "pacman --noconfirm -Sy"
+  - install_linux:
+      - exec_chroot: bash -c "pacman --noconfirm -Sy --force linux"
+  - install_base:
+      - exec_chroot: bash -c "pacman --noconfirm -Sy --force base base-devel"

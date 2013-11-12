@@ -1,0 +1,26 @@
+#=== WARNING ===================================================================
+# You must add the following context command definition to your recipe to use
+# this step.
+#
+#contexts: 
+#  install:
+#    cmd: DEBIAN_FRONTEND=noninteractive apt-get -q install -y --force-yes %%
+#    escape: \\ # The \ will be escape. It allows you to cut long lines with a \
+#===============================================================================
+---
+install_cluster_tools:
+  - install_build_essentials:
+    - exec_context: install build-essential
+  - install_openmpi:
+    - exec_context: |
+                    install openmpi-bin openmpi-common \
+                      openssh-client openssh-server \
+                      libopenmpi1.3 libopenmpi-dbg libopenmpi-dev
+  - install_python: 
+    - exec_context: install python python-dev
+  - install_java:
+    - exec_context: install openjdk-6-jre
+  - install_perl:
+    - exec_context: install perl
+  - install_tcl:
+    - exec_context: install tcl

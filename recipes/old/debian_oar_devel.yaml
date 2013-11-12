@@ -1,0 +1,75 @@
+# ### debian.yaml Kameleon recipe ###
+# This recipe can be used to create any Debian appliance. It has been
+# tested succesfully to generate etch, lenny and squeeze as of April 2010.
+# The steps and variables beginning with "oar" can be activated to make
+# a OAR client/server demo/test appliance.
+# By default, it makes a tgz image and a qcow2 directly bootable into KVM.
+#
+global:
+ #
+ # Where Kameleon stores tmp files and appliances
+ workdir_base: /var/tmp/kameleon
+ # 
+ # Debian specific
+ distrib: debian
+ #debian_version_name: wheezy
+ debian_version_name: squeeze
+ distrib_repository: http://ftp.fr.debian.org/debian/
+ output_environment_file_system_type: ext4
+ #
+ # Architecture
+ arch: amd64
+ kernel_arch: "amd64"
+ #
+ # Extra packages to install on the minimal base system
+ #extra_packages: "vim less bzip2 openssh-server rsync gnupg locales debian-keyring console-tools mingetty"
+ # If you're building a OAR appliance, use this package list:
+ extra_packages: "vim less bzip2 openssh-server rsync gnupg locales debian-keyring ruby libyaml-perl libjson-perl mysql-server mysql-client sudo libdbi-perl libdbd-mysql-perl perl-suid taktuk pidentd console-tools mingetty curl librestclient-ruby librspec-ruby libjson-ruby dpkg-dev"
+ #
+ # Network configuration
+ network_hostname: oar
+ oar_repository: "deb http://oar.imag.fr/mirror/oar/2.5/debian squeeze-snapshots main"
+ #oar_repository: "deb http://ftp.us.debian.org/debian wheezy main contrib non-free"
+ 
+steps:
+ - debian_check_deps
+ - check_deps:
+   - rsync
+   - building_appliance
+   - building_kvm_images
+ - oar/oar_precheck
+ - bootstrap
+ - system_config
+# - network_config_static
+- root_passwd
+ - mount_proc
+ - software_install:
+   - extra_packages
+# - oar/oar_debian_install 
+ - oar/oar_testing_old_versions
+ - oar/oar_system_config
+ - oar/oar_config
+# - oar/oar_devel
+ - oar/oar_clean
+ - kernel_install
+# - kameleon/kameleon_debian_install
+ - autologin
+ - strip
+# - xen_domu
+# - oar/oar_build_tgz
+ - build_appliance_kpartx:
+   - clean_udev
+   - create_raw_image
+   - attach_kpartx_device
+   - mkfs
+   - mount_image
+   - copy_system_tree
+   - install_extlinux
+   - umount_image
+#   - save_as_raw
+#   - save_as_vmdk
+#   - save_as_qcow2
+   - save_as_vdi
+#   - save_as_iso
+ - clean
+

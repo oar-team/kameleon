@@ -1,0 +1,46 @@
+save_appliance:
+  
+  #TODO test all of these
+
+  #FIXME should take the output path in args
+  - save_as_tgz:
+    - exec_current: cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
+
+  - save_as_g5k:
+    # we have to add a postinstall
+    - write_file:
+      - ../$$distrib.g5k.yaml
+      - |
+        name: $$distrib.g5k
+        tarball: $$distrib.tar.gz|tgz
+        kernel:  /boot/$kernel
+        initrd: /boot/$initrd
+        filesystem: $$output_environment_file_system_type
+        environment_kind: linux
+        fdisktype: 83
+
+  - save_as_raw:
+    - exec_appliance: |
+        mv $$workdir/image.raw $$workdir/$$distrib.raw
+        cd $$workdir; ln -s $$distrib.raw image.raw
+
+  - save_as_vmdk:
+    - check_cmd: qemu-img
+    - exec_appliance: |
+        qemu-img convert \
+        -f raw $$workdir/image.raw \
+        -O vmdk $$workdir/$$distrib.vmdk
+    - erb_config:
+      - config.vmx.erb
+      - $$workdir/$$distrib.vmx
+
+  - save_as_qcow2:
+    - check_cmd: qemu-img
+    - exec_appliance: |
+        qemu-img convert -c -f raw $$workdir/image.raw \
+        -O qcow2 $$workdir/$$distrib.qcow2
+
+  - save_as_vdi:
+    - check_cmd: VBoxManage
+    - exec_appliance: |
+        VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib\-$$arch.vdi

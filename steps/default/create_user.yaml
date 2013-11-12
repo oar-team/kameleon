@@ -1,9 +1,9 @@
 create_user:
- - create_admin_group:
-   - exec_chroot: addgroup admin
+ - create_group:
+   - exec_chroot: addgroup $$user_group
  - add_user:
-   #use the script create_passwd.py to change this
-   - exec_chroot: useradd -g admin -p '$6$KAPpm7XEvaB1dIi9$AcMwQMSG8RGllKzVXLE4wdIP6A0dQVtbNXnaifitjL6WYTOQdM8/0s/IzbKq2uxY27vE.YuwJ69H2KrlEyTxD.' $$user_name -s /bin/bash
+   # use the create_passwd.py script to generate the crypted password
+   - exec_chroot: useradd -g $$user_group -p '$$user_password' $$user_name -s /bin/bash
  - add_group_to_sudoers:
    - append_file:
      - /etc/sudoers

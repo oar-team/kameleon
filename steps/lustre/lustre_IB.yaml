@@ -1,6 +1,0 @@
-lustre_IB:
- - write_modprobe_ib0:
-   - write_file:
-     - /etc/modprobe.d/lustre.conf
-     - |
-       options lnet networks=o2ib0(ib0)

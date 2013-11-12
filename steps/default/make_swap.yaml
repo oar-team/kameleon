@@ -1,0 +1,10 @@
+make_swap:
+  - create_swap_file:
+    - exec_chroot: fallocate -l 1G /swap
+    - exec_chroot: chmod 600 /swap
+    - exec_chroot: mkswap /swap
+  - add_swap_to_fstab:
+    - append_file:
+      - /etc/fstab
+      - /swap none swap defaults 0 0
+

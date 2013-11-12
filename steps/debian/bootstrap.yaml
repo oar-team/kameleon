@@ -1,3 +1,12 @@
 bootstrap:
- - debootstrap:
-   - exec_appliance:  debootstrap --arch=$$arch --include=locales $$debian_version_name $$chroot/ $$distrib_repository 
+  - debootstrap:
+    - check_cmd: cdeboostrap-static
+    - exec_appliance: |
+        cdebootstrap-static \
+        --verbose \
+        --allow-unauthenticated \
+        --arch=$$arch \
+        --include=locales \
+        $$debian_version_name \
+        $$chroot/ \
+        $$distrib_repository 
