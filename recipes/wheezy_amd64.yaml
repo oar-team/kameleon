@@ -32,7 +32,8 @@ global:
   network_hostname: mydebian
   user_name: kameleon
   user_group: admin
-  user_password: "thisMustBeACryptedPass"
+  # set to "kameleon" use the create_passwd.py script to set your own password 
+  user_password: "$6$76krqNHd2/VeQZDC$1E9wrN3Sk6sM2vk2wUmqi3zOTkDZokb/ysajArMpYsKzq2/lI/OhQTAg3ow.mflbQOWku2SX4EqZ3yKHTAcdE0"
   generated_rsa_pub_dir: /img/kameleon/keys
 
 steps:

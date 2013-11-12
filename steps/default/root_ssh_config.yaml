@@ -3,9 +3,9 @@ root_ssh_config:
     - exec_chroot: ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
     - exec_chroot: ssh-keygen -t dsa -f /root/.ssh/id_dsa -N ''
   - copy_key_to_auth_file:
-    - exec_chroot: cat id_rsa.pub >> /root/.ssh/authorized_keys
+    - exec_chroot: cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
   - copy_key_to_auth2_file:
-    - exec_chroot: cat id_rsa.pub >> /root/.ssh/authorized_keys2
+    - exec_chroot: cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys2
   - root_ssh_config:
     - append_file:
       - /root/.ssh/config

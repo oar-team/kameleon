@@ -6,14 +6,7 @@ software_install:
     - exec_chroot: |
         bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update"
     - exec_chroot: |
-        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
-          less \
-          bzip2 \
-          zip unzip \
-          rsync \
-          openssh-server \
-          debian-keyring \ 
-          sudo"
+        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install zip unzip rsync openssh-server debian-keyring sudo"
     - exec_on_clean: apt-get clean
   - extra_packages:
     - exec_chroot: |

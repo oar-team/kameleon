@@ -42,11 +42,16 @@ build_appliance:
         export initrd=`basename $$chroot/boot/init*`
 
   - install_extlinux:
+    # FIXME: Extlinux should be install by in the chroot to get
+    # the same version as the generated system
+    - check_cmd: extlinux
     - exec_appliance: | 
         mkdir -p $$workdir/mnt/boot
         # install extlinux
         extlinux --install $$workdir/mnt/boot/
         # install bootloader
+        # TODO if extlinux version is >= 6 use
+        # /usr/lib/bios/syslinux/mbr.bin 
         dd if=/usr/lib/syslinux/mbr.bin conv=notrunc bs=440 count=1 of=$LO_DEVICE
         export UIID=`blkid -s UUID -o value ${LO_DEVICE_PARTBASE}p1`
     - append_file:

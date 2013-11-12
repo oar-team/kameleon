@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 ### WARNING ###
 # requires Python >= 3.3
 

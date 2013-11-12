@@ -3,8 +3,8 @@ save_appliance:
   #TODO test all of these
 
   #FIXME should take the output path in args
-  - save_as_tgz:
-    - exec_current: cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
+  #- save_as_tgz:
+  #  - exec_current: cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
 
   - save_as_g5k:
     # we have to add a postinstall

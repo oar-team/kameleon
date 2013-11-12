@@ -1,10 +1,10 @@
 bootstrap:
   - debootstrap:
-    - check_cmd: cdeboostrap-static
+    - check_cmd: debootstrap
     - exec_appliance: |
-        cdebootstrap-static \
+        debootstrap \
         --verbose \
-        --allow-unauthenticated \
+        --no-check-gpg \
         --arch=$$arch \
         --include=locales \
         $$debian_version_name \

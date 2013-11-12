@@ -1,7 +1,7 @@
 generate_user_ssh_key:
   - generate_keys:
     - exec_appliance: |
-        mkdir home/$$user_name/.ssh
+        mkdir -p home/$$user_name/.ssh
         ssh-keygen -t rsa -C "$$user_name@$$network_hostname" -N "" -f home/$$user_name/.ssh/id_rsa
         #fix permissions
         chmod 700 home/$$user_name/.ssh
