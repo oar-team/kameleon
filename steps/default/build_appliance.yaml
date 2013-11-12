@@ -43,7 +43,8 @@ build_appliance:
 
   - install_extlinux:
     # FIXME: Extlinux should be install by in the chroot to get
-    # the same version as the generated system
+    # the same version as the generated system using:
+    # extlinux -v |& cut -d' ' -f2 | cut -d'.' -f1
     - check_cmd: extlinux
     - exec_appliance: | 
         mkdir -p $$workdir/mnt/boot
