@@ -2,17 +2,17 @@ autologin:
   - set_autologin:
     - exec_chroot: |
         perl -pi -e 's;/sbin/getty.*tty1;/bin/login -f $$user_name tty1 </dev/tty1 >/dev/tty1 2>&1;' /etc/inittab
-    #- exec_chroot: |
-    #   # check SysV init
-    #   if [ -f '/etc/inittab' ]
-    #   then
-    #       perl -pi -e 's;/sbin/getty.*tty1;/bin/login -f $$user_name tty1 </dev/tty1 >/dev/tty1 2>&1;' /etc/inittab
-    #   else
-    #   # use systemd
-    #       mkdir -p /etc/systemd/system/getty@tty1.service.d
-    #       cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<END
-    #       [Service]
-    #       ExecStart=
-    #       ExecStart=-/usr/bin/agetty --autologin <username> --noclear %I 38400 linux
-    #       END
-    #   fi
+    - exec_chroot: |
+       # check SysV init
+       if [ -f '/etc/inittab' ]
+       then
+           perl -pi -e 's;/sbin/getty.*tty1;/bin/login -f $$user_name tty1 </dev/tty1 >/dev/tty1 2>&1;' /etc/inittab
+       else
+       # use systemd
+           mkdir -p /etc/systemd/system/getty@tty1.service.d
+           cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<< '
+           [Service]
+           ExecStart=
+           ExecStart=-/usr/bin/agetty --autologin <username> --noclear %I 38400 linux
+           '
+       fi

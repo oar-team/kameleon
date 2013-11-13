@@ -2,10 +2,12 @@ keyboard_azerty_config:
   - install_console_tools:
     # FIXME this should use a kind of step include 
     - exec_chroot: |
-        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update"
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
     - exec_chroot: |
-        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install console-tools console-data console-setup"
-    - exec_on_clean: apt-get clean
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
+          console-tools console-data console-setup
+    - on_clean:
+      - exec_chroot: apt-get clean
     - write_file:
       - /etc/default/keyboard 
       - |

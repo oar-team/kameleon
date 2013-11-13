@@ -4,14 +4,10 @@ software_install:
         perl -pi -e "s/main$/main contrib non-free/" etc/apt/sources.list
   - core_packages:
     - exec_chroot: |
-        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update"
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
     - exec_chroot: |
-        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install zip unzip rsync openssh-server debian-keyring sudo"
-    - exec_on_clean: apt-get clean
-  - extra_packages:
-    - exec_chroot: |
-        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update"
-    - exec_chroot: |
-        bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install $$extra_packages"
-    - exec_on_clean: apt-get clean
-
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install zip unzip rsync openssh-server debian-keyring sudo
+    - on_clean: 
+      - exec_chroot: apt-get clean
+  - include:
+    - pkg_install

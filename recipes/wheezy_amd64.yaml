@@ -6,8 +6,7 @@
 # 
 # DESCRIPTION: This recipe build an appliance of a complete debian server 
 # 
-# WARNING: autologin means anyone booting this image get root acces WITHOUT
-# password
+# WARNING: autologin means anyone booting this image get acces WITHOUT password
 #
 #===============================================================================
 ---
@@ -22,10 +21,10 @@ global:
   debian_version_name: wheezy
   distrib_repository: http://ftp.fr.debian.org/debian/
 
-  # Architecture
+  # Image configuration
   arch: amd64
   output_environment_file_system_type: ext4
-
+  img_size: 2G #(see man fallocate)
   extra_packages: "vim bash-completion"
 
   # Host config

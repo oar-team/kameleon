@@ -158,7 +158,7 @@ def cmd_parse(cmd,step)
     return "cd " + $chroot + "; " + cmd.values[0]
   elsif cmd.keys[0]=="exec_chroot"
     # return "chroot " + $chroot + " " + cmd.values[0]
-    cmd_chroot="chroot " + $chroot + " sh -c \"" + cmd.values[0]+"\""
+    cmd_chroot="chroot " + $chroot + " bash -c \"" + cmd.values[0]+"\""
     return "chroot,#{cmd_chroot}"
   elsif cmd.keys[0]=="append_file"
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]

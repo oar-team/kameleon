@@ -1,0 +1,9 @@
+pkg_install:
+ - do_pkg_install:
+    - exec_chroot: |
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
+    - exec_chroot: |
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install $$pkg
+    - on_clean: 
+      - exec_chroot: apt-get clean
+

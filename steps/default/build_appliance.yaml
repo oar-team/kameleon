@@ -1,11 +1,24 @@
 build_appliance:
 
   - create_raw_image:
-    - check_cmd: sfdisk
-    # FIXME: take the size in args (maybe use fallocate instaead)
+    - check_cmd: fallocate
+    # FIXME: the size in args must be greater then the appliance
     - exec_appliance: |
-        dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=5000 # seek=3000
-        echo -e "1,574,83,*\n575,,82" | sfdisk $$workdir/image.raw
+        echo "Appliance size: $(du -bch $$chroot | awk 'END {print $1}')"
+        fallocate -l $$img_size $$workdir/image.raw
+        fdisk $$workdir/image.raw <<< '
+        o
+        n
+        p
+        1
+        
+        
+        a
+        w
+        '
+    #- exec_appliance: |
+    #    dd if=/dev/zero of=$$workdir/image.raw bs=1M count=1 seek=5000 # seek=3000
+    #    echo -e "1,574,83,*\n575,,82" | sfdisk $$workdir/image.raw
 
   - attach_kpartx_device:
     - check_cmd: kpartx
@@ -18,8 +31,11 @@ build_appliance:
         export LO_DEVICE_PARTBASE=/dev/mapper/`basename ${LO_DEVICE}`
         # mkfs
         mkfs.$$output_environment_file_system_type ${LO_DEVICE_PARTBASE}p1
-        export SWAP_UUID=`mkswap ${LO_DEVICE_PARTBASE}p2 \
-          | egrep -o "UUID=(.*)" | cut -d= -f2`
+        
+        # not needed if the swap is a file
+        #export SWAP_UUID=`mkswap ${LO_DEVICE_PARTBASE}p2 \
+        #  | egrep -o "UUID=(.*)" | cut -d= -f2`
+        
         # mount_image
         mkdir $$workdir/mnt
         mount ${LO_DEVICE_PARTBASE}p1 $$workdir/mnt
@@ -37,9 +53,10 @@ build_appliance:
         mkdir $$workdir/mnt/sys
 
   - get_kernel_initrd:
+    # FIXME: not sure it's working for all distro
     - exec_appliance: |
-        export kernel=`basename $$chroot/boot/vmlinuz*`
-        export initrd=`basename $$chroot/boot/init*`
+        export kernel=`basename $$workdir/mnt/boot/vmlinuz*`
+        export initrd=`basename $$workdir/mnt/boot/init*`
 
   - install_extlinux:
     # FIXME: Extlinux should be install by in the chroot to get
@@ -52,21 +69,22 @@ build_appliance:
         extlinux --install $$workdir/mnt/boot/
         # install bootloader
         # TODO if extlinux version is >= 6 use
-        # /usr/lib/bios/syslinux/mbr.bin 
-        dd if=/usr/lib/syslinux/mbr.bin conv=notrunc bs=440 count=1 of=$LO_DEVICE
+        # /usr/lib/bios/syslinux/mbr.bin instead of /usr/lib/syslinux/mbr.bin 
+        dd if=/usr/lib/syslinux/bios/mbr.bin conv=notrunc bs=440 count=1 of=$LO_DEVICE
         export UIID=`blkid -s UUID -o value ${LO_DEVICE_PARTBASE}p1`
-    - append_file:
-      - /etc/fstab
-      - UIID=$UIID   /   $$output_environment_file_system_type defaults  0  0
-    - append_file:
-      - /boot/extlinux.conf 
-      - |
+    - exec_appliance: |
+        cat > $$workdir/mnt/etc/fstab <<< "
+        UIID=$UIID   /   $$output_environment_file_system_type defaults  0  0
+        "
+    - exec_appliance: |
+        cat > $$workdir/mnt/boot/extlinux.conf <<< "
         DEFAULT kameleon
         LABEL   kameleon
         SAY     Booting appliance
         LINUX   /boot/$kernel
         APPEND  root=/dev/disk/by-uuid/$UIID
         INITRD  /boot/$initrd
+        "
 
     ## FIXME the grub install needs to be debug
 

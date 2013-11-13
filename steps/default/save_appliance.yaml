@@ -24,15 +24,15 @@ save_appliance:
         mv $$workdir/image.raw $$workdir/$$distrib.raw
         cd $$workdir; ln -s $$distrib.raw image.raw
 
-  - save_as_vmdk:
-    - check_cmd: qemu-img
-    - exec_appliance: |
-        qemu-img convert \
-        -f raw $$workdir/image.raw \
-        -O vmdk $$workdir/$$distrib.vmdk
-    - erb_config:
-      - config.vmx.erb
-      - $$workdir/$$distrib.vmx
+  #- save_as_vmdk:
+  #  - check_cmd: qemu-img
+  #  - exec_appliance: |
+  #      qemu-img convert \
+  #      -f raw $$workdir/image.raw \
+  #      -O vmdk $$workdir/$$distrib.vmdk
+  #  - erb_config:
+  #    - config.vmx.erb
+  #    - $$workdir/$$distrib.vmx
 
   - save_as_qcow2:
     - check_cmd: qemu-img

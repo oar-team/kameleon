@@ -11,6 +11,6 @@ bootstrap_if_needed:
             tar zxf $tgz_bootstrap_file -C $$chroot/
             cp -f /etc/resolv.conf $$chroot/etc
         fi
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update"
-   - exec_chroot: bash -c "DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes dist-upgrade"
- 
+    - exec_chroot: |
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes dist-upgrade
