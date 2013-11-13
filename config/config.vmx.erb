@@ -1,0 +1,63 @@
+#!/usr/bin/vmplayer
+       
+# This is a Workstation 5 or 5.5 config file
+# It can be used with Player
+config.version = "8"
+virtualHW.version = "4"
+       
+displayName = "OAR Appliance - <%= global['distrib']+" "+global['arch'] %>"
+numvcpus = "1"
+memsize = "256"
+MemAllowAutoScaleDown = "FALSE"
+MemTrimRate = "-1"
+uuid.action = "create"
+# Startup hints interfers with automatic startup of a virtual machine
+# This setting has no effect in VMware Player
+hints.hideAll = "TRUE"
+
+# Enable time synchronization between computer
+# and virtual machine
+tools.syncTime = "TRUE"
+
+serial0.present = "FALSE"
+serial1.present = "FALSE"
+parallel0.present = "FALSE"
+
+isolation.tools.hgfs.disable = "FALSE"
+isolation.tools.dnd.disable = "FALSE"
+isolation.tools.copy.enable = "TRUE"
+isolation.tools.paste.enabled = "TRUE"
+
+# First network interface card
+# Change this address if you need to create several virtual machines.
+# See http://www.vmware.com/support/esx21/doc/esx21admin_MACaddress.html
+ethernet0.present = "TRUE"
+ethernet0.virtualDev = "e1000"
+ethernet0.connectionType = "nat"
+ethernet0.addressType = "static"
+ethernet0.address = "00:50:56:3F:12:00"
+
+floppy0.present = "FALSE"
+
+# First IDE disk
+ide0:0.present = "TRUE"
+ide0:0.fileName = "<%= global['distrib'] %>.vmdk"
+ide0:0.mode = "persistent"
+ide0:0.startConnected = "TRUE"
+ide0:0.writeThrough = "TRUE"
+
+tools.remindInstall = "TRUE"
+
+extendedConfigFile = "<%= global['distrib'] %>.vmxf"
+virtualHW.productCompatibility = "hosted"
+tools.upgrade.policy = "manual"
+
+uuid.location = "56 4d 82 82 8e ce 66 fb-e1 28 4f d3 7c 6b a3 d0"
+uuid.bios = "56 4d 82 82 8e ce 66 fb-e1 28 4f d3 7c 6b a3 d0"
+
+ide0:0.redo = ""
+<% if global['arch'] == "amd64" %>
+guestOS = "other26xlinux-64"
+<% else %>
+guestOS = "other26xlinux"
+<% end %>
