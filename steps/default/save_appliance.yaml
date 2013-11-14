@@ -6,10 +6,11 @@ save_appliance:
   #- save_as_tgz:
   #  - exec_current: cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
 
-  - save_as_g5k:
+  #TODO update this
+  - save_as_kameleon:
     # we have to add a postinstall
     - write_file:
-      - ../$$distrib.g5k.yaml
+      - ../$$distrib\_$$arch.yaml
       - |
         name: $$distrib.g5k
         tarball: $$distrib.tar.gz|tgz
@@ -21,26 +22,23 @@ save_appliance:
 
   - save_as_raw:
     - exec_appliance: |
-        mv $$workdir/image.raw $$workdir/$$distrib.raw
-        cd $$workdir; ln -s $$distrib.raw image.raw
+        mv $$workdir/image.raw $$workdir/$$distrib\_$$arch.raw
+        cd $$workdir; ln -s $$distrib\_$$arch.raw image.raw
 
-  #- save_as_vmdk:
-  #  - check_cmd: qemu-img
-  #  - exec_appliance: |
-  #      qemu-img convert \
-  #      -f raw $$workdir/image.raw \
-  #      -O vmdk $$workdir/$$distrib.vmdk
-  #  - erb_config:
-  #    - config.vmx.erb
-  #    - $$workdir/$$distrib.vmx
+  - save_as_vmdk:
+    - check_cmd: qemu-img
+    - exec_appliance: |
+        qemu-img convert -O vmdk $$workdir/image.raw $$workdir/$$distrib\_$$arch.vmdk
+    - erb_config:
+      - config.vmx.erb
+      - $$workdir/$$distrib.vmx
 
   - save_as_qcow2:
     - check_cmd: qemu-img
     - exec_appliance: |
-        qemu-img convert -c -f raw $$workdir/image.raw \
-        -O qcow2 $$workdir/$$distrib.qcow2
+        qemu-img convert -O qcow2 $$workdir/image.raw $$workdir/$$distrib\_$$arch.qcow2
 
   - save_as_vdi:
     - check_cmd: VBoxManage
     - exec_appliance: |
-        VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib\-$$arch.vdi
+        VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib\_$$arch.vdi
