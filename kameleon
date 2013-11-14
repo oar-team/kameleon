@@ -416,7 +416,67 @@ def clean()
   FileUtils.rm($clean_script)
 end
 
+# check for macrostep file (distro-specific or default)
+def find_step(step, dist)
 
+  ### Searching steps from cache if is activated
+  if @options[:path_to_cache] and \
+    File.file?(search_pathc= $recipe['global']['workdir'] +"/cache/#{step}/"+step+".yaml")
+      return path = search_pathc
+  end
+
+  ### Searching in different path
+  path=""
+  searched_pathes=""
+  pathes_to_search = []
+  pathes_to_search += @options[:include_path]
+  pathes_to_search += ["#{$current_dir}", "#{$kameleon_datadir}","#{$kameleon_bindir}"]
+
+  if dist != ""
+    pathes_to_search.each do |dir|
+      if File.file?(search_path = dir + "/steps/" + dist + "/" + step + ".yaml")
+        path=search_path
+        break
+      else
+        searched_pathes=searched_pathes + " * " + search_path + "\n"
+      end
+    end
+  else
+    pathes_to_search.each do |dir|
+      if File.file?(search_path1 = dir + "/steps/" + $recipe['global']['distrib'] + "/" + step + ".yaml")
+        path=search_path1
+        break
+      elsif File.file?(search_path2 = dir + "/steps/default/" + step + ".yaml")
+        path=search_path2
+        break
+      else
+        searched_pathes=searched_pathes + " * " + search_path1 + "\n * " + search_path2 + "\n"
+      end
+    end
+  end
+  return path
+end
+
+
+### Load macrostep file
+def load_macrostep_file(path)
+  begin
+    puts green("  | Loading " + path)
+    macrostep_yaml = YAML.load(File.open(path))
+    macrostep_yaml_cache =  YAML.load(File.open(path)) if @options[:cache]
+    step_name =  macrostep_yaml.keys[0]
+    file_name = File.basename( path , ".*" )
+    if not step_name == file_name
+      print red("ERROR: The macrostep inside name ("+ step_name +") MUST be the 
+same as the file name ("+ file_name +"). Check this file:\n" + path +"\n")
+      exit(71) 
+    end
+    return [macrostep_yaml, macrostep_yaml_cache]  
+  rescue
+    print "Failed to open macrostep file. ", $!, "\n"
+    exit(7)
+  end
+end
 
 ######################################
 ### parsing command line arguments ###
@@ -694,6 +754,7 @@ script = OrderedHash.new()
 # parse recipe, load macrostep files, load microsteps, convert command definitions
 # into bash commands. All missing pieces should be detected and reported during
 # this phase and before the actual system installation and image building (execution)
+#TODO check 
 $recipe['steps'].each do
   |macrostep|
 
@@ -724,58 +785,41 @@ $recipe['steps'].each do
     exit(11)
   end
 
-  # check for macrostep file (distro-specific or default)
-  path=""
-  searched_pathes=""
-  pathes_to_search = []
-  pathes_to_search += @options[:include_path]
-  pathes_to_search += ["#{$current_dir}",  "#{$kameleon_datadir}","#{$kameleon_bindir}"]
+  path = find_step( step, dist )
 
-  if dist != ""
-    pathes_to_search.each do |dir|
-      if File.file?(search_path = dir + "/steps/" + dist + "/" + step + ".yaml")
-        path=search_path
-        break
-      else
-        searched_pathes=searched_pathes + " * " + search_path + "\n"
-      end
-    end
-  else
-    pathes_to_search.each do |dir|
-      if File.file?(search_path1 = dir + "/steps/" + $recipe['global']['distrib'] + "/" + step + ".yaml")
-        path=search_path1
-        break
-      elsif File.file?(search_path2 = dir + "/steps/default/" + step + ".yaml")
-        path=search_path2
-        break
-      else
-        searched_pathes=searched_pathes + " * " + search_path1 + "\n * " + search_path2 + "\n"
-      end
-    end
-  end
- ### Searching steps from cache if is activated
-  if @options[:path_to_cache]
-    if File.file?(search_pathc= $recipe['global']['workdir'] +"/cache/#{step}/"+step+".yaml")
-      path = search_pathc
-      sleep 0.5
-      puts green("  | Loading from cache !!!")
-    end
-  end
-
- if path == ""
+  if path == ""
     printf("%s: macrostep file is missing: \n%s", step, searched_pathes)
     exit(6)
+  elsif path.start_with?( $recipe['global']['workdir'] +"/cache/" )
+    puts green("  | Loading from cache !!!")
+  end
+  
+  macrostep_yaml, macrostep_yaml_cache = load_macrostep_file( path )
+
+  # add includes steps
+  macrostep_yaml[step].each_index do |key|
+    microstep=macrostep_yaml[step][key]
+    if microstep.keys[0] == "include"
+      # load macrostep file
+      include_step = microstep.values[0][0]
+      begin
+        include_path = find_step( include_step , dist ) 
+        #FIXME: need to handle cache (Not sure macrostep_yaml_cache is needed)
+        macrostep_include_yaml, _ = load_macrostep_file( include_path )
+        #TODO make it work when user select only a list of microstep
+        ind = 1
+        macrostep_include_yaml.values[0].each do |microstep_include|
+          macrostep_yaml[step].insert(key+ind, microstep_include)
+          ind+=1
+        end
+        macrostep_yaml[step].delete_at(key)
+      #rescue
+        #print "Failed to open included macrostep file. ", $!, "\n"
+        #exit(7)
+      end
+    end
   end
 
-  # load macrostep file
-  begin
-    puts green("  | Loading " + path)
-    macrostep_yaml = YAML.load(File.open(path))
-    macrostep_yaml_cache =  YAML.load(File.open(path)) if @options[:cache]
-  rescue
-    print "Failed to open macrostep file. ", $!, "\n"
-    exit(7)
-  end
 
   ### saving steps if cache is activated
   if @options[:cache] and not @options[:path_to_cache]
@@ -784,7 +828,8 @@ $recipe['steps'].each do
     FileUtils.mkdir(cache_dir+step+"/data/") ## to save scrips used during the creation of the image
     FileUtils.cp_r(File.dirname(path)+"/data/",cache_dir+"/#{step}/") if File.directory?(File.dirname(path)+"/data/")
     ## copying the data directory for the step into the cache
-    ## This method has an issue, it will copy several times the data directory if there exits several steps in the same directory
+    #FIXME: This method has an issue, it will copy several times the data directory 
+    # if there exits several steps in the same directory
     ## E.g.,
     ## oar_config, oar_system_config, oar_debian_install are under the same directory
     FileUtils.cp(path,cache_dir+"/#{step}/"+step_name)
@@ -792,28 +837,8 @@ $recipe['steps'].each do
     #   YAML.dump(macrostep_yaml,step_file)
     # end
   end
-  macrostep_yaml[step].each_index do
-    |key|
-    microstep=macrostep_yaml[step][key]
-    if microstep.keys[0] == "include"
-      # load macrostep file
-      begin
-        macrostep_include_yaml = YAML.load(File.open($current_dir + "/steps/" + microstep.values[0]))
-      rescue
-        print "Failed to open macrostep file. ", $!, "\n"
-        exit(7)
-      end
-      ind = 1
-      macrostep_include_yaml.each do
-        |microstep_include|
-        macrostep_yaml[step].insert(key+ind, microstep_include)
-        ind+=1
-      end
-      macrostep_yaml[step].delete_at(key)
-    end
-  end
 
-  # Define the variable stepdir before parsing the yaml file.
+   # Define the variable stepdir before parsing the yaml file.
   $recipe['global']['stepdir'] = File.dirname(path)
 #  $recipe['global']['stepdir'] = File.basename(path,'.yaml')
 

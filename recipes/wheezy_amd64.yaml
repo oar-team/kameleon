@@ -36,7 +36,7 @@ global:
   generated_rsa_pub_dir: /img/kameleon/keys
 
 steps:
-  - bootstrap
+  - bootstrap_static
   - system_config
   - make_swap
   - network_config

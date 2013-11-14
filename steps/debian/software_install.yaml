@@ -9,5 +9,5 @@ software_install:
         DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install zip unzip rsync openssh-server debian-keyring sudo
     - on_clean: 
       - exec_chroot: apt-get clean
-  - include:
+  - include: 
     - pkg_install

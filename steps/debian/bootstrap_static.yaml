@@ -1,4 +1,4 @@
-bootstrap:
+bootstrap_static:
   - debootstrap:
     - check_cmd: cdebootstrap-static
     - exec_appliance: |

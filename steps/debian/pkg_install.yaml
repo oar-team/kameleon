@@ -3,7 +3,8 @@ pkg_install:
     - exec_chroot: |
         DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
     - exec_chroot: |
-        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install $$pkg
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
+          $$extra_packages
     - on_clean: 
       - exec_chroot: apt-get clean
 
