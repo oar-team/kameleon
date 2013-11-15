@@ -287,22 +287,19 @@ def save_history
 end
 
 ### starting cache
-def start_cache(shell,cache_dir)
-  polipo_bin_path=$current_dir+"/redist/bin"
+def start_cache(shell, cache_dir, polipo_bin_path)
   if not File.exist?(cache_dir)
     puts red("Error: the cache dir does not exist")
     sleep 10
   end
   puts blue("Starting cache in directory #{cache_dir}")
   sleep 1 #This has to be added for polipo to wait a bit. Otherwise it is not able to start.
-  # Fix me
+  # FIXME
   ## there is not error handling here, I have to check if the status code of the execution of the polipo binary
-  ##shell.execute("mkdir #{cache_dir}",:stdout => $stdout, :stderr => $stderr) if @options[:path_to_cache].nil?
   shell.execute("export http_proxy=http://localhost:8123",:stdout => $stdout, :stderr => $stderr)
 
   if @options[:path_to_cache].nil?
-    #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
-    shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
+    shell.execute("#{polipo_bin_path} diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
     if shell.exit_status != 0
       puts red("Error executing polipo proxy")
       puts red("!! Warning: the cache will be incomple")
@@ -310,8 +307,7 @@ def start_cache(shell,cache_dir)
     end
 
   else
-    shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" proxyOffline=\"true\"  chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
-    #shell.execute("#{polipo_bin_path}/polipo diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
+    shell.execute("#{polipo_bin_path} diskCacheRoot=\"#{cache_dir}\" idleTime=\"5\" proxyOffline=\"true\"  chunkHighMark=\"425165824\" &",:stdout => $stdout, :stderr => $stderr)
   end
   shell.execute("export polipo_pid=$!")
 end
@@ -709,8 +705,10 @@ $stderr=$log
 
 ## Creating the cache directory and checking the availability of polipo binary if caching is enabled
 if @options[:cache]
+  # Checking for polipo bin in the path 
+  polipo_bin_path = `which polipo`.delete("\n")
   ## Checking for the existing of polipo binary
-  polipo_bin_path=$current_dir+"/redist/bin/polipo"
+  # polipo_bin_path=$current_dir+"/redist/bin/polipo" if not polipo_bin_path
   if not File.exist?(polipo_bin_path)
     puts red("Error: Polipo binary not found")
     puts red("Unable to start cache")
@@ -955,10 +953,10 @@ script.each do
   macrostep_name=macrostep[0]
   if @options[:cache] then
     cache_dir_step = cache_dir + macrostep_name
-    start_cache(bash,cache_dir_step)
+    start_cache(bash,cache_dir_step, polipo_bin_path)
   elsif @options[:path_to_cache]
     cache_dir_step = $recipe['global']['workdir']+"/cache/" + macrostep_name
-    start_cache(bash,cache_dir_step)
+    start_cache(bash,cache_dir_step, polipo_bin_path)
   end
 
   macrostep[1].each do
