@@ -32,7 +32,7 @@ global:
   user_name: kameleon
   user_group: admin
   # set to "kameleon" use the create_passwd.py script to set your own password 
-  user_password: "$6$76krqNHd2/VeQZDC$1E9wrN3Sk6sM2vk2wUmqi3zOTkDZokb/ysajArMpYsKzq2/lI/OhQTAg3ow.mflbQOWku2SX4EqZ3yKHTAcdE0"
+  user_password: '$6$76krqNHd2/VeQZDC$1E9wrN3Sk6sM2vk2wUmqi3zOTkDZokb/ysajArMpYsKzq2/lI/OhQTAg3ow.mflbQOWku2SX4EqZ3yKHTAcdE0'
   generated_rsa_pub_dir: /img/kameleon/keys
 
 steps:
@@ -40,7 +40,6 @@ steps:
   - system_config
   - make_swap
   - network_config
-  - mount_proc
   - software_install
   - kernel_install
   - keyboard_azerty_config

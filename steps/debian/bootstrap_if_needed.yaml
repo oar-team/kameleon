@@ -1,3 +1,6 @@
+# This step store the bootstrap for a particular distrib and achitechture
+# to avoid downloading on every execution
+---
 bootstrap_if_needed:
   - debootstrap:
     - exec_appliance: |
@@ -14,3 +17,6 @@ bootstrap_if_needed:
     - exec_chroot: |
         DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
         DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes dist-upgrade
+
+  - include: 
+    - mount_proc

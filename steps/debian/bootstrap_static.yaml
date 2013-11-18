@@ -10,3 +10,5 @@ bootstrap_static:
         $$debian_version_name \
         $$chroot/ \
         $$distrib_repository 
+  - include: 
+    - mount_proc
