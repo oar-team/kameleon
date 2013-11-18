@@ -1,5 +1,0 @@
----
-monitoring_setup:
-  - sensord_config:
-    - exec_appliance: cp $$stepdir/sensord etc/default/sensord
-
