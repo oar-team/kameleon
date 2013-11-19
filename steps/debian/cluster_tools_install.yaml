@@ -14,7 +14,8 @@ cluster_tools_install:
                       libopenmpi1.3 libopenmpi-dbg libopenmpi-dev
   - install_python: 
     - exec_context: install python python-dev
-  - include: mount_proc # needed for Java runtime install
+  - include: 
+    - mount_proc # needed for Java runtime install
   - install_java:
     - exec_context: install openjdk-6-jre
   - install_perl:
