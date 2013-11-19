@@ -35,19 +35,35 @@ global:
   user_password: '$6$76krqNHd2/VeQZDC$1E9wrN3Sk6sM2vk2wUmqi3zOTkDZokb/ysajArMpYsKzq2/lI/OhQTAg3ow.mflbQOWku2SX4EqZ3yKHTAcdE0'
   generated_rsa_pub_dir: /img/kameleon/keys
 
+contexts: 
+  install:
+    cmd: |
+        chroot $$chroot bash -c "
+        DEBIAN_FRONTEND=noninteractive apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y --force-yes \
+        -o Dpkg::Options::='--force-confold' \
+        install  %%"
+    escape: \\ # The \ will be escape. It allows you to cut long lines with a \
+
 steps:
+  # Install
   - bootstrap_static
+  - software_install
+  - kernel_install
+  - quick_checkpoint
+
+  # Configuration
   - system_config
   - make_swap
   - network_config
-  - software_install
-  - kernel_install
   - keyboard_azerty_config
   - create_user
   - generate_user_ssh_key
   - autologin
   - root_passwd
   - root_ssh_config
+
+  # Export
   - clean_appliance
   - build_appliance
   - save_appliance

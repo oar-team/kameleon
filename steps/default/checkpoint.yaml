@@ -1,9 +1,9 @@
 checkpoint:
   - make_tar:
     - breakpoint: |
-        WARNING! Going to create a checkpoint over
-        $$checkpoint_file. This is your last chance to backup
-        this file before it is replaced by the current
+        WARNING! Going to create a checkpoint over \
+        $$checkpoint_file. This is your last chance to backup \
+        this file before it is replaced by the current \
         appliance.
     - exec_appliance: |
         mkdir -p `dirname $$checkpoint_file`
