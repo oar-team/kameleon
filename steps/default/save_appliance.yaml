@@ -3,8 +3,8 @@ save_appliance:
   #TODO test all of these
 
   #FIXME should take the output path in args
-  #- save_as_tgz:
-  #  - exec_current: cd $$workdir; tar -czf $$distrib.tar.gz -C chroot .
+  - save_as_tgz:
+    - exec_current: cd $$workdir; tar -czf $$distrib\_$$arch.tar.gz -C chroot .
 
   #TODO update this
   - save_as_kameleon:
@@ -12,13 +12,22 @@ save_appliance:
     - write_file:
       - ../$$distrib\_$$arch.yaml
       - |
-        name: $$distrib.g5k
-        tarball: $$distrib.tar.gz|tgz
-        kernel:  /boot/$kernel
-        initrd: /boot/$initrd
-        filesystem: $$output_environment_file_system_type
-        environment_kind: linux
-        fdisktype: 83
+        --- 
+        name: $$distrib\_$$arch
+        version: 1
+        visibility: private
+        destructive: true
+        os: linux
+        image: 
+          file: $$distrib\_$$arch.tar.gz
+          kind: tar
+          compression: gzip
+        boot: 
+          kernel: /vmlinuz
+          initrd: /initrd.img
+        multipart: false
+        filesystem: ext4
+        partition_type: 0
 
   - save_as_raw:
     - exec_appliance: |

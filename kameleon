@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/ruby 
 #    Kameleon: a tool to build virtual machines or livecd images
 #    Copyright (C) 2009-2010 LIG <http://lig.imag.fr/>
 #
@@ -147,7 +147,8 @@ end
 ### function for converting command definitions into bash commands
 def cmd_parse(cmd,step)
   if cmd.keys[0]=="check_cmd"
-    return "which " + cmd.values[0] + " >/dev/null"
+    #TODO check if the command exists before starting the script
+    return "which " + cmd.values[0] #+ " >/dev/null"
   elsif cmd.keys[0]=="check_cmd_chroot"
     return "chroot " + $chroot + " which " + cmd.values[0]
   elsif cmd.keys[0]=="depens"
@@ -242,7 +243,7 @@ def context_parse(str)
       escape=$recipe['contexts'][context]['escape']
       args=args.gsub(/[#{escape}]/,"\\\\#{escape}")
     end
-    cmd=cmd.gsub(/%%/, args)
+    cmd="chroot," + cmd.gsub(/%%/, args)
     return cmd
 
   end
@@ -484,9 +485,13 @@ end
 
 option_parser = OptionParser.new do |opts|
   opts.banner = <<BANNER
-* Usage
+Kameleon
+* Description:
+  Kameleon is an Open Source Bash automation tool. It aims at easily generate 
+  operating system images and export them in any raw or virtual disk format
+* Usage:
   kameleon [-i data_path] recipe[.yaml]
-* Options
+* Options:
 BANNER
 
   opts.on("-i", "--include [PATH]", "Include the given path in the kameleon search path") do |i|
@@ -563,9 +568,22 @@ end
 begin
   bash = Session::Bash.new()
   bash_chroot = Session::Bash.new()
+  
+  # clean build env
   bash_chroot.execute("env -i bash", :stdout => $stdout, :stderr => $stderr)
-  #FIXME this sourcing is not working after install
-  bash_chroot.execute("source #{$kameleon_bindir}/scripts/chroot_env")
+  
+  # load a default env
+  # find the chroot env if install or not
+  if File.exists? "#{$kameleon_bindir}/scripts/chroot_env"
+    env_path = "#{$kameleon_bindir}/scripts/chroot_env"
+  elsif File.exists? "#{$kameleon_datadir}/scripts/chroot_env"
+    env_path = "#{$kameleon_datadir}/scripts/chroot_env"
+  end
+  bash_chroot.execute("source #{env_path}", :stdout => $stdout, :stderr => $stderr)
+  if  bash_chroot.exit_status != 0
+    print "Failed to load build environement variable."
+    exit (31)
+  end
 rescue
   print "Failed to open bash session. ", $!, "\n"
   exit(3)
@@ -752,7 +770,6 @@ script = OrderedHash.new()
 # parse recipe, load macrostep files, load microsteps, convert command definitions
 # into bash commands. All missing pieces should be detected and reported during
 # this phase and before the actual system installation and image building (execution)
-#TODO check 
 $recipe['steps'].each do
   |macrostep|
 
@@ -811,9 +828,9 @@ $recipe['steps'].each do
           ind+=1
         end
         macrostep_yaml[step].delete_at(key)
-      #rescue
-        #print "Failed to open included macrostep file. ", $!, "\n"
-        #exit(7)
+      rescue
+        print "Failed to open included macrostep file. ", $!, "\n"
+        exit(7)
       end
     end
   end
@@ -836,15 +853,13 @@ $recipe['steps'].each do
     # end
   end
 
-   # Define the variable stepdir before parsing the yaml file.
+  # Define the variable stepdir before parsing the yaml file.
   $recipe['global']['stepdir'] = File.dirname(path)
-#  $recipe['global']['stepdir'] = File.basename(path,'.yaml')
 
   # traverse macrosteps->microsteps->commands structure, parse commands;
   # test if we're dealing with the list of microsteps
   if macrostep.kind_of?(String)
-    macrostep_yaml[step].each_with_index do
-      |microstep,ind_micro|
+    macrostep_yaml[step].each_with_index do |microstep,ind_micro|
       script[step][microstep.keys[0]] = Array.new()
       microstep.values[0].each_with_index do
         |command,ind_cmd|
@@ -953,10 +968,10 @@ script.each do
   macrostep_name=macrostep[0]
   if @options[:cache] then
     cache_dir_step = cache_dir + macrostep_name
-    start_cache(bash,cache_dir_step, polipo_bin_path)
+    start_cache(bash_chroot, cache_dir_step, polipo_bin_path)
   elsif @options[:path_to_cache]
     cache_dir_step = $recipe['global']['workdir']+"/cache/" + macrostep_name
-    start_cache(bash,cache_dir_step, polipo_bin_path)
+    start_cache(bash_chroot, cache_dir_step, polipo_bin_path)
   end
 
   macrostep[1].each do
@@ -998,6 +1013,8 @@ script.each do
           if (bash.exit_status + bash_chroot.exit_status !=0) && (command[0,14] != "KML-breakpoint") #&& (bash_chroot.exit_status !=0)
             answer=String.new
             puts red("Error executing command.")
+            puts "Launch context exit code: %s\nBuild context exit code: %s\nHistory: %s", bash.exit_status, bash_chroot.exit_status
+            pp(bash)
             print red("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
             # offer three options: continue, abort, switch to shell (manually fix the error and then continue)
             while not ["c","r"].include?(answer=error_prompt)
@@ -1028,14 +1045,14 @@ script.each do
             next_cmd=1
           end
         end
-      rescue
-        printf "%s->%s: Failed to execute command: %s\nException: ", macrostep_name, microstep_name, command
-        print $!, "\n"
-        exit(3)
+      #rescue
+      #  printf "%s->%s: Failed to execute command: %s\nException: ", macrostep_name, microstep_name, command
+      #  print $!, "\n"
+      #  exit(3)
       end
     end
   end
-  stop_cache(bash,cache_dir_step) if @options[:cache] || @options[:path_to_cache]
+  stop_cache(bash_chroot, cache_dir_step) if @options[:cache] || @options[:path_to_cache]
 end
 save_history
 ## Finishing to generate cache, put it additional files
@@ -1047,6 +1064,7 @@ if @options[:cache]
 end
 begin
   bash.close!()
+  bash_chroot.close!()
 rescue
 end
 sleep(1)

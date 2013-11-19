@@ -1,14 +1,10 @@
 #=== WARNING ===================================================================
-# You must add the following context command definition to your recipe to use
-# this step.
+# You must define the context 'install' command definition to your recipe to use
+# this step. (see wheezy_amd64.yaml for examples)
 #
-#contexts: 
-#  install:
-#    cmd: DEBIAN_FRONTEND=noninteractive apt-get -q install -y --force-yes %%
-#    escape: \\ # The \ will be escape. It allows you to cut long lines with a \
 #===============================================================================
 ---
-install_cluster_tools:
+cluster_tools_install:
   - install_build_essentials:
     - exec_context: install build-essential
   - install_openmpi:
