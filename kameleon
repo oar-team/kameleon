@@ -167,7 +167,7 @@ def cmd_parse(cmd,step)
   elsif cmd.keys[0]=="exec_current"
     make_exec_current( cmd.values[0] )
   elsif cmd.keys[0]=="exec_appliance"
-    make_exec_appliance( cmd.valus[0] )
+    make_exec_appliance( cmd.values[0] )
   elsif cmd.keys[0]=="exec_chroot"
     make_exec_chroot( cmd.values[0] )
   elsif cmd.keys[0]=="append_file"
