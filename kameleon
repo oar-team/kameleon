@@ -144,41 +144,43 @@ def cmd_cache?(cmd_value,step)
   return nil
 end
 
+
+def make_exec_chroo( cmd )
+  "chroot,chroot " + $chroot + " bash -c \"" + cmd +"\""
+end
+
+def make_exec_appliance( cmd )
+  "cd " + $chroot + "; " + cmd
+end
+
+def make_exec_current( cmd )
+  "cd " + $current_dir + "; " + cmd
+end
+
 ### function for converting command definitions into bash commands
 def cmd_parse(cmd,step)
   if cmd.keys[0]=="check_cmd"
     #TODO check if the command exists before starting the script
-    return "which " + cmd.values[0] #+ " >/dev/null"
+    make_exec_current( "which " + cmd.values[0] + " >/dev/null" )
   elsif cmd.keys[0]=="check_cmd_chroot"
-    return "chroot " + $chroot + " which " + cmd.values[0]
-  elsif cmd.keys[0]=="depens"
-    return "echo \"OK\""
+    make_exec_chroot( " which " + cmd.values[0] )
   elsif cmd.keys[0]=="exec_current"
-    return "cd " + $current_dir + "; " + cmd.values[0]
+    make_exec_current( cmd.values[0] )
   elsif cmd.keys[0]=="exec_appliance"
-    return "cd " + $chroot + "; " + cmd.values[0]
+    make_exec_appliance( cmd.valus[0] )
   elsif cmd.keys[0]=="exec_chroot"
-    # return "chroot " + $chroot + " " + cmd.values[0]
-    cmd_chroot="chroot " + $chroot + " bash -c \"" + cmd.values[0]+"\""
-    return "chroot,#{cmd_chroot}"
+    make_exec_chroot( cmd.values[0] )
   elsif cmd.keys[0]=="append_file"
     return "echo \"" + cmd.values[0][1] + "\" >> " + $chroot + "/" + cmd.values[0][0]
   elsif cmd.keys[0]=="write_file"
     return "echo \"" + cmd.values[0][1] + "\" > " + $chroot + "/" + cmd.values[0][0]
   elsif cmd.keys[0]=="erb_config"
     return "ERB-config,#{cmd.values[0][0]},#{cmd.values[0][1]}"
-  elsif cmd.keys[0]=="set_var"
-    ## setting vars in both contexts appliance and chroot
-    cmd_appliance= "export " + cmd.values[0][0] + "=\"" + cmd.values[0][1] + "\""
-    cmd_chroot= "chroot,#{cmd_appliance}"
-    return [cmd_appliance,cmd_chroot]
   elsif cmd.keys[0]=="breakpoint"
     return "KML-breakpoint " + cmd.values[0]
   elsif cmd.keys[0]=="exec_ctxt" || cmd.keys[0]=="exec_context"
     return context_parse(cmd.values[0])
   elsif cmd.keys[0]=="exec_on_clean"
-    #return "echo \"" + cmd.values[0] + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
-    #add_to_clean(cmd.values[0])
     return "Clean-command,#{cmd.values[0]}"
   elsif cmd.keys[0]=="on_clean"
     output=[]
@@ -186,7 +188,7 @@ def cmd_parse(cmd,step)
       clean_entry.each do |entry|
         entry.each do |clean_cmd,val|
           if clean_cmd == "exec_current"
-            output << "echo \"" + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
+
           elsif clean_cmd == "exec_appliance"
             output << "echo \"" + "cd " + $chroot + "; " + val + "\" > " + $clean_script + ".rev; cat " + $clean_script + ">> " + $clean_script + ".rev; mv -f " + $clean_script + ".rev " + $clean_script
           elsif clean_cmd == "exec_chroot"
@@ -671,15 +673,15 @@ $recipe['global']['workdir'] = $workdir = $recipe['global']['workdir_base']+"/"+
 $recipe['global']['chroot'] = $chroot = $workdir + "/chroot"
 $recipe['global']['bindir'] = $current_dir
 $recipe['global']['clean'] = $clean_script
+
 ## This is a data directory to make reference in the recipes,
 ## It aims at working with the option --include in kameleon.
-
 if @options[:include_path] then
   @options[:include_path].each do |in_path|
     if File.exist?(in_path+"/data/")
       $recipe['global']['data_dir'] = in_path+"/data/"
     else
-      puts red("!! Warning the data direcotory is not defined")
+      puts red("!! Warning the data directory is not defined")
     end
   end
 end
@@ -983,7 +985,7 @@ script.each do
       begin
         next_cmd=0
         while next_cmd!=1
-          # check for special command "KML-breakpoint"
+          # check for special commands
           if command[0,14] == "KML-breakpoint"
             puts green("  |-> Breakpoint: " + command[15,command.length])
             # open interactive shell instead of executing a command
@@ -1003,6 +1005,7 @@ script.each do
             clean_cmd = command.split(",")[1]
             add_to_clean(clean_cmd)
           else
+            #This is a normal command
             puts green("  |-> " + command)
             # execute the command in the background bash session, connecting
             # it's stdout and stderr to kameleon's stdout and stderr
@@ -1015,7 +1018,8 @@ script.each do
             puts red("Error executing command.")
             puts "Launch context exit code: %s\nBuild context exit code: %s\nHistory: %s", bash.exit_status, bash_chroot.exit_status
             pp(bash)
-            print red("Press [r] to retry, [c] to continue with execution, [a] to abort execution, [s] to switch to shell: ")
+            print red("Press [r] to retry, [c] to continue with execution, [a] to abort execution,\
+                      [s] to switch to launch context shell, [b] to switch to build context shell : ")
             # offer three options: continue, abort, switch to shell (manually fix the error and then continue)
             while not ["c","r"].include?(answer=error_prompt)
               if answer=="s"
@@ -1041,6 +1045,7 @@ script.each do
               bash_chroot.execute("true")
               next_cmd=1
             end
+            #TODO retry should reload the current step if modified
           else
             next_cmd=1
           end
