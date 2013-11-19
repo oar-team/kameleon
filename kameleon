@@ -145,7 +145,7 @@ def cmd_cache?(cmd_value,step)
 end
 
 
-def make_exec_chroo( cmd )
+def make_exec_chroot( cmd )
   "chroot,chroot " + $chroot + " bash -c \"" + cmd +"\""
 end
 
