@@ -558,7 +558,8 @@ $kameleon_templatedir = File.expand_path(File.dirname(__FILE__) + "/config")
 
 version="1.2.8"
 required_globals = ["distrib", "workdir_base"]
-required_commands = ["chroot", "which", "cat", "echo"]
+#DEAD CODE
+#required_commands = ["chroot", "which", "cat", "echo"]
 
 # check UID (need to be root in order to chacge root)
 if Process.uid != 0
@@ -838,6 +839,7 @@ $recipe['steps'].each do
   end
 
 
+  #
   ### saving steps if cache is activated
   if @options[:cache] and not @options[:path_to_cache]
     step_name=File.basename(path)
