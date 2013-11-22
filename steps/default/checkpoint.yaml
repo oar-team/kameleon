@@ -8,4 +8,4 @@ checkpoint:
     - exec_appliance: |
         mkdir -p `dirname $$checkpoint_file`
         tar zcf $$checkpoint_file -C $$chroot/ \
-        --numeric-owner --exclude=proc .
+          --numeric-owner --on-file-system .

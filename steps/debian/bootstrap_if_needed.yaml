@@ -14,9 +14,11 @@ bootstrap_if_needed:
             tar zxf $tgz_bootstrap_file -C $$chroot/
             cp -f /etc/resolv.conf $$chroot/etc
         fi
+  - include: 
+    - mount_proc
+
+  - update_bootstrap: 
     - exec_chroot: |
         DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
         DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes dist-upgrade
 
-  - include: 
-    - mount_proc
