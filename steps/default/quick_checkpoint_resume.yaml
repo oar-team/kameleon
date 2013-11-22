@@ -1,7 +1,5 @@
 quick_checkpoint_resume:
   - restore_rootfs:
     - exec_appliance: |
-        rsync $$checkpoint_file $$chroot/
+        rsync -aAX $$checkpoint_dir $$chroot/
         cp -f /etc/resolv.conf $$chroot/etc
-    - exec_chroot: 
-        mkdir -p /dev /proc /sys /tmp /run /mnt /media 

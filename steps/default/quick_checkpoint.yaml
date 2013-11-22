@@ -2,4 +2,5 @@ quick_checkpoint:
   - copy_rootfs:
     - exec_appliance: |
         mkdir -p `dirname $$checkpoint_file`
-        rsync -aAXv $$chroot $$checkpoint_file --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found}
+        rsync -aAX $$chroot $$checkpoint_dir \
+          --exclude={./dev/*,./proc/*,./sys/*,./tmp/*,./run/*,./mnt/*,./media/*,./lost+found}

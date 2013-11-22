@@ -15,6 +15,8 @@ global:
   workdir_base: /img/kameleon/wheezy_amd64/
   # Where Kameleon store the checkpoint file
   checkpoint_file:  /img/kameleon/checkpoint/wheezy_amd64.tgz
+  checkpoint_dir:  /img/kameleon/checkpoint/wheezy_amd64/
+
 
   # Debian specific
   distrib: debian
@@ -47,7 +49,7 @@ contexts:
 
 steps:
   # Install
-  - bootstrap_static
+  - bootstrap_if_needed
   - software_install
   - kernel_install
   - quick_checkpoint

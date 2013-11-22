@@ -4,7 +4,9 @@ save_appliance:
 
   #FIXME should take the output path in args
   - save_as_tgz:
-    - exec_current: cd $$workdir; tar -czf $$distrib\_$$arch.tar.gz -C chroot .
+    - exec_current: |
+        cd $$workdir; tar -zcf $$distrib\_$$arch.tar.gz -C chroot . \
+          --numeric-owner --one-file-system --exclude=tmp/* 
 
   #TODO update this
   - save_as_kameleon:
