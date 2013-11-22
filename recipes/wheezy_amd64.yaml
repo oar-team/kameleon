@@ -50,7 +50,6 @@ steps:
   - bootstrap_static
   - software_install
   - kernel_install
-  - quick_checkpoint
 
   # Configuration
   - system_config
