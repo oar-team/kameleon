@@ -1,4 +1,4 @@
-#!/usr/bin/ruby 
+#!/usr/bin/env ruby
 #    Kameleon: a tool to build virtual machines or livecd images
 #    Copyright (C) 2009-2010 LIG <http://lig.imag.fr/>
 #
@@ -68,6 +68,12 @@ $clean_script.strip!
 ############################
 ### function definitions ###
 ############################
+
+
+def func_test
+  1 + 1
+end
+
 
 ### Hash that keeps elements in the insertion order -- it's more
 ### convenient for storing macrostep->microstep->comand structure
@@ -466,11 +472,11 @@ def load_macrostep_file(path)
     step_name =  macrostep_yaml.keys[0]
     file_name = File.basename( path , ".*" )
     if not step_name == file_name
-      print red("ERROR: The macrostep inside name ("+ step_name +") MUST be the 
+      print red("ERROR: The macrostep inside name ("+ step_name +") MUST be the
 same as the file name ("+ file_name +"). Check this file:\n" + path +"\n")
-      exit(71) 
+      exit(71)
     end
-    return [macrostep_yaml, macrostep_yaml_cache]  
+    return [macrostep_yaml, macrostep_yaml_cache]
   rescue
     print "Failed to open macrostep file. ", $!, "\n"
     exit(7)
@@ -489,7 +495,7 @@ option_parser = OptionParser.new do |opts|
   opts.banner = <<BANNER
 Kameleon
 * Description:
-  Kameleon is an Open Source Bash automation tool. It aims at easily generate 
+  Kameleon is an Open Source Bash automation tool. It aims at easily generate
   operating system images and export them in any raw or virtual disk format
 * Usage:
   kameleon [-i data_path] recipe[.yaml]
@@ -571,10 +577,10 @@ end
 begin
   bash = Session::Bash.new()
   bash_chroot = Session::Bash.new()
-  
+
   # clean build env
   bash_chroot.execute("env -i bash", :stdout => $stdout, :stderr => $stderr)
-  
+
   # load a default env
   # find the chroot env if install or not
   if File.exists? "#{$kameleon_bindir}/scripts/chroot_env"
@@ -726,7 +732,7 @@ $stderr=$log
 
 ## Creating the cache directory and checking the availability of polipo binary if caching is enabled
 if @options[:cache]
-  # Checking for polipo bin in the path 
+  # Checking for polipo bin in the path
   polipo_bin_path = `which polipo`.delete("\n")
   ## Checking for the existing of polipo binary
   # polipo_bin_path=$current_dir+"/redist/bin/polipo" if not polipo_bin_path
@@ -811,7 +817,7 @@ $recipe['steps'].each do
   elsif path.start_with?( $recipe['global']['workdir'] +"/cache/" )
     puts green("  | Loading from cache !!!")
   end
-  
+
   macrostep_yaml, macrostep_yaml_cache = load_macrostep_file( path )
 
   # add includes steps
@@ -821,7 +827,7 @@ $recipe['steps'].each do
       # load macrostep file
       include_step = microstep.values[0][0]
       begin
-        include_path = find_step( include_step , dist ) 
+        include_path = find_step( include_step , dist )
         #FIXME: need to handle cache (Not sure macrostep_yaml_cache is needed)
         macrostep_include_yaml, _ = load_macrostep_file( include_path )
         #TODO make it work when user select only a list of microstep
@@ -847,7 +853,7 @@ $recipe['steps'].each do
     FileUtils.mkdir(cache_dir+step+"/data/") ## to save scrips used during the creation of the image
     FileUtils.cp_r(File.dirname(path)+"/data/",cache_dir+"/#{step}/") if File.directory?(File.dirname(path)+"/data/")
     ## copying the data directory for the step into the cache
-    #FIXME: This method has an issue, it will copy several times the data directory 
+    #FIXME: This method has an issue, it will copy several times the data directory
     # if there exits several steps in the same directory
     ## E.g.,
     ## oar_config, oar_system_config, oar_debian_install are under the same directory
