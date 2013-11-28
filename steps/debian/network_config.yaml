@@ -8,3 +8,4 @@ network_config:
         
         auto eth0
         iface eth0 inet dhcp
+            mtu 1492
