@@ -8,4 +8,4 @@ network_config:
         
         auto eth0
         iface eth0 inet dhcp
-            mtu 1492
+            pre-up ip link set mtu 1492 eth0
