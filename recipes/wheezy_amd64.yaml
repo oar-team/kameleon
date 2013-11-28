@@ -52,7 +52,6 @@ steps:
   - bootstrap_if_needed
   - software_install
   - kernel_install
-  - quick_checkpoint
 
   # Configuration
   - system_config
