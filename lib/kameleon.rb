@@ -1,5 +1,12 @@
 require "kameleon/version"
+require 'yaml'
+require 'fileutils'
+require 'optparse'
+require 'erb'
+require 'session'
+require 'tempfile'
+require 'pp'
 
 module Kameleon
-  # Your code goes here...
+  autoload :UI,        'kameleon/ui'
 end

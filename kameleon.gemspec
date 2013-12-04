@@ -8,23 +8,21 @@ Gem::Specification.new do |s|
   s.version       = Kameleon::VERSION
   s.authors       = ["Darko Illic", "Bruno Bzeznik", "Joseph Emeras", "Olivier Richard", "Philippe Le Brouster"]
   s.email         = ["darko.ilic@gmail.com", "bruno.bzeznik@imag.fr", "Joseph.Emeras@imag.fr", "olivier.richard@imag.fr", "philippe.le-brouster@imag.fr"]
-  s.description   = %q{TODO: Write a gem description}
-  s.summary       = %q{TODO: Write a gem summary}
+  s.description   = %q{Kameleon is a tool to build virtual machines from scratch}
+  s.summary       = s.description
   s.homepage      = ""
   s.license       = "GPL-2"
 
   s.files         = `git ls-files`.split($/)
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  s.test_files    = s.files.grep(%r{^(test|s|features)/})
+  s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ["lib"]
 
   s.add_runtime_dependency "session", "~> 3.1.0"
+  s.add_runtime_dependency "log4r", "~> 1.1.9"
 
   s.add_development_dependency "pry"
   s.add_development_dependency "rake"
-  s.add_development_dependency "rspec", "~> 2.13.0"
-  s.add_development_dependency "rspec-fire"
-  s.add_development_dependency "rspec-spies"
+  s.add_development_dependency "minitest", "~> 4.7.3"
   s.add_development_dependency "coveralls"
-
 end
