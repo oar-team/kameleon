@@ -1,5 +1,6 @@
 add_timestamp:
   - timestamping:
-    - exec_appliance: date +%s > timestamp
-
-
+    - exec_local: date +%s > timestamp
+    - transfer:
+      - timestamp
+      - /

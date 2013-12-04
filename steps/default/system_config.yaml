@@ -15,7 +15,7 @@ system_config:
         # fr_FR.UTF-8 UTF-8
         # fr_FR ISO-8859-1
     - exec_chroot: locale-gen
-    - exec_appliance: source etc/locale.conf
+    - exec_chroot: source /etc/locale.conf
   - etc_hosts:
     - write_file:
       - /etc/hosts
