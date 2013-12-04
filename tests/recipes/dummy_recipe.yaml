@@ -1,0 +1,37 @@
+#===============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#===============================================================================
+#
+# RECIPE: wheezy_amd64.yaml
+#
+# DESCRIPTION: This recipe build an appliance of a complete debian server
+#
+# WARNING: autologin means anyone booting this image get acces WITHOUT password
+#
+#===============================================================================
+---
+# Global variables use by Kameleon engine and steps
+global:
+  # Where Kameleon stores tmp files and appliances
+  workdir_base: /img/kameleon/wheezy_amd64/
+  variable: test
+
+bootstrap:
+  - dummy_bootstrap_static:
+    - debian_version_name: wheezy
+    - distrib_repository: http://ftp.fr.debian.org/debian/
+
+setup:
+  # Install
+  - dummy_software_install:
+    - extra_packages: "vim bash-completion"
+    - install_cmd: "apt-get"
+    - dummy_step1
+    - dummy_step2
+  - dummy_root_passwd
+
+
+export:
+  - dummy_save_appliance:
+    - save_as_raw
+    - save_as_vmdk

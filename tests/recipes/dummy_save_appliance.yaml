@@ -1,0 +1,9 @@
+dummy_save_appliance:
+  - save_as_raw:
+    - exec_local: echo test > /dev/null
+    - exec: echo test > /dev/null
+    - exec_local: echo test > /dev/null
+  - save_as_vmdk
+    - exec_local: echo test > /dev/null
+    - exec: echo test > /dev/null
+    - exec_local: echo test > /dev/null
