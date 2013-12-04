@@ -28,7 +28,7 @@ global:
 
 # Bootstrap the new system and create context
 bootstrap:
-  - bootstrap_static
+  - bootstrap_static:
     - debian_version_name: wheezy
     - distrib_repository: http://ftp.fr.debian.org/debian/
 
