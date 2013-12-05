@@ -1,8 +1,6 @@
 autologin:
   - set_autologin:
     - exec: |
-        perl -pi -e 's;/sbin/getty.*tty1;/bin/login -f $$user_name tty1 </dev/tty1 >/dev/tty1 2>&1;' /etc/inittab
-    - exec: |
        # check SysV init
        if [ -f '/etc/inittab' ]
        then

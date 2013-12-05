@@ -1,6 +1,5 @@
 add_timestamp:
   - timestamping:
-    - exec_local: date +%s > timestamp
-    - transfer:
-      - timestamp
-      - /
+    - exec_local: |
+      date +%s > timestamp
+      scp timestamp $$rootfs
