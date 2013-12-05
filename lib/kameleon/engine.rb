@@ -33,22 +33,27 @@ module Kameleon
       @logger.warn('fake warning')
       @logger.error('fake error')
       begin
-        @recipe.macrosteps.each do |macrostep|
-          macrostep.each do |microstep|
-            microstep.each do |cmd|
-              case cmd.key
-              when :exec
-                @container_shell.exec(cmd.value)
-              when :exec_local
-                @local_shell.exec(cmd.value)
-              else
-                raise Error::InternalError.new(
-                  "Invalid container value: #{container}")
+        @recipe.check_cmds.each do |cmd|
+          @local_shell.check_cmd(cmd)
+        end
+        @recipe.sections.each do |section|
+          section.macrosteps.each do |macrostep|
+            macrostep.each do |microstep|
+              microstep.each do |cmd|
+                case cmd.key
+                when :exec
+                  @container_shell.exec(cmd.value)
+                when :exec_local
+                  @local_shell.exec(cmd.value)
+                else
+                  raise Error::InternalError.new(
+                    "Invalid container value: #{container}")
+                end
               end
             end
           end
         end
-      rescue Exception => e
+      rescue ExecError => e
         @logger.error("An error occured : #{e}")
       end
     end

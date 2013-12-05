@@ -73,13 +73,15 @@ BANNER
       logger = Log4r::Logger.new("kameleon")
       logger.outputters = Log4r::Outputter.stderr
       logger.level = Log4r::DEBUG
-      # remove unsed logger
-      logger = nil
 
       option_parser.parse!
-      engine = Kameleon::Engine.new(@options)
-      engine.run()
       @options[:recipe_query] = ARGV[0]
+      begin
+        engine = Kameleon::Engine.new(@options)
+        engine.run()
+      rescue ArgumentError => e
+        logger.error("Argument error\n#{e}")
+      end
     end
   end
 end
