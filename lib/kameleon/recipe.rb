@@ -4,7 +4,7 @@ require 'kameleon/utils'
 module Kameleon
   class Recipe
     attr_accessor :global, :macrosteps
-    def initialize(recipe_path)
+    def initialize(recipe_query, include_paths)
       @distrib_name = "debian"
       @global = {}
       @macrosteps = []
@@ -17,7 +17,7 @@ module Kameleon
 
     # query could be recipe name or path
     # :returns: path
-    def find(query)
+    def find(recipe_query, include_paths)
     end
 
     # :returns: list

@@ -9,7 +9,7 @@ module Kameleon
     def initialize(options)
       @options = options
       @logger = Log4r::Logger.new("kameleon::engine")
-      @recipe = Recipe.new(@options[:recipe])
+      @recipe = Recipe.new(@options[:recipe_query], @options[:include_paths])
       @local_shell = BasicShell.new
       container = @recipe.global['container']
       case container
