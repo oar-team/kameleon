@@ -6,7 +6,7 @@ module Kameleon
 
     def self.main
       @options = {
-        :include_path => []
+        :include_paths => []
       }
 
       option_parser = OptionParser.new do |opts|
@@ -20,7 +20,7 @@ Kameleon
 * Options:
 BANNER
         opts.on("-i", "--include [PATH]", "Include the given path in the kameleon search path") do |i|
-          @options[:include_path].push(File.expand_path(i))
+          @options[:include_paths].push(File.expand_path(i))
         end
 
         opts.on("-h","--help", "Show this message.") do
@@ -73,13 +73,15 @@ BANNER
       logger = Log4r::Logger.new("kameleon")
       logger.outputters = Log4r::Outputter.stderr
       logger.level = Log4r::DEBUG
-      # remove unsed logger
-      logger = nil
 
       option_parser.parse!
-      @options[:recipe] = ARGV[0]
-      engine = Kameleon::Engine.new(@options)
-      engine.run()
+      @options[:recipe_query] = ARGV[0]
+      begin
+        engine = Kameleon::Engine.new(@options)
+        engine.run()
+      rescue ArgumentError => e
+        logger.error("Argument error\n#{e}")
+      end
     end
   end
 end

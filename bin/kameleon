@@ -13,5 +13,6 @@ end
 $stdout.sync = true
 $stderr.sync = true
 
+Kameleon::DEFAULT_RECIPES = File.expand_path(File.dirname(__FILE__) + "/../")
 
 Kameleon::UI.main
