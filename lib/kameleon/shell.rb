@@ -1,18 +1,10 @@
 module Kameleon
-  class BasicShell
-    def exec
-
-    end
-    def exec_local
-
+  class BasicShell < Session::Bash
+    def exec(cmd)
+      execute(cmd)
     end
   end
 
-  class RemoteShell < BasicShell
-
-  end
-
-  class ChrootShell < BasicShell
-
+  class CustomShell < BasicShell
   end
 end
