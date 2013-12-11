@@ -14,7 +14,8 @@
 global:
   # Where Kameleon stores tmp files and appliances
   workdir_base: /img/kameleon/wheezy_amd64/
-  variable: test
+  distrib: "debian"
+  variables: test
 
 bootstrap:
   - dummy_bootstrap_static:

@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_runtime_dependency "session", "~> 3.1.0"
-  s.add_runtime_dependency "log4r", "~> 1.1.9"
+  s.add_runtime_dependency "thor", "~> 0.15"
 
   s.add_development_dependency "pry"
   s.add_development_dependency "rake"
