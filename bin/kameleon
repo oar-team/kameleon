@@ -2,17 +2,26 @@
 
 require 'kameleon'
 
-argv = ARGV.dup
-argv_extra = []
-if idx = argv.index("--")
-  argv_extra = argv.slice(idx+1, argv.length-2)
-  argv = argv.slice(0, idx)
-end
-
 # Stdout/stderr should not buffer output
 $stdout.sync = true
 $stderr.sync = true
 
-Kameleon::DEFAULT_RECIPES = File.expand_path(File.dirname(__FILE__) + "/../")
+ENV["KAMELEON_LOG"] = "debug" if ARGV.include?('--debug')
+env = Kameleon::Environment.new
 
-Kameleon::UI.main
+begin
+  # Begin logging
+  env.ui.info("kameleon") { "`kameleon` invoked: #{ARGV.inspect}" }
+
+  # Disable color if the proper argument was passed
+  shell = ARGV.include?("--no-color") ? Thor::Shell::Basic.new : Thor::Base.shell.new
+
+  # Attach the UI
+  env.ui = ::Kameleon::UI::Shell.new(env, shell)
+
+  # Start the CLI
+  ::Kameleon::CLI.start(ARGV, :env => env)
+
+rescue Kameleon::Error => e
+  env.ui.error "#{e}"
+end
