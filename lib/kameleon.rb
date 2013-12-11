@@ -5,6 +5,7 @@ require 'erb'
 require 'session'
 require 'tempfile'
 require 'pp'
+require 'thor'
 
 module Kameleon
   # The source root is the path to the root directory of the kameleon gem.
@@ -13,10 +14,9 @@ module Kameleon
   end
 end
 
-
 # Load the things which must be loaded before anything else
-require 'kameleon/error'
 require 'kameleon/cli'
 require 'kameleon/ui'
 require 'kameleon/environment'
+require 'kameleon/error'
 require 'kameleon/version'

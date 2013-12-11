@@ -1,5 +1,4 @@
 require 'kameleon/engine'
-require 'thor'
 
 
 module Kameleon
