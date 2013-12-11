@@ -21,12 +21,12 @@ module Kameleon
     def initialize(options = {})
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
-      cwd = options[:cwd] || Kameleon::Environment.workdir
+      workspace = options[:workspace] || Kameleon::Environment.workspace
       defaults = {
-        :cwd => cwd,
+        :workspace => workspace,
         :templates_dir => File.expand_path(File.join(File.dirname(__FILE__), "..", "..", 'templates')),
-        :recipes_dir => File.join(cwd, "recipes"),
-        :tmp_dir => File.join(cwd, "tmp")
+        :recipes_dir => File.join(workspace, "recipes"),
+        :build_dir => File.join(workspace, "builds"),
       }
 
       options = defaults.merge(options)
@@ -44,8 +44,8 @@ module Kameleon
       return self
     end
 
-    def self.workdir
-      ENV['KAMELEON_DIR'] || Dir.pwd
+    def self.workspace
+      ENV['KAMELEON_WORKSPACE'] || Dir.pwd
     end
 
     def ui
