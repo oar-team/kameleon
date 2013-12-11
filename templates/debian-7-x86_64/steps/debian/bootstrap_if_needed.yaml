@@ -1,0 +1,48 @@
+# This step store the bootstrap for a particular distrib and achitechture
+# to avoid downloading on every execution
+---
+bootstrap_if_needed:
+  - debootstrap:
+    - exec_local: |
+        export tgz_bootstrap_file=$(echo "../$$workdir""/bootstrap/""$$distrib""_$$debian_version_name""_$$arch"".tar.gz")
+        mkdir -p $(dirname $tgz_bootstrap_file)
+        if [ ! -f "$tgz_bootstrap_file" ]
+        then 
+            debootstrap --arch=$$arch $$debian_version_name $$rootfs $$distrib_repository
+            tar zcf $tgz_bootstrap_file -C $$rootfs --numeric-owner --one-file-system .
+        else 
+            tar zxf $tgz_bootstrap_file -C $$rootfs
+            cp -f /etc/resolv.conf $$rootfs/etc
+        fi
+  #- include: 
+  #  - mount_proc
+  - mount_dev:
+    - exec_local: mount -o bind /dev  $$rootfs/dev
+    - on_setup_clean: |
+        if mountpoint -q $$rootfs/dev
+          then umount $$rootfs/dev
+        fi
+
+    - exec_local: mount -o bind /dev/pts $$rootfs/dev/pts
+    - on_setup_clean: |
+        if mountpoint -q $$rootfs/dev/pts
+          then umount $$rootfs/dev/pts
+        fi
+  - mount_proc:
+    - exec_local: mount -o bind /proc  $$rootfs/proc
+    - on_setup_clean: |
+        if mountpoint -q $$rootfs/proc
+          then umount $$rootfs/proc
+        fi
+  - mount_sys:
+    - exec_local: mount -o bind /sys  $$rootfs/sys
+    - on_setup_clean: |
+        if mountpoint -q $$rootfs/sys
+          then umount $$rootfs/sys
+        fi
+
+  - update_bootstrap: 
+    - exec: |
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
+        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes dist-upgrade
+

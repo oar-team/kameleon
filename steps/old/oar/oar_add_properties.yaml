@@ -1,6 +1,0 @@
-oar_add_properties:
- - oar_add_properties:
-   - exec_chroot: /etc/init.d/mysql start
-   - exec_chroot: oarproperty -a core
-   - exec_chroot: oarproperty -a cpu
-   - exec_chroot: /etc/init.d/mysql stop

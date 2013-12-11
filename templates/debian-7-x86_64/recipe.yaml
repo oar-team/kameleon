@@ -1,0 +1,59 @@
+#===============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#===============================================================================
+#
+# RECIPE: debian-7-x86_64
+# 
+# DESCRIPTION: This recipe build an appliance of a complete 64 bits debian
+# wheezy server 
+# 
+# WARNING: autologin means anyone booting this image get acces WITHOUT password
+#
+#===============================================================================
+---
+# Global variables use by Kameleon engine and steps
+global:
+  # Distribution
+  distrib: debian
+
+  # Architechture 
+  arch: amd64
+  
+  # You can define your own global variables here...
+
+# Bootstrap the new system and create context
+bootstrap:
+  - bootstrap_if_needed:
+    - debian_version_name: wheezy
+    - distrib_repository: http://ftp.fr.debian.org/debian/
+
+# Install and configuration steps
+# WARNING: should be independante from the build context
+setup:
+  # Install
+  - software_install:
+    - extra_packages: "vim bash-completion"
+  - network_time_install:
+    - timezone: Europe/Paris
+  - kernel_install
+
+  # Configuration
+  - system_config:
+    - network_hostname: mydebian
+  - make_swap
+  - network_config
+  - keyboard_azerty_config:
+  - create_user:
+    - user_group: admin
+    - user_name: kameleon
+    - user_password: kameleon
+  - autologin
+
+# Export the generated appliance in the format of your choice
+export:
+  - clean_appliance
+  - build_appliance:
+    - output_environment_file_system_type: ext4
+    - img_size: 2G #(see man fallocate)
+  - save_appliance:
+    - save_as_raw

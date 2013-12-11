@@ -1,0 +1,46 @@
+#===============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#===============================================================================
+#
+# RECIPE: empty_recipe
+# 
+# DESCRIPTION: This is an example recipe. It aims at teach the user how to write
+# his own recipe from scratch
+# 
+# WARNING: It is recommended to use the template provided by Kameleon available
+# from the *new* command.
+#
+#===============================================================================
+---
+#== Global variables use by Kameleon engine and the steps
+global:
+  # Distribution
+  distrib: debian
+
+  # Architechture 
+  arch: amd64
+  
+  # You can define your own global variables here...
+
+#== Bootstrap the new system and create context
+bootstrap:
+  - sample_steps_0
+  #...
+
+#== Install and configuration steps
+# WARNING: this part should be independante from the build context (whenever 
+# possible...)
+setup:
+  # Install
+  - sample_steps_1
+  
+  # Configuration
+  - sample_step_2
+  #...
+
+#== Export the generated appliance in the format of your choice
+export:
+  - sample_step_3:
+    - sample_micro_step
+    - sample_var: myvalue
+  #...

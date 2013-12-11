@@ -1,7 +1,0 @@
-g5k_http_proxy:
- - g5k_http_proxy:
-   - append_file:
-     - /root/.bashrc
-     - |
-       export http_proxy="http://proxy:3128"
-       export https_proxy="http://proxy:3128"
