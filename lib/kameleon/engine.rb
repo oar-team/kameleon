@@ -5,9 +5,8 @@ require 'kameleon/error'
 
 module Kameleon
   class Engine
-    def initialize(options)
+    def initialize(env)
       @options = options
-      @logger = Log4r::Logger.new("kameleon::engine")
       @recipe = Recipe.new(@options[:recipe_query], @options[:include_paths])
       @local_shell = BasicShell.new
       container = @recipe.global.fetch('container', nil)
@@ -40,7 +39,7 @@ module Kameleon
               when :exec_local
                 @local_shell.exec(cmd.value)
               else
-                @logger.warn("Unknow command : #{cmd.key}")
+                @env.ui.warn "Unknow command : #{cmd.key}"
               end
             end
           end
