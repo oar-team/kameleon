@@ -1,32 +1,18 @@
+require 'kameleon/error'
 require 'kameleon/recipe'
 require 'kameleon/shell'
-require 'kameleon/error'
 
 
 module Kameleon
   class Engine
-    def initialize(env)
+    def initialize(env, recipe_name)
       @options = options
-      @recipe = Recipe.new(@options[:recipe_query], @options[:include_paths])
       @local_shell = BasicShell.new
-      container = @recipe.global.fetch('container', nil)
-      case container
-      when nil
-        @container_shell = BasicShell.new
-      when :kvm
-        @container_shell = RemoteShell.new
-      when :chroot
-        @container_shell = ChrootShell.new
-      else
-        fail "Invalid container value: #{container}"
-      end
+      @container_shell = CustomShell.new @recipe.global.fetch "exec_cmd"
+      @recipe = Recipe.new(env, recipe_name)
     end
 
-    def clean(signal)
-
-    end
-
-    def run
+    def build
       @recipe.check_cmds.each { |cmd| @local_shell.check_cmd(cmd) }
 
       @recipe.sections.each do |section|
@@ -46,6 +32,12 @@ module Kameleon
         end
       end
     end
+
+    private
+    def clean(signal)
+
+    end
+
   end
 
 end
