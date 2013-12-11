@@ -1,9 +1,9 @@
 create_user:
  - create_group:
-   - exec_chroot: addgroup $$user_group
+   - exec: addgroup $$user_group
  - add_user:
    # use the create_passwd.py script to generate the crypted password
-   - exec_chroot: useradd -m -g $$user_group -p '$$user_password' $$user_name -s /bin/bash
+   - exec: useradd -m -g $$user_group -p '$$user_password' $$user_name -s /bin/bash
  - add_group_to_sudoers:
    - append_file:
      - /etc/sudoers

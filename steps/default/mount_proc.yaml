@@ -1,4 +1,0 @@
-mount_proc:
- - mount_proc:
-   - exec_appliance: mount -o bind /proc  $$chroot/proc
-   - exec_on_clean: if mountpoint -q $$chroot/proc; then umount $$chroot/proc; fi

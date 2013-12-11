@@ -1,4 +1,0 @@
-mount_sys:
- - mount_sys:
-   - exec_appliance: mount -o bind /sys  $$chroot/sys
-   - exec_on_clean: umount $$chroot/sys 2>/dev/null

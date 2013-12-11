@@ -1,18 +1,15 @@
-save_appliance:
+save_chroot_appliance:
   
-  #TODO test all of these
-
-  #FIXME should take the output path in args
   - save_as_tgz:
-    - exec_current: |
-        cd $$workdir; tar -zcf $$distrib\_$$arch.tar.gz -C chroot . \
+    - exec_local: |
+        tar -zcf $$distrib\_$$arch.tar.gz -C chroot . \
           --numeric-owner --one-file-system --exclude=tmp/* 
 
   #TODO update this
-  - save_as_kameleon:
+  - save_as_kameleon_env:
     # we have to add a postinstall
-    - write_file:
-      - ../$$distrib\_$$arch.yaml
+    - write_local_file:
+      - $$distrib\_$$arch.yaml
       - |
         --- 
         name: $$distrib\_$$arch
@@ -32,24 +29,24 @@ save_appliance:
         partition_type: 0
 
   - save_as_raw:
-    - exec_appliance: |
-        mv $$workdir/image.raw $$workdir/$$distrib\_$$arch.raw
-        cd $$workdir; ln -s $$distrib\_$$arch.raw image.raw
+    - exec_local: |
+        mv image.raw $$distrib\_$$arch.raw
+        ln -s $$distrib\_$$arch.raw image.raw
 
   - save_as_vmdk:
     - check_cmd: qemu-img
-    - exec_appliance: |
-        qemu-img convert -O vmdk $$workdir/image.raw $$workdir/$$distrib\_$$arch.vmdk
+    - exec_local: |
+        qemu-img convert -O vmdk image.raw $$distrib\_$$arch.vmdk
     - erb_config:
       - config.vmx.erb
-      - $$workdir/$$distrib.vmx
+      - $$distrib.vmx
 
   - save_as_qcow2:
     - check_cmd: qemu-img
-    - exec_appliance: |
-        qemu-img convert -O qcow2 $$workdir/image.raw $$workdir/$$distrib\_$$arch.qcow2
+    - exec_local: |
+        qemu-img convert -O qcow2 image.raw $$distrib\_$$arch.qcow2
 
   - save_as_vdi:
     - check_cmd: VBoxManage
-    - exec_appliance: |
-        VBoxManage convertdd $$workdir/image.raw $$workdir/$$distrib\_$$arch.vdi
+    - exec_local: |
+        VBoxManage convertdd image.raw $$distrib\_$$arch.vdi

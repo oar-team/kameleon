@@ -1,13 +1,13 @@
 generate_user_ssh_key:
   - generate_keys:
-    - exec_appliance: |
-        mkdir -p home/$$user_name/.ssh
+    - exec: |
+        mkdir -p /home/$$user_name/.ssh
         ssh-keygen -t rsa -C "$$user_name@$$network_hostname" -N "" -f home/$$user_name/.ssh/id_rsa
         #fix permissions
-        chmod 700 home/$$user_name/.ssh
-        chmod 644 home/$$user_name/.ssh/id_rsa.pub
-        chmod 600 home/$$user_name/.ssh/id_rsa
-    - exec_chroot: chown -R $$user_name:$$user_group home/$$user_name/.ssh 
+        chmod 700 /home/$$user_name/.ssh
+        chmod 644 /home/$$user_name/.ssh/id_rsa.pub
+        chmod 600 /home/$$user_name/.ssh/id_rsa
+    - exec: chown -R $$user_name:$$user_group home/$$user_name/.ssh 
   - save_public_key:
-    - exec_appliance: cp home/$$user_name/.ssh/id_rsa.pub $$generated_rsa_pub_dir
+    - exec_local: scp $$rootfs/home/$$user_name/.ssh/id_rsa.pub $$generated_rsa_pub_dir
 
