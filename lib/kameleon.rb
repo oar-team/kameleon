@@ -1,4 +1,3 @@
-require "kameleon/version"
 require 'yaml'
 require 'fileutils'
 require 'optparse'
@@ -8,5 +7,12 @@ require 'tempfile'
 require 'pp'
 
 module Kameleon
-  autoload :UI,        'kameleon/ui'
 end
+
+
+# Load the things which must be loaded before anything else
+require 'kameleon/error'
+require 'kameleon/cli'
+require 'kameleon/ui'
+require 'kameleon/environment'
+require 'kameleon/version'
