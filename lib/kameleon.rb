@@ -7,6 +7,10 @@ require 'tempfile'
 require 'pp'
 
 module Kameleon
+  # The source root is the path to the root directory of the kameleon gem.
+  def self.source_root
+    @source_root ||= Pathname.new(File.expand_path('../../', __FILE__))
+  end
 end
 
 
