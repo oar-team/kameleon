@@ -3,7 +3,9 @@ require 'kameleon/engine'
 
 module Kameleon
   class CLI < Thor
+
     class_option :debug,:type => :boolean , :default => false, :desc => "enable debugging"
+    class_option :no_color,:type => :boolean , :default => false, :desc => "disable output color"
 
     class_option :worspace, :aliases => '-w', :type => :string,
                  :default => FileUtils.pwd,
