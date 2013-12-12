@@ -6,9 +6,10 @@ module Kameleon
   # this environment
   class Environment
 
-    attr_accessor :cwd
+    attr_accessor :workspace
     attr_accessor :templates_dir
     attr_accessor :recipes_dir
+    attr_accessor :build_dir
 
     attr_writer :ui
 
