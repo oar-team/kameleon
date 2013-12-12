@@ -20,19 +20,22 @@ module Kameleon
     def load!
       # Find recipe path
       @path = File.join @env.recipes_dir, @name + ".yaml"
-      fail Kameleon::Error, "Could not find this following recipe : #{@path}" \
+      fail Error, "Could not find this following recipe : #{@path}" \
            unless File.file? @path
       @env.logger.info('recipe') { 'Loading ' + @path }
-
       yaml_recipe = YAML.load File.open @path
-      fail "Invalid yaml error" unless yaml_recipe.kind_of? Hash
-      fail Kameleon::Error, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
+
+      fail Error, "Invalid yaml error" unless yaml_recipe.kind_of? Hash
+      fail Error, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
 
       @global.merge(yaml_recipe.fetch("global"))
 
       @global.each do |key, value|
         fail "Recipe misses required variable: #{key}" if value.nil?
       end
+    rescue Psych::SyntaxError => e
+      @env.logger.debug('recipe') { e.backtrace.join "\n" }
+      raise Error, e
     end
 
     # :returns: list
@@ -47,7 +50,6 @@ module Kameleon
     # :returns: macrostep
     def resolve_macrostep(raw_macrostep, args)
     end
-
 
   end
 end
