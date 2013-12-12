@@ -19,7 +19,7 @@ module Kameleon
 
     def load!
       # Find recipe path
-      @path = File.join @env.recipes_dir, @name, "recipe.yaml"
+      @path = File.join @env.recipes_dir, @name + ".yaml"
       fail Kameleon::Error, "Could not find this following recipe : #{@path}" \
            unless File.file? @path
       @env.logger.info('recipe') { 'Loading ' + @path }
