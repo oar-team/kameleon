@@ -1,0 +1,6 @@
+- sample:
+  - exec: echo "hello"
+
+- sample_0:
+  - exec: echo " world!"
+

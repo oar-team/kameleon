@@ -32,7 +32,7 @@ bootstrap:
 # possible...)
 setup:
   # Install
-  - sample_steps_1
+  - sample_step_1
   
   # Configuration
   - sample_step_2

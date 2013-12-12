@@ -1,5 +1,6 @@
 # Manage kameleon recipes
 require 'kameleon/utils'
+require 'kameleon/macrostep'
 
 module Kameleon
   class Recipe
@@ -17,10 +18,10 @@ module Kameleon
       end
     end
     attr_accessor :global, :sections, :check_cmds
-    def initialize(env, name)
+    def initialize(env, path)
       @env = env
-      @name = name
-      @path = nil
+      @name = File.basename( path, ".yaml" ) 
+      @path = path
       @check_cmds = []
       @sections = {}
       @global = { "distrib" => nil,
@@ -30,9 +31,8 @@ module Kameleon
       load!
     end
 
-    def load!(path)
+    def load!
       # Find recipe path
-      @path = path
       fail Kameleon::Error, "Could not find this following recipe : #{@path}" \
            unless File.file? @path
       @env.logger.info('recipe') { 'Loading ' + @path }
@@ -42,31 +42,32 @@ module Kameleon
       fail Kameleon::Error, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
 
       #Load Global variables
-      @global.merge(yaml_recipe.fetch("global"))
+      @global.merge!(yaml_recipe.fetch("global"))
 
       @global.each do |key, value|
         fail "Recipe misses required variable: #{key}" if value.nil?
       end
       
       #Find and load steps
-      Section.sections.each |section| do
+      Section.sections.each do |section|
         yaml_recipe.fetch(section).each do |macrostep|
           
           #check if it's a string or a dict
-          if macrostep.kind_of?(String)
+          if macrostep.kind_of? String
             step = macrostep
-          elsif macrostep.kind_of?(Dict)
+          elsif macrostep.kind_of? Hash
             step = macrostep.keys[0]
             #Load options
-            options = macrostep.value[0]
+            options = macrostep.values[0]
           else
             fail "Malformed yaml recipe in section: "+ section
           end
 
           # find the path of the macrostep
-          step_path = find_macrostep(step_name, section)
+          step_path = find_macrostep(step, section)
 
           # save the macrostep in the section
+          @sections[section]= []
           @sections[section].push(Macrostep.new(step_path, options))
         end
       end
@@ -76,13 +77,13 @@ module Kameleon
     # check for macrostep file (distro-specific or default)
     # :returns: workdir relative path of the step
     def find_macrostep(step_name, section)
-      workdir = File.basename @path
-        [@global['distrib'], 'default', ''] do |to_search_dir|
-          if File.file?(step_path = workdir +'/'+ section +'/'+ to_search_dir + '/' + step_name)
-            @env.ui.succes('recipe') { "Step #{step_name} found in this path: "+ step_path }
+      workdir = File.join(File.dirname(@path), 'steps')
+        [@global['distrib'], 'default', ''].each do |to_search_dir|
+          if File.file?(step_path = workdir +'/'+ section +'/'+ to_search_dir + '/' + step_name +'.yaml')
+            @env.ui.success "Step #{step_name} found in this path: "+ step_path
             return step_path
           end
-          @env.ui.debug('recipe') { "Step #{step_name} not found in this path: "+ step_path }
+          @env.logger.info('recipe') { "Step #{step_name} not found in this path: "+ step_path }
         end
         fail "Step #{step_name} not found"
     end
@@ -90,7 +91,6 @@ module Kameleon
     # :returns: macrostep
     def resolve_macrostep(raw_macrostep, args)
     end
-
 
   end
 end

@@ -1,0 +1,4 @@
+
+- test:
+  - exec_local: /dev/null
+
