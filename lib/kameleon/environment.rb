@@ -31,11 +31,11 @@ module Kameleon
       }
 
       options = defaults.merge(options)
-      logger.info("environment") { "Environment initialized (#{self})" }
+      logger.info("env") { "Environment initialized (#{self})" }
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|
         instance_variable_set("@#{key}".to_sym, options[key])
-        logger.info("environment") { " - #{key} : #{options[key]}" }
+        logger.info("env") { " - #{key} : #{options[key]}" }
       end
 
       # Definitions
@@ -57,10 +57,6 @@ module Kameleon
       CLI.start(args.flatten, :env => self)
     end
 
-    def resource
-      "kameleon"
-    end
-
     # Accesses the logger for Veewee. This logger is a _detailed_
     # logger which should be used to log internals only. For outward
     # facing information, use {#ui}.
@@ -78,11 +74,11 @@ module Kameleon
         loglevel = Logger.const_get(ENV["KAMELEON_LOG"].upcase)
       end
 
-        # Create the logger and custom formatter
+      # Create the logger and custom formatter
       @logger = ::Logger.new(output)
       @logger.level = loglevel
       @logger.formatter = Proc.new do |severity, datetime, progname, msg|
-        "#{datetime} - #{progname} - [#{resource}] #{msg}\n"
+        "#{datetime} - [#{progname}] -  #{msg}\n"
       end
       @logger
     end
