@@ -24,4 +24,7 @@ begin
 
 rescue Kameleon::Error => e
   env.ui.error "#{e}"
+rescue => e
+  env.ui.error "An unexpected error occurred : #{e}" \
+               ". Use --debug option for more details"
 end
