@@ -41,7 +41,7 @@ module Kameleon
             super(message)
             opts ||= {}
             opts[:new_line] = true if !opts.has_key?(:new_line)
-            @shell.say(message, color.inspect, opts[:new_line])
+            @shell.say(message, #{color.inspect}, opts[:new_line])
           end
         CODE
       end
