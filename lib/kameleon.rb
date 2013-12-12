@@ -7,6 +7,15 @@ require 'tempfile'
 require 'pp'
 require 'thor'
 
+# Load the things which must be loaded before anything else
+require 'kameleon/error'
+require 'kameleon/utils'
+require 'kameleon/cli'
+require 'kameleon/ui'
+require 'kameleon/environment'
+require 'kameleon/version'
+
+
 module Kameleon
   # The source root is the path to the root directory of the kameleon gem.
   def self.source_root
@@ -14,9 +23,3 @@ module Kameleon
   end
 end
 
-# Load the things which must be loaded before anything else
-require 'kameleon/cli'
-require 'kameleon/ui'
-require 'kameleon/environment'
-require 'kameleon/error'
-require 'kameleon/version'
