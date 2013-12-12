@@ -14,7 +14,7 @@ module Kameleon
     method_option :force,:type => :boolean , :default => false, :aliases => "-f", :desc => "overwrite the recipe"
     desc "new", "Create a new recipe"
     def new(recipe_name)
-      puts "new"
+      @env.ui.success "Neeeew"
     end
 
     desc "list", "Lists all defined recipes"
@@ -26,6 +26,11 @@ module Kameleon
     method_option :force, :type => :boolean , :default => false, :aliases => "-f", :desc => "force the build"
     def build(recipe_name)
       puts "recipes"
+    end
+
+    def initialize(args=[], options={}, config={})
+      super
+      @env = config[:env]
     end
 
   end
