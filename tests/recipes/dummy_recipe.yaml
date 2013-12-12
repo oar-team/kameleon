@@ -2,37 +2,43 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #===============================================================================
 #
-# RECIPE: wheezy_amd64.yaml
+# RECIPE: dummy_recipe.yaml
 #
-# DESCRIPTION: This recipe build an appliance of a complete debian server
+# DESCRIPTION: This is a test recipe made for unit testing
 #
-# WARNING: autologin means anyone booting this image get acces WITHOUT password
+# WARNING: This is a warning!!!
 #
 #===============================================================================
 ---
-# Global variables use by Kameleon engine and steps
+# This is a comment :/!* $$toto 
 global:
-  # Where Kameleon stores tmp files and appliances
-  workdir_base: /img/kameleon/wheezy_amd64/
-  distrib: "debian"
+  # This is another comment // ,;:!*ù$=)àç_ç_èè-(-('""é&'" ¹~~##{[{[|``\^^@]}
+  distrib: dummy_distro
   variables: test
 
 bootstrap:
+  # &é"'(-è_çà)=~#{#{|~{|`\[`^|\@^@]*$ùlmjtgsioht jhié"ç_è (y'éy _This 
   - dummy_bootstrap_static:
-    - debian_version_name: wheezy
-    - distrib_repository: http://ftp.fr.debian.org/debian/
+    - distrib_version_name: wheeeeeeze
+    # Comment
+    - debian_repository: http://myrepo.com/test
 
 setup:
-  # Install
   - dummy_software_install:
-    - extra_packages: "vim bash-completion"
-    - install_cmd: "apt-get"
+    - extra_packages: "titi toto tata"
+    # Comment
+    - install_cmd: 12345.213
     - dummy_step1
+    # Comment
     - dummy_step2
   - dummy_root_passwd
 
+    # Comment
 
 export:
   - dummy_save_appliance:
     - save_as_raw
+    # Comment
     - save_as_vmdk
+    # Comment
+    # Comment
