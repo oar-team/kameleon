@@ -1,4 +1,0 @@
-g5k_unset_apt_proxy:
- - g5k_unset_apt_proxy:
-   - exec_chroot: mkdir /etc/apt/apt.conf.d.old
-   - exec_chroot: mv /etc/apt/apt.conf.d/proxy-guess /etc/apt/apt.conf.d.old

@@ -1,4 +1,0 @@
-g5k_unset_http_proxy:
- - g5k_unset_http_proxy:
-   - exec_chroot: bash -c "export http_proxy=''"
-   - exec_chroot: bash -c "export https_proxy=''"

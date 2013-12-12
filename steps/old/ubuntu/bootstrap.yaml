@@ -1,6 +1,0 @@
-bootstrap:
- - debootstrap:
-   - exec_appliance:  debootstrap --arch=$$arch --include=locales $$debian_version_name $$chroot/ $$distrib_repository 
- - fix_locales:
-   - exec_chroot: locale-gen en_US en_US.UTF-8
-   - exec_chroot: dpkg-reconfigure locales
