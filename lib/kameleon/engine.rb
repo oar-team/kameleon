@@ -6,10 +6,10 @@ require 'kameleon/shell'
 module Kameleon
   class Engine
     def initialize(env, recipe_name)
-      @options = options
+      @env = env
+      @recipe = Recipe.new(@env, recipe_name)
       @local_shell = BasicShell.new
       @container_shell = CustomShell.new @recipe.global.fetch "exec_cmd"
-      @recipe = Recipe.new(env, recipe_name)
     end
 
     def build

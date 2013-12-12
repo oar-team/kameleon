@@ -1,64 +1,39 @@
 # Manage kameleon recipes
 require 'kameleon/utils'
-require 'pp'
 
 module Kameleon
   class Recipe
     attr_accessor :global, :sections, :check_cmds
-    def initialize(env, recipe_query)
+    def initialize(env, name)
       @env = env
-      @global = {}
+      @name = name
+      @path = nil
       @check_cmds = []
       @sections = {}
-      load(find(recipe_query, include_paths))
+      @global = { "distrib" => nil,
+                  "workdir" => File.join(@env.build_dir, @name),
+                  "rootfs" => "$$workdir/chroot",
+                  "exec_cmd" => "fakechroot $$rootfs" }
+      load!
     end
 
-    # query could be recipe name or path
-    # :returns: path
-    def find(recipe_query, include_paths)
-      searched_pathes = ""
-      # Preserve paths order
-      if File.basename(recipe_query).eql? recipe_query
-        # recipe_query is not a path
-        pathes_to_search = []
-        include_paths.each do |p|
-          pathes_to_search.push(p)
-          pathes_to_search.push(File.join(p, "recipes"))
-        end
-        pathes_to_search.each do |dir|
-          if File.file?(path1 = File.join(dir, recipe_query + ".yaml"))
-            return path1
-          elsif File.file?(path2 = File.join(dir, recipe_query))
-            return path2
-          else
-            searched_pathes = searched_pathes + "\n * " + path2 + "[.yaml]"
-          end
-        end
-      elsif File.exist?(recipe_query)
-          return recipe_query
-      end
-      fail "could not find recipe in none of the following files " +
-           ":#{searched_pathes}"
-    end
+    def load!
+      # Find recipe path
+      @path = File.join @env.recipes_dir, @name, "recipe.yaml"
+      fail Kameleon::Error, "Could not find this following recipe : #{@path}" \
+           unless File.file? @path
+      @env.logger.info('recipe') { 'Loading ' + @path }
 
-    # :returns: path
-    def load(recipe_path)
-      required_globals = { "distrib" => nil,
-                           "rootfs" => "$$workdir_base/chroot",
-                           "exec_cmd" => "chroot $$rootfs" }
-      @env.logger.info('Loading ' + recipe_path)
-      yaml_recipe = YAML.load(File.open(recipe_path))
-      if yaml_recipe.kind_of?(Hash)
-        fail "Recipe misses 'global' section" unless yaml_recipe.key?("global")
-        @global = yaml_recipe.fetch("global")
-        required_globals.each do |key, value|
-          fail "Recipe misses required variable: #{key}" unless @global.key?(key) || !value.nil?
-          @global[key] = value if @global.fetch(key, nil).nil?
-        end
-        puts @global
+      yaml_recipe = YAML.load File.open @path
+      fail "Invalid yaml error" unless yaml_recipe.kind_of? Hash
+      fail Kameleon::Error, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
+
+      @global.merge(yaml_recipe.fetch("global"))
+
+      @global.each do |key, value|
+        fail "Recipe misses required variable: #{key}" if value.nil?
       end
     end
-
 
     # :returns: list
     def load_macrostep(path)

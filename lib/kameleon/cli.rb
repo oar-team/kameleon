@@ -14,20 +14,21 @@ module Kameleon
 
     method_option :template, :aliases => "-t", :desc => "Starting from a template", :default => "new_recipe"
     method_option :force,:type => :boolean , :default => false, :aliases => "-f", :desc => "overwrite the recipe"
-    desc "new", "Create a new recipe"
+    desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
+
       @env.ui.success "Neeeew"
     end
 
-    desc "list", "Lists all defined recipes"
+    desc "list", "Lists all defined templates"
     def list
-      puts "list"
     end
 
     desc "build [RECIPE_NAME]", "Build box from the recipe"
     method_option :force, :type => :boolean , :default => false, :aliases => "-f", :desc => "force the build"
     def build(recipe_name)
-      puts "recipes"
+      engine = Kameleon::Engine.new(@env, recipe_name)
+      engine.build
     end
 
     def initialize(args=[], options={}, config={})
