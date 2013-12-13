@@ -45,8 +45,28 @@ module Kameleon
     end
     
     # Resolve macrosteps variable
-    def resolve()
-      #TODO
+    def resolve!()
+      def resolve_cmd(cmd_string)
+        str.gsub(/\$\$[a-zA-Z0-9\-_]*/) do |variable|
+          # remove the dollars
+          strip_variable = variable[2,variable.length]
+          
+          # check in local vars 
+          if @variables[strip_variable]
+            value = @variable[strip_variable]
+
+          # check in global vars 
+          elsif @env.global[strip_variable]
+
+          else
+            fail Error, "#{@path}: variable #{variable} not found in local or global"
+          end
+          return $` + c + var_parse($', path)
+        end
+      end
+      @microsteps.each do |microstep|
+        microstep[microstep.key[0]].each do |cmd|
+        #TODO do a microstep object instead...
     end
 
   end
