@@ -1,52 +1,52 @@
-save_chroot_appliance:
-  
-  - save_as_tgz:
-    - exec_local: |
-        tar -zcf $$distrib\_$$arch.tar.gz -C chroot . \
-          --numeric-owner --one-file-system --exclude=tmp/* 
+# # Save Chroot Appliance
 
-  #TODO update this
-  - save_as_kameleon_env:
-    # we have to add a postinstall
-    - write_local_file:
-      - $$distrib\_$$arch.yaml
-      - |
-        --- 
-        name: $$distrib\_$$arch
-        version: 1
-        visibility: private
-        destructive: true
-        os: linux
-        image: 
-          file: $$distrib\_$$arch.tar.gz
-          kind: tar
-          compression: gzip
-        boot: 
-          kernel: /vmlinuz
-          initrd: /initrd.img
-        multipart: false
-        filesystem: ext4
-        partition_type: 0
+- save_as_tgz:
+  - exec_local: |
+      tar -zcf $$distrib\_$$arch.tar.gz -C chroot . \
+        --numeric-owner --one-file-system --exclude=tmp/* 
 
-  - save_as_raw:
-    - exec_local: |
-        mv image.raw $$distrib\_$$arch.raw
-        ln -s $$distrib\_$$arch.raw image.raw
+#TODO update this
+- save_as_kameleon_env:
+  # we have to add a postinstall
+  - write_local_file:
+    - $$distrib\_$$arch.yaml
+    - |
+      --- 
+      name: $$distrib\_$$arch
+      version: 1
+      visibility: private
+      destructive: true
+      os: linux
+      image: 
+        file: $$distrib\_$$arch.tar.gz
+        kind: tar
+        compression: gzip
+      boot: 
+        kernel: /vmlinuz
+        initrd: /initrd.img
+      multipart: false
+      filesystem: ext4
+      partition_type: 0
 
-  - save_as_vmdk:
-    - check_cmd: qemu-img
-    - exec_local: |
-        qemu-img convert -O vmdk image.raw $$distrib\_$$arch.vmdk
-    - erb_config:
-      - config.vmx.erb
-      - $$distrib.vmx
+- save_as_raw:
+  - exec_local: |
+      mv image.raw $$distrib\_$$arch.raw
+      ln -s $$distrib\_$$arch.raw image.raw
 
-  - save_as_qcow2:
-    - check_cmd: qemu-img
-    - exec_local: |
-        qemu-img convert -O qcow2 image.raw $$distrib\_$$arch.qcow2
+- save_as_vmdk:
+  - check_cmd: qemu-img
+  - exec_local: |
+      qemu-img convert -O vmdk image.raw $$distrib\_$$arch.vmdk
+  - erb_config:
+    - config.vmx.erb
+    - $$distrib.vmx
 
-  - save_as_vdi:
-    - check_cmd: VBoxManage
-    - exec_local: |
-        VBoxManage convertdd image.raw $$distrib\_$$arch.vdi
+- save_as_qcow2:
+  - check_cmd: qemu-img
+  - exec_local: |
+      qemu-img convert -O qcow2 image.raw $$distrib\_$$arch.qcow2
+
+- save_as_vdi:
+  - check_cmd: VBoxManage
+  - exec_local: |
+      VBoxManage convertdd image.raw $$distrib\_$$arch.vdi

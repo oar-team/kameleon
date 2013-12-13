@@ -1,8 +1,8 @@
-dummy_passwd_root:
- - dummy_passwd_root:
-    - exec: echo dummy > /dev/null
-    - exec: |
-        echo toto > /dev/null
-    - exec_local: echo dummy > /dev/null
-    - exec_local: |
-        echo toto > /dev/null
+# # Dummy Passwd Root
+- dummy_passwd_root:
+   - exec: echo dummy > /dev/null
+   - exec: |
+       echo toto > /dev/null
+   - exec_local: echo dummy > /dev/null
+   - exec_local: |
+       echo toto > /dev/null

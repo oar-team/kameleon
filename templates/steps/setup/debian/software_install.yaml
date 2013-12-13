@@ -1,17 +1,17 @@
-software_install:
-  - add_contribs_source:
-    - exec: |
-        perl -pi -e "s/main$/main contrib non-free/" /etc/apt/sources.list
-  - core_packages:
-    - exec: |
-        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
-    - exec: |
-        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
-          zip unzip rsync openssh-server debian-keyring sudo
- - do_pkg_install:
-    - exec: |
-        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
-          $$extra_packages
-    - on_clean: 
-      - exec: apt-get clean
+# # Software Install
+- add_contribs_source:
+  - exec: |
+      perl -pi -e "s/main$/main contrib non-free/" /etc/apt/sources.list
+- core_packages:
+  - exec: |
+      DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
+  - exec: |
+      DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
+        zip unzip rsync openssh-server debian-keyring sudo
+ do_pkg_install:
+  - exec: |
+      DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
+        $$extra_packages
+  - on_clean: 
+    - exec: apt-get clean
 

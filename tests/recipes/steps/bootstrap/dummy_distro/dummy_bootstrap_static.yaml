@@ -1,4 +1,4 @@
-dummy_bootstrap_static:
-  - dummy_bootstrap_static:
-    - exec_local: echo $$debian_version_name > /dev/null
-    - exec: echo $$distrib_repository > /dev/null
+# # Dummy Bootstrap Static
+- dummy_bootstrap_static:
+  - exec_local: echo $$debian_version_name > /dev/null
+  - exec: echo $$distrib_repository > /dev/null
