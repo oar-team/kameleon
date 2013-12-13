@@ -1,4 +1,6 @@
-
+# Sample step 3
 - test:
   - exec_local: /dev/null
 
+- sample_micro_step:
+  - exec_local: echo /dev/null

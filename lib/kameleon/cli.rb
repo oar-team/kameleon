@@ -13,28 +13,32 @@ module Kameleon
                  :desc => 'Change the kameleon workspace directory. ' \
                           '(The folder containing your recipes folder).'
 
+
     method_option :template, :aliases => "-t", :desc => "Starting from a template", :default => "empty_recipe"
     method_option :force,:type => :boolean , :default => false, :aliases => "-f", :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
-      path = File.join(@env.templates_dir, recipe_name) + '.yaml'
-      Recipe.new(@env, path)
+      @env.logger.debug ('cli::new') {"Enter CLI::new method"}
+      recipe_path = File.join(@env.templates_dir, recipe_name) + '.yaml'
+      recipe = Recipe.new(@env, recipe_path)
+      recipe_dir = File.join(options[:workspace], 'recipes' )
 
       @env.ui.info "Cloning from templates #{recipe_name}"
-      #Dir::mktmpdir do |tmp_dir|
-      #  Recipe::Section.sections.each do |section|
-      #    recipe[section].each do |step_name| 
-      #      step_path = Recipe.find_macrostep(step_name, @env.templates_dir, section)
-      #      dst = File.join(tmp_dir, File.dirname(step_path))
-      #      FileUtils.mkdir_p(dst)
-      #      FileUtils.cp(step_path, dst)
-      #    end
-      #  end
-      #  FileUtils.cp_r(tmp_dir, options[:workspace])
-      #end
-    rescue => e
-      puts e.message
-      puts e.backtrace
+      Dir::mktmpdir do |tmp_dir|
+        FileUtils.cp(recipe_path, tmp_dir)
+        recipe.sections.each do |key, macrosteps|
+          macrosteps.each do |macrostep|
+            relative_path = Pathname.new(macrostep.path).relative_path_from(Pathname.new(@env.templates_dir))
+            dst = File.join(tmp_dir, File.dirname(relative_path))
+            FileUtils.mkdir_p dst
+            FileUtils.cp(macrostep.path, dst)
+          end
+        end
+        # Create recipe dir if not exists
+        FileUtils.mkdir_p recipe_dir
+        FileUtils.cp_r(Dir[tmp_dir + '/*'], recipe_dir)
+      end
+      @env.ui.success "New recipe \"#{recipe_name}\" as been created in #{recipe_dir}"
     end
 
     desc "list", "Lists all defined templates"

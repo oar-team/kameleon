@@ -2,10 +2,13 @@ require 'kameleon/recipe'
 
 module Kameleon
   class Macrostep
+    attr_accessor :path
     def initialize(path, options)
-      @variables = []
-      @macrostep = YAML.load_file(path)
-      if not @macrostep.kind_of? Array
+      @variables = {}
+      @path = path
+      @name = File.basename path, ".yaml"
+      @microsteps = YAML.load_file(path)
+      if not @microsteps.kind_of? Array
         fail Error, "The macrostep #{path} is not valid (should be a list of microsteps)" 
       end
 
@@ -13,10 +16,11 @@ module Kameleon
       if options
         selected_microsteps = []
         options.each do |entry|
+          pp entry 
           if entry.kind_of? String
             selected_microsteps.push entry
           elsif entry.kind_of? Hash
-            @variables.push entry
+            @variables.merge! entry
           end
         end
         if selected_microsteps
@@ -26,14 +30,25 @@ module Kameleon
           selected_microsteps.each do |microstep_name|
             strip_macrostep.push(find_microstep(microstep_name))
           end
-          @macrostep = strip_macrostep
+          @microsteps = strip_macrostep
         end
       end
+      pp self
     end
-
-    # :return: index of the microstep in this macrostep
+    
+    # :return: the microstep in this macrostep by name
     def find_microstep(microstep_name)
-      
+      @microsteps.each do |microstep| 
+        if microstep_name.eql? microstep.keys[0] 
+          return microstep
+        end
+      end
+      fail Error ,"Can't find microstep \"#{microstep_name}\" in macrostep \"#{@name}\""
+    end
+    
+    # Resolve macrosteps variable
+    def resolve()
+      #TODO
     end
 
   end

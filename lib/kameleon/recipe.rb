@@ -4,8 +4,10 @@ require 'kameleon/macrostep'
 
 module Kameleon
   class Recipe
+    attr_accessor :sections
+
     # define section constant
-    class Section
+    class Section < OrderedHash
       BOOTSTRAP="bootstrap"
       SETUP="setup"
       EXPORT="export"
@@ -23,7 +25,7 @@ module Kameleon
       @name = File.basename( path, ".yaml" ) 
       @path = path
       @check_cmds = []
-      @sections = {}
+      @sections = Section.new
       @global = { "distrib" => nil,
                   "workdir" => File.join(@env.build_dir, @name),
                   "rootfs" => "$$workdir/chroot",
@@ -78,7 +80,7 @@ module Kameleon
 
 
     # check for macrostep file (distro-specific or default)
-    # :returns: workdir relative path of the step
+    # :returns: absolute path of the macrostep
     def find_macrostep(step_name, section)
       workdir = File.join(File.dirname(@path), 'steps')
         [@global['distrib'], 'default', ''].each do |to_search_dir|
@@ -90,10 +92,5 @@ module Kameleon
         end
         fail "Step #{step_name} not found"
     end
-
-    # :returns: macrostep
-    def resolve_macrostep(raw_macrostep, args)
-    end
-
   end
 end
