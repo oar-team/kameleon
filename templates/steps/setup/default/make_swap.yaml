@@ -1,9 +1,9 @@
-# # Make Swap
+# Make Swap
 - create_swap_file:
   - exec: |
-    fallocate -l $$swap_size /swap
-    chmod 600 /swap
-    mkswap /swap
+      fallocate -l $$swap_size /swap
+      chmod 600 /swap
+      mkswap /swap
 - add_swap_to_fstab:
   - append_file:
     - /etc/fstab

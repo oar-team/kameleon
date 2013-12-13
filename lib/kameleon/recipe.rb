@@ -52,6 +52,7 @@ module Kameleon
       
       #Find and load steps
       Section.sections.each do |section|
+        @sections[section]= []
         yaml_recipe.fetch(section).each do |macrostep|
           
           #check if it's a string or a dict
@@ -69,7 +70,6 @@ module Kameleon
           step_path = find_macrostep(step, section)
 
           # save the macrostep in the section
-          @sections[section]= []
           @sections[section].push(Macrostep.new(step_path, options))
         end
       end

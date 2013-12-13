@@ -16,7 +16,6 @@ module Kameleon
       if options
         selected_microsteps = []
         options.each do |entry|
-          pp entry 
           if entry.kind_of? String
             selected_microsteps.push entry
           elsif entry.kind_of? Hash
@@ -33,7 +32,6 @@ module Kameleon
           @microsteps = strip_macrostep
         end
       end
-      pp self
     end
     
     # :return: the microstep in this macrostep by name

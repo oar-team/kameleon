@@ -1,4 +1,4 @@
-# # Build Appliance
+# Build Appliance
 
 - create_raw_image:
   - check_cmd: fallocate
@@ -38,10 +38,10 @@
       mount ${LO_DEVICE_PARTBASE}p1 mnt
   - on_step_clean:
     - exec_local: |
-      umount mnt
-      kpartx -d $LO_DEVICE
-      losetup -d $LO_DEVICE
-      rm -rf mnt
+        umount mnt
+        kpartx -d $LO_DEVICE
+        losetup -d $LO_DEVICE
+        rm -rf mnt
 
 - copy_system_tree:
   - exec_local: |

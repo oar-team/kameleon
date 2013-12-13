@@ -18,15 +18,18 @@ module Kameleon
     method_option :force,:type => :boolean , :default => false, :aliases => "-f", :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
-      @env.logger.debug ('cli::new') {"Enter CLI::new method"}
-      recipe_path = File.join(@env.templates_dir, recipe_name) + '.yaml'
-      recipe = Recipe.new(@env, recipe_path)
+      @env.logger.debug('cli::new') {"Enter CLI::new method"}
+      template_path = File.join(@env.templates_dir, options[:template]) + '.yaml'
+      template_recipe = Recipe.new(@env, template_path)
       recipe_dir = File.join(options[:workspace], 'recipes' )
 
-      @env.ui.info "Cloning from templates #{recipe_name}"
+      # TODO add a warning and add a number to the copied file if already
+      # exists in the workdir
+      @env.logger.debug('cli::new') {"Cloning template in:\n #{template_path}\n to:\n #{recipe_dir} "}
+      @env.ui.info "Cloning from templates #{options[:template]}"
       Dir::mktmpdir do |tmp_dir|
-        FileUtils.cp(recipe_path, tmp_dir)
-        recipe.sections.each do |key, macrosteps|
+        FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
+        template_recipe.sections.each do |key, macrosteps|
           macrosteps.each do |macrostep|
             relative_path = Pathname.new(macrostep.path).relative_path_from(Pathname.new(@env.templates_dir))
             dst = File.join(tmp_dir, File.dirname(relative_path))
