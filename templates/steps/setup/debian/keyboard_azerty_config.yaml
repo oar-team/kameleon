@@ -1,17 +1,17 @@
-keyboard_azerty_config:
-  - install_console_tools:
-    # FIXME this should use a kind of step include 
-    - exec: |
-        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
-    - exec: |
-        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
-          console-tools console-data console-setup
-    - on_clean:
-      - exec: apt-get clean
-    - write_file:
-      - /etc/default/keyboard 
-      - |
-        XKBMODEL="pc105"
-        XKBLAYOUT="fr,us"
-        XKBVARIANT=""
-        XKBOPTIONS=""
+# # Keyboard Azerty Config
+- install_console_tools:
+  # FIXME this should use a kind of step include 
+  - exec: |
+      DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
+  - exec: |
+      DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
+        console-tools console-data console-setup
+  - on_clean:
+    - exec: apt-get clean
+  - write_file:
+    - /etc/default/keyboard 
+    - |
+      XKBMODEL="pc105"
+      XKBLAYOUT="fr,us"
+      XKBVARIANT=""
+      XKBOPTIONS=""

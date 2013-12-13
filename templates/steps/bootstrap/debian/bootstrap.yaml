@@ -1,38 +1,38 @@
-bootstrap:
-  - debootstrap:
-    - check_cmd: debootstrap
-    - exec_local: |
-        debootstrap \
-        --verbose \
-        --no-check-gpg \
-        --arch=$$arch \
-        --include=locales \
-        $$debian_version_name \
-        $$rootfs \
-        $$distrib_repository 
-  #- include:
-  #  - mount_proc
-  - mount_dev:
-    - exec_local: mount -o bind /dev  $$rootfs/dev
-    - on_setup_clean: |
-        if mountpoint -q $$rootfs/dev
-          then umount $$rootfs/dev
-        fi
+# # Bootstrap
+- debootstrap:
+  - check_cmd: debootstrap
+  - exec_local: |
+      debootstrap \
+      --verbose \
+      --no-check-gpg \
+      --arch=$$arch \
+      --include=locales \
+      $$debian_version_name \
+      $$rootfs \
+      $$distrib_repository 
+#- include:
+#  - mount_proc
+- mount_dev:
+  - exec_local: mount -o bind /dev  $$rootfs/dev
+  - on_setup_clean: |
+      if mountpoint -q $$rootfs/dev
+        then umount $$rootfs/dev
+      fi
 
-    - exec_local: mount -o bind /dev/pts $$rootfs/dev/pts
-    - on_setup_clean: |
-        if mountpoint -q $$rootfs/dev/pts
-          then umount $$rootfs/dev/pts
-        fi
-  - mount_proc:
-    - exec_local: mount -o bind /proc  $$rootfs/proc
-    - on_setup_clean: |
-        if mountpoint -q $$rootfs/proc
-          then umount $$rootfs/proc
-        fi
-  - mount_sys:
-    - exec_local: mount -o bind /sys  $$rootfs/sys
-    - on_setup_clean: |
-        if mountpoint -q $$rootfs/sys
-          then umount $$rootfs/sys
-        fi
+  - exec_local: mount -o bind /dev/pts $$rootfs/dev/pts
+  - on_setup_clean: |
+      if mountpoint -q $$rootfs/dev/pts
+        then umount $$rootfs/dev/pts
+      fi
+- mount_proc:
+  - exec_local: mount -o bind /proc  $$rootfs/proc
+  - on_setup_clean: |
+      if mountpoint -q $$rootfs/proc
+        then umount $$rootfs/proc
+      fi
+- mount_sys:
+  - exec_local: mount -o bind /sys  $$rootfs/sys
+  - on_setup_clean: |
+      if mountpoint -q $$rootfs/sys
+        then umount $$rootfs/sys
+      fi

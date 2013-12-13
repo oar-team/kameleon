@@ -1,5 +1,5 @@
-root_passwd:
- - set_root_passwd:
-   # Sets the root password to "kameleon" hash in SHA512. Use create_script.py
-   # to generate your own password
-   - exec: usermod -p '$6$vDcPTe4u$EMxu.WTCjZaZeWQxiqFLC00gYledHmrvHsjvmAE1yQ/7d43EZrb0QuzcFdDv.Fm2IbbOLNdPvqdS08os6HHPH/' root
+# # Root Passwd
+- set_root_passwd:
+  # Sets the root password to "kameleon" hash in SHA512. Use create_script.py
+  # to generate your own password
+  - exec: usermod -p '$6$vDcPTe4u$EMxu.WTCjZaZeWQxiqFLC00gYledHmrvHsjvmAE1yQ/7d43EZrb0QuzcFdDv.Fm2IbbOLNdPvqdS08os6HHPH/' root

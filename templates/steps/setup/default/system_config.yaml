@@ -1,34 +1,34 @@
-system_config:
-  - locales:
-    - write_file:
-      - /etc/locale.conf
-      - |
-        LC_COLLATE="C"
-        LC_ALL="en_US.UTF-8"
-        LC_LANG="en_US.UTF-8"
-        LC_MESSAGES="en_US.UTF-8"
-    - write_file:
-      - /etc/locale.gen
-      - |
-        en_US.UTF-8 UTF-8
-        en_US ISO-8859-1
-        # fr_FR.UTF-8 UTF-8
-        # fr_FR ISO-8859-1
-    - exec: locale-gen
-    - exec: source /etc/locale.conf
-  - etc_hosts:
-    - write_file:
-      - /etc/hosts
-      - |
-        #
-        # /etc/hosts: static lookup table for host names
-        #
-        
-        #<ip-address>	<hostname.domain.org>	<hostname>
-        127.0.0.1	localhost.localdomain	localhost	$$network_hostname
-        ::1		localhost.localdomain	localhost
+# # System Config
+- locales:
+  - write_file:
+    - /etc/locale.conf
+    - |
+      LC_COLLATE="C"
+      LC_ALL="en_US.UTF-8"
+      LC_LANG="en_US.UTF-8"
+      LC_MESSAGES="en_US.UTF-8"
+  - write_file:
+    - /etc/locale.gen
+    - |
+      en_US.UTF-8 UTF-8
+      en_US ISO-8859-1
+      # fr_FR.UTF-8 UTF-8
+      # fr_FR ISO-8859-1
+  - exec: locale-gen
+  - exec: source /etc/locale.conf
+- etc_hosts:
+  - write_file:
+    - /etc/hosts
+    - |
+      #
+      # /etc/hosts: static lookup table for host names
+      #
+      
+      #<ip-address>	<hostname.domain.org>	<hostname>
+      127.0.0.1	localhost.localdomain	localhost	$$network_hostname
+      ::1		localhost.localdomain	localhost
 
-  - etc_hostname:
-    - write_file:
-      - /etc/hostname
-      - $$network_hostname
+- etc_hostname:
+  - write_file:
+    - /etc/hostname
+    - $$network_hostname

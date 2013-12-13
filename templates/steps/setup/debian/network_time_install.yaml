@@ -1,11 +1,11 @@
-network_time_install:
-  
-  - ntp_install:
-    - exec: |
-        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install ntp
-  
-  - set_timezone:
-    - write_file:
-      - /etc/timezone
-      - $$timezone
-    - exec: dpkg-reconfigure -f noninteractive tzdata
+# # Network Time Install
+
+- ntp_install:
+  - exec: |
+      DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install ntp
+
+- set_timezone:
+  - write_file:
+    - /etc/timezone
+    - $$timezone
+  - exec: dpkg-reconfigure -f noninteractive tzdata
