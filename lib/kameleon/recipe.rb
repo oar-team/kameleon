@@ -79,18 +79,27 @@ module Kameleon
     end
 
 
-    # check for macrostep file (distro-specific or default)
-    # :returns: absolute path of the macrostep
-    def find_macrostep(step_name, section)
-      workdir = File.join(File.dirname(@path), 'steps')
-        [@global['distrib'], 'default', ''].each do |to_search_dir|
-          if File.file?(step_path = workdir +'/'+ section +'/'+ to_search_dir + '/' + step_name +'.yaml')
-            Kameleon.ui.confirm "Step #{step_name} found in this path: "+ step_path
-            return step_path
-          end
-          @env.logger.info('recipe') { "Step #{step_name} not found in this path: "+ step_path }
+    def load_macrostep(raw_macrostep, section_name)
+      #check if it's a string or a dict
+      if raw_macrostep.kind_of? String
+        name = raw_macrostep
+      elsif raw_macrostep.kind_of? Hash
+        name = raw_macrostep.keys[0]
+        args = raw_macrostep.values[0]
+      else
+        fail RecipeError, "Malformed yaml recipe in section: "+ section_name
+      end
+      # find the path of the macrostep
+      steps_dir = File.join(File.dirname(@path), 'steps')
+      [@global['distrib'], 'default', ''].each do |search_dir|
+        path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
+        if File.file?(path)
+          Kameleon.ui.info "> Loading #{name} : #{path}"
+          return Macrostep.new(path, args)
         end
-        fail "Step #{step_name} not found"
+        Kameleon.ui.debug "Step #{name} not found in this path: #{path}"
+      end
+      fail RecipeError, "Step #{name} not found" unless File.file?(path)
     end
   end
 end
