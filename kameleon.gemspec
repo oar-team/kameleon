@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "thor", "~> 0.15"
 
   s.add_development_dependency "pry"
+  s.add_development_dependency "pry-debugger"
   s.add_development_dependency "rake"
   s.add_development_dependency "minitest", "~> 4.7.3"
   s.add_development_dependency "coveralls"
