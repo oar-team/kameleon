@@ -9,10 +9,9 @@ module Kameleon
 
   class ExecError < KameleonError; status_code(2) ; end
   class InternalError < KameleonError; status_code(3) ; end
-  class ArgumentError < KameleonError; status_code(4) ; end
   class ContextError < KameleonError; status_code(5) ; end
   class SyntaxError < KameleonError; status_code(6) ; end
-
+  class RecipeError < KameleonError; status_code(7) ; end
 
   def self.with_friendly_errors
     yield
@@ -33,10 +32,11 @@ module Kameleon
   rescue SystemExit => e
     exit e.status
   rescue Exception => e
-    Kameleon.ui.debug "Unexpected error occurred :\n#{e}"
     Kameleon.ui.error <<-ERR, :wrap => true
-Unfortunately, a fatal error has occurred. Use --debug option for more details
+Unfortunately, a fatal error has occurred : #{e.message}
+Use --verbose option for more details
 ERR
-    raise e
+    Kameleon.ui.trace e
+    exit 666
   end
 end
