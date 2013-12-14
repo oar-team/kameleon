@@ -8,6 +8,8 @@ require 'kameleon'
 # Stdout/stderr should not buffer output
 $stdout.sync = true
 $stderr.sync = true
+# Force Thor to raise exceptions so we can exit non-zero.
+ENV["THOR_DEBUG"] = "1"
 
 ENV["KAMELEON_LOG"] = "debug" if ARGV.include?('--debug')
 env = Kameleon::Environment.new
