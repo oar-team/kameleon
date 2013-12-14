@@ -35,13 +35,13 @@ module Kameleon
 
     def load!
       # Find recipe path
-      fail Kameleon::Error, "Could not find this following recipe : #{@path}" \
+      fail InternalError, "Could not find this following recipe : #{@path}" \
            unless File.file? @path
       @env.logger.info('recipe') { 'Loading ' + @path }
       yaml_recipe = YAML.load File.open @path
 
-      fail Error, "Invalid yaml error" unless yaml_recipe.kind_of? Hash
-      fail Error, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
+      fail InternalError, "Invalid yaml error" unless yaml_recipe.kind_of? Hash
+      fail InternalError, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
 
       #Load Global variables
       @global.merge!(yaml_recipe.fetch("global"))
