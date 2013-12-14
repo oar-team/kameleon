@@ -9,13 +9,14 @@ module Kameleon
       @name = File.basename path, ".yaml"
       @microsteps = YAML.load_file(path)
       if not @microsteps.kind_of? Array
-        fail Error, "The macrostep #{path} is not valid (should be a list of microsteps)" 
+        fail Error, "The macrostep #{path} is not valid (should be a list of microsteps)"
       end
 
       # look for microstep selection in option
       if options
         selected_microsteps = []
         options.each do |entry|
+          pp entry 
           if entry.kind_of? String
             selected_microsteps.push entry
           elsif entry.kind_of? Hash
@@ -32,6 +33,7 @@ module Kameleon
           @microsteps = strip_macrostep
         end
       end
+      pp self
     end
     
     # :return: the microstep in this macrostep by name

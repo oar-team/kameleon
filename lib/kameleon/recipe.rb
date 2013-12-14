@@ -12,8 +12,8 @@ module Kameleon
       SETUP="setup"
       EXPORT="export"
       def self.sections()
-        [ 
-          BOOTSTRAP, 
+        [
+          BOOTSTRAP,
           SETUP,
           EXPORT,
         ]
@@ -22,7 +22,7 @@ module Kameleon
     attr_accessor :global, :sections, :check_cmds
     def initialize(env, path)
       @env = env
-      @name = File.basename( path, ".yaml" ) 
+      @name = File.basename( path, ".yaml" )
       @path = path
       @check_cmds = []
       @sections = Section.new
@@ -49,12 +49,12 @@ module Kameleon
       @global.each do |key, value|
         fail "Recipe misses required variable: #{key}" if value.nil?
       end
-      
+
       #Find and load steps
       Section.sections.each do |section|
         @sections[section]= []
         yaml_recipe.fetch(section).each do |macrostep|
-          
+
           #check if it's a string or a dict
           if macrostep.kind_of? String
             step = macrostep
