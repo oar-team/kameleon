@@ -49,6 +49,7 @@ module Kameleon
     desc "list", "Lists all defined templates"
     def list
     end
+    map "-L" => :list
 
     desc "version", "Prints the Kameleon's version information"
     def version
