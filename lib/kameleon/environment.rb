@@ -22,7 +22,7 @@ module Kameleon
     def initialize(options = {})
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
-      workspace = options[:workspace] || Kameleon::Environment.workspace
+      workspace = options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
       defaults = {
         :workspace => workspace,
         :templates_dir => File.expand_path(File.join(File.dirname(__FILE__), "..", "..", 'templates')),
@@ -43,10 +43,6 @@ module Kameleon
       @templates = nil
 
       return self
-    end
-
-    def self.workspace
-      ENV['KAMELEON_WORKSPACE'] || Dir.pwd
     end
 
     def ui
