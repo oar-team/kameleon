@@ -21,5 +21,18 @@ module Kameleon
   def self.source_root
     @source_root ||= Pathname.new(File.expand_path('../../', __FILE__))
   end
+
+  class << self
+    attr_writer :ui, :env
+
+    def ui
+      @ui ||= UI.new
+    end
+
+    def env
+      @env ||= Environment.new
+    end
+
+  end
 end
 
