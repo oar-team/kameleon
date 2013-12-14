@@ -1,9 +1,13 @@
 module Kameleon
-  class Error < ::StandardError; end
+  class KameleonError < ::StandardError
+    def self.status_code(code)
+      define_method(:status_code) { code }
+    end
+  end
 
-  class ExecError < Error; end
-  class InternalError < Error; end
-  class ArgumentError < Error; end
-  class ContextError < Error; end
-  class SyntaxError < Error; end
+  class ExecError < KameleonError; status_code(2) ; end
+  class InternalError < KameleonError; status_code(3) ; end
+  class ArgumentError < KameleonError; status_code(4) ; end
+  class ContextError < KameleonError; status_code(5) ; end
+  class SyntaxError < KameleonError; status_code(6) ; end
 end
