@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# Exit cleanly from an early interrupt
+Signal.trap("INT") { exit 1 }
+
 require 'kameleon'
 
 # Stdout/stderr should not buffer output
