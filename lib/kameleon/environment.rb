@@ -42,14 +42,5 @@ module Kameleon
 
       return self
     end
-
-    def ui
-      @ui ||= UI.new(self)
-    end
-
-    def cli(*args)
-      CLI.start(args.flatten, :env => self)
-    end
-
   end
 end
