@@ -36,6 +36,15 @@ module Kameleon
         CODE
       end
 
+      def dump_var(symb, the_binding)
+        # Objects of class Binding encapsulate the execution context at some
+        # particular place in the code and retain this context
+        var_name  = symb.to_s
+        var_value = eval(var_name, the_binding)
+        msg ="#{var_name} = #{Utils.pp_s(var_value)}"
+        debug(msg)
+      end
+
       def debug?
         # needs to be false instead of nil to be newline param to other methods
         level("debug")
