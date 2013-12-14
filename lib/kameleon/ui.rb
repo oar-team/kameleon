@@ -59,7 +59,7 @@ module Kameleon
       end
 
       def trace(e, newline = nil)
-        msg = ["#{e.class}: #{e.message}", *e.backtrace].join("\n")
+        msg = ["Traceback => #{e.class} : #{e.message}", *e.backtrace].join("\n ~> ")
         if debug?
           tell_me(msg, nil, newline)
         elsif @trace
