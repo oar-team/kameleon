@@ -63,10 +63,21 @@ module Kameleon
       engine.build
     end
 
-    def initialize(args=[], options={}, config={})
-      super
-      @env = config[:env]
+    # Hack Thor to init Kameleon env soon
+    def self.init(base_config)
+      options = base_config[:shell].base.options
+      # Attach the UI
+      Kameleon.ui = ::Kameleon::UI::Shell.new(options)
+      Kameleon.ui.level = options["verbose"] ? "debug" : "info"
+      Kameleon.env = Kameleon::Environment.new(options)
     end
 
+    def self.start(given_args=ARGV, config={})
+        config[:shell] ||= Thor::Base.shell.new
+        dispatch(nil, given_args.dup, nil, config) { init(config) }
+    rescue Exception => e
+      Kameleon.ui = UI::Shell.new
+      raise e
+    end
   end
 end
