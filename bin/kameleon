@@ -5,33 +5,8 @@ Signal.trap("INT") { exit 1 }
 
 require 'kameleon'
 
-# Stdout/stderr should not buffer output
-$stdout.sync = true
-$stderr.sync = true
+require 'kameleon/cli'
 # Force Thor to raise exceptions so we can exit non-zero.
 ENV["THOR_DEBUG"] = "1"
 
-ENV["KAMELEON_LOG"] = "debug" if ARGV.include?('--debug')
-env = Kameleon::Environment.new
-
-begin
-  # Begin logging
-  env.ui.info("kameleon") { "`kameleon` invoked: #{ARGV.inspect}" }
-
-  # Disable color if the proper argument was passed
-  shell = ARGV.include?("--no-color") ? Thor::Shell::Basic.new : Thor::Base.shell.new
-
-  # Attach the UI
-  env.ui = ::Kameleon::UI::Shell.new(env, shell)
-
-  # Start the CLI
-  ::Kameleon::CLI.start(ARGV, :env => env)
-
-rescue Kameleon::Error => e
-  env.ui.error "#{e}"
-  exit 1
-rescue => e
-  env.ui.error "An unexpected error occurred : #{e}" \
-               ". Use --debug option for more details"
-  exit 666
-end
+Kameleon.with_friendly_errors { Kameleon::CLI.start }
