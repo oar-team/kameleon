@@ -22,10 +22,10 @@ module Kameleon
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
       defaults = {
-        :workspace => workspace,
-        :templates_dir => File.expand_path(File.join(File.dirname(__FILE__), "..", "..", 'templates')),
-        :recipes_dir => File.join(workspace, "recipes"),
-        :build_dir => File.join(workspace, "builds"),
+        :workspace => Pathname.new(workspace),
+        :templates_dir => Pathname.new(File.expand_path(File.join(File.dirname(__FILE__), "..", "..", 'templates'))),
+        :recipes_dir => Pathname.new(File.join(workspace, "recipes")),
+        :build_dir => Pathname.new(File.join(workspace, "builds")),
       }
 
       options = defaults.merge(options)
