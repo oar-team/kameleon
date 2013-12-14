@@ -35,8 +35,6 @@ module Kameleon
 
     def load!
       # Find recipe path
-      fail InternalError, "Could not find this following recipe : #{@path}" \
-           unless File.file? @path
       @env.logger.info('recipe') { 'Loading ' + @path }
       yaml_recipe = YAML.load File.open @path
 
@@ -73,9 +71,6 @@ module Kameleon
           @sections[section].push(Macrostep.new(step_path, options))
         end
       end
-    rescue Psych::SyntaxError => e
-      @env.logger.debug('recipe') { e.backtrace.join "\n" }
-      raise Error, e
     end
 
 
