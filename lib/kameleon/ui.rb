@@ -1,59 +1,115 @@
-require 'kameleon/engine'
+require 'rubygems/user_interaction'
 
 module Kameleon
-
   # UI handle communication with the outside world
   # They must respond to the typically logger methods
-  # of `warn`, `error`, `info`, and `success`.
+  # of `warn`, `error`, `info`, and `confirm`.
   class UI
-    attr_accessor :env
-    attr_accessor :resource
-
-    def initialize(env)
-      @env = env
-    end
-
-    [:warn, :error, :info, :success].each do |method|
-      define_method(method) do |message, *argv|
-        opts, *argv = argv
-        opts ||= {}
-        # Log normal console messages
-        env.logger.info("ui") { message }
+    [:warn, :debug, :trace, :error, :info, :confirm].each do |method|
+      define_method(method) do |message, newline = nil|
       end
     end
 
-    [:clear_line, :report_progress, :ask, :no?, :yes?].each do |method|
+    [:ask, :no?, :yes?].each do |method|
       # By default do nothing, these aren't logged
       define_method(method) { |*args| }
     end
 
-    # A shell UI, which uses a `Thor::Shell` object to talk with  a terminal.
     class Shell < UI
-      def initialize(env, shell)
-        super(env)
+      LEVELS = %w(silent error warn confirm info debug)
 
-        @shell = shell
+      attr_writer :shell
+
+      def initialize(options = {})
+        if options["no_color"] || !STDOUT.tty?
+          Thor::Base.shell = Thor::Shell::Basic
+        end
+        @shell = Thor::Base.shell.new
+        @level = ENV['DEBUG'] ? "debug" : "info"
       end
 
-      [[:warn, :yellow], [:error, :red], [:info, nil], [:success, :green]].each do |method, color|
+      [[:info, nil], [:confirm, :green], [:warn, :yellow], [:error, :red], [:debug, nil]].each do |method, color|
         class_eval <<-CODE
-          def #{method}(message, opts = nil)
-            super(message)
-            opts ||= {}
-            opts[:new_line] = true if !opts.has_key?(:new_line)
-            @shell.say(message, #{color.inspect}, opts[:new_line])
+          def #{method}(msg, newline = nil)
+            tell_me(msg, #{color.inspect}, newline) if level("#{method}")
           end
         CODE
       end
 
-      [:ask, :no?, :yes?].each do |method|
-        class_eval <<-CODE
-          def #{method}(message, opts = nil)
-            super(message)
-            opts ||= {}
-            @shell.send(method.inspect, message, opts[:color])
-          end
-        CODE
+      def debug?
+        # needs to be false instead of nil to be newline param to other methods
+        level("debug")
+      end
+
+      def quiet?
+        LEVELS.index(@level) <= LEVELS.index("warn")
+      end
+
+      def ask(msg)
+        @shell.ask(msg)
+      end
+
+      def level=(level)
+        raise ArgumentError unless LEVELS.include?(level.to_s)
+        @level = level
+      end
+
+      def level(name = nil)
+        name ? LEVELS.index(name) <= LEVELS.index(@level) : @level
+      end
+
+      def trace(e, newline = nil)
+        msg = ["#{e.class}: #{e.message}", *e.backtrace].join("\n")
+        if debug?
+          tell_me(msg, nil, newline)
+        elsif @trace
+          STDERR.puts "#{msg}#{newline}"
+        end
+      end
+
+      def silence
+        old_level, @level = @level, "silent"
+        yield
+      ensure
+        @level = old_level
+      end
+
+    private
+
+      # valimism
+      def tell_me(msg, color = nil, newline = nil)
+        msg = word_wrap(msg) if newline.is_a?(Hash) && newline[:wrap]
+        if newline.nil?
+          @shell.say(msg, color)
+        else
+          @shell.say(msg, color, newline)
+        end
+      end
+
+      def strip_leading_spaces(text)
+        spaces = text[/\A\s+/, 0]
+        spaces ? text.gsub(/#{spaces}/, '') : text
+      end
+
+      def word_wrap(text, line_width = @shell.terminal_width)
+        strip_leading_spaces(text).split("\n").collect do |line|
+          line.length > line_width ? line.gsub(/(.{1,#{line_width}})(\s+|$)/, "\\1\n").strip : line
+        end * "\n"
+      end
+    end
+
+    class RGProxy < ::Gem::SilentUI
+      def initialize(ui)
+        @ui = ui
+        super()
+      end
+
+      def say(message)
+        if message =~ /native extensions/
+          @ui.info "with native extensions "
+        else
+          @ui.debug(message)
+        end
       end
     end
   end
