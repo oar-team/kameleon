@@ -85,7 +85,7 @@ module Kameleon
       workdir = File.join(File.dirname(@path), 'steps')
         [@global['distrib'], 'default', ''].each do |to_search_dir|
           if File.file?(step_path = workdir +'/'+ section +'/'+ to_search_dir + '/' + step_name +'.yaml')
-            @env.ui.success "Step #{step_name} found in this path: "+ step_path
+            Kameleon.ui.confirm "Step #{step_name} found in this path: "+ step_path
             return step_path
           end
           @env.logger.info('recipe') { "Step #{step_name} not found in this path: "+ step_path }

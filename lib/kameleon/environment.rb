@@ -1,5 +1,3 @@
-require 'logger'
-
 module Kameleon
 
   # This class allows access to the recipes, CLI, etc. all in the scope of
@@ -31,11 +29,11 @@ module Kameleon
       }
 
       options = defaults.merge(options)
-      logger.info("env") { "Environment initialized (#{self})" }
+      Kameleon.ui.debug "Environment initialized (#{self})"
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|
         instance_variable_set("@#{key}".to_sym, options[key])
-        logger.info("env") { " - #{key} : #{options[key]}" }
+        Kameleon.ui.debug  " - #{key} : #{options[key]}"
       end
 
       # Definitions
@@ -51,32 +49,6 @@ module Kameleon
 
     def cli(*args)
       CLI.start(args.flatten, :env => self)
-    end
-
-    # Accesses the logger for Veewee. This logger is a _detailed_
-    # logger which should be used to log internals only. For outward
-    # facing information, use {#ui}.
-    #
-    # @return [Logger]
-    def logger
-      return @logger if @logger
-
-      output = nil
-      loglevel = Logger::ERROR
-
-      # Figure out where the output should go to.
-      if ENV["KAMELEON_LOG"]
-        output = STDOUT
-        loglevel = Logger.const_get(ENV["KAMELEON_LOG"].upcase)
-      end
-
-      # Create the logger and custom formatter
-      @logger = ::Logger.new(output)
-      @logger.level = loglevel
-      @logger.formatter = Proc.new do |severity, datetime, progname, msg|
-        "#{datetime} - [#{progname}] -  #{msg}\n"
-      end
-      @logger
     end
 
   end

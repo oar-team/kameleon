@@ -20,15 +20,15 @@ module Kameleon
     method_option :force,:type => :boolean , :default => false, :aliases => "-f", :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
-      @env.logger.debug('cli::new') {"Enter CLI::new method"}
+      Kameleon.ui.debug "Enter CLI::new method"
       template_path = File.join(@env.templates_dir, options[:template]) + '.yaml'
       template_recipe = Recipe.new(@env, template_path)
       recipe_dir = File.join(options[:workspace], 'recipes' )
 
       # TODO add a warning and add a number to the copied file if already
       # exists in the workdir
-      @env.logger.debug('cli::new') {"Cloning template in:\n #{template_path}\n to:\n #{recipe_dir} "}
-      @env.ui.info "Cloning from templates #{options[:template]}"
+      Kameleon.ui.debug "Cloning template in:\n #{template_path}\n to:\n #{recipe_dir} "
+      Kameleon.ui.info "Cloning from templates #{options[:template]}"
       Dir::mktmpdir do |tmp_dir|
         FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
         template_recipe.sections.each do |key, macrosteps|
@@ -43,7 +43,7 @@ module Kameleon
         FileUtils.mkdir_p recipe_dir
         FileUtils.cp_r(Dir[tmp_dir + '/*'], recipe_dir)
       end
-      @env.ui.success "New recipe \"#{recipe_name}\" as been created in #{recipe_dir}"
+      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipe_dir}"
     end
 
     desc "list", "Lists all defined templates"

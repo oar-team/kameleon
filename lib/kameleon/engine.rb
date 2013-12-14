@@ -25,7 +25,7 @@ module Kameleon
               when :exec_local
                 @local_shell.exec(cmd.value)
               else
-                @env.ui.warn "Unknow command : #{cmd.key}"
+                Kameleon.ui.warn "Unknow command : #{cmd.key}"
               end
             end
           end
