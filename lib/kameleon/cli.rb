@@ -48,6 +48,12 @@ module Kameleon
     def list
     end
 
+    desc "version", "Prints the Kameleon's version information"
+    def version
+      Kameleon.ui.info "Kameleon version #{Kameleon::VERSION}"
+    end
+    map %w(-v --version) => :version
+
     desc "build [RECIPE_NAME]", "Build box from the recipe"
     method_option :force, :type => :boolean , :default => false, :aliases => "-f", :desc => "force the build"
     def build(recipe_name)
