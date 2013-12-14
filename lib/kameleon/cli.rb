@@ -5,6 +5,7 @@ require 'kameleon/recipe'
 module Kameleon
   class CLI < Thor
 
+    stop_on_unknown_option! :build
 
     class_option :no_color, :type => :boolean, :default => false,
                  :desc => "Disable colorization in output"
