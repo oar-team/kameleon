@@ -5,9 +5,11 @@ require 'kameleon/recipe'
 module Kameleon
   class CLI < Thor
 
-    class_option :debug,:type => :boolean , :default => false, :desc => "enable debugging"
-    class_option :no_color,:type => :boolean , :default => false, :desc => "disable output color"
 
+    class_option :no_color, :type => :boolean, :default => false,
+                 :desc => "Disable colorization in output"
+    class_option :verbose, :type => :boolean, :default => false,
+                 :desc => "Enable verbose output mode", :aliases => "-V"
     class_option :workspace, :aliases => '-w', :type => :string,
                  :default => FileUtils.pwd,
                  :desc => 'Change the kameleon workspace directory. ' \
