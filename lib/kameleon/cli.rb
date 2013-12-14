@@ -1,6 +1,6 @@
 require 'kameleon/engine'
 require 'kameleon/recipe'
-
+require 'kameleon/utils'
 
 module Kameleon
   class CLI < Thor
@@ -22,29 +22,29 @@ module Kameleon
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
       Kameleon.ui.debug "Enter CLI::new method"
-      template_path = File.join(@env.templates_dir, options[:template]) + '.yaml'
-      template_recipe = Recipe.new(@env, template_path)
-      recipe_dir = File.join(options[:workspace], 'recipes' )
+      templates_dir = Kameleon.env.templates_dir
+      recipes_dir = Kameleon.env.recipes_dir
+      template_path = File.join(templates_dir, options[:template]) + '.yaml'
+      template_recipe = Recipe.new(template_path)
 
       # TODO add a warning and add a number to the copied file if already
       # exists in the workdir
-      Kameleon.ui.debug "Cloning template in:\n #{template_path}\n to:\n #{recipe_dir} "
-      Kameleon.ui.info "Cloning from templates #{options[:template]}"
+      Kameleon.ui.info "Cloning from templates #{options[:template]}..."
       Dir::mktmpdir do |tmp_dir|
         FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
         template_recipe.sections.each do |key, macrosteps|
           macrosteps.each do |macrostep|
-            relative_path = Pathname.new(macrostep.path).relative_path_from(Pathname.new(@env.templates_dir))
+            relative_path = macrostep.path.relative_path_from(templates_dir)
             dst = File.join(tmp_dir, File.dirname(relative_path))
             FileUtils.mkdir_p dst
             FileUtils.cp(macrostep.path, dst)
           end
         end
         # Create recipe dir if not exists
-        FileUtils.mkdir_p recipe_dir
-        FileUtils.cp_r(Dir[tmp_dir + '/*'], recipe_dir)
+        FileUtils.mkdir_p recipes_dir
+        FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_dir)
       end
-      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipe_dir}"
+      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipes_dir}"
     end
 
     desc "list", "Lists all defined templates"
@@ -77,9 +77,6 @@ module Kameleon
     def self.start(given_args=ARGV, config={})
         config[:shell] ||= Thor::Base.shell.new
         dispatch(nil, given_args.dup, nil, config) { init(config) }
-    rescue Exception => e
-      Kameleon.ui = UI::Shell.new
-      raise e
     end
   end
 end
