@@ -25,7 +25,7 @@ module Kameleon
   rescue Thor::Error => e
     Kameleon.ui.error e.message
     exit 15
-  rescue Interrupt => e
+  rescue SystemExit, Interrupt => e
     Kameleon.ui.error "\nQuitting..."
     Kameleon.ui.trace e
     exit 1
