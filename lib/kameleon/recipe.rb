@@ -26,11 +26,11 @@ module Kameleon
       @sections = Section.new
       @global = { "distrib" => nil,
                   # Using fakechroot and fakeroot by default
-                  "required" => "fakeroot",
-                  "required_local" => "fakechroot",
+                  "requires" => "fakeroot fakechroot chroot",
                   "workdir" => File.join(Kameleon.env.build_dir, @name),
                   "rootfs" => "$$workdir/chroot",
-                  "exec_cmd" => "fakechroot $$rootfs" }
+                  "launch_context" => "fakechroot fakeroot",
+                  "build_context" => "fakechroot fakeroot chroot $$rootfs" }
       load!
     end
 
@@ -47,8 +47,7 @@ module Kameleon
         fail RecipeError, "Recipe misses required variable: #{key}" if value.nil?
       end
       # Make an object list from a string comma (or space) separated list
-      @global["required"] = @global["required"].split(%r{,\s*}).map(&:split).flatten
-      @global["required_local"] = @global["required_local"].split(%r{,\s*}).map(&:split).flatten
+      @global["requires"] = @global["requires"].split(%r{,\s*}).map(&:split).flatten
 
       #Find and load steps
       Section.sections.each do |section_name|
