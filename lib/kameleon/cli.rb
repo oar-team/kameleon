@@ -5,8 +5,6 @@ require 'kameleon/utils'
 module Kameleon
   class CLI < Thor
 
-    stop_on_unknown_option! :build
-
     class_option :no_color, :type => :boolean, :default => false,
                  :desc => "Disable colorization in output"
     class_option :verbose, :type => :boolean, :default => false,
