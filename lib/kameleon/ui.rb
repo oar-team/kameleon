@@ -21,15 +21,15 @@ module Kameleon
 
       class Output
         def <<(obj)
-          write(obj)
+          write(obj.strip)
           self
         end
         def initialize(level, ui)
           @level = level
           @ui = ui
         end
-        def write(*args)
-          @ui.send(@level, *args)
+        def write(str)
+          @ui.send(@level, str.strip)
         end
 
         def close
