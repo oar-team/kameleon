@@ -36,7 +36,7 @@ module Kameleon
 
     def start_interactive
       # Create a new subprocess that will just exec the requested program.
-      pid = fork { exec(@exec_cmd) }
+      pid = fork { Kernel.exec(@context_cmd) }
       # wait for the child to exit.
       _, status = Process.waitpid2(pid)
       status.success?
