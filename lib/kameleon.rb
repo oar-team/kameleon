@@ -8,8 +8,8 @@ require 'pp'
 require 'thor'
 
 # Load the things which must be loaded before anything else
-require 'kameleon/error'
 require 'kameleon/utils'
+require 'kameleon/error'
 require 'kameleon/cli'
 require 'kameleon/ui'
 require 'kameleon/environment'

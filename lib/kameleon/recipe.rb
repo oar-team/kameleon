@@ -26,7 +26,7 @@ module Kameleon
       @sections = Section.new
       @global = { "distrib" => nil,
                   # Using fakechroot and fakeroot by default
-                  "required" => "fakeroot fakeroot cp",
+                  "required" => "fakeroot",
                   "required_local" => "fakechroot",
                   "workdir" => File.join(Kameleon.env.build_dir, @name),
                   "rootfs" => "$$workdir/chroot",
