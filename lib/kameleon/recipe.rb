@@ -4,7 +4,7 @@ require 'kameleon/macrostep'
 
 module Kameleon
   class Recipe
-    attr_accessor :sections
+    attr_accessor :path, :name, :global, :sections
 
     # define section constant
     class Section < Utils::OrderedHash
@@ -20,14 +20,14 @@ module Kameleon
       end
     end
 
-    attr_accessor :global, :sections, :check_cmds
-
     def initialize(path)
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
-      @check_cmds = []
       @sections = Section.new
       @global = { "distrib" => nil,
+                  # Using fakechroot and fakeroot by default
+                  "required" => "fakeroot fakeroot cp",
+                  "required_local" => "fakechroot",
                   "workdir" => File.join(Kameleon.env.build_dir, @name),
                   "rootfs" => "$$workdir/chroot",
                   "exec_cmd" => "fakechroot $$rootfs" }
@@ -46,6 +46,9 @@ module Kameleon
       @global.each do |key, value|
         fail RecipeError, "Recipe misses required variable: #{key}" if value.nil?
       end
+      # Make an object list from a string comma (or space) separated list
+      @global["required"] = @global["required"].split(%r{,\s*}).map(&:split).flatten
+      @global["required_local"] = @global["required_local"].split(%r{,\s*}).map(&:split).flatten
 
       #Find and load steps
       Section.sections.each do |section_name|
@@ -73,12 +76,30 @@ module Kameleon
       [@global['distrib'], 'default', ''].each do |search_dir|
         path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
         if File.file?(path)
-          Kameleon.ui.info "> Loading #{name} : #{path}"
+          Kameleon.ui.info "~> Loading #{path}"
           return Macrostep.new(path, args)
         end
         Kameleon.ui.debug "Step #{name} not found in this path: #{path}"
       end
       fail RecipeError, "Step #{name} not found" unless File.file?(path)
+    end
+
+    def cmds_to_check
+      make_check_cmd @global["required"]
+    end
+
+    def local_cmds_to_check
+      make_check_cmd @global["required_local"]
+    end
+
+    private
+    def make_check_cmd(cmds)
+      cmds.map do |cmd|
+        error_message = "Required command \"#{cmd}\" is not installed. Aborting."
+        fail_action = "bash -c \"echo >&2 #{error_message}; exit 1\""
+        check_cmd = "command -v #{cmd} >/dev/null 2>&1"
+        check_cmd + " || " + fail_action
+      end
     end
   end
 end
