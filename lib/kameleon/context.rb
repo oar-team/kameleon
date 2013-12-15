@@ -8,30 +8,24 @@ module Kameleon
         super()
       end
     end
-    def initialize(name, required_cmds, exec_cmd=nil)
+    def initialize(name, context_cmd)
       @stdout = Kameleon.ui.stdout
       @stderr = Kameleon.ui.stderr
       @name = name
-      @exec_cmd = exec_cmd
-      @shell = Shell.new @exec_cmd
-      @required_cmds = required_cmds
+      @context_cmd = context_cmd
+      @shell = Shell.new @context_cmd
       Kameleon.ui.debug "Initialize context (#{self})"
       instance_variables.each { |v| Kameleon.ui.debug " #{v} = #{instance_variable_get(v)}" }
-      @required_cmds.each { |cmd| exec(cmd) }
-    rescue Errno::EPIPE, ExecError
-      msg = "Error occured when initializing #{name} context. "
-      unless exec_cmd.nil?
-        msg = "#{msg} Check 'exec_cmd' value in the recipe"
-      end
-      raise ContextError, msg
+    rescue Errno::EPIPE
+      raise ContextError, "Error occured when initializing #{name} context. " \
+                          "Check '#{@name}_context' value in the recipe"
     end
 
     def exec(cmd)
       Kameleon.ui.debug "Running on #{@name} context : #{cmd.inspect}"
-      stdout, stderr = @shell.execute(cmd, :stdout => @stdout, :stderr => @stderr)
-      Kameleon.ui.debug " exit status : #{@shell.exit_status}\n" \
-                        " stdout : #{stdout}\n stderr: #{stderr}"
-      fail ExecError, self unless @shell.exit_status.eql? 0
+      @shell.execute(cmd, :stdout => @stdout, :stderr => @stderr)
+      Kameleon.ui.debug " exit status : #{@shell.exit_status}"
+      fail ExecError unless @shell.exit_status.eql? 0
     end
 
     def start_interactive
