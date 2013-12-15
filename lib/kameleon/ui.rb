@@ -5,6 +5,7 @@ module Kameleon
   # They must respond to the typically logger methods
   # of `warn`, `error`, `info`, and `confirm`.
   class UI
+
     [:warn, :debug, :trace, :error, :info, :confirm].each do |method|
       define_method(method) do |message, newline = nil|
       end
@@ -18,6 +19,24 @@ module Kameleon
     class Shell < UI
       LEVELS = %w(silent error warn confirm info debug)
 
+      class Output
+        def <<(obj)
+          write(obj)
+          self
+        end
+        def initialize(level, ui)
+          @level = level
+          @ui = ui
+        end
+        def write(*args)
+          @ui.send(@level, *args)
+        end
+
+        def close
+        end
+      end
+
+      attr_accessor :stderr, :stdout
       attr_writer :shell
 
       def initialize(options = {})
@@ -26,6 +45,8 @@ module Kameleon
         end
         @shell = Thor::Base.shell.new
         @level = ENV['DEBUG'] ? "debug" : "info"
+        @stderr = Output.new "error", self
+        @stdout = Output.new "info", self
       end
 
       [[:info, :green], [:confirm, :green], [:warn, :yellow], [:error, :red], [:debug, nil]].each do |method, color|
