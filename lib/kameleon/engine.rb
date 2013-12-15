@@ -13,10 +13,28 @@ module Kameleon
 
     def build
       Kameleon.ui.info "====== Starting build ======"
-      # Local context shell
-      local_context = Context.new "local", @recipe.local_cmds_to_check
-      # Build context shell
-      build_context = Context.new "build", @recipe.cmds_to_check, @recipe.global["exec_cmd"]
+      # Local context
+      local_context = LocalContext.new
+      # Check required cmd in host machine
+      @recipe.global["requires"].each { |cmd| local_context.check_cmd(cmd) }
+      # Launch context shell
+      launch_context = Context.new "launch", @recipe.global["launch_context"]
+      # Do bootstrap
+      begin
+        launch_context.exec("debootstrap --arch amd64 wheezy /tmp/test http://ftp.debian.org/debian/")
+      rescue ExecError
+        # Start Interactive shell
+        launch_context.start_interactive
+      end
+
+      # Do Setup
+
+      # Do export
+
+      # Do clean
+
+      Build context shell
+      build_context = Context.new "build", @recipe.cmds_to_check, @recipe.global["local_context"]
       @recipe.sections.each do |section|
         section.macrosteps.each do |macrostep|
           macrostep.each do |microstep|

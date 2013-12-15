@@ -83,22 +83,5 @@ module Kameleon
       fail RecipeError, "Step #{name} not found" unless File.file?(path)
     end
 
-    def cmds_to_check
-      make_check_cmd @global["required"]
-    end
-
-    def local_cmds_to_check
-      make_check_cmd @global["required_local"]
-    end
-
-    private
-    def make_check_cmd(cmds)
-      cmds.map do |cmd|
-        error_message = "Required command \"#{cmd}\" is not installed. Aborting."
-        fail_action = "bash -c \"echo >&2 #{error_message}; exit 1\""
-        check_cmd = "command -v #{cmd} >/dev/null 2>&1"
-        check_cmd + " || " + fail_action
-      end
-    end
   end
 end

@@ -36,4 +36,17 @@ module Kameleon
       status.success?
     end
   end
+
+  class LocalContext < Context
+    def initialize
+      super("local", "bash")
+    end
+
+    def check_cmd(cmd)
+      error_message = "Required command \"#{cmd}\" is not installed. Aborting."
+      fail_action = "bash -c \"echo >&2 #{error_message}; exit 1\""
+      check_cmd = "command -v #{cmd} >/dev/null 2>&1"
+      exec(check_cmd + " || " + fail_action)
+    end
+  end
 end
