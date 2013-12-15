@@ -44,7 +44,7 @@ module Kameleon
         FileUtils.mkdir_p recipes_dir
         FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_dir)
       end
-      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipes_dir}"
+      Kameleon.ui.info "New recipe \"#{recipe_name}\" as been created in #{recipes_dir}"
     end
 
     desc "list", "Lists all defined templates"
@@ -61,8 +61,8 @@ module Kameleon
     desc "build [RECIPE_NAME]", "Build box from the recipe"
     method_option :force, :type => :boolean , :default => false, :aliases => "-f", :desc => "force the build"
     def build(recipe_name)
-      engine = Kameleon::Engine.new(@env, recipe_name)
-      engine.build
+      recipe_path = File.join(Kameleon.env.recipes_dir, recipe_name) + '.yaml'
+      Kameleon::Engine.new(Recipe.new(recipe_path)).build
     end
 
     # Hack Thor to init Kameleon env soon

@@ -28,7 +28,7 @@ module Kameleon
         @level = ENV['DEBUG'] ? "debug" : "info"
       end
 
-      [[:info, nil], [:confirm, :green], [:warn, :yellow], [:error, :red], [:debug, nil]].each do |method, color|
+      [[:info, :green], [:confirm, :green], [:warn, :yellow], [:error, :red], [:debug, nil]].each do |method, color|
         class_eval <<-CODE
           def #{method}(msg, newline = nil)
             tell_me(msg, #{color.inspect}, newline) if level("#{method}")
