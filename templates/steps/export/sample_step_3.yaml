@@ -1,6 +1,6 @@
 # Sample step 3
 - test:
-  - exec_local: /dev/null
+  - exec_local: echo $$rootfs
 
 - sample_micro_step:
-  - exec_local: echo /dev/null
+  - exec_local: echo $$sample_var
