@@ -26,7 +26,7 @@ module Kameleon
     attr_writer :ui, :env
 
     def ui
-      @ui ||= UI.new
+      @ui ||= Kameleon::UI::Shell.new
     end
 
     def env

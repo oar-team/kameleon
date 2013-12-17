@@ -3,6 +3,10 @@
 # Exit cleanly from an early interrupt
 Signal.trap("INT") { exit 1 }
 
+# Stdout/stderr should not buffer output
+$stdout.sync = true
+$stderr.sync = true
+
 require 'kameleon'
 
 require 'kameleon/cli'
