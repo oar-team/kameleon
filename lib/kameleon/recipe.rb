@@ -26,11 +26,10 @@ module Kameleon
       @sections = Section.new
       @global = { "distrib" => nil,
                   # Using fakechroot and fakeroot by default
-                  "requires" => "fakeroot fakechroot chroot",
+                  "requires" => "",
                   "workdir" => File.join(Kameleon.env.build_dir, @name),
-                  "rootfs" => "$$workdir/chroot",
-                  "launch_context" => "fakechroot fakeroot",
-                  "build_context" => "fakechroot fakeroot chroot $$rootfs" }
+                  "launch_context" => nil,
+                  "build_context" => nil }
       load!
     end
 
@@ -43,8 +42,11 @@ module Kameleon
 
       #Load Global variables
       @global.merge!(yaml_recipe.fetch("global"))
-      @global.each do |key, value|
-        fail RecipeError, "Recipe misses required variable: #{key}" if value.nil?
+      missed_parameters = []
+      @global.each { |key, value| missed_parameters.push(key) if value.nil? }
+      if missed_parameters.any?
+        fail RecipeError, "Required parameter missing in global section :" \
+                          " #{missed_parameters.join ' '}"
       end
       # Make an object list from a string comma (or space) separated list
       @global["requires"] = @global["requires"].split(%r{,\s*}).map(&:split).flatten

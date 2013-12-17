@@ -27,7 +27,7 @@ module Kameleon
 
       # TODO add a warning and add a number to the copied file if already
       # exists in the workdir
-      Kameleon.ui.info "Cloning from templates #{options[:template]}..."
+      Kameleon.ui.info "Cloning #{options[:template]} template..."
       Dir::mktmpdir do |tmp_dir|
         FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
         template_recipe.sections.each do |key, macrosteps|
