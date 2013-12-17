@@ -23,7 +23,7 @@ global:
   # Architechture
   arch: amd64
   # Set required programs that will be used in the recipe
-  requires: fakeroot fakechroot chroot debootstrap
+  requirements: fakeroot fakechroot chroot debootstrap
 
   # Shell session from what we launch local commands (exec_local)
   # We use fakechroot and fakeroot tools to add a possibility to use chroot
