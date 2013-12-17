@@ -8,6 +8,8 @@ module Kameleon
 
     # define section constant
     class Section < Utils::OrderedHash
+      attr_accessor :clean
+
       BOOTSTRAP="bootstrap"
       SETUP="setup"
       EXPORT="export"
@@ -17,6 +19,12 @@ module Kameleon
           SETUP,
           EXPORT,
         ]
+      end
+
+      def initialize()
+        @clean = {}
+        Section::sections.each{ |section| @clean[section] = [] }
+        super
       end
     end
 
@@ -78,7 +86,7 @@ module Kameleon
         path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
         if File.file?(path)
           Kameleon.ui.info "~> Loading #{path}"
-          return Macrostep.new(path, args, @global)
+          return Macrostep.new(path, args, self)
         end
         Kameleon.ui.debug "Step #{name} not found in this path: #{path}"
       end

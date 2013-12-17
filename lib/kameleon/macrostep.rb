@@ -6,9 +6,18 @@ module Kameleon
     class Microstep
 
       class Command
-        attr_accessor :key, :val
+        attr_accessor :string_cmd
         def initialize(yaml_cmd)
-          @key, @val = yaml_cmd.first
+          @string_cmd = YAML.dump(yaml_cmd)
+        end
+
+        def key
+          YAML.load(@string_cmd).keys[0]
+        end
+
+        def val
+          _, val = YAML.load(@string_cmd).first
+          return val
         end
       end
 
@@ -18,17 +27,22 @@ module Kameleon
         @name, cmd_list = yaml_microstep.first
         @commands = []
         cmd_list.each {|cmd| @commands.push Command.new(cmd)}
+      rescue
+        fail ExecError, "Invalid microstep \"#{name}\": should be one of the " +\
+          "defined commands (See documentation)"
       end
 
     end
 
-    attr_accessor :path
+    attr_accessor :path, :clean
 
-    def initialize(path, args, global_vars)
-      @variables = global_vars.clone
+    def initialize(path, args, recipe)
+      @recipe = recipe
+      @variables = recipe.global.clone
       @microsteps = []
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
+      @clean = []
       yaml_microsteps = YAML.load_file(@path)
       if not yaml_microsteps.kind_of? Array
         fail ReciepeError, "The macrostep #{path} is not valid (should be a list of microsteps)"
@@ -87,18 +101,37 @@ module Kameleon
         end
       end
 
-      #TODO handle clean methods
+      #handle clean methods
       def resolve_clean(cmd)
-        if @name.eql? "Clean"
+        if !(cmd.key =~ /on_(.*)clean/)
+          #Not a clean command
+          return cmd
+        else
+          # Add clean commands to section or macrostep
+          clean_microsteps = nil
+          Recipe::Section.sections.each do |section|
+            if cmd.key.include? section
+              clean_microsteps = @recipe.sections.clean[section]
+            end
+          end
+          if clean_microsteps.nil?
+            clean_microsteps = @clean
+          end
+          clean_microsteps.push Microstep.new({"clean_#{@name}" => cmd.val})
+
+          # return nil to remove this command from the step
+          return nil
         end
       end
 
       @microsteps.each do |microstep|
         microstep.commands.map! do |cmd|
-          resolve_vars(cmd.val)
+          cmd.string_cmd = resolve_vars(cmd.string_cmd)
+          cmd = resolve_clean(cmd)
         end
       end
-      pp @microsteps
+      # remove nil values
+      @microsteps.compact!
     end
   end
 end

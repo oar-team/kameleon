@@ -35,6 +35,7 @@ global:
 
 
   # You can define your own global variables here...
+  user_name: kameleon
 
 # Bootstrap the new system and create context
 bootstrap:
@@ -55,12 +56,12 @@ setup:
   # Configuration
   - system_config:
     - network_hostname: mydebian
-  - make_swap
+  - make_swap:
+    - swap_size: 2G
   - network_config
   - keyboard_azerty_config:
   - create_user:
     - user_group: admin
-    - user_name: kameleon
     - user_password: kameleon
   - autologin
 
