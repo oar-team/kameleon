@@ -10,14 +10,14 @@ module Kameleon
     def initialize(recipe)
       @recipe = recipe
       @recipe.resolve!
+      @local_context = LocalContext.new
     end
 
     def build
       Kameleon.ui.info "====== Starting build ======"
       # Local context
-      local_context = LocalContext.new
-      # Check required cmd in host machine
-      @recipe.global["requires"].each { |cmd| local_context.check_cmd(cmd) }
+
+      check_requirements
       # Launch context shell
       launch_context = Context.new "launch", @recipe.global["launch_context"]
       # Do bootstrap
@@ -51,7 +51,15 @@ module Kameleon
             end
           end
         end
+    def check_requirements
+      requirements = @recipe.global["requirements"]
+      Kameleon.ui.info "Checking requirements : #{requirements.join ' '}"
+      missings = []
+      requirements.each do |cmd|
+        missings.push(cmd) unless @local_context.check_cmd(cmd)
       end
+      fail BuildError, "Missing requirements : #{missings.join ' '}" \
+           unless missings.empty?
     end
 
     private
