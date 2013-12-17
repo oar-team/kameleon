@@ -85,5 +85,12 @@ module Kameleon
     def resolve!
       @sections.each{ |key, macrosteps| macrosteps.each{|m| m.resolve!} }
     end
+
+    def check_recipe
+      missings = []
+      @global.each { |key, value| missings.push(key) if value.nil? }
+      fail RecipeError, "Required parameters missing in global section :" \
+                        " #{missings.join ' '}" unless missings.empty?
+    end
   end
 end

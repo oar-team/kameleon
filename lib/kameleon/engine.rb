@@ -10,6 +10,7 @@ module Kameleon
     def initialize(recipe)
       @recipe = recipe
       @recipe.resolve!
+      @recipe.check_recipe
       @local_context = LocalContext.new
     end
 
