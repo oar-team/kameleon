@@ -65,6 +65,7 @@ module Kameleon
           @sections[section_name].push(macrostep_instance)
         end
       end
+      @global.merge! YAML.load(Utils.resolve_vars(YAML.dump(@global), @path, @global))
     end
 
     def load_macrostep(raw_macrostep, section_name)

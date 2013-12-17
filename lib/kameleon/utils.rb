@@ -4,6 +4,23 @@ require 'stringio'
 module Kameleon
   module Utils
 
+
+    def self.resolve_vars(raw, yaml_path, initial_variables)
+        raw.gsub(/\$\$[a-zA-Z0-9\-_]*/) do |variable|
+        # remove the dollars
+        strip_variable = variable[2,variable.length]
+
+        # check in local vars
+        if initial_variables.has_key? strip_variable
+          value = initial_variables[strip_variable]
+        else
+          fail RecipeError, "#{yaml_path}: variable #{variable} not found in local or global"
+        end
+        return $` + resolve_vars(value.to_s + $', yaml_path, initial_variables)
+      end
+    end
+
+
     def self.pp_s(*objs)
         s = StringIO.new
         objs.each {|obj|

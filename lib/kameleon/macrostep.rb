@@ -1,4 +1,5 @@
 require 'kameleon/recipe'
+require 'pry'
 
 module Kameleon
   class Macrostep
@@ -15,7 +16,7 @@ module Kameleon
           YAML.load(@string_cmd).keys[0]
         end
 
-        def val
+        def value
           _, val = YAML.load(@string_cmd).first
           return val
         end
@@ -28,13 +29,13 @@ module Kameleon
         @commands = []
         cmd_list.each {|cmd| @commands.push Command.new(cmd)}
       rescue
-        fail ExecError, "Invalid microstep \"#{name}\": should be one of the " +\
+        fail ExecError, "Invalid microstep \"#{name}\": should be one of the " \
           "defined commands (See documentation)"
       end
 
     end
 
-    attr_accessor :path, :clean
+    attr_accessor :path, :clean, :microsteps
 
     def initialize(path, args, recipe)
       @recipe = recipe
@@ -80,26 +81,11 @@ module Kameleon
           return microstep
         end
       end
-      fail Error ,"Can't find microstep \"#{microstep_name}\" in macrostep \"#{@name}\""
+      fail Error ,"Can't find microstep \"#{microstep_name}\" in macrostep \"#{name}\""
     end
 
     # Resolve macrosteps variable
     def resolve!()
-
-      def resolve_vars(cmd_string)
-        cmd_string.gsub(/\$\$[a-zA-Z0-9\-_]*/) do |variable|
-          # remove the dollars
-          strip_variable = variable[2,variable.length]
-
-          # check in local vars
-          if @variables.has_key? strip_variable
-            value = @variables[strip_variable]
-          else
-            fail RecipeError, "#{@path}: variable #{variable} not found in local or global"
-          end
-          return $` + resolve_vars(value + $')
-        end
-      end
 
       #handle clean methods
       def resolve_clean(cmd)
@@ -117,7 +103,7 @@ module Kameleon
           if clean_microsteps.nil?
             clean_microsteps = @clean
           end
-          clean_microsteps.push Microstep.new({"clean_#{@name}" => cmd.val})
+          clean_microsteps.push Microstep.new({"clean_#{@name}" => cmd.value})
 
           # return nil to remove this command from the step
           return nil
@@ -126,12 +112,12 @@ module Kameleon
 
       @microsteps.each do |microstep|
         microstep.commands.map! do |cmd|
-          cmd.string_cmd = resolve_vars(cmd.string_cmd)
-          cmd = resolve_clean(cmd)
+          cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd, @path, @variables)
+          resolve_clean(cmd)
         end
       end
       # remove nil values
-      @microsteps.compact!
+      @microsteps.each { |microsteps| microsteps.commands.compact! }
     end
   end
 end
