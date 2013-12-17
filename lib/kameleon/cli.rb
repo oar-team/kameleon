@@ -15,7 +15,7 @@ module Kameleon
                           '(The folder containing your recipes folder).'
 
 
-    method_option :template, :aliases => "-t", :desc => "Starting from a template", :default => "empty_recipe"
+    method_option :template, :aliases => "-t", :desc => "Starting from a template", :default => "debian-7-x86_64"
     method_option :force,:type => :boolean , :default => false, :aliases => "-f", :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
