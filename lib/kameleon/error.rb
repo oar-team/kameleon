@@ -9,9 +9,9 @@ module Kameleon
 
   class ExecError < KameleonError; status_code(2) ; end
   class InternalError < KameleonError; status_code(3) ; end
-  class ContextError < KameleonError; status_code(5) ; end
-  class SyntaxError < KameleonError; status_code(6) ; end
-  class RecipeError < KameleonError; status_code(7) ; end
+  class ContextError < KameleonError; status_code(4) ; end
+  class RecipeError < KameleonError; status_code(5) ; end
+  class BuildError < KameleonError; status_code(6) ; end
 
   def self.with_friendly_errors
     yield

@@ -34,7 +34,7 @@ module Kameleon
       @sections = Section.new
       @global = { "distrib" => nil,
                   # Using fakechroot and fakeroot by default
-                  "requires" => "",
+                  "requirements" => "",
                   "workdir" => File.join(Kameleon.env.build_dir, @name),
                   "launch_context" => nil,
                   "build_context" => nil }
@@ -44,20 +44,17 @@ module Kameleon
     def load!
       # Find recipe path
       Kameleon.ui.info "Loading #{@path}"
+      fail RecipeError, "Could not find this following recipe : #{@path}" \
+         unless File.file? @path
       yaml_recipe = YAML.load File.open @path
       fail RecipeError, "Invalid yaml error" unless yaml_recipe.kind_of? Hash
       fail RecipeError, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
 
       #Load Global variables
       @global.merge!(yaml_recipe.fetch("global"))
-      missed_parameters = []
-      @global.each { |key, value| missed_parameters.push(key) if value.nil? }
-      if missed_parameters.any?
-        fail RecipeError, "Required parameter missing in global section :" \
-                          " #{missed_parameters.join ' '}"
-      end
       # Make an object list from a string comma (or space) separated list
-      @global["requires"] = @global["requires"].split(%r{,\s*}).map(&:split).flatten
+      @global["requirements"] = @global["requirements"].split(%r{,\s*})\
+                                                       .map(&:split).flatten
 
       #Find and load steps
       Section.sections.each do |section_name|
@@ -95,6 +92,13 @@ module Kameleon
 
     def resolve!
       @sections.each{ |key, macrosteps| macrosteps.each{|m| m.resolve!} }
+    end
+
+    def check_recipe
+      missings = []
+      @global.each { |key, value| missings.push(key) if value.nil? }
+      fail RecipeError, "Required parameters missing in global section :" \
+                        " #{missings.join ' '}" unless missings.empty?
     end
   end
 end
