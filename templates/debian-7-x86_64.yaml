@@ -27,11 +27,11 @@ global:
   # Shell session from what we launch local commands (exec_local)
   # We use fakechroot and fakeroot tools to add a possibility to use chroot
   # and debootstrap commands without root privileges
-  launch_context: fakechroot fakeroot
+  launch_context: bash
 
   # Shell session that allows us to connect to the building machine in order
   # to configure it and setup additional programs
-  build_context: fakechroot fakeroot chroot $$rootfs
+  build_context: chroot $$rootfs bash
 
 
   # You can define your own global variables here...
