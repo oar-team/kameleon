@@ -22,7 +22,7 @@ module Kameleon
     end
 
     def exec(cmd)
-      Kameleon.ui.debug "Running on #{@name} context : #{cmd.inspect}"
+      Kameleon.ui.debug "Running on #{@name}_context : #{cmd.inspect}"
       @shell.execute(cmd, :stdout => @stdout, :stderr => @stderr)
       Kameleon.ui.debug " exit status : #{@shell.exit_status}"
       fail ExecError unless @shell.exit_status.eql? 0
@@ -43,10 +43,12 @@ module Kameleon
     end
 
     def check_cmd(cmd)
-      error_message = "Required command \"#{cmd}\" is not installed in the PATH. Aborting."
-      fail_action = "bash -c \"echo >&2 #{error_message}; exit 1\""
-      check_cmd = "command -v #{cmd} >/dev/null 2>&1"
-      exec(check_cmd + " || " + fail_action)
+      Kameleon.ui.debug ""
+      shell_cmd = "command -v #{cmd} >/dev/null 2>&1|| bash -c 'exit 1'"
+      exec(shell_cmd)
+      true
+    rescue ExecError
+      false
     end
   end
 end
