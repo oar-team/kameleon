@@ -9,6 +9,7 @@ module Kameleon
   class Engine
     def initialize(recipe)
       @recipe = recipe
+      @recipe.resolve!
     end
 
     def build
@@ -21,7 +22,7 @@ module Kameleon
       launch_context = Context.new "launch", @recipe.global["launch_context"]
       # Do bootstrap
       begin
-        launch_context.exec("debootstrap --arch amd64 wheezy /tmp/test http://ftp.debian.org/debian/")
+        #launch_context.exec("debootstrap --arch amd64 wheezy /tmp/test http://ftp.debian.org/debian/")
       rescue ExecError
         # Start Interactive shell
         launch_context.start_interactive
@@ -33,7 +34,7 @@ module Kameleon
 
       # Do clean
 
-      Build context shell
+      #Build context shell
       build_context = Context.new "build", @recipe.cmds_to_check, @recipe.global["local_context"]
       @recipe.sections.each do |section|
         section.macrosteps.each do |macrostep|

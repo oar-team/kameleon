@@ -78,12 +78,15 @@ module Kameleon
         path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
         if File.file?(path)
           Kameleon.ui.info "~> Loading #{path}"
-          return Macrostep.new(path, args)
+          return Macrostep.new(path, args, @global)
         end
         Kameleon.ui.debug "Step #{name} not found in this path: #{path}"
       end
       fail RecipeError, "Step #{name} not found" unless File.file?(path)
     end
 
+    def resolve!
+      @sections.each{ |key, macrosteps| macrosteps.each{|m| m.resolve!} }
+    end
   end
 end
