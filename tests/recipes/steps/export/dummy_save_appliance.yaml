@@ -3,7 +3,7 @@
   - exec_local: echo test > /dev/null
   - exec: echo test > /dev/null
   - exec_local: echo test > /dev/null
-- save_as_vmdk
+- save_as_vmdk:
   - exec_local: echo test > /dev/null
   - exec: echo test > /dev/null
   - exec_local: echo test > /dev/null

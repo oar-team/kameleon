@@ -14,14 +14,18 @@
 global:
   # This is another comment // ,;:!*ù$=)àç_ç_èè-(-('""é&'" ¹~~##{[{[|``\^^@]}
   distrib: dummy_distro
+  debian_version_name: distrib_repository
+  launch_context: bash
+  build_context: chroot $$workdir/chroot
   variables: test
+  extra_packages: vim
 
 bootstrap:
   # &é"'(-è_çà)=~#{#{|~{|`\[`^|\@^@]*$ùlmjtgsioht jhié"ç_è (y'éy _This 
   - dummy_bootstrap_static:
     - distrib_version_name: wheeeeeeze
     # Comment
-    - debian_repository: http://myrepo.com/test
+    - distrib_repository: http://myrepo.com/test
 
 setup:
   - dummy_software_install:
