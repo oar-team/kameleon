@@ -10,9 +10,9 @@ module Kameleon
     class_option :verbose, :type => :boolean, :default => false,
                  :desc => "Enable verbose output mode", :aliases => "-V"
     class_option :workspace, :aliases => '-w', :type => :string,
-                 :default => FileUtils.pwd,
                  :desc => 'Change the kameleon workspace directory. ' \
-                          '(The folder containing your recipes folder).'
+                          '(The folder containing your recipes folder).' \
+                          ' Default : ./'
 
 
     method_option :template, :aliases => "-t", :desc => "Starting from a template", :default => "debian-7-x86_64"
@@ -27,7 +27,7 @@ module Kameleon
 
       # TODO add a warning and add a number to the copied file if already
       # exists in the workdir
-      Kameleon.ui.info "Cloning #{options[:template]} template..."
+      Kameleon.ui.confirm "Cloning template '#{options[:template]}'"
       Dir::mktmpdir do |tmp_dir|
         FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
         template_recipe.sections.each do |key, macrosteps|
@@ -42,7 +42,7 @@ module Kameleon
         FileUtils.mkdir_p recipes_dir
         FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_dir)
       end
-      Kameleon.ui.info "New recipe \"#{recipe_name}\" as been created in #{recipes_dir}"
+      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipes_dir}"
     end
 
     desc "list", "Lists all defined templates"
@@ -52,7 +52,7 @@ module Kameleon
 
     desc "version", "Prints the Kameleon's version information"
     def version
-      Kameleon.ui.info "Kameleon version #{Kameleon::VERSION}"
+      Kameleon.ui.confirm "Kameleon version #{Kameleon::VERSION}"
     end
     map %w(-v --version) => :version
 

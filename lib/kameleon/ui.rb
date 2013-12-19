@@ -49,12 +49,16 @@ module Kameleon
         @stdout = Output.new "info", self
       end
 
-      [[:info, :green], [:confirm, :green], [:warn, :yellow], [:error, :red], [:debug, nil]].each do |method, color|
+      [[:info, :green], [:confirm, :cyan], [:warn, :yellow], [:error, :red], [:debug, nil]].each do |method, color|
         class_eval <<-CODE
           def #{method}(msg, newline = nil)
             tell_me(msg, #{color.inspect}, newline) if level("#{method}")
           end
         CODE
+      end
+
+      def confirm_title(msg)
+        confirm("### #{msg} ###")
       end
 
       def dump_var(symb, the_binding)

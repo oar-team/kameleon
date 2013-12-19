@@ -33,7 +33,6 @@ module Kameleon
       @name = (@path.basename ".yaml").to_s
       @sections = Section.new
       @global = { "distrib" => nil,
-                  # Using fakechroot and fakeroot by default
                   "requirements" => "",
                   "workdir" => File.join(Kameleon.env.build_dir, @name),
                   "launch_context" => nil,
@@ -43,7 +42,7 @@ module Kameleon
 
     def load!
       # Find recipe path
-      Kameleon.ui.info "Loading #{@path}"
+      Kameleon.ui.confirm "Loading #{@path}"
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load File.open @path
@@ -83,7 +82,7 @@ module Kameleon
       [@global['distrib'], 'default', ''].each do |search_dir|
         path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
         if File.file?(path)
-          Kameleon.ui.info "~> Loading #{path}"
+          Kameleon.ui.confirm "Loading #{path}"
           return Macrostep.new(path, args, self)
         end
         Kameleon.ui.debug "Step #{name} not found in this path: #{path}"

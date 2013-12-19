@@ -8,6 +8,7 @@ module Kameleon
         super()
       end
     end
+
     def initialize(name, context_cmd)
       @stdout = Kameleon.ui.stdout
       @stderr = Kameleon.ui.stderr
@@ -15,20 +16,24 @@ module Kameleon
       @context_cmd = context_cmd
       @shell = Shell.new @context_cmd
       Kameleon.ui.debug "Initialize context (#{self})"
-      instance_variables.each { |v| Kameleon.ui.debug " #{v} = #{instance_variable_get(v)}" }
+      instance_variables.each do |v|
+        Kameleon.ui.debug " #{v} = #{instance_variable_get(v)}"
+      end
     rescue Errno::EPIPE
       raise ContextError, "Error occured when initializing #{name} context. " \
                           "Check '#{@name}_context' value in the recipe"
     end
 
     def exec(cmd)
-      Kameleon.ui.debug "Running on #{@name}_context : #{cmd.inspect}"
+      Kameleon.ui.debug "[#{@name}_context] Executing : #{cmd}"
       @shell.execute(cmd, :stdout => @stdout, :stderr => @stderr)
       Kameleon.ui.debug " exit status : #{@shell.exit_status}"
       fail ExecError unless @shell.exit_status.eql? 0
     end
 
-    def start_interactive
+    def start_shell
+      #TODO: Load env and history
+      Kameleon.ui.confirm "[#{@name}_context] Starting interactive shell"
       # Create a new subprocess that will just exec the requested program.
       pid = fork { Kernel.exec(@context_cmd) }
       # wait for the child to exit.
@@ -43,7 +48,6 @@ module Kameleon
     end
 
     def check_cmd(cmd)
-      Kameleon.ui.debug ""
       shell_cmd = "command -v #{cmd} >/dev/null 2>&1|| bash -c 'exit 1'"
       exec(shell_cmd)
       true
