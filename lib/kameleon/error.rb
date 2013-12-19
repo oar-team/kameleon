@@ -2,6 +2,13 @@ require 'thor/error'
 
 module Kameleon
   class KameleonError < ::StandardError
+    attr_accessor :object
+
+    def initialize(message = nil, object = nil)
+      super(message)
+      self.object = object
+    end
+
     def self.status_code(code)
       define_method(:status_code) { code }
     end
