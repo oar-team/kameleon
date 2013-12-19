@@ -2,14 +2,16 @@
 - debootstrap:
   - check_cmd: debootstrap
   - exec_local: |
-      debootstrap \
-      --verbose \
-      --no-check-gpg \
-      --arch=$$arch \
-      --include=locales \
-      $$debian_version_name \
-      $$rootfs \
-      $$distrib_repository
+      export tgz_bootstrap_file=$(echo "$$workdir/../""/bootstrap/""$$distrib""_$$debian_version_name""_$$arch"".tar.gz")
+      mkdir -p $(dirname $tgz_bootstrap_file)
+      if [ ! -f "$tgz_bootstrap_file" ]
+      then
+          debootstrap --arch=$$arch $$debian_version_name $$rootfs $$distrib_repository
+          tar zcf $tgz_bootstrap_file -C $$rootfs --numeric-owner --one-file-system .
+      else
+          tar zxf $tgz_bootstrap_file -C $$rootfs
+          cp -f /etc/resolv.conf $$rootfs/etc
+      fi
 #- include:
 #  - mount_proc
 - mount_dev:
