@@ -13,11 +13,15 @@ module Kameleon
         end
 
         def key
-          YAML.load(@string_cmd).keys[0]
+          object = YAML.load(@string_cmd)
+          object = object[0] if object.kind_of? Array
+          object.keys[0]
         end
 
         def value
-          _, val = YAML.load(@string_cmd).first
+          object = YAML.load(@string_cmd)
+          object = object[0] if object.kind_of? Array
+          _, val = object.first
           return val
         end
       end
@@ -33,8 +37,12 @@ module Kameleon
                         "defined commands (See documentation)"
       end
 
-      def push(cmd)
-        @commands.push(cmd)
+      def empty?
+        @commands.empty?
+      end
+
+      def push(yaml_cmd)
+        @commands.push(Command.new(yaml_cmd))
       end
 
       def each(&block)
@@ -139,6 +147,10 @@ module Kameleon
 
     def map(&block)
       @microsteps.map(&block)
+    end
+
+    def empty?
+      @microsteps.empty?
     end
 
   end

@@ -23,7 +23,7 @@ module Kameleon
 
       def initialize()
         @clean = {}
-        Section::sections.each{ |section| @clean[section] = [] }
+        Section::sections.each{ |section| @clean[section] = Macrostep::Microstep.new({"clean_#{@section}"=> []}) }
         super
       end
     end
