@@ -33,6 +33,10 @@ module Kameleon
                         "defined commands (See documentation)"
       end
 
+      def push(cmd)
+        @commands.push(cmd)
+      end
+
       def each(&block)
         @commands.each(&block)
       end
@@ -51,7 +55,7 @@ module Kameleon
       @microsteps = []
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
-      @clean = []
+      @clean = Microstep.new({"clean_#{@name}"=> []})
       yaml_microsteps = YAML.load_file(@path)
       if not yaml_microsteps.kind_of? Array
         fail ReciepeError, "The macrostep #{path} is not valid (should be a list of microsteps)"
@@ -111,7 +115,7 @@ module Kameleon
           if clean_microsteps.nil?
             clean_microsteps = @clean
           end
-          clean_microsteps.push Microstep.new({"clean_#{@name}" => cmd.value})
+          clean_microsteps.push cmd.value
 
           # return nil to remove this command from the step
           return nil
