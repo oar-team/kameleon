@@ -9,7 +9,7 @@ module Kameleon
       class Command
         attr_accessor :string_cmd
         def initialize(yaml_cmd)
-          @string_cmd = YAML.dump(yaml_cmd)
+          @string_cmd = YAML.dump(yaml_cmd).gsub("---", "").strip
         end
 
         def key
@@ -29,13 +29,21 @@ module Kameleon
         @commands = []
         cmd_list.each {|cmd| @commands.push Command.new(cmd)}
       rescue
-        fail ExecError, "Invalid microstep \"#{name}\": should be one of the " \
-          "defined commands (See documentation)"
+        fail ExecError, "Invalid microstep \"#{name}\": should be one of the "\
+                        "defined commands (See documentation)"
+      end
+
+      def each(&block)
+        @commands.each(&block)
+      end
+
+      def map(&block)
+        @commands.map(&block)
       end
 
     end
 
-    attr_accessor :path, :clean, :microsteps
+    attr_accessor :path, :clean, :microsteps, :variables, :name
 
     def initialize(path, args, recipe)
       @recipe = recipe
@@ -119,5 +127,15 @@ module Kameleon
       # remove nil values
       @microsteps.each { |microsteps| microsteps.commands.compact! }
     end
+
+
+    def each(&block)
+      @microsteps.each(&block)
+    end
+
+    def map(&block)
+      @microsteps.map(&block)
+    end
+
   end
 end
