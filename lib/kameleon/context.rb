@@ -9,13 +9,14 @@ module Kameleon
       end
     end
 
-    def initialize(name, context_cmd)
+    def initialize(name, context_cmd, workdir)
+      @workdir = workdir
+      @name = name
+      @safe_context_cmd = "sh -c 'cd #{@workdir} && #{context_cmd}'"
+      @shell = Shell.new @safe_context_cmd
       @stdout = Kameleon.ui.stdout
       @stderr = Kameleon.ui.stderr
-      @name = name
-      @context_cmd = context_cmd
-      @shell = Shell.new @context_cmd
-      Kameleon.ui.debug "Initialize context (#{self})"
+      Kameleon.ui.debug "Initialize new context (#{name})"
       instance_variables.each do |v|
         Kameleon.ui.debug " #{v} = #{instance_variable_get(v)}"
       end
