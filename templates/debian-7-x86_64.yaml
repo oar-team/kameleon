@@ -32,8 +32,10 @@ global:
 
   # Shell session that allows us to connect to the building machine in order
   # to configure it and setup additional programs
-  in_context: chroot $$rootfs bash
-
+  in_context: |
+    env -i USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin
+    LC_ALL=POSIX DEBIAN_FRONTEND=noninteractive
+    chroot $$rootfs bash
 
   # You can define your own global variables here...
   user_name: kameleon
