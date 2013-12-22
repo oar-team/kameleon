@@ -31,9 +31,9 @@ module Kameleon
       def initialize(yaml_microstep)
         @name, cmd_list = yaml_microstep.first
         @commands = []
-        cmd_list.each {|cmd| @commands.push Command.new(cmd)}
+        append(cmd_list)
       rescue
-        fail ExecError, "Invalid microstep \"#{name}\": should be one of the "\
+        fail RecipeError, "Invalid microstep \"#{name}\": should be one of the "\
                         "defined commands (See documentation)"
       end
 
@@ -41,8 +41,8 @@ module Kameleon
         @commands.empty?
       end
 
-      def push(yaml_cmd)
-        @commands.push(Command.new(yaml_cmd))
+      def append(cmd_list)
+        cmd_list.each {|cmd| @commands.push Command.new(cmd)}
       end
 
       def each(&block)
@@ -79,7 +79,10 @@ module Kameleon
           if entry.kind_of? String
             selected_microsteps.push entry
           elsif entry.kind_of? Hash
-            @variables.merge! entry
+            # resolve variable before using it
+            entry.each do |key, value|
+              @variables[key] = Utils.resolve_vars(value, @path, @variables)
+            end
           end
         end
         if selected_microsteps.nil?
@@ -101,7 +104,8 @@ module Kameleon
           return microstep
         end
       end
-      fail Error ,"Can't find microstep \"#{microstep_name}\" in macrostep \"#{name}\""
+      fail RecipeError, "Can't find microstep '#{microstep_name}' "\
+                        "in macrostep '#{name}'"
     end
 
     # Resolve macrosteps variable
@@ -109,25 +113,22 @@ module Kameleon
 
       #handle clean methods
       def resolve_clean(cmd)
-        if !(cmd.key =~ /on_(.*)clean/)
+        unless (cmd.key =~ /on_(.*)clean/)
           #Not a clean command
           return cmd
+        end
+        if cmd.key.eql? "on_clean"
+          @clean.append cmd.value
+          return
         else
-          # Add clean commands to section or macrostep
-          clean_microsteps = nil
           Recipe::Section.sections.each do |section|
             if cmd.key.include? section
-              clean_microsteps = @recipe.sections.clean[section]
+              @recipe.sections.clean[section].append cmd.value
+              return
             end
           end
-          if clean_microsteps.nil?
-            clean_microsteps = @clean
-          end
-          clean_microsteps.push cmd.value
-
-          # return nil to remove this command from the step
-          return nil
         end
+        fail RecipeError, "Invalid clean command : '#{cmd.key}'"
       end
 
       @microsteps.each do |microstep|
