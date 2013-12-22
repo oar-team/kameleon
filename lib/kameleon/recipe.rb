@@ -57,13 +57,16 @@ module Kameleon
 
       #Find and load steps
       Section.sections.each do |section_name|
-        @sections[section_name]= []
-        yaml_recipe.fetch(section_name).each do |macrostep_yaml|
-          macrostep_instance = load_macrostep(macrostep_yaml, section_name)
-          # save the macrostep in the section
-          @sections[section_name].push(macrostep_instance)
+        if yaml_recipe.key? section_name
+          @sections[section_name] = []
+          yaml_recipe.fetch(section_name).each do |macrostep_yaml|
+            macrostep_instance = load_macrostep(macrostep_yaml, section_name)
+            # save the macrostep in the section
+            @sections[section_name].push(macrostep_instance)
+          end
         end
       end
+      # Resolve dynamically-defined variables !!
       @global.merge! YAML.load(Utils.resolve_vars(YAML.dump(@global), @path, @global))
     end
 
