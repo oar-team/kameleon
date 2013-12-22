@@ -1,4 +1,4 @@
 # # 
 - test:
-  - exec_local: /dev/null
+  - exec_out: /dev/null
 

@@ -2,7 +2,7 @@
 # to avoid downloading on every execution
 # Bootstrap if needed
 - debootstrap:
-  - exec_local: |
+  - exec_out: |
       export tgz_bootstrap_file=$(echo "../$$workdir""/bootstrap/""$$distrib""_$$debian_version_name""_$$arch"".tar.gz")
       mkdir -p $(dirname $tgz_bootstrap_file)
       if [ ! -f "$tgz_bootstrap_file" ]
@@ -16,32 +16,32 @@
 #- include:
 #  - mount_proc
 - mount_dev:
-  - exec_local: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev  $$rootfs/dev
   - on_setup_clean: |
       if mountpoint -q $$rootfs/dev
         then umount $$rootfs/dev
       fi
 
-  - exec_local: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
   - on_setup_clean: |
       if mountpoint -q $$rootfs/dev/pts
         then umount $$rootfs/dev/pts
       fi
 - mount_proc:
-  - exec_local: mount -o bind /proc  $$rootfs/proc
+  - exec_out: mount -o bind /proc  $$rootfs/proc
   - on_setup_clean: |
       if mountpoint -q $$rootfs/proc
         then umount $$rootfs/proc
       fi
 - mount_sys:
-  - exec_local: mount -o bind /sys  $$rootfs/sys
+  - exec_out: mount -o bind /sys  $$rootfs/sys
   - on_setup_clean: |
       if mountpoint -q $$rootfs/sys
         then umount $$rootfs/sys
       fi
 
 - update_bootstrap:
-  - exec: |
+  - exec_in: |
       DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
       DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes dist-upgrade
 

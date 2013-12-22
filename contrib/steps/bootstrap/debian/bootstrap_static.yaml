@@ -1,7 +1,7 @@
 # # Bootstrap Static
 - debootstrap:
   - check_cmd: cdebootstrap-static
-  - exec_local: |
+  - exec_out: |
       cdebootstrap-static \
       --verbose \
       --allow-unauthenticated \
@@ -13,25 +13,25 @@
 #- include: 
 #  - mount_proc
 - mount_dev:
-  - exec_local: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev  $$rootfs/dev
   - on_setup_clean: |
       if mountpoint -q $$rootfs/dev
         then umount $$rootfs/dev
       fi
 
-  - exec_local: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
   - on_setup_clean: |
       if mountpoint -q $$rootfs/dev/pts
         then umount $$rootfs/dev/pts
       fi
 - mount_proc:
-  - exec_local: mount -o bind /proc  $$rootfs/proc
+  - exec_out: mount -o bind /proc  $$rootfs/proc
   - on_setup_clean: |
       if mountpoint -q $$rootfs/proc
         then umount $$rootfs/proc
       fi
 - mount_sys:
-  - exec_local: mount -o bind /sys  $$rootfs/sys
+  - exec_out: mount -o bind /sys  $$rootfs/sys
   - on_setup_clean: |
       if mountpoint -q $$rootfs/sys
         then umount $$rootfs/sys

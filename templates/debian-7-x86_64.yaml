@@ -24,14 +24,14 @@ global:
   # Set required programs that will be used in the recipe
   requirements: chroot debootstrap
 
-  # Shell session from what we launch local commands (exec_local)
-  # We use fakechroot and fakeroot tools to add a possibility to use chroot
+  # Shell session from what we launch exec_local commands
+  # We use fakechroot and fakeroot tools to add ability to use chroot
   # and debootstrap commands without root privileges
-  launch_context: bash
+  out_context: bash
 
   # Shell session that allows us to connect to the building machine in order
   # to configure it and setup additional programs
-  build_context: chroot $$rootfs bash
+  in_context: chroot $$rootfs bash
 
 
   # You can define your own global variables here...

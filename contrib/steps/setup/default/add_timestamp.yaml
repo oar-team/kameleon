@@ -1,5 +1,5 @@
 # # Add Timestamp
 - timestamping:
-  - exec_local: |
+  - exec_out: |
     date +%s > timestamp
     scp timestamp $$rootfs

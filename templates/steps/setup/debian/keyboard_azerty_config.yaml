@@ -1,13 +1,13 @@
 # # Keyboard Azerty Config
 - install_console_tools:
   # FIXME this should use a kind of step include 
-  - exec: |
+  - exec_in: |
       DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
-  - exec: |
+  - exec_in: |
       DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
         console-tools console-data console-setup
   - on_clean:
-    - exec: apt-get clean
+    - exec_in: apt-get clean
   - write_file:
     - /etc/default/keyboard 
     - |

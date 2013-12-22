@@ -15,8 +15,8 @@ global:
   # This is another comment // ,;:!*ù$=)àç_ç_èè-(-('""é&'" ¹~~##{[{[|``\^^@]}
   distrib: dummy_distro
   debian_version_name: distrib_repository
-  launch_context: bash
-  build_context: chroot $$workdir/chroot
+  outside_context: bash
+  inside_context: chroot $$workdir/chroot
   variables: test
   extra_packages: vim
 

@@ -14,8 +14,8 @@
       en_US ISO-8859-1
       # fr_FR.UTF-8 UTF-8
       # fr_FR ISO-8859-1
-  - exec: locale-gen
-  - exec: source /etc/locale.conf
+  - exec_in: locale-gen
+  - exec_in: source /etc/locale.conf
 - etc_hosts:
   - write_file:
     - /etc/hosts

@@ -22,17 +22,17 @@ global:
   distrib: debian
   # Architechture
   arch: amd64
-  # Set required programs that will be used in the recipe
+  # Set required commands that will be used in the recipe
   requirements: fakeroot fakechroot chroot debootstrap
 
-  # Shell session from what we launch local commands (exec_local)
-  # We use fakechroot and fakeroot tools to add a possibility to use chroot
+  # Shell session from what we launch exec_out commands
+  # We use fakechroot and fakeroot tools to add ability to use chroot
   # and debootstrap commands without root privileges
-  launch_context: fakechroot fakeroot
+  out_context: fakechroot fakeroot
 
   # Shell session that allows us to connect to the building machine in order
   # to configure it and setup additional programs
-  build_context: fakechroot fakeroot chroot $$rootfs
+  in_context: fakechroot fakeroot chroot $$rootfs
 
 #== Bootstrap the new system and create context
 bootstrap:

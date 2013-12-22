@@ -3,7 +3,7 @@
 - create_raw_image:
   - check_cmd: fallocate
   # FIXME: the size in args must be greater then the appliance
-  - exec_local: |
+  - exec_out: |
       echo "Appliance size: $(du -bch $$rootfs | awk 'END {print $1}')"
       fallocate -l $$img_size image.raw
       fdisk image.raw <<< '
@@ -19,7 +19,7 @@
 
 - attach_kpartx_device:
   - check_cmd: kpartx
-  - exec_local: |
+  - exec_out: |
       # activate loop device
       modprobe loop
       # create loop device and guess partitions
@@ -37,20 +37,20 @@
       mkdir mnt
       mount ${LO_DEVICE_PARTBASE}p1 mnt
   - on_step_clean:
-    - exec_local: |
+    - exec_out: |
         umount mnt
         kpartx -d $LO_DEVICE
         losetup -d $LO_DEVICE
         rm -rf mnt
 
 - copy_system_tree:
-  - exec_local: |
+  - exec_out: |
       rsync -aAXv $$rootfs/* mnt \
       --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found}
 
 - get_kernel_initrd:
   # FIXME: not sure it's working for all distro
-  - exec_local: |
+  - exec_out: |
       export kernel=`basename mnt/boot/vmlinuz*`
       export initrd=`basename mnt/boot/init*`
 
@@ -59,7 +59,7 @@
   # the same version as the generated system
   # extlinux -v |& cut -d' ' -f2 | cut -d'.' -f1
   - check_cmd: extlinux
-  - exec_local: | 
+  - exec_out: | 
       mkdir -p mnt/boot
       # install extlinux
       extlinux --install mnt/boot/
@@ -68,11 +68,11 @@
       # /usr/lib/bios/syslinux/mbr.bin instead of /usr/lib/syslinux/mbr.bin 
       dd if=/usr/lib/syslinux/bios/mbr.bin conv=notrunc bs=440 count=1 of=$LO_DEVICE
       export UIID=`blkid -s UUID -o value ${LO_DEVICE_PARTBASE}p1`
-  - exec_local: |
+  - exec_out: |
       cat > mnt/etc/fstab <<< "
       UIID=$UIID   /   $$output_environment_file_system_type defaults  0  0
       "
-  - exec_local: |
+  - exec_out: |
       cat > mnt/boot/extlinux.conf <<< "
       DEFAULT kameleon
       LABEL   kameleon

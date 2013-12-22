@@ -1,10 +1,10 @@
 # # Pkg Install
 - do_pkg_install:
-   - exec: |
+   - exec_in: |
        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes update
-   - exec: |
+   - exec_in: |
        DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
          $$extra_packages
    - on_clean: 
-     - exec: apt-get clean
+     - exec_in: apt-get clean
 

@@ -1,7 +1,7 @@
 # # Save Chroot Appliance
 
 - save_as_tgz:
-  - exec_local: |
+  - exec_out: |
       tar -zcf $$distrib\_$$arch.tar.gz -C chroot . \
         --numeric-owner --one-file-system --exclude=tmp/* 
 
@@ -29,13 +29,13 @@
       partition_type: 0
 
 - save_as_raw:
-  - exec_local: |
+  - exec_out: |
       mv image.raw $$distrib\_$$arch.raw
       ln -s $$distrib\_$$arch.raw image.raw
 
 - save_as_vmdk:
   - check_cmd: qemu-img
-  - exec_local: |
+  - exec_out: |
       qemu-img convert -O vmdk image.raw $$distrib\_$$arch.vmdk
   - erb_config:
     - config.vmx.erb
@@ -43,10 +43,10 @@
 
 - save_as_qcow2:
   - check_cmd: qemu-img
-  - exec_local: |
+  - exec_out: |
       qemu-img convert -O qcow2 image.raw $$distrib\_$$arch.qcow2
 
 - save_as_vdi:
   - check_cmd: VBoxManage
-  - exec_local: |
+  - exec_out: |
       VBoxManage convertdd image.raw $$distrib\_$$arch.vdi

@@ -1,7 +1,7 @@
 # # Bootstrap
 - debootstrap:
   - check_cmd: debootstrap
-  - exec_local: |
+  - exec_out: |
       export tgz_bootstrap_file=$(echo "$$workdir/../""/bootstrap/""$$distrib""_$$debian_version_name""_$$arch"".tar.gz")
       mkdir -p $(dirname $tgz_bootstrap_file)
       if [ ! -f "$tgz_bootstrap_file" ]
@@ -13,13 +13,13 @@
           cp -f /etc/resolv.conf $$rootfs/etc
       fi
 - mount_chroot:
-  - exec_local: mount -o bind /dev  $$rootfs/dev
-  - exec_local: mount -o bind /dev/pts $$rootfs/dev/pts
-  - exec_local: mount -o bind /proc  $$rootfs/proc
-  - exec_local: mount -o bind /sys  $$rootfs/sys
+  - exec_out: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -o bind /proc  $$rootfs/proc
+  - exec_out: mount -o bind /sys  $$rootfs/sys
   - on_setup_clean:
-    - exec_local: "mountpoint -q $$rootfs/sys && umount $$rootfs/sys"
-    - exec_local: "mountpoint -q $$rootfs/proc && umount $$rootfs/proc"
-    - exec_local: "mountpoint -q $$rootfs/dev/pts && umount $$rootfs/dev/pts"
-    - exec_local: "mountpoint -q $$rootfs/dev && umount $$rootfs/dev"
+    - exec_out: "mountpoint -q $$rootfs/sys && umount $$rootfs/sys"
+    - exec_out: "mountpoint -q $$rootfs/proc && umount $$rootfs/proc"
+    - exec_out: "mountpoint -q $$rootfs/dev/pts && umount $$rootfs/dev/pts"
+    - exec_out: "mountpoint -q $$rootfs/dev && umount $$rootfs/dev"
 

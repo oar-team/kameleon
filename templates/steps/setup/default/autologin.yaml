@@ -1,6 +1,6 @@
 # # Autologin
 - set_autologin:
-  - exec: |
+  - exec_in: |
      # check SysV init
      if [ -f '/etc/inittab' ]
      then

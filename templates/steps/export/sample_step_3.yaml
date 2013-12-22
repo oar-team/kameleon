@@ -1,6 +1,6 @@
 # Sample step 3
 - test:
-  - exec_local: echo $$rootfs
+  - exec_out: echo $$rootfs
 
 - sample_micro_step:
-  - exec_local: echo $$sample_var
+  - exec_out: echo $$sample_var

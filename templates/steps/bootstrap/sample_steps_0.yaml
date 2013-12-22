@@ -1,6 +1,6 @@
 - sample:
-  - exec: echo "hello"
+  - exec_in: echo "hello"
 
 - sample_0:
-  - exec: echo " world!"
+  - exec_in: echo " world!"
 

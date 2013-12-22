@@ -1,7 +1,7 @@
 # # Dummy Software Install
 - dummy_step1:
-  - exec: echo $$install_cmd > /dev/null
+  - exec_in: echo $$install_cmd > /dev/null
 - dummy_step2:
-  - exec_local: echo $$extra_packages > /dev/null
+  - exec_out: echo $$extra_packages > /dev/null
 - dummy_step3:
-  - exec: echo test > /dev/null
+  - exec_in: echo test > /dev/null
