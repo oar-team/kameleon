@@ -15,6 +15,7 @@
 global:
   ## User varibales : You can define your own global variables here...
   rootfs: $$workdir/rootfs
+  cachedir: /var/cache/kameleon/
 
   ## System variables
   # Distribution
@@ -39,27 +40,29 @@ global:
 
 # Bootstrap the new system and create context
 bootstrap:
-  - bootstrap:
-    - debian_version_name: wheezy
-    - distrib_repository: http://ftp.fr.debian.org/debian/
+  - chroot:
+    - version_name: wheezy
+    - arch: $$arch
+    - repository: http://ftp.fr.debian.org/debian/
+    - archive_file: $$cachedir/$$distrib/$$version_name/$$arch/debootstrap.tar.gz
+    - include: locales less vim bash-completion zip unzip rsync sudo
 
 # Install and configuration steps
 # WARNING: should be independante from the build context
 setup:
   # Install
   - software_install:
-    - extra_packages: "vim bash-completion"
-  - network_time_install:
-    - timezone: Europe/Paris
-  - kernel_install
-
+    - packages: "openssh-server debian-keyring ntp console-tools console-data console-setup"
+  - kernel_install:
+    - arch: $$arch
   # Configuration
   - system_config:
+    - timezone: Europe/Paris
     - network_hostname: mydebian
+    - keyboard_layout: "fr,us"
   - make_swap:
     - swap_size: 2G
   - network_config
-  - keyboard_azerty_config:
   - create_user:
     - user_group: admin
     - user_password: kameleon

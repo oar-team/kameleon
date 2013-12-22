@@ -1,0 +1,24 @@
+# # Bootstrap
+- debootstrap:
+  - check_cmd: debootstrap
+  - exec_out: mkdir -p $(dirname "$$archive_file")
+  - exec_out: mkdir -p "$$rootfs"
+  - exec_out: |
+      if [ ! -f "$$archive_file" ]
+      then
+          debootstrap --arch=$$arch --include="$$include" $$version_name $$rootfs $$repository
+          tar zcf "$$archive_file" -C "$$rootfs" --numeric-owner --one-file-system .
+      else
+          tar zxf "$$archive_file" -C "$$rootfs"
+      fi
+  - exec_out: cat /etc/resolv.conf > $$rootfs/etc/resolv.conf
+- mount_chroot:
+  - exec_out: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -o bind /proc  $$rootfs/proc
+  - exec_out: mount -o bind /sys  $$rootfs/sys
+  - on_export_clean:
+    - exec_out: "mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true"
+    - exec_out: "mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true"
+    - exec_out: "mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true"
+    - exec_out: "mountpoint -q $$rootfs/dev && umount -f -l $$rootfs/dev  || true"

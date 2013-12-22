@@ -9,4 +9,4 @@
       do_initrd = yes
       link_in_boot = no
 - kernel_install:
-  - exec_in: DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install linux-image-$$arch
+  - exec_in: apt-get -y --force-yes install linux-image-$$arch

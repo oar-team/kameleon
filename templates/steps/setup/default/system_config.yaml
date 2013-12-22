@@ -16,19 +16,32 @@
       # fr_FR ISO-8859-1
   - exec_in: locale-gen
   - exec_in: source /etc/locale.conf
-- etc_hosts:
+
+- set_hosts:
   - write_file:
     - /etc/hosts
     - |
       #
       # /etc/hosts: static lookup table for host names
       #
-      
+
       #<ip-address>	<hostname.domain.org>	<hostname>
       127.0.0.1	localhost.localdomain	localhost	$$network_hostname
       ::1		localhost.localdomain	localhost
 
-- etc_hostname:
+- set_hostname:
+  - exec_in: echo "$$network_hostname" > /etc/hostname
+  - exec_in: echo "$$network_hostname" > /etc/hostname
+
+- set_timezone:
+  - exec_in: echo "$$timezone" > /etc/timezone
+  - exec_in: dpkg-reconfigure -f noninteractive tzdata
+
+- keyboard_config:
   - write_file:
-    - /etc/hostname
-    - $$network_hostname
+    - /etc/default/keyboard
+    - |
+      XKBMODEL="pc105"
+      XKBLAYOUT="$$keyboard_layout"
+      XKBVARIANT=""
+      XKBOPTIONS=""
