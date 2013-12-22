@@ -59,6 +59,8 @@ setup:
     - arch: $$arch
   # Configuration
   - system_config:
+    - locales: fr_FR en_US
+    - lang: fr_FR.UTF-8
     - timezone: Europe/Paris
     - network_hostname: mydebian
     - keyboard_layout: "fr,us"

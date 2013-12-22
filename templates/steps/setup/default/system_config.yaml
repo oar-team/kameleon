@@ -1,21 +1,9 @@
 # # System Config
-- locales:
-  - write_file:
-    - /etc/locale.conf
-    - |
-      LC_COLLATE="C"
-      LC_ALL="en_US.UTF-8"
-      LC_LANG="en_US.UTF-8"
-      LC_MESSAGES="en_US.UTF-8"
-  - write_file:
-    - /etc/locale.gen
-    - |
-      en_US.UTF-8 UTF-8
-      en_US ISO-8859-1
-      # fr_FR.UTF-8 UTF-8
-      # fr_FR ISO-8859-1
+- configure_locales:
+  # set locales programtically, based on http://linux.livejournal.com/1880366.html
+  - exec_in: "echo $$locales | tr ' ' '\n' | xargs -I {} sed -i 's/^# {}/{}/' /etc/locale.gen"
   - exec_in: locale-gen
-  - exec_in: source /etc/locale.conf
+  - exec_in: update-locale LANG=$$lang
 
 - set_hosts:
   - write_file:
