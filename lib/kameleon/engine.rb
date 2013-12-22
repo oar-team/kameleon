@@ -12,10 +12,13 @@ module Kameleon
       @recipe = recipe
       @recipe.resolve!
       @recipe.check_recipe
-      @build_context = nil
-      @launch_context = nil
-      @local_context = LocalContext.new
+      @out_context = nil
+      @in_context = nil
       @cleaned_sections = []
+      @in_context_cmd = @recipe.global["in_context"]
+      @out_context_cmd = @recipe.global["out_context"]
+      @workdir = @recipe.global["workdir"]
+      @local_context = Context.new("Localhost", "bash", Dir.pwd)
     end
 
     def do_steps(section_name)
@@ -25,10 +28,9 @@ module Kameleon
       end
       Kameleon.ui.confirm "Starting section: #{section_name}"
       @recipe.sections.fetch(section_name).each do |macrostep|
-        Kameleon.ui.confirm "Running macrostep: #{macrostep.name}"
         begin
           macrostep.microsteps.each do |microstep|
-            Kameleon.ui.confirm "Executing microstep: #{microstep.name}"
+            Kameleon.ui.confirm "-> Executing #{macrostep.name} : #{microstep.name}"
             microstep.commands.each do |cmd|
               finished = false
               begin
@@ -58,22 +60,17 @@ module Kameleon
     end
 
     def exec_cmd(cmd)
-      context_mapping = { "exec" => @build_context,
-                          "exec_local" => @launch_context}
-      skipping_alert = lambda {
-        context_name = cmd.key == "exec" ? "Build" : "Launch"
-        Kameleon.ui.warn "Skipping cmd : #{cmd.string_cmd}. "\
-                         "Cannot use '#{cmd.key}' for now. "\
-                         "#{context_name} context is not ready yet"
-      }
-
-      if context_mapping.keys.include?(cmd.key)
-        context = context_mapping.fetch(cmd.key)
-        if context.nil?
-          skipping_alert.call
+      case cmd.key
+      when "exec_in"
+        if @in_context.nil?
+          Kameleon.ui.warn "Skipping cmd '#{cmd.inspect}'. "\
+                           "Cannot use '#{cmd.key}' for now. "\
+                           "internal context [IN] is not ready yet"
         else
-          context.exec(cmd.value)
+          @in_context.exec(cmd.value)
         end
+      when "exec_out"
+        @out_context.exec(cmd.value)
       else
         Kameleon.ui.warn "Unknow command : #{cmd.key}"
       end
@@ -83,19 +80,22 @@ module Kameleon
       Kameleon.ui.error "Error executing command : #{cmd.string_cmd}"
       msg = "Press [r] to retry, [c] to continue with execution,"\
             "[a] to abort execution"
-      msg = "#{msg}, [s] to switch to launch context shell" unless @launch_context.nil?
-      msg = "#{msg}, [b] to switch to build context shell" unless @build_context.nil?
+      msg = "#{msg}, [o] to switch to local context shell" unless @out_context.nil?
+      msg = "#{msg}, [i] to switch to build context shell" unless @in_context.nil?
       responses = ["r","c","a"]
-      responses.push("s") unless @launch_context.nil?
-      responses.push("b") unless @build_context.nil?
+      responses.push("o") unless @out_context.nil?
+      responses.push("i") unless @in_context.nil?
       while true
         Kameleon.ui.confirm msg
         answer = $stdin.gets.strip
         $stdout.flush
         if responses.include?(answer)
-          return answer unless ["s", "b"].include?(answer)
-          @launch_context.start_shell if answer.eql? "s"
-          @build_context.start_shell if answer.eql? "s"
+          return answer unless ["o", "i"].include?(answer)
+          if answer.eql? "o"
+            @out_context.start_shell
+          else
+            @in_context.start_shell
+          end
           Kameleon.ui.confirm "Getting back to Kameleon ..."
         end
       end
@@ -106,12 +106,12 @@ module Kameleon
         begin
           Kameleon.ui.confirm "Cleaning #{section_name}"
           @recipe.sections.clean.fetch(section_name).each do |cmd|
-            # begin
+            begin
               exec_cmd(cmd)
-            # rescue Exception => e
-            #   raise e if not fail_silent
-            #   Kameleon.ui.warn "An error occurred while executing : #{cmd.value}"
-            # end
+            rescue Exception => e
+              raise e if not fail_silent
+              Kameleon.ui.warn "An error occurred while executing : #{cmd.value}"
+            end
           end
         ensure
           @cleaned_sections.push(section_name)
@@ -120,27 +120,40 @@ module Kameleon
     end
 
     def do_bootstrap
-      @launch_context = Context.new "launch", @recipe.global["launch_context"]
-      do_steps("bootstrap") and do_clean("bootstrap")
+      Kameleon.ui.confirm "Building external context [OUT]"
+      @out_context = Context.new("OUT", @out_context_cmd, @workdir)
+      do_steps("bootstrap")
+      do_clean("bootstrap")
     end
 
     def do_setup
-      @build_context = Context.new "build", @recipe.global["build_context"]
-      do_steps("setup") and do_clean("setup")
+      Kameleon.ui.confirm "Building internal context [IN]"
+      @in_context = Context.new("IN", @in_context_cmd, @workdir)
+      do_steps("setup")
+      do_clean("setup")
     end
 
     def do_export
-      do_steps("export") and do_clean("export")
+      do_steps("export")
+      do_clean("export")
     end
 
     def build
-      Kameleon.ui.confirm_title "Starting build"
+      start_time = Time.now.to_i
+      init_workdir
       check_requirements
-      do_bootstrap and do_setup and do_export
-    rescue SystemExit, Interrupt, Exception => e
-      Kameleon.ui.warn "Waiting for cleanup before exiting..."
-      try_clean_all
-      raise e
+      begin
+        do_bootstrap
+        do_setup
+        do_export
+      rescue SystemExit, Interrupt, Exception => e
+        Kameleon.ui.warn "Waiting for cleanup before exiting..."
+        try_clean_all
+        raise e
+      else
+        total_time = Time.now.to_i - start_time
+        Kameleon.ui.confirm("Build total duration : #{total_time} secs")
+      end
     end
 
     def try_clean_all
@@ -148,11 +161,17 @@ module Kameleon
         do_clean(section_name, true)
       end
       begin
-        @launch_context.close! unless @launch_context.nil?
-        @build_context.close! unless @build_context.nil?
+        @out_context.close! unless @out_context.nil?
+        @in_context.close! unless @in_context.nil?
         @local.close! unless @local.nil?
       rescue Errno::EPIPE, Exception
       end
+    end
+
+    def init_workdir
+      FileUtils.mkdir_p @workdir
+    rescue
+      raise BuildError, "Failed to create working directory #{@workdir}"
     end
 
     def check_requirements
