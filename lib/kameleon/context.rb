@@ -26,7 +26,7 @@ module Kameleon
     end
 
     def exec(cmd)
-      Kameleon.ui.debug "[#{@name}_context] Executing : #{cmd}"
+      Kameleon.ui.confirm "[#{@name}] #{cmd}"
       @shell.execute(cmd, :stdout => @stdout, :stderr => @stderr)
       Kameleon.ui.debug " exit status : #{@shell.exit_status}"
       fail ExecError unless @shell.exit_status.eql? 0
@@ -34,18 +34,8 @@ module Kameleon
 
     def start_shell
       #TODO: Load env and history
-      Kameleon.ui.confirm "[#{@name}_context] Starting interactive shell"
-      # Create a new subprocess that will just exec the requested program.
-      pid = fork { Kernel.exec(@context_cmd) }
-      # wait for the child to exit.
-      _, status = Process.waitpid2(pid)
-      status.success?
-    end
-  end
-
-  class LocalContext < Context
-    def initialize
-      super("local", "bash")
+      Kameleon.ui.confirm "[#{@name}] Starting interactive shell"
+      system(@safe_context_cmd)
     end
 
     def check_cmd(cmd)
