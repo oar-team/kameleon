@@ -15,8 +15,12 @@ module Kameleon
                           ' Default : ./'
 
 
-    method_option :template, :aliases => "-t", :desc => "Starting from a template", :default => "debian-7-x86_64"
-    method_option :force,:type => :boolean , :default => false, :aliases => "-f", :desc => "overwrite the recipe"
+    method_option :template, :aliases => "-t",
+                  :desc => "Starting from a template",
+                  :default => "example_recipe"
+    method_option :force,:type => :boolean ,
+                  :default => false, :aliases => "-f",
+                  :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
       Kameleon.ui.debug "Enter CLI::new method"
@@ -47,6 +51,7 @@ module Kameleon
 
     desc "list", "Lists all defined templates"
     def list
+      # TODO: Lists all defined templates
     end
     map "-L" => :list
 
@@ -57,7 +62,9 @@ module Kameleon
     map %w(-v --version) => :version
 
     desc "build [RECIPE_NAME]", "Build box from the recipe"
-    method_option :force, :type => :boolean , :default => false, :aliases => "-f", :desc => "force the build"
+    method_option :force, :type => :boolean ,
+                  :default => false, :aliases => "-f",
+                  :desc => "force the build"
     def build(recipe_name)
       recipe_path = File.join(Kameleon.env.recipes_dir, recipe_name) + '.yaml'
       Kameleon::Engine.new(Recipe.new(recipe_path)).build

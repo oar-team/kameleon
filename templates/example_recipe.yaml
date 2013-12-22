@@ -2,12 +2,13 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #===============================================================================
 #
-# RECIPE: debian-7-x86_64
+# RECIPE: empty_recipe
 #
-# DESCRIPTION: This recipe build an appliance of a complete 64 bits debian
-# wheezy server
+# DESCRIPTION: This is an example recipe. It aims at teach the user how to
+# write his own recipe from scratch
 #
-# WARNING: autologin means anyone booting this image get acces WITHOUT password
+# WARNING: It is recommended to use the template provided by Kameleon available
+# from the *new* command.
 #
 #===============================================================================
 ---

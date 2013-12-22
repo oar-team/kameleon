@@ -4,7 +4,5 @@
   - exec_in: chmod 600 /swap
   - exec_in: mkswap /swap
 - add_swap_to_fstab:
-  - append_file:
-    - /etc/fstab
-    - /swap none swap defaults 0 0
+  - exec_in: echo "/swap none swap defaults 0 0" >> /etc/fstab
 
