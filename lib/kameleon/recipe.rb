@@ -23,7 +23,9 @@ module Kameleon
 
       def initialize()
         @clean = {}
-        Section::sections.each{ |section| @clean[section] = Macrostep::Microstep.new({"clean_#{@section}"=> []}) }
+        Section::sections.each do |name|
+          @clean[name] = Macrostep::Microstep.new({"clean_#{name}"=> []})
+        end
         super
       end
     end
@@ -32,11 +34,11 @@ module Kameleon
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
       @sections = Section.new
-      @global = { "distrib" => nil,
-                  "requirements" => "",
-                  "workdir" => File.join(Kameleon.env.build_dir, @name),
-                  "launch_context" => nil,
-                  "build_context" => nil }
+      @required_global = %w(distrib out_context in_context)
+      @default_global = { "requirements" => "",
+                          "workdir" => File.join(Kameleon.env.build_dir, @name)
+                        }
+      @global = {}
       load!
     end
 
@@ -50,7 +52,7 @@ module Kameleon
       fail RecipeError, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
 
       #Load Global variables
-      @global.merge!(yaml_recipe.fetch("global"))
+      @global.merge!@default_global.merge(yaml_recipe.fetch("global"))
       # Make an object list from a string comma (or space) separated list
       @global["requirements"] = @global["requirements"].split(%r{,\s*})\
                                                        .map(&:split).flatten
@@ -99,7 +101,7 @@ module Kameleon
 
     def check_recipe
       missings = []
-      @global.each { |key, value| missings.push(key) if value.nil? }
+      @required_global.each { |key| missings.push cmd unless @global.key? key }
       fail RecipeError, "Required parameters missing in global section :" \
                         " #{missings.join ' '}" unless missings.empty?
     end
