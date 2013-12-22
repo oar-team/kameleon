@@ -39,6 +39,9 @@ module Kameleon
                 if answer.eql? "a"
                   raise BuildError, "Execution aborted..."
                 elsif answer.eql? "c"
+                  ## resetting the exit status
+                  @in_context.exec("true") unless @in_context.nil?
+                  @out_context.exec("true") unless @out_context.nil?
                   finished = true
                 elsif answer.eql? "r"
                   Kameleon.ui.confirm "Retrying the previous command..."
