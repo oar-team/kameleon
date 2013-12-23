@@ -1,9 +1,9 @@
 # # Save Chroot Appliance
 
 - save_as_tgz:
-  - exec_out: |
-      tar -zcf $$distrib\_$$arch.tar.gz -C $$rootfs . \
-        --numeric-owner --one-file-system --exclude=tmp/*
+  - exec_out: echo "TODO export !"
+      # tar -zcf $$distrib\_$$arch.tar.gz -C $$rootfs . \
+      #   --numeric-owner --one-file-system --exclude=tmp/*
 
 #TODO update this
 # - save_as_kameleon_env:
