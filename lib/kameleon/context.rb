@@ -20,6 +20,8 @@ module Kameleon
       instance_variables.each do |v|
         Kameleon.ui.debug " #{v} = #{instance_variable_get(v)}"
       end
+      Kameleon.ui.debug "Checking context (#{name})"
+      exec("true")
     rescue Errno::EPIPE
       raise ContextError, "Error occured when initializing #{name} context. " \
                           "Check '#{@name}_context' value in the recipe"
