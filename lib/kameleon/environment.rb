@@ -21,9 +21,10 @@ module Kameleon
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
+      here = File.join(File.dirname(__FILE__))
       defaults = {
         :workspace => Pathname.new(workspace),
-        :templates_dir => Pathname.new(File.expand_path(File.join(File.dirname(__FILE__), "..", "..", 'templates'))),
+        :templates_dir => Pathname.new(File.expand_path(here, "..", "..", 'templates')),
         :recipes_dir => Pathname.new(File.join(workspace, "recipes")),
         :build_dir => Pathname.new(File.join(workspace, "builds")),
       }

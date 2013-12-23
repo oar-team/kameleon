@@ -16,7 +16,7 @@
 global:
   ## User varibales : You can define your own global variables here...
   workdir: $$kameleon_cwd
-  lxc_container_id: "kameleon_$$kameleon_uid"
+  lxc_container_id: "kameleon_$$kameleon_uuid"
 
   user_name: kameleon
   arch: amd64

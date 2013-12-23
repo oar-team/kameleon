@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'yaml'
 require 'fileutils'
 require 'optparse'

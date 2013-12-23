@@ -37,10 +37,10 @@ module Kameleon
       @required_global = %w(distrib out_context in_context)
       @default_global = { "requirements" => "" }
       kameleon_id = SecureRandom.uuid
-      kameleon_workdir = File.join(Kameleon.env.build_dir, @name)
-      @system_global = { "kameleon_uid" => kameleon_id,
-                         "kameleon_short_uid" => kameleon_id.split("-").last,
-                         "kameleon_cwd" => kameleon_workdir }
+      @system_global = {
+        "kameleon_uuid" => kameleon_id,
+        "kameleon_short_uuid" => kameleon_id.split("-").last,
+        "kameleon_cwd" => File.join(Kameleon.env.build_dir, @name),
       @global = {}
       load!
     end
