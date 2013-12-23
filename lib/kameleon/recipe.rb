@@ -35,9 +35,12 @@ module Kameleon
       @name = (@path.basename ".yaml").to_s
       @sections = Section.new
       @required_global = %w(distrib out_context in_context)
-      @default_global = { "requirements" => "",
-                          "workdir" => File.join(Kameleon.env.build_dir, @name)
-                        }
+      @default_global = { "requirements" => "" }
+      kameleon_id = SecureRandom.uuid
+      kameleon_workdir = File.join(Kameleon.env.build_dir, @name)
+      @system_global = { "kameleon_uid" => kameleon_id,
+                         "kameleon_short_uid" => kameleon_id.split("-").last,
+                         "kameleon_cwd" => kameleon_workdir }
       @global = {}
       load!
     end
@@ -56,7 +59,7 @@ module Kameleon
       # Make an object list from a string comma (or space) separated list
       @global["requirements"] = @global["requirements"].split(%r{,\s*})\
                                                        .map(&:split).flatten
-
+      @global.merge!@system_global
       #Find and load steps
       Section.sections.each do |section_name|
         if yaml_recipe.key? section_name
