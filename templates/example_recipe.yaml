@@ -39,7 +39,7 @@ global:
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
   in_context:
-    - cmd: env -i USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=POSIX chroot $$rootfs
+    - cmd: env -i USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=POSIX chroot $$rootfs bash
     - workdir: /
     - exec_prefix: DEBIAN_FRONTEND=noninteractive
 

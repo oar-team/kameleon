@@ -10,7 +10,7 @@
 - root_ssh_config:
   - append_file:
     - /root/.ssh/config
-    - | 
+    - |
       Host *
         PasswordAuthentication yes
         RSAAuthentication yes

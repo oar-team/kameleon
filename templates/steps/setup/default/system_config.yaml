@@ -23,7 +23,7 @@
 
 - set_timezone:
   - exec_in: echo "$$timezone" > /etc/timezone
-  - exec_in: dpkg-reconfigure -f noninteractive tzdata
+  - exec_in: "dpkg-reconfigure -f noninteractive tzdata 2>&1"
 
 - keyboard_config:
   - write_file:

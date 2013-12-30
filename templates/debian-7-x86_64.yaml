@@ -14,10 +14,9 @@
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : You can define your own global variables here...
-  workdir: $$kameleon_cwd
   uuid: $$kameleon_short_uuid
-  rootfs: $$workdir/rootfs
   cachedir: /var/cache/kameleon/
+  rootfs: $$kameleon_cwd/rootfs
   user_name: kameleon
   arch: amd64
 
@@ -31,14 +30,16 @@ global:
   # Shell session from what we launch exec_out commands. There is often a local
   # bash session, but it can be a remote shell on other machines or on any
   # shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-  out_context: bash
+  out_context:
+    - cmd: bash
+    - workdir: $$kameleon_cwd
 
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
-  in_context: |
-    env -i USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin
-    LC_ALL=POSIX DEBIAN_FRONTEND=noninteractive
-    chroot $$rootfs bash
+  in_context:
+    - cmd: env -i USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=POSIX chroot $$rootfs bash
+    - workdir: /
+    - exec_prefix: DEBIAN_FRONTEND=noninteractive
 
 #== Bootstrap the new system and create context
 bootstrap:
