@@ -10,15 +10,12 @@ module Kameleon
   class Engine
     def initialize(recipe)
       @recipe = recipe
+      @recipe.check
       @recipe.resolve!
-      @recipe.check_recipe
       @out_context = nil
       @in_context = nil
       @cleaned_sections = []
-      @in_context_cmd = @recipe.global["in_context"]
-      @out_context_cmd = @recipe.global["out_context"]
-      @workdir = @recipe.global["workdir"]
-      @local_context = Context.new("Localhost", "bash", Dir.pwd)
+      @cwd = @recipe.global["kameleon_cwd"]
     end
 
     def do_steps(section_name)
@@ -42,8 +39,8 @@ module Kameleon
                   raise BuildError, "Execution aborted..."
                 elsif answer.eql? "c"
                   ## resetting the exit status
-                  @in_context.exec("true") unless @in_context.nil?
-                  @out_context.exec("true") unless @out_context.nil?
+                  @in_context.execute("true") unless @in_context.nil?
+                  @out_context.execute("true") unless @out_context.nil?
                   finished = true
                 elsif answer.eql? "r"
                   Kameleon.ui.confirm "Retrying the previous command..."
@@ -67,10 +64,10 @@ module Kameleon
                            "Cannot use '#{cmd.key}' for now. "\
                            "internal context [IN] is not ready yet"
         else
-          @in_context.exec(cmd.value)
+          @in_context.execute(cmd.value)
         end
       when "exec_out"
-        @out_context.exec(cmd.value)
+        @out_context.execute(cmd.value)
       else
         Kameleon.ui.warn "Unknow command : #{cmd.key}"
       end
@@ -121,14 +118,22 @@ module Kameleon
 
     def do_bootstrap
       Kameleon.ui.confirm "Building external context [OUT]"
-      @out_context = Context.new("OUT", @out_context_cmd, @workdir)
+      @out_context = Context.new("OUT",
+                                 @recipe.global["out_context"]["cmd"],
+                                 @recipe.global["out_context"]["workdir"],
+                                 @recipe.global["out_context"]["exec_prefix"],
+                                 @cwd)
       do_steps("bootstrap")
       do_clean("bootstrap")
     end
 
     def do_setup
       Kameleon.ui.confirm "Building internal context [IN]"
-      @in_context = Context.new("IN", @in_context_cmd, @workdir)
+      @in_context = Context.new("IN",
+                                @recipe.global["in_context"]["cmd"],
+                                @recipe.global["in_context"]["workdir"],
+                                @recipe.global["in_context"]["exec_prefix"],
+                                @cwd)
       do_steps("setup")
       do_clean("setup")
     end
@@ -140,7 +145,12 @@ module Kameleon
 
     def build
       start_time = Time.now.to_i
-      init_workdir
+      begin
+        FileUtils.mkdir_p @cwd
+      rescue
+        raise BuildError, "Failed to create working directory #{@cwd}"
+      end
+      @local_context = LocalContext.new("local", @cwd)
       check_requirements
       begin
         do_bootstrap
@@ -166,12 +176,6 @@ module Kameleon
         @local.close! unless @local.nil?
       rescue Errno::EPIPE, Exception
       end
-    end
-
-    def init_workdir
-      FileUtils.mkdir_p @workdir
-    rescue
-      raise BuildError, "Failed to create working directory #{@workdir}"
     end
 
     def check_requirements

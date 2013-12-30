@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency "session", "~> 3.1.0"
+  s.add_runtime_dependency "childprocess", "~> 0.3.7"
   s.add_runtime_dependency "thor", "~> 0.15"
 
   s.add_development_dependency "pry"

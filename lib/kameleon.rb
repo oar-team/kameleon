@@ -3,10 +3,10 @@ require 'yaml'
 require 'fileutils'
 require 'optparse'
 require 'erb'
-require 'session'
 require 'tempfile'
 require 'pp'
 require 'thor'
+require 'childprocess'
 
 # Load the things which must be loaded before anything else
 require 'kameleon/utils'

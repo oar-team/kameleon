@@ -4,7 +4,6 @@ require 'stringio'
 module Kameleon
   module Utils
 
-
     def self.resolve_vars(raw, yaml_path, initial_variables)
         raw.gsub(/\$\$[a-zA-Z0-9\-_]*/) do |variable|
         # remove the dollars
@@ -20,14 +19,15 @@ module Kameleon
       end
     end
 
-
-    def self.pp_s(*objs)
-        s = StringIO.new
-        objs.each {|obj|
-          PP.pp(obj, s)
-        }
-        s.rewind
-        s.read
+    def self.generate_slug(str)
+        value = str.strip
+        value.gsub!(/['`]/, "")
+        value.gsub!(/\s*@\s*/, " at ")
+        value.gsub!(/\s*&\s*/, " and ")
+        value.gsub!(/\s*[^A-Za-z0-9\.\-]\s*/, '_')
+        value.gsub!(/_+/, "_")
+        value.gsub!(/\A[_\.]+|[_\.]+\z/, "")
+        value
     end
 
     ### Hash that keeps elements in the insertion order -- it's more
