@@ -7,6 +7,7 @@ require 'tempfile'
 require 'pp'
 require 'thor'
 require 'childprocess'
+require 'session'
 
 # Load the things which must be loaded before anything else
 require 'kameleon/utils'
