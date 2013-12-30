@@ -10,7 +10,7 @@ module Kameleon
     class_option :verbose, :type => :boolean, :default => false,
                  :desc => "Enable verbose output mode", :aliases => "-V"
     class_option :workspace, :aliases => '-w', :type => :string,
-                 :desc => 'Change the kameleon workspace directory. ' \
+                 :desc => 'Change the kameleon current work directory. ' \
                           '(The folder containing your recipes folder).' \
                           ' Default : ./'
 
@@ -24,9 +24,9 @@ module Kameleon
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
       Kameleon.ui.debug "Enter CLI::new method"
-      templates_dir = Kameleon.env.templates_dir
-      recipes_dir = Kameleon.env.recipes_dir
-      template_path = File.join(templates_dir, options[:template]) + '.yaml'
+      templates_path = Kameleon.env.templates_path
+      recipes_path = Kameleon.env.recipes_path
+      template_path = File.join(templates_path, options[:template]) + '.yaml'
       template_recipe = Recipe.new(template_path)
 
       # TODO add a warning and add a number to the copied file if already
@@ -36,17 +36,17 @@ module Kameleon
         FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
         template_recipe.sections.each do |key, macrosteps|
           macrosteps.each do |macrostep|
-            relative_path = macrostep.path.relative_path_from(templates_dir)
+            relative_path = macrostep.path.relative_path_from(templates_path)
             dst = File.join(tmp_dir, File.dirname(relative_path))
             FileUtils.mkdir_p dst
             FileUtils.cp(macrostep.path, dst)
           end
         end
         # Create recipe dir if not exists
-        FileUtils.mkdir_p recipes_dir
-        FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_dir)
+        FileUtils.mkdir_p recipes_path
+        FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_path)
       end
-      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipes_dir}"
+      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipes_path}"
     end
 
     desc "list", "Lists all defined templates"
@@ -66,7 +66,7 @@ module Kameleon
                   :default => false, :aliases => "-f",
                   :desc => "force the build"
     def build(recipe_name)
-      recipe_path = File.join(Kameleon.env.recipes_dir, recipe_name) + '.yaml'
+      recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
       Kameleon::Engine.new(Recipe.new(recipe_path)).build
     end
 

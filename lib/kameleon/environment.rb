@@ -5,9 +5,9 @@ module Kameleon
   class Environment
 
     attr_accessor :workspace
-    attr_accessor :templates_dir
-    attr_accessor :recipes_dir
-    attr_accessor :build_dir
+    attr_accessor :templates_path
+    attr_accessor :recipes_path
+    attr_accessor :build_path
 
     attr_writer :ui
 
@@ -21,12 +21,11 @@ module Kameleon
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
-      here = File.join(File.dirname(__FILE__))
       defaults = {
-        :workspace => Pathname.new(workspace),
-        :templates_dir => Pathname.new(File.expand_path(here, "..", "..", 'templates')),
-        :recipes_dir => Pathname.new(File.join(workspace, "recipes")),
-        :build_dir => Pathname.new(File.join(workspace, "builds")),
+        :workspace => Pathname.new(File.join(Kameleon.source_root, 'templates')),
+        :templates_path => Pathname.new(File.join(Kameleon.source_root, 'templates')),
+        :recipes_path => Pathname.new(File.join(workspace, "recipes")),
+        :build_path => Pathname.new(File.join(workspace, "builds")),
       }
 
       options = defaults.merge(options)

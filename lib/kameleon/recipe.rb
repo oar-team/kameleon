@@ -1,6 +1,7 @@
 # Manage kameleon recipes
 require 'kameleon/utils'
 require 'kameleon/macrostep'
+require 'pry'
 
 module Kameleon
   class Recipe
@@ -40,7 +41,7 @@ module Kameleon
       @system_global = {
         "kameleon_uuid" => kameleon_id,
         "kameleon_short_uuid" => kameleon_id.split("-").last,
-        "kameleon_cwd" => File.join(Kameleon.env.build_dir, @name),
+        "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
       }
       @global = {}
       load!
