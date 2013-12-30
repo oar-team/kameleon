@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "childprocess", "~> 0.3.7"
   s.add_runtime_dependency "session", "~> 3.1.0"
   s.add_runtime_dependency "thor", "~> 0.15"
+  s.add_runtime_dependency "log4r-color", "~> 1.2.2"
 
   s.add_development_dependency "pry"
   s.add_development_dependency "pry-debugger"

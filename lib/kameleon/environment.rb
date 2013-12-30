@@ -9,8 +9,6 @@ module Kameleon
     attr_accessor :recipes_path
     attr_accessor :build_path
 
-    attr_writer :ui
-
     # Hash element of all recipes available
     attr_accessor :recipes
 
@@ -18,6 +16,7 @@ module Kameleon
     attr_accessor :templates
 
     def initialize(options = {})
+      @logger = Log4r::Logger.new("kameleon::environment")
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
@@ -29,11 +28,11 @@ module Kameleon
       }
 
       options = defaults.merge(options)
-      Kameleon.ui.debug "Environment initialized (#{self})"
+      @logger.debug("Environment initialized (#{self})")
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|
         instance_variable_set("@#{key}".to_sym, options[key])
-        Kameleon.ui.debug  " - #{key} : #{options[key]}"
+        @logger.debug(" - #{key} : #{options[key]}")
       end
 
       # Definitions

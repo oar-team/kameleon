@@ -8,12 +8,12 @@ require 'pp'
 require 'thor'
 require 'childprocess'
 require 'session'
+require 'log4r-color'
 
 # Load the things which must be loaded before anything else
 require 'kameleon/utils'
 require 'kameleon/error'
 require 'kameleon/cli'
-require 'kameleon/ui'
 require 'kameleon/environment'
 require 'kameleon/version'
 
@@ -25,10 +25,10 @@ module Kameleon
   end
 
   class << self
-    attr_writer :ui, :env
+    attr_writer :logger, :env
 
-    def ui
-      @ui ||= Kameleon::UI::Shell.new
+    def logger
+      @logger ||= Log4r::Logger.new("kameleon::global")
     end
 
     def env

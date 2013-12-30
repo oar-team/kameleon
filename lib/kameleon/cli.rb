@@ -7,8 +7,8 @@ module Kameleon
 
     class_option :no_color, :type => :boolean, :default => false,
                  :desc => "Disable colorization in output"
-    class_option :verbose, :type => :boolean, :default => false,
-                 :desc => "Enable verbose output mode", :aliases => "-V"
+    class_option :debug, :type => :boolean, :default => false,
+                 :desc => "Enable debug output"
     class_option :workspace, :aliases => '-w', :type => :string,
                  :desc => 'Change the kameleon current work directory. ' \
                           '(The folder containing your recipes folder).' \
@@ -23,7 +23,9 @@ module Kameleon
                   :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
-      Kameleon.ui.debug "Enter CLI::new method"
+      # Create a logger right away
+      @logger = Log4r::Logger.new("kameleon::cli")
+      @logger.info("Cloning template '#{options[:template]}'")
       templates_path = Kameleon.env.templates_path
       recipes_path = Kameleon.env.recipes_path
       template_path = File.join(templates_path, options[:template]) + '.yaml'
@@ -31,7 +33,6 @@ module Kameleon
 
       # TODO add a warning and add a number to the copied file if already
       # exists in the workdir
-      Kameleon.ui.confirm "Cloning template '#{options[:template]}'"
       Dir::mktmpdir do |tmp_dir|
         FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
         template_recipe.sections.each do |key, macrosteps|
@@ -46,18 +47,21 @@ module Kameleon
         FileUtils.mkdir_p recipes_path
         FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_path)
       end
-      Kameleon.ui.confirm "New recipe \"#{recipe_name}\" as been created in #{recipes_path}"
+      @logger.info("New recipe \"#{recipe_name}\" as been created in #{recipes_path}")
     end
 
     desc "list", "Lists all defined templates"
     def list
       # TODO: Lists all defined templates
+      @logger = Log4r::Logger.new("kameleon::cli")
+      @logger.error("Not implemented command")
     end
     map "-L" => :list
 
     desc "version", "Prints the Kameleon's version information"
     def version
-      Kameleon.ui.confirm "Kameleon version #{Kameleon::VERSION}"
+      @logger = Log4r::Logger.new("kameleon::cli")
+      @logger.info("Kameleon version #{Kameleon::VERSION}")
     end
     map %w(-v --version) => :version
 
@@ -66,6 +70,8 @@ module Kameleon
                   :default => false, :aliases => "-f",
                   :desc => "force the build"
     def build(recipe_name)
+      @logger = Log4r::Logger.new("kameleon::cli")
+      @logger.info("Starting build recipe '#{recipe_name}'")
       recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
       Kameleon::Engine.new(Recipe.new(recipe_path)).build
     end
@@ -73,10 +79,50 @@ module Kameleon
     # Hack Thor to init Kameleon env soon
     def self.init(base_config)
       options = base_config[:shell].base.options
-      # Attach the UI
-      Kameleon.ui = ::Kameleon::UI::Shell.new(options)
-      Kameleon.ui.level = options["verbose"] ? "debug" : "info"
+      # Update env
       Kameleon.env = Kameleon::Environment.new(options)
+      # configure logger
+      ENV["KAMELEON_LOG"] = "debug" if options.debug
+      if ENV["KAMELEON_LOG"] && ENV["KAMELEON_LOG"] != ""
+        level_name = ENV["KAMELEON_LOG"]
+      else
+        level_name = "info"
+      end
+      # Require Log4r and define the levels we'll be using
+      require 'log4r-color/config'
+      Log4r.define_levels(*Log4r::Log4rConfig::LogLevels)
+
+      begin
+        level = Log4r.const_get(level_name.upcase)
+      rescue NameError
+        fail KameleonError, "Invalid KAMELEON_LOG level is set: #{level_name}.\n" \
+                            "Please use one of the standard log levels: debug," \
+                            " info, warn, or error"
+      end
+      if !$stdout.tty? or options.no_color
+        console_output = Log4r::Outputter.stdout
+      else
+        console_output = Log4r::ColorOutputter.new 'console', {:colors =>
+          {
+            :debug  => :white,
+            :info   => :green,
+            :warn   => :yellow,
+            :error  => :red,
+            :fatal  => {:color => :red, :background => :white}
+          }
+        }
+      end
+
+      logger = Log4r::Logger.new('kameleon')
+      logger.outputters << console_output
+      logger.outputters << Log4r::FileOutputter.new('logfile',
+                                                    :trunc=>false,
+                                                    :filename => 'kameleon.log')
+      logger.level = level
+      logger = nil
+      # Create a logger right away
+      logger = Log4r::Logger.new("kameleon::cli")
+      logger.debug("`kameleon` invoked: #{ARGV.inspect}")
     end
 
     def self.start(given_args=ARGV, config={})

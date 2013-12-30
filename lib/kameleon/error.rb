@@ -17,33 +17,28 @@ module Kameleon
   class ExecError < KameleonError; status_code(2) ; end
   class InternalError < KameleonError; status_code(3) ; end
   class ContextError < KameleonError; status_code(4) ; end
-  class RecipeError < KameleonError; status_code(5) ; end
-  class BuildError < KameleonError; status_code(6) ; end
+  class ShellError < KameleonError; status_code(5) ; end
+  class RecipeError < KameleonError; status_code(6) ; end
+  class BuildError < KameleonError; status_code(7) ; end
 
   def self.with_friendly_errors
     yield
   rescue Kameleon::KameleonError => e
-    Kameleon.ui.error e.message, :wrap => true
-    Kameleon.ui.trace e
+    Kameleon.logger.fatal("#{e.message}\n#{e.backtrace.join("\n")}")
     exit e.status_code
   rescue Thor::UndefinedTaskError => e
-    Kameleon.ui.error e.message
+    Kameleon.logger.fatal("#{e.message}\n#{e.backtrace.join("\n")}")
     exit 15
   rescue Thor::Error => e
-    Kameleon.ui.error e.message
+    Kameleon.logger.fatal("#{e.message}\n#{e.backtrace.join("\n")}")
     exit 15
   rescue SystemExit, Interrupt => e
-    Kameleon.ui.error "\nQuitting..."
-    Kameleon.ui.trace e
+    Kameleon.logger.fatal("Quitting...")
     exit 1
-  rescue SystemExit => e
-    exit e.status
   rescue Exception => e
-    Kameleon.ui.error <<-ERR, :wrap => true
-Unfortunately, a fatal error has occurred : #{e.message}
-Use --verbose option for more details
-ERR
-    Kameleon.ui.trace e
+    Kameleon.logger.fatal("Unfortunately, a fatal error has occurred : "\
+                          "#{e.message}\n#{e.backtrace.join("\n")}\n" \
+                          "Use --debug option for more details")
     exit 666
   end
 end

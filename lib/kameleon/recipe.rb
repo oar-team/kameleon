@@ -32,6 +32,7 @@ module Kameleon
     end
 
     def initialize(path)
+      @logger = Log4r::Logger.new("kameleon::recipe")
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
       @sections = Section.new
@@ -44,12 +45,17 @@ module Kameleon
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
       }
       @global = {}
+      @logger.debug("Initialize new recipe (#{path})")
+      @logger.debug("Instance variable before load")
+      instance_variables.each do |v|
+        @logger.debug("  #{v} = #{instance_variable_get(v)}")
+      end
       load!
     end
 
     def load!
       # Find recipe path
-      Kameleon.ui.confirm "Loading #{@path}"
+      @logger.info("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load File.open @path
@@ -75,6 +81,10 @@ module Kameleon
       end
       # Resolve dynamically-defined variables !!
       @global.merge! YAML.load(Utils.resolve_vars(YAML.dump(@global), @path, @global))
+      @logger.debug("Instance variable after load")
+      instance_variables.each do |v|
+        @logger.debug("  #{v} = #{instance_variable_get(v)}")
+      end
     end
 
     def load_macrostep(raw_macrostep, section_name)
@@ -92,15 +102,16 @@ module Kameleon
       [@global['distrib'], 'default', ''].each do |search_dir|
         path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
         if File.file?(path)
-          Kameleon.ui.confirm "Loading #{path}"
+          @logger.info("Loading #{path}")
           return Macrostep.new(path, args, self)
         end
-        Kameleon.ui.debug "Step #{name} not found in this path: #{path}"
+        @logger.debug("Step #{name} not found in this path: #{path}")
       end
       fail RecipeError, "Step #{name} not found" unless File.file?(path)
     end
 
     def resolve!
+      @logger.info("Starting recipe variables resolution")
       @sections.each{ |key, macrosteps| macrosteps.each{|m| m.resolve!} }
       # global args more flat
       %w(out_context in_context).each do |context_name|
@@ -113,6 +124,7 @@ module Kameleon
     end
 
     def check
+      @logger.info("Starting recipe consistency check")
       missings = []
       @required_global.each { |key| missings.push cmd unless @global.key? key }
       fail RecipeError, "Required parameters missing in global section :" \

@@ -9,6 +9,7 @@ module Kameleon
 
   class Engine
     def initialize(recipe)
+      @logger = Log4r::Logger.new("kameleon::engine")
       @recipe = recipe
       @recipe.check
       @recipe.resolve!
@@ -20,14 +21,15 @@ module Kameleon
 
     def do_steps(section_name)
       unless @recipe.sections.key?(section_name)
-        Kameleon.ui.warn "Missing #{section_name} section. Skip"
+        @logger.warn("Missing #{section_name} section. Skip")
         return
       end
-      Kameleon.ui.confirm "Starting section: #{section_name}"
+      @logger.info("[section] #{section_name}")
       @recipe.sections.fetch(section_name).each do |macrostep|
         begin
+          @logger.info("[macrostep] #{macrostep.name}")
           macrostep.microsteps.each do |microstep|
-            Kameleon.ui.confirm "-> Executing #{macrostep.name} : #{microstep.name}"
+            @logger.info("[microstepstep] #{microstep.name}")
             microstep.commands.each do |cmd|
               finished = false
               begin
@@ -43,7 +45,7 @@ module Kameleon
                   @out_context.execute("true") unless @out_context.nil?
                   finished = true
                 elsif answer.eql? "r"
-                  Kameleon.ui.confirm "Retrying the previous command..."
+                  @logger.info("Retrying the previous command...")
                 end
               end until finished
             end
@@ -60,40 +62,39 @@ module Kameleon
       case cmd.key
       when "exec_in"
         if @in_context.nil?
-          Kameleon.ui.warn "Skipping cmd '#{cmd.inspect}'. "\
-                           "Cannot use '#{cmd.key}' for now. "\
-                           "internal context [IN] is not ready yet"
+          @logger.warn("Skipping cmd '#{cmd.string_cmd}'. The in_context is" \
+                       " not ready yet")
         else
           @in_context.execute(cmd.value)
         end
       when "exec_out"
         @out_context.execute(cmd.value)
       else
-        Kameleon.ui.warn "Unknow command : #{cmd.key}"
+        @logger.warn("Unknow command : #{cmd.key}")
       end
     end
 
     def rescue_exec_error(cmd)
-      Kameleon.ui.error "Error executing command : #{cmd.string_cmd}"
+      @logger.error("Error executing command : #{cmd.string_cmd}")
       msg = "Press [r] to retry, [c] to continue with execution,"\
             "[a] to abort execution"
-      msg = "#{msg}, [o] to switch to local context shell" unless @out_context.nil?
-      msg = "#{msg}, [i] to switch to build context shell" unless @in_context.nil?
-      responses = ["r","c","a"]
-      responses.push("o") unless @out_context.nil?
-      responses.push("i") unless @in_context.nil?
+      msg = "#{msg}, [o] to switch to out_context shell" unless @out_context.nil?
+      msg = "#{msg}, [i] to switch to in_context shell" unless @in_context.nil?
+      responses = {"r" => "retry","c" => "continue", "a" => "abort"}
+      responses.merge!({"o" => "launch out_context"}) unless @out_context.nil?
+      responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
       while true
-        Kameleon.ui.confirm msg
-        answer = $stdin.gets.strip
-        $stdout.flush
-        if responses.include?(answer)
+        @logger.info(msg)
+        answer = $stdin.gets.chomp
+        if responses.keys.include?(answer)
+          @logger.info("User choice : [#{answer}] #{responses[answer]}")
           return answer unless ["o", "i"].include?(answer)
           if answer.eql? "o"
             @out_context.start_shell
           else
             @in_context.start_shell
           end
-          Kameleon.ui.confirm "Getting back to Kameleon ..."
+          @logger.info("Getting back to Kameleon ...")
         end
       end
     end
@@ -101,13 +102,13 @@ module Kameleon
     def do_clean(section_name, fail_silent=false)
       unless @cleaned_sections.include?(section_name)
         begin
-          Kameleon.ui.confirm "Cleaning #{section_name}"
+          @logger.info("Cleaning #{section_name}")
           @recipe.sections.clean.fetch(section_name).each do |cmd|
             begin
               exec_cmd(cmd)
             rescue Exception => e
               raise e if not fail_silent
-              Kameleon.ui.warn "An error occurred while executing : #{cmd.value}"
+              @logger.warn("An error occurred while executing : #{cmd.value}")
             end
           end
         ensure
@@ -117,7 +118,7 @@ module Kameleon
     end
 
     def do_bootstrap
-      Kameleon.ui.confirm "Building external context [OUT]"
+      @logger.info("Building external context [OUT]")
       @out_context = Context.new("OUT",
                                  @recipe.global["out_context"]["cmd"],
                                  @recipe.global["out_context"]["workdir"],
@@ -128,7 +129,7 @@ module Kameleon
     end
 
     def do_setup
-      Kameleon.ui.confirm "Building internal context [IN]"
+      @logger.info("Building external context [OUT]")
       @in_context = Context.new("IN",
                                 @recipe.global["in_context"]["cmd"],
                                 @recipe.global["in_context"]["workdir"],
@@ -146,6 +147,7 @@ module Kameleon
     def build
       start_time = Time.now.to_i
       begin
+        @logger.info("Creating kameleon working directory")
         FileUtils.mkdir_p @cwd
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
@@ -157,12 +159,12 @@ module Kameleon
         do_setup
         do_export
       rescue SystemExit, Interrupt, Exception => e
-        Kameleon.ui.warn "Waiting for cleanup before exiting..."
+        @logger.warn("Waiting for cleanup before exiting...")
         try_clean_all
         raise e
       else
         total_time = Time.now.to_i - start_time
-        Kameleon.ui.confirm("Build total duration : #{total_time} secs")
+        @logger.info("Build total duration : #{total_time} secs")
       end
     end
 
@@ -180,7 +182,7 @@ module Kameleon
 
     def check_requirements
       requires = @recipe.global["requirements"]
-      Kameleon.ui.confirm "Checking recipe requirements : #{requires.join ' '}"
+      @logger.info("Checking recipe requirements : #{requires.join ' '}")
       missings = requires.map { |cmd| cmd unless @local_context.check_cmd(cmd)}
       missings.compact!
       fail BuildError, "Missing recipe requirements : #{missings.join ' '}" \
@@ -188,5 +190,4 @@ module Kameleon
     end
 
   end
-
 end
