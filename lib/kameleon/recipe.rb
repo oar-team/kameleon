@@ -41,6 +41,7 @@ module Kameleon
         "kameleon_uuid" => kameleon_id,
         "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_dir, @name),
+      }
       @global = {}
       load!
     end
@@ -100,13 +101,34 @@ module Kameleon
 
     def resolve!
       @sections.each{ |key, macrosteps| macrosteps.each{|m| m.resolve!} }
+      # global args more flat
+      %w(out_context in_context).each do |context_name|
+        old_context_args = @global[context_name].clone
+        @global[context_name] = {}
+        old_context_args.each do |arg|
+          @global[context_name].merge!(arg)
+        end
+      end
     end
 
-    def check_recipe
+    def check
       missings = []
       @required_global.each { |key| missings.push cmd unless @global.key? key }
       fail RecipeError, "Required parameters missing in global section :" \
                         " #{missings.join ' '}" unless missings.empty?
+      # check context args
+      required_args = %w(cmd workdir)
+      %w(out_context in_context).each do |context_name|
+        context = @global[context_name]
+        fail RecipeError, "Required arguments missing for #{context_name}:"\
+                        " #{ required_args.inspect }" unless context.kind_of? Array
+        args = context.map { |i| i.keys }.flatten
+        required_args.each do |arg|
+          @global[context] unless args.include?(arg)
+          fail RecipeError, "Required argument missing for #{context_name}:"\
+                          " #{ arg }" unless args.include?(arg)
+        end
+      end
     end
   end
 end
