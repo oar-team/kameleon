@@ -20,25 +20,29 @@ module Kameleon
   class ShellError < KameleonError; status_code(5) ; end
   class RecipeError < KameleonError; status_code(6) ; end
   class BuildError < KameleonError; status_code(7) ; end
+  class AbortError < KameleonError; status_code(8) ; end
 
   def self.with_friendly_errors
     yield
   rescue Kameleon::KameleonError => e
-    Kameleon.logger.fatal("#{e.message}\n#{e.backtrace.join("\n")}")
+    Kameleon.logger.fatal("#{e.message}")
+    Kameleon.logger.debug("#{e.backtrace.join("\n")}")
     exit e.status_code
   rescue Thor::UndefinedTaskError => e
-    Kameleon.logger.fatal("#{e.message}\n#{e.backtrace.join("\n")}")
+    Kameleon.logger.fatal("#{e.message}")
+    Kameleon.logger.debug("#{e.backtrace.join("\n")}")
     exit 15
   rescue Thor::Error => e
-    Kameleon.logger.fatal("#{e.message}\n#{e.backtrace.join("\n")}")
+    Kameleon.logger.fatal("#{e.message}")
+    Kameleon.logger.debug("#{e.backtrace.join("\n")}")
     exit 15
   rescue SystemExit, Interrupt => e
     Kameleon.logger.fatal("Quitting...")
     exit 1
   rescue Exception => e
-    Kameleon.logger.fatal("Unfortunately, a fatal error has occurred : "\
-                          "#{e.message}\n#{e.backtrace.join("\n")}\n" \
-                          "Use --debug option for more details")
+    $stderr << "Unfortunately, a fatal error has occurred : "\
+               "#{e.message}\n#{e.backtrace.join("\n")}\n" \
+               "Use --debug option for more details"
     exit 666
   end
 end

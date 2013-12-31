@@ -38,7 +38,7 @@ module Kameleon
               rescue ExecError
                 answer = rescue_exec_error(cmd)
                 if answer.eql? "a"
-                  raise BuildError, "Execution aborted..."
+                  raise AbortError, "Execution aborted..."
                 elsif answer.eql? "c"
                   ## resetting the exit status
                   @in_context.execute("true") unless @in_context.nil?
@@ -147,7 +147,7 @@ module Kameleon
     def build
       start_time = Time.now.to_i
       begin
-        @logger.info("Creating kameleon working directory")
+        @logger.info("Creating kameleon working directory...")
         FileUtils.mkdir_p @cwd
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
@@ -155,28 +155,27 @@ module Kameleon
       @local_context = LocalContext.new("local", @cwd)
       check_requirements
       begin
+        # Ignore the signal trap
+        Signal.trap("INT", "IGNORE")
         do_bootstrap
         do_setup
         do_export
-      rescue SystemExit, Interrupt, Exception => e
+      rescue Exception => e
         @logger.warn("Waiting for cleanup before exiting...")
-        try_clean_all
+        ["bootstrap", "setup", "export"].each do |section_name|
+          do_clean(section_name, true)
+        end
+        begin
+          @out_context.close! unless @out_context.nil?
+          @in_context.close! unless @in_context.nil?
+          @local.close! unless @local.nil?
+        rescue Errno::EPIPE, Exception
+        end
         raise e
       else
         total_time = Time.now.to_i - start_time
         @logger.info("Build total duration : #{total_time} secs")
-      end
-    end
-
-    def try_clean_all
-      ["bootstrap", "setup", "export"].each do |section_name|
-        do_clean(section_name, true)
-      end
-      begin
-        @out_context.close! unless @out_context.nil?
-        @in_context.close! unless @in_context.nil?
-        @local.close! unless @local.nil?
-      rescue Errno::EPIPE, Exception
+        @logger.info("Build total duration : #{total_time} secs")
       end
     end
 
