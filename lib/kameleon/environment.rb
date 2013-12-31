@@ -19,7 +19,7 @@ module Kameleon
       @logger = Log4r::Logger.new("kameleon::environment")
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
-      workspace = options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
+      workspace = options[:workspace]
       defaults = {
         :workspace => Pathname.new(File.join(Kameleon.source_root, 'templates')),
         :templates_path => Pathname.new(File.join(Kameleon.source_root, 'templates')),

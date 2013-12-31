@@ -79,8 +79,10 @@ module Kameleon
     # Hack Thor to init Kameleon env soon
     def self.init(base_config)
       options = base_config[:shell].base.options
+      workspace ||= options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
       # Update env
-      Kameleon.env = Kameleon::Environment.new(options)
+      env_options = options.merge({:workspace => workspace})
+      Kameleon.env = Kameleon::Environment.new(env_options)
       # configure logger
       ENV["KAMELEON_LOG"] = "debug" if options.debug
       if ENV["KAMELEON_LOG"] && ENV["KAMELEON_LOG"] != ""
