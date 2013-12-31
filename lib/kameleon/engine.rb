@@ -56,6 +56,7 @@ module Kameleon
           end
         end
       end
+      do_clean(section_name)
     end
 
     def exec_cmd(cmd)
@@ -117,35 +118,7 @@ module Kameleon
       end
     end
 
-    def do_bootstrap
-      @logger.info("Building external context [OUT]")
-      @out_context = Context.new("OUT",
-                                 @recipe.global["out_context"]["cmd"],
-                                 @recipe.global["out_context"]["workdir"],
-                                 @recipe.global["out_context"]["exec_prefix"],
-                                 @cwd)
-      do_steps("bootstrap")
-      do_clean("bootstrap")
-    end
-
-    def do_setup
-      @logger.info("Building internal context [IN]")
-      @in_context = Context.new("IN",
-                                @recipe.global["in_context"]["cmd"],
-                                @recipe.global["in_context"]["workdir"],
-                                @recipe.global["in_context"]["exec_prefix"],
-                                @cwd)
-      do_steps("setup")
-      do_clean("setup")
-    end
-
-    def do_export
-      do_steps("export")
-      do_clean("export")
-    end
-
     def build
-      start_time = Time.now.to_i
       begin
         @logger.info("Creating kameleon working directory...")
         FileUtils.mkdir_p @cwd
@@ -157,9 +130,21 @@ module Kameleon
       begin
         # Ignore the signal trap
         Signal.trap("INT", "IGNORE")
-        do_bootstrap
-        do_setup
-        do_export
+        @logger.info("Building external context [OUT]")
+        @out_context = Context.new("OUT",
+                                   @recipe.global["out_context"]["cmd"],
+                                   @recipe.global["out_context"]["workdir"],
+                                   @recipe.global["out_context"]["exec_prefix"],
+                                   @cwd)
+        do_steps("bootstrap")
+        @logger.info("Building internal context [IN]")
+        @in_context = Context.new("IN",
+                                  @recipe.global["in_context"]["cmd"],
+                                  @recipe.global["in_context"]["workdir"],
+                                  @recipe.global["in_context"]["exec_prefix"],
+                                  @cwd)
+        do_steps("setup")
+        do_steps("export")
       rescue Exception => e
         @logger.warn("Waiting for cleanup before exiting...")
         ["bootstrap", "setup", "export"].each do |section_name|
@@ -172,10 +157,6 @@ module Kameleon
         rescue Errno::EPIPE, Exception
         end
         raise e
-      else
-        total_time = Time.now.to_i - start_time
-        @logger.info("Build total duration : #{total_time} secs")
-        @logger.info("Build total duration : #{total_time} secs")
       end
     end
 

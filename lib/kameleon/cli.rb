@@ -72,8 +72,15 @@ module Kameleon
                   :desc => "force the build"
     def build(recipe_name)
       logger.info("Starting build recipe '#{recipe_name}'")
+      start_time = Time.now.to_i
       recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
       Kameleon::Engine.new(Recipe.new(recipe_path)).build
+      total_time = Time.now.to_i - start_time
+      logger.info("")
+      logger.info("Build recipe '#{recipe_name}' is completed !")
+      logger.info("Build total duration : #{total_time} secs")
+      logger.info("Build directory : #{Kameleon.env.build_path}")
+      logger.info("Kameleon log file : #{Kameleon.env.log_file}")
     end
 
     # Hack Thor to init Kameleon env soon
