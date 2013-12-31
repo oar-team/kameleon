@@ -6,13 +6,18 @@ module Kameleon
     EXIT_TIMEOUT = 60
 
     def initialize(cmd, shell_workdir, local_workdir, kwargs = {})
+      @logger = Log4r::Logger.new("kameleon::shell")
       @debug = kwargs[:debug].nil? ? false : true
       @cmd = cmd
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
-      shell_cmd = "mkdir -p #{@shell_workdir} && cd #{@shell_workdir} && bash"
-      program = "#{cmd} -c '#{shell_cmd}'"
-      super("program" => program, "debug" => @debug)
+      @shell_cmd = "#{@cmd} -c 'mkdir -p #{@shell_workdir} && cd #{@shell_workdir} && bash'"
+      super("debug" => @debug)
+      @logger.debug("Initialize shell (#{self})")
+      # Injecting all variables of the options and assign the variables
+      instance_variables.each do |v|
+        @logger.debug("  #{v} = #{instance_variable_get(v)}")
+      end
     end
 
     def fork_and_wait
@@ -44,11 +49,15 @@ module Kameleon
 
     private
 
+    def __popen3(*unused_args)
+      @process, stdout, stderr = fork("pipe")
+      return [@process.io.stdin, stdout, stderr]
+    end
+
     def fork(io)
-      # @logger.info("Starting process: #{@shell_cmd.inspect}")
+      @logger.debug("Starting process: #{@shell_cmd.inspect}")
       ChildProcess.posix_spawn = true
-      shell_cmd = "mkdir -p #{@shell_workdir} && cd #{@shell_workdir} && bash"
-      process = ChildProcess.build(@cmd, "-c", shell_cmd)
+      process = ChildProcess.build(*["bash", "-c", @shell_cmd])
       # Create the pipes so we can read the output in real time as
       # we execute the command.
       if io.eql? "pipe"
@@ -62,6 +71,8 @@ module Kameleon
         process.io.inherit!
       end
       process.cwd = @cwd
+      # # Detach from parent
+      # process.detach = true
       process.start
       # move to workdir
       # process.io.stdin << "mkdir -p #{@shell_workdir} && cd #{@shell_workdir}\n"
@@ -71,7 +82,7 @@ module Kameleon
         stderr_writer.close()
         return process, stdout, stderr
       else
-        return process
+        return process, $stdout, $stderr
       end
     end
 
