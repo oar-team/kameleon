@@ -13,7 +13,11 @@ module Kameleon
                  :desc => 'Change the kameleon current work directory. ' \
                           '(The folder containing your recipes folder).' \
                           ' Default : ./'
-
+    no_commands do
+      def logger
+        @logger ||= Log4r::Logger.new("kameleon::cli")
+      end
+    end
 
     method_option :template, :aliases => "-t",
                   :desc => "Starting from a template",
@@ -24,8 +28,7 @@ module Kameleon
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
       # Create a logger right away
-      @logger = Log4r::Logger.new("kameleon::cli")
-      @logger.info("Cloning template '#{options[:template]}'")
+      logger.info("Cloning template '#{options[:template]}'")
       templates_path = Kameleon.env.templates_path
       recipes_path = Kameleon.env.recipes_path
       template_path = File.join(templates_path, options[:template]) + '.yaml'
@@ -47,21 +50,19 @@ module Kameleon
         FileUtils.mkdir_p recipes_path
         FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_path)
       end
-      @logger.info("New recipe \"#{recipe_name}\" as been created in #{recipes_path}")
+      logger.info("New recipe \"#{recipe_name}\" as been created in #{recipes_path}")
     end
 
     desc "list", "Lists all defined templates"
     def list
       # TODO: Lists all defined templates
-      @logger = Log4r::Logger.new("kameleon::cli")
-      @logger.error("Not implemented command")
+      logger.fatal("Not implemented command")
     end
     map "-L" => :list
 
     desc "version", "Prints the Kameleon's version information"
     def version
-      @logger = Log4r::Logger.new("kameleon::cli")
-      @logger.info("Kameleon version #{Kameleon::VERSION}")
+      puts "Kameleon version #{Kameleon::VERSION}"
     end
     map %w(-v --version) => :version
 
@@ -70,8 +71,7 @@ module Kameleon
                   :default => false, :aliases => "-f",
                   :desc => "force the build"
     def build(recipe_name)
-      @logger = Log4r::Logger.new("kameleon::cli")
-      @logger.info("Starting build recipe '#{recipe_name}'")
+      logger.info("Starting build recipe '#{recipe_name}'")
       recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
       Kameleon::Engine.new(Recipe.new(recipe_path)).build
     end
@@ -122,9 +122,7 @@ module Kameleon
                                                     :filename => 'kameleon.log')
       logger.level = level
       logger = nil
-      # Create a logger right away
-      logger = Log4r::Logger.new("kameleon::cli")
-      logger.debug("`kameleon` invoked: #{ARGV.inspect}")
+      Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
     end
 
     def self.start(given_args=ARGV, config={})
