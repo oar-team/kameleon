@@ -129,7 +129,7 @@ module Kameleon
     end
 
     def do_setup
-      @logger.info("Building external context [OUT]")
+      @logger.info("Building internal context [IN]")
       @in_context = Context.new("IN",
                                 @recipe.global["in_context"]["cmd"],
                                 @recipe.global["in_context"]["workdir"],

@@ -99,20 +99,20 @@ module Kameleon
                             "Please use one of the standard log levels: debug," \
                             " info, warn, or error"
       end
+      format = Log4r::PatternFormatter.new(:pattern => '%d %5l [%6c]: %M')
       if !$stdout.tty? or options.no_color
-        console_output = Log4r::Outputter.stdout
+        console_output = Log4r::StdoutOutputter.new('console',
+                                                    :formatter => format)
       else
-        console_output = Log4r::ColorOutputter.new 'console', {:colors =>
-          {
-            :debug  => :white,
-            :info   => :green,
-            :warn   => :yellow,
-            :error  => :red,
-            :fatal  => {:color => :red, :background => :white}
-          }
-        }
+        console_output = Log4r::ColorOutputter.new 'console', {
+          :colors => { :debug  => :white,
+                       :info   => :green,
+                       :warn   => :yellow,
+                       :error  => :red,
+                       :fatal  => {:color => :red, :background => :white}},
+          :formatter => format,
+      }
       end
-
       logger = Log4r::Logger.new('kameleon')
       logger.outputters << console_output
       logger.outputters << Log4r::FileOutputter.new('logfile',

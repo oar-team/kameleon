@@ -3,7 +3,7 @@ require 'kameleon/shell'
 module Kameleon
   class Context
     def initialize(name, cmd, workdir, exec_prefix, local_workdir)
-      @logger = Log4r::Logger.new("kameleon::#{name.downcase}_context")
+      @logger = Log4r::Logger.new("kameleon::#{name.downcase}_ctx")
       @cmd = cmd
       @name = name
       @workdir = workdir
