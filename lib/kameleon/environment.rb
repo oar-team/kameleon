@@ -8,6 +8,7 @@ module Kameleon
     attr_accessor :templates_path
     attr_accessor :recipes_path
     attr_accessor :build_path
+    attr_accessor :log_file
 
     # Hash element of all recipes available
     attr_accessor :recipes
@@ -25,6 +26,7 @@ module Kameleon
         :templates_path => Pathname.new(File.join(Kameleon.source_root, 'templates')),
         :recipes_path => Pathname.new(File.join(workspace, "recipes")),
         :build_path => Pathname.new(File.join(workspace, "builds")),
+        :log_file => Pathname.new(File.join(workspace, "kameleon.log"))
       }
 
       options = defaults.merge(options)

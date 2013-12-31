@@ -117,9 +117,10 @@ module Kameleon
       end
       logger = Log4r::Logger.new('kameleon')
       logger.outputters << console_output
+      log_file = File.join(workspace, "kameleon.log")
       logger.outputters << Log4r::FileOutputter.new('logfile',
                                                     :trunc=>false,
-                                                    :filename => 'kameleon.log')
+                                                    :filename => log_file)
       logger.level = level
       logger = nil
       Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
