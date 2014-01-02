@@ -9,7 +9,7 @@ module Kameleon
 
     # define section constant
     class Section < Utils::OrderedHash
-      attr_accessor :clean
+      attr_accessor :clean, :init
 
       BOOTSTRAP="bootstrap"
       SETUP="setup"
@@ -24,8 +24,10 @@ module Kameleon
 
       def initialize()
         @clean = {}
+        @init = {}
         Section::sections.each do |name|
           @clean[name] = Macrostep::Microstep.new({"clean_#{name}"=> []})
+          @init[name] = Macrostep::Microstep.new({"init_#{name}"=> []})
         end
         super
       end
@@ -70,8 +72,8 @@ module Kameleon
       @global.merge!@system_global
       #Find and load steps
       Section.sections.each do |section_name|
+        @sections[section_name] = []
         if yaml_recipe.key? section_name
-          @sections[section_name] = []
           yaml_recipe.fetch(section_name).each do |macrostep_yaml|
             macrostep_instance = load_macrostep(macrostep_yaml, section_name)
             # save the macrostep in the section

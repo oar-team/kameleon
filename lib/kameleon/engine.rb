@@ -20,11 +20,19 @@ module Kameleon
     end
 
     def do_steps(section_name)
-      unless @recipe.sections.key?(section_name)
-        @logger.warn("Missing #{section_name} section. Skip")
-        return
+      @logger.info("Initializing #{section_name} section")
+      @recipe.sections.init.fetch(section_name).each do |cmd|
+        finished = false
+        begin
+          exec_cmd(cmd)
+          finished = true
+        rescue ExecError
+          finished = rescue_exec_error(cmd)
+        end until finished
       end
-      @logger.info("[section] #{section_name}")
+      if @recipe.sections.fetch(section_name).empty?
+        @logger.warn("Section #{section_name} is empty.")
+      end
       @recipe.sections.fetch(section_name).each do |macrostep|
         begin
           @logger.info("[macrostep] #{macrostep.name}")
@@ -36,17 +44,7 @@ module Kameleon
                 exec_cmd(cmd)
                 finished = true
               rescue ExecError
-                answer = rescue_exec_error(cmd)
-                if answer.eql? "a"
-                  raise AbortError, "Execution aborted..."
-                elsif answer.eql? "c"
-                  ## resetting the exit status
-                  @in_context.execute("true") unless @in_context.nil?
-                  @out_context.execute("true") unless @out_context.nil?
-                  finished = true
-                elsif answer.eql? "r"
-                  @logger.info("Retrying the previous command...")
-                end
+                finished = rescue_exec_error(cmd)
               end until finished
             end
           end
@@ -89,13 +87,24 @@ module Kameleon
         answer = $stdin.gets.chomp
         if responses.keys.include?(answer)
           @logger.info("User choice : [#{answer}] #{responses[answer]}")
-          return answer unless ["o", "i"].include?(answer)
-          if answer.eql? "o"
-            @out_context.start_shell
-          else
-            @in_context.start_shell
+          if ["o", "i"].include?(answer)
+            if answer.eql? "o"
+              @out_context.start_shell
+            else
+              @in_context.start_shell
+            end
+            @logger.info("Getting back to Kameleon ...")
+          elsif answer.eql? "a"
+            raise AbortError, "Execution aborted..."
+          elsif answer.eql? "c"
+            ## resetting the exit status
+            @in_context.execute("true") unless @in_context.nil?
+            @out_context.execute("true") unless @out_context.nil?
+            return true
+          elsif answer.eql? "r"
+            @logger.info("Retrying the previous command...")
+            return false
           end
-          @logger.info("Getting back to Kameleon ...")
         end
       end
     end
@@ -103,7 +112,7 @@ module Kameleon
     def do_clean(section_name, fail_silent=false)
       unless @cleaned_sections.include?(section_name)
         begin
-          @logger.info("Cleaning #{section_name}")
+          @logger.info("Cleaning #{section_name} section")
           @recipe.sections.clean.fetch(section_name).each do |cmd|
             begin
               exec_cmd(cmd)

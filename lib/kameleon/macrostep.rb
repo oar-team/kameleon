@@ -58,15 +58,20 @@ module Kameleon
     attr_accessor :path, :clean, :microsteps, :variables, :name
 
     def initialize(path, args, recipe)
+      @logger = Log4r::Logger.new("kameleon::recipe")
       @recipe = recipe
       @variables = recipe.global.clone
       @microsteps = []
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
       @clean = Microstep.new({"clean_#{@name}"=> []})
+      @init = Microstep.new({"init_#{@name}"=> []})
+
+      @logger.info("Loading YAML file : #{@path}")
       yaml_microsteps = YAML.load_file(@path)
       if not yaml_microsteps.kind_of? Array
-        fail ReciepeError, "The macrostep #{path} is not valid (should be a list of microsteps)"
+        fail ReciepeError, "The macrostep #{path} is not valid "
+                           "(should be a list of microsteps)"
       end
       yaml_microsteps.each{ |yaml_microstep|
         @microsteps.push Microstep.new(yaml_microstep)
@@ -99,6 +104,7 @@ module Kameleon
 
     # :return: the microstep in this macrostep by name
     def find_microstep(microstep_name)
+      @logger.info("Searching macrostep  : #{microstep_name}")
       @microsteps.each do |microstep|
         if microstep_name.eql? microstep.name
           return microstep
@@ -112,18 +118,24 @@ module Kameleon
     def resolve!()
 
       #handle clean methods
-      def resolve_clean(cmd)
-        unless (cmd.key =~ /on_(.*)clean/)
+      def resolve_hooks(cmd)
+        unless (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
           #Not a clean command
           return cmd
         end
         if cmd.key.eql? "on_clean"
           @clean.append cmd.value
           return
+        elsif cmd.key.eql? "on_init"
+          @init.append cmd.value
+          return
         else
           Recipe::Section.sections.each do |section|
-            if cmd.key.include? section
+            if cmd.key.eql? "on_#{section}_clean"
               @recipe.sections.clean[section].append cmd.value
+              return
+            elsif cmd.key.eql? "on_#{section}_init"
+              @recipe.sections.init[section].append cmd.value
               return
             end
           end
@@ -131,10 +143,11 @@ module Kameleon
         fail RecipeError, "Invalid clean command : '#{cmd.key}'"
       end
 
+      @logger.info("Loading hooks from macrostep #{@name}")
       @microsteps.each do |microstep|
         microstep.commands.map! do |cmd|
           cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd, @path, @variables)
-          resolve_clean(cmd)
+          resolve_hooks(cmd)
         end
       end
       # remove nil values
