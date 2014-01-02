@@ -39,7 +39,6 @@ module Kameleon
       @name = (@path.basename ".yaml").to_s
       @sections = Section.new
       @required_global = %w(distrib out_context in_context)
-      @default_global = { "requirements" => "" }
       kameleon_id = SecureRandom.uuid
       @system_global = {
         "kameleon_uuid" => kameleon_id,
@@ -48,11 +47,12 @@ module Kameleon
       }
       @global = {}
       @logger.debug("Initialize new recipe (#{path})")
-      @logger.debug("Instance variable before load")
-      instance_variables.each do |v|
-        @logger.debug("  #{v} = #{instance_variable_get(v)}")
-      end
       load!
+      # TODO: Prints fancy dump
+      # @logger.debug("Instance variables")
+      # instance_variables.each do |v|
+      #   @logger.debug("  #{v} = #{instance_variable_get(v)}")
+      # end
     end
 
     def load!
@@ -65,10 +65,7 @@ module Kameleon
       fail RecipeError, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
 
       #Load Global variables
-      @global.merge!@default_global.merge(yaml_recipe.fetch("global"))
-      # Make an object list from a string comma (or space) separated list
-      @global["requirements"] = @global["requirements"].split(%r{,\s*})\
-                                                       .map(&:split).flatten
+      @global.merge!(yaml_recipe.fetch("global"))
       @global.merge!@system_global
       #Find and load steps
       Section.sections.each do |section_name|
@@ -83,10 +80,6 @@ module Kameleon
       end
       # Resolve dynamically-defined variables !!
       @global.merge! YAML.load(Utils.resolve_vars(YAML.dump(@global), @path, @global))
-      @logger.debug("Instance variable after load")
-      instance_variables.each do |v|
-        @logger.debug("  #{v} = #{instance_variable_get(v)}")
-      end
     end
 
     def load_macrostep(raw_macrostep, section_name)

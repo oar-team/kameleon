@@ -4,7 +4,7 @@ module Kameleon
   class KameleonError < ::StandardError
     attr_accessor :object
 
-    def initialize(message = nil, object = nil)
+    def initialize(message=nil, object=nil)
       super(message)
       self.object = object
     end
@@ -41,8 +41,8 @@ module Kameleon
     exit 1
   rescue Exception => e
     $stderr << "Unfortunately, a fatal error has occurred : "\
-               "#{e.message}\n#{e.backtrace.join("\n")}\n" \
-               "Use --debug option for more details"
+               "#{e.message}.\nUse --debug option for more details\n"
+    Kameleon.logger.debug("#{e.backtrace.join("\n")}")
     exit 666
   end
 end

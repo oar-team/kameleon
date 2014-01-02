@@ -83,7 +83,7 @@ module Kameleon
       responses.merge!({"o" => "launch out_context"}) unless @out_context.nil?
       responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
       while true
-        @logger.info(msg)
+        @logger.error(msg)
         answer = $stdin.gets.chomp
         if responses.keys.include?(answer)
           @logger.info("User choice : [#{answer}] #{responses[answer]}")
@@ -134,8 +134,6 @@ module Kameleon
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
       end
-      @local_context = LocalContext.new("local", @cwd)
-      check_requirements
       begin
         @logger.info("Building external context [OUT]")
         @out_context = Context.new("OUT",
@@ -164,15 +162,5 @@ module Kameleon
         raise e
       end
     end
-
-    def check_requirements
-      requires = @recipe.global["requirements"]
-      @logger.info("Checking recipe requirements : #{requires.join ' '}")
-      missings = requires.map { |cmd| cmd unless @local_context.check_cmd(cmd)}
-      missings.compact!
-      fail BuildError, "Missing recipe requirements : #{missings.join ' '}" \
-           unless missings.empty?
-    end
-
   end
 end

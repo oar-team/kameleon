@@ -26,9 +26,6 @@ global:
   # Distribution
   distrib: debian
 
-  # Set required programs that will be used in the recipe
-  requirements: chroot debootstrap
-
   # Shell session from what we launch exec_out commands. There is often a local
   # bash session, but it can be a remote shell on other machines or on any
   # shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
@@ -41,7 +38,6 @@ global:
   in_context:
     - cmd: env -i USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=POSIX chroot $$rootfs bash
     - workdir: /
-    - exec_prefix: DEBIAN_FRONTEND=noninteractive
 
 #== Bootstrap the new system and create context
 bootstrap:
