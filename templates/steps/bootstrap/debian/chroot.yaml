@@ -2,7 +2,7 @@
 - debootstrap:
   - on_bootstrap_init:
     - exec_out: export DEBIAN_FRONTEND=noninteractive
-  - check_cmd: debootstrap
+  - check_cmd_out: debootstrap chroot
   - exec_out: mkdir -p $(dirname "$$archive_file")
   - exec_out: mkdir -p "$$rootfs"
   - exec_out: test ! -f "$$archive_file" || tar zxf "$$archive_file" -C "$$rootfs"

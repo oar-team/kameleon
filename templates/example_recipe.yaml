@@ -46,7 +46,7 @@ bootstrap:
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
     - archive_file: $$cachedir/$$distrib/$$version_name/$$arch/debootstrap.tar.gz
-    - include: locales less vim bash-completion zip unzip rsync sudo
+    - include: openssh-server locales less vim bash-completion zip unzip rsync sudo
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the build context (whenever
@@ -54,7 +54,7 @@ bootstrap:
 setup:
   # Install
   - software_install:
-    - packages: "openssh-server debian-keyring ntp"
+    - packages: "debian-keyring ntp"
   - kernel_install:
     - arch: $$arch
   # Configuration

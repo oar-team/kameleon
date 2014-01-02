@@ -49,16 +49,8 @@ module Kameleon
     def reopen
       @shell.restart
     end
-
-    def check_cmd(cmd)
-      @logger.debug("check cmd #{cmd}")
-      shell_cmd = "command -v #{cmd} >/dev/null 2>&1"
-      execute(shell_cmd)
-      true
-    rescue ExecError
-      false
-    end
   end
+
   class LocalContext < Context
     def initialize(name, local_workdir)
       super(name, "bash", local_workdir, "", local_workdir)

@@ -26,7 +26,6 @@ module Kameleon
     yield
   rescue Kameleon::KameleonError => e
     Kameleon.logger.fatal("#{e.message}")
-    Kameleon.logger.debug("#{e.backtrace.join("\n")}")
     exit e.status_code
   rescue Thor::UndefinedTaskError => e
     Kameleon.logger.fatal("#{e.message}")

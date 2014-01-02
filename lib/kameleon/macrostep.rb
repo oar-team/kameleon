@@ -45,6 +45,10 @@ module Kameleon
         cmd_list.each {|cmd| @commands.push Command.new(cmd)}
       end
 
+      def push(cmd_string)
+        @commands.push Command.new(cmd_string)
+      end
+
       def each(&block)
         @commands.each(&block)
       end
@@ -116,38 +120,58 @@ module Kameleon
 
     # Resolve macrosteps variable
     def resolve!()
-
       #handle clean methods
       def resolve_hooks(cmd)
-        unless (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
-          #Not a clean command
-          return cmd
-        end
-        if cmd.key.eql? "on_clean"
-          @clean.append cmd.value
-          return
-        elsif cmd.key.eql? "on_init"
-          @init.append cmd.value
-          return
-        else
-          Recipe::Section.sections.each do |section|
-            if cmd.key.eql? "on_#{section}_clean"
-              @recipe.sections.clean[section].append cmd.value
-              return
-            elsif cmd.key.eql? "on_#{section}_init"
-              @recipe.sections.init[section].append cmd.value
-              return
+        if (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
+          if cmd.key.eql? "on_clean"
+            @clean.append cmd.value
+            return
+          elsif cmd.key.eql? "on_init"
+            @init.append cmd.value
+            return
+          else
+            Recipe::Section.sections.each do |section|
+              if cmd.key.eql? "on_#{section}_clean"
+                @recipe.sections.clean[section].append cmd.value
+                return
+              elsif cmd.key.eql? "on_#{section}_init"
+                @recipe.sections.init[section].append cmd.value
+                return
+              end
             end
           end
+          fail RecipeError, "Invalid clean command : '#{cmd.key}'"
+        else
+          return cmd
         end
-        fail RecipeError, "Invalid clean command : '#{cmd.key}'"
       end
 
-      @logger.info("Loading hooks from macrostep #{@name}")
+      def resolve_check_cmd(cmd)
+        if %w(check_cmd_out check_cmd_in).include?(cmd.key)
+          section_name = cmd.key.include?("in") ? "setup" : "bootstrap"
+          cmd_key = "exec_#{cmd.key.gsub("check_cmd_", "")}"
+          names = cmd.value.split(%r{,\s*}).map(&:split).flatten
+          names.each do |name|
+            shell_cmd = "command -V #{name} ||" \
+                        "echo 1>&2 '#{name} is missing' | false"
+            @recipe.sections.init[section_name].push({cmd_key => shell_cmd})
+          end
+          return
+        else
+          return cmd
+        end
+      end
+      # resolve and strip check_cmd_in/out hooks
       @microsteps.each do |microstep|
         microstep.commands.map! do |cmd|
           cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd, @path, @variables)
-          resolve_hooks(cmd)
+          resolve_check_cmd(cmd)
+        end
+      end
+      # resolve and strip other hooks
+      @microsteps.each do |microstep|
+        microstep.commands.map! do |cmd|
+          resolve_hooks(cmd) unless cmd.nil?
         end
       end
       # remove nil values
