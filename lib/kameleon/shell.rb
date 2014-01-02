@@ -4,6 +4,7 @@ require 'kameleon/utils'
 module Kameleon
   class Shell < Session::Bash
     EXIT_TIMEOUT = 60
+    READ_CHUNK_SIZE = 1048576
 
     def initialize(cmd, shell_workdir, local_workdir, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::shell")

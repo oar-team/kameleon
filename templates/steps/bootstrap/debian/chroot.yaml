@@ -16,7 +16,6 @@
   - exec_out: mount -o bind /sys  $$rootfs/sys
   - on_setup_init:
     - exec_in: export DEBIAN_FRONTEND=noninteractive
-    - exec_in: false
   - on_export_clean:
     - exec_out: echo "umount $$rootfs/sys..." ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
     - exec_out: echo "umount $$rootfs/proc..." ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true

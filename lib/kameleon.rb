@@ -9,6 +9,7 @@ require 'thor'
 require 'childprocess'
 require 'session'
 require 'log4r-color'
+require 'ruby-progressbar'
 
 # Load the things which must be loaded before anything else
 require 'kameleon/utils'

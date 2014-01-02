@@ -21,15 +21,34 @@ module Kameleon
                           "\n#{e}"
     end
 
-    def execute(cmd)
+    def execute(cmd, kwargs = {})
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       @logger.debug("Executing : #{cmd_with_prefix}")
-      @shell.execute(cmd_with_prefix) do |out, err|
-        @logger.info out.chomp("\n") unless out.nil?
-        @logger.error err.chomp("\n") unless err.nil?
+      @shell.execute(cmd_with_prefix, kwargs) do |out, err|
+        @logger.info out.chomp("\n") unless out.nil? || kwargs[:stdout]
+        @logger.error err.chomp("\n") unless err.nil? || kwargs[:stderr]
       end
       @logger.debug("exit status : #{@shell.exit_status}")
       fail ExecError unless @shell.get_status.eql? 0
+    end
+
+    def pipe(cmd, remote_cmd, remote_context)
+      progressbar = ProgressBar.create(:title => "Forwaring pipe",
+                                       :total => nil)
+      tempfile = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd) }")
+      execute(cmd, :stdout => tempfile)
+      tempfile.close
+      progressbar.total = 100
+
+      dest_pipename = "./pipe-#{ Kameleon::Utils.generate_slug(remote_cmd) }"
+      # binding.pry
+      remote_context.send_file(tempfile.path, dest_pipename) do |p|
+        progressbar.progress = p
+      end
+      progressbar.finish
+      remote_cmd_with_pipe = "cat #{dest_pipename} |" \
+                             " #{remote_cmd} && rm #{dest_pipename}"
+      remote_context.execute(remote_cmd_with_pipe)
     end
 
     def start_shell
@@ -48,6 +67,12 @@ module Kameleon
 
     def reopen
       @shell.restart
+    end
+
+    def send_file(source_path, dest_path)
+      @shell.send_file(source_path, dest_path) do |p|
+        yield p
+      end
     end
   end
 

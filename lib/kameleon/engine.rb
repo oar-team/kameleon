@@ -58,18 +58,40 @@ module Kameleon
     end
 
     def exec_cmd(cmd)
+      def skip_alert(cmd)
+        @logger.warn("Skipping cmd '#{cmd.string_cmd}'. The in_context is" \
+                     " not ready yet")
+      end
       case cmd.key
       when "exec_in"
-        if @in_context.nil?
-          @logger.warn("Skipping cmd '#{cmd.string_cmd}'. The in_context is" \
-                       " not ready yet")
-        else
-          @in_context.execute(cmd.value)
-        end
+        skip_alert(cmd) if @in_context.nil?
+        @in_context.execute(cmd.value) unless @in_context.nil?
       when "exec_out"
         @out_context.execute(cmd.value)
+      when "pipe"
+        if ((cmd.value[0].keys == "exec_in" || cmd.value[1].keys == "exec_in")\
+             && @in_context.nil?)
+          skip_alert(cmd)
+        else
+          unknown_cmd = false
+          key1, key2 = cmd.value[0].keys[0], cmd.value[1].keys[0]
+          [key1, key2].each do |cmd_key|
+            unless ["exec_in", "exec_out"].include?(cmd_key)
+              @logger.warn("Unknown command : #{cmd_key}")
+              unknown_cmd = true
+            end
+          end
+          unless unknown_cmd
+            local_cmd = cmd.value[0].values[0]
+            remote_cmd = cmd.value[1].values[0]
+            map = {"exec_in" => @in_context, "exec_out" => @out_context}
+            local_context = map[key1]
+            remote_context = map[key2]
+            local_context.pipe(local_cmd, remote_cmd, remote_context)
+          end
+        end
       else
-        @logger.warn("Unknow command : #{cmd.key}")
+        @logger.warn("Unknown command : #{cmd.key}")
       end
     end
 
@@ -83,7 +105,7 @@ module Kameleon
       responses.merge!({"o" => "launch out_context"}) unless @out_context.nil?
       responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
       while true
-        @logger.error(msg)
+        @logger.info(msg)
         answer = $stdin.gets
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!

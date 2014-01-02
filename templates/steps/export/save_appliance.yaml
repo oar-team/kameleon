@@ -1,7 +1,11 @@
 # # Save Chroot Appliance
 
 - save_as_tgz:
-  - exec_out: echo "TODO export !"
+  - pipe:
+    - exec_out: echo "TODO export !"
+    - exec_in: cat
+
+  # - exec_out: echo "TODO export !"
       # tar -zcf $$distrib\_$$arch.tar.gz -C $$rootfs . \
       #   --numeric-owner --one-file-system --exclude=tmp/*
 

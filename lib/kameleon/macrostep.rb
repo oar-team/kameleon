@@ -71,7 +71,6 @@ module Kameleon
       @clean = Microstep.new({"clean_#{@name}"=> []})
       @init = Microstep.new({"init_#{@name}"=> []})
 
-      @logger.info("Loading YAML file : #{@path}")
       yaml_microsteps = YAML.load_file(@path)
       if not yaml_microsteps.kind_of? Array
         fail ReciepeError, "The macrostep #{path} is not valid "
@@ -108,7 +107,7 @@ module Kameleon
 
     # :return: the microstep in this macrostep by name
     def find_microstep(microstep_name)
-      @logger.info("Searching macrostep  : #{microstep_name}")
+      @logger.info("Looking for macrostep  : #{microstep_name}")
       @microsteps.each do |microstep|
         if microstep_name.eql? microstep.name
           return microstep
