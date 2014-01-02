@@ -159,12 +159,8 @@ module Kameleon
         ["bootstrap", "setup", "export"].each do |section_name|
           do_clean(section_name, true)
         end
-        begin
-          @out_context.close! unless @out_context.nil?
-          @in_context.close! unless @in_context.nil?
-          @local.close! unless @local.nil?
-        rescue Errno::EPIPE, Exception
-        end
+        @out_context.close! unless @out_context.nil?
+        @in_context.close! unless @in_context.nil?
         raise e
       end
     end

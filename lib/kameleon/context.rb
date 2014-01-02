@@ -42,6 +42,10 @@ module Kameleon
       @shell.exited?
     end
 
+    def close!
+      @shell.stop
+    end
+
     def reopen
       @shell.restart
     end
