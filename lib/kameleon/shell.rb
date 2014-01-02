@@ -51,6 +51,10 @@ module Kameleon
       @process.exited?
     end
 
+    def stop
+      @process.stop
+    end
+
     def restart
       @process.stop unless exited?
       @stdin, @stdout, @stderr = __popen3
@@ -63,10 +67,24 @@ module Kameleon
       return [@process.io.stdin, stdout, stderr]
     end
 
+    def send_command cmd
+      stdin.printf "%s '%s' 1>&2 ;", ECHO, cmd.begin_err
+      stdin.printf "%s '%s' ;", ECHO, cmd.begin_out
+
+      stdin.printf "%s ;", cmd.cmd
+      stdin.printf "export __exit_status__=$? ;"
+
+      stdin.printf "%s '%s' 1>&2 ;", ECHO, cmd.end_err
+      stdin.printf "%s '%s' \n", ECHO, cmd.end_out
+
+      stdin.flush
+    end
+
     def fork(io)
       @logger.debug("Starting process: #{@shell_cmd.inspect}")
       ChildProcess.posix_spawn = true
       process = ChildProcess.build(*["bash", "-c", @shell_cmd])
+
       # Create the pipes so we can read the output in real time as
       # we execute the command.
       if io.eql? "pipe"
@@ -76,16 +94,17 @@ module Kameleon
         process.io.stderr = stderr_writer
         # sets up pipe so process.io.stdin will be available after .start
         process.duplex = true
+
       elsif io.eql? "inherit"
         process.io.inherit!
       end
+
+      # move to workdir
       process.cwd = @cwd
       # # Detach from parent
       # process.detach = true
       process.start
-      # move to workdir
-      # process.io.stdin << "mkdir -p #{@shell_workdir} && cd #{@shell_workdir}\n"
-      # process.io.stdin.flush
+
       if io.eql? "pipe"
         stdout_writer.close()
         stderr_writer.close()
