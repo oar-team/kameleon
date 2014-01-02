@@ -87,6 +87,7 @@ module Kameleon
     def self.init(base_config)
       options = base_config[:shell].base.options
       workspace ||= options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
+      FileUtils.mkdir_p workspace
       # Update env
       env_options = options.merge({:workspace => workspace})
       Kameleon.env = Kameleon::Environment.new(env_options)
@@ -108,7 +109,7 @@ module Kameleon
                             "Please use one of the standard log levels: debug," \
                             " info, warn, or error"
       end
-      format = Log4r::PatternFormatter.new(:pattern => '%d %5l [%6c]: %M')
+      format = Log4r::PatternFormatter.new(:pattern => '%d %5l [%c]: %M')
       if !$stdout.tty? or options.no_color
         console_output = Log4r::StdoutOutputter.new('console',
                                                     :formatter => format)
