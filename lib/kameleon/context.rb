@@ -38,6 +38,14 @@ module Kameleon
       @shell.fork_and_wait
     end
 
+    def closed?
+      @shell.exited?
+    end
+
+    def reopen
+      @shell.restart
+    end
+
     def check_cmd(cmd)
       @logger.debug("check cmd #{cmd}")
       shell_cmd = "command -v #{cmd} >/dev/null 2>&1"

@@ -128,8 +128,6 @@ module Kameleon
       @local_context = LocalContext.new("local", @cwd)
       check_requirements
       begin
-        # Ignore the signal trap
-        Signal.trap("INT", "IGNORE")
         @logger.info("Building external context [OUT]")
         @out_context = Context.new("OUT",
                                    @recipe.global["out_context"]["cmd"],
@@ -146,6 +144,8 @@ module Kameleon
         do_steps("setup")
         do_steps("export")
       rescue Exception => e
+        @out_context.reopen if !@out_context.nil? && @out_context.closed?
+        @in_context.reopen if !@in_context.nil? && @in_context.closed?
         @logger.warn("Waiting for cleanup before exiting...")
         ["bootstrap", "setup", "export"].each do |section_name|
           do_clean(section_name, true)

@@ -47,6 +47,15 @@ module Kameleon
       process.poll_for_exit(EXIT_TIMEOUT)
     end
 
+    def exited?
+      @process.exited?
+    end
+
+    def restart
+      @process.stop unless exited?
+      @stdin, @stdout, @stderr = __popen3
+    end
+
     private
 
     def __popen3(*unused_args)
