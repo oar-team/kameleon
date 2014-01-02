@@ -84,7 +84,9 @@ module Kameleon
       responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
       while true
         @logger.error(msg)
-        answer = $stdin.gets.chomp
+        answer = $stdin.gets
+        raise AbortError, "Execution aborted..." if answer.nil?
+        answer.chomp!
         if responses.keys.include?(answer)
           @logger.info("User choice : [#{answer}] #{responses[answer]}")
           if ["o", "i"].include?(answer)
