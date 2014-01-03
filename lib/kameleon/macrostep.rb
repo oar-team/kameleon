@@ -16,6 +16,9 @@ module Kameleon
           object = YAML.load(@string_cmd)
           object = object[0] if object.kind_of? Array
           object.keys[0]
+        rescue
+          raise RecipeError, "Invalid recipe syntax : '#{@string_cmd.inspect}'"\
+                             " must be Array or Hash"
         end
 
         def value
