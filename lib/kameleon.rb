@@ -7,7 +7,6 @@ require 'tempfile'
 require 'pp'
 require 'thor'
 require 'childprocess'
-require 'session'
 require 'log4r-color'
 require 'ruby-progressbar'
 
