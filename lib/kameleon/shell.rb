@@ -56,9 +56,9 @@ module Kameleon
     end
 
     def send_command cmd
-      shell_cmd = "#{ ECHO_CMD } -n #{ cmd.begin_err } 1>&2 ;\n"
+      shell_cmd = "#{ ECHO_CMD } -n #{ cmd.begin_err } 1>&2\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.begin_out }\n"
-      shell_cmd << "#{ cmd.value } ;\nexport __exit_status__=$? ;\n"
+      shell_cmd << "#{ cmd.value }\nexport __exit_status__=$?\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_err } 1>&2\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_out }\n"
       @process.io.stdin.puts shell_cmd
