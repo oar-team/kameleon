@@ -177,12 +177,14 @@ module Kameleon
       rescue Exception => e
         @out_context.reopen if !@out_context.nil? && @out_context.closed?
         @in_context.reopen if !@in_context.nil? && @in_context.closed?
-        @logger.warn("Waiting for cleanup before exiting...")
-        ["bootstrap", "setup", "export"].each do |section_name|
-          do_clean(section_name, true)
+        unless @out_context.nil? and @in_context.nil?
+          @logger.warn("Waiting for cleanup before exiting...")
+          ["bootstrap", "setup", "export"].each do |section_name|
+            do_clean(section_name, true)
+          end
+          @out_context.close! unless @out_context.nil?
+          @in_context.close! unless @in_context.nil?
         end
-        @out_context.close! unless @out_context.nil?
-        @in_context.close! unless @in_context.nil?
         raise e
       end
     end
