@@ -18,20 +18,22 @@ module Kameleon
       instance_variables.each do |v|
         @logger.debug("  #{v} = #{instance_variable_get(v)}")
       end
-    rescue ShellError => e
-      raise ContextError, "Error occured when initializing '#{name}_context'."
-                          "\n#{e}"
+      # Start the shell process
+      @shell.start
     end
 
     def execute(cmd, kwargs = {})
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       @logger.debug("Executing : #{cmd_with_prefix}")
-      @shell.execute(cmd_with_prefix, kwargs) do |out, err|
+      exit_status = @shell.execute(cmd_with_prefix, kwargs) do |out, err|
         out.split( /\r?\n/ ).each {|m| @logger.info m } unless out.nil?
         err.split( /\r?\n/ ).each {|m| @logger.error m } unless err.nil?
       end
-      @logger.debug("exit status : #{@shell.exit_status}")
-      fail ExecError unless @shell.get_status.eql? 0
+      @logger.debug("Exit status : #{exit_status}")
+      fail ExecError unless exit_status.eql? 0
+    rescue ShellError => e
+      @logger.error(e.message)
+      fail ExecError
     end
 
     def pipe(cmd, remote_cmd, remote_context)
