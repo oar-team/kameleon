@@ -29,7 +29,7 @@ module Kameleon
     attr_writer :logger, :env
 
     def logger
-      @logger ||= Log4r::Logger.new("kameleon::global")
+      @logger ||= Log4r::Logger.new("kameleon::[global]")
     end
 
     def env

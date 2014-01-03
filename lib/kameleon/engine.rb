@@ -9,7 +9,7 @@ module Kameleon
 
   class Engine
     def initialize(recipe)
-      @logger = Log4r::Logger.new("kameleon::engine")
+      @logger = Log4r::Logger.new("kameleon::[engine]")
       @recipe = recipe
       @recipe.check
       @recipe.resolve!

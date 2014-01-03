@@ -2,16 +2,18 @@ require 'kameleon/shell'
 
 module Kameleon
   class Context
+
+    attr_accessor :shell, :name
+
     def initialize(name, cmd, workdir, exec_prefix, local_workdir)
-      @logger = Log4r::Logger.new("kameleon::#{name.downcase}_ctx")
+      @name = name.downcase
+      @logger = Log4r::Logger.new("kameleon::[#{@name}_ctx]")
       @cmd = cmd
-      @name = name
       @workdir = workdir
       @exec_prefix = exec_prefix
       @local_workdir = local_workdir
       @shell = Kameleon::Shell.new(@cmd, @workdir, @local_workdir)
-
-      @logger.debug("Initialize new context (#{name})")
+      @logger.debug("Initialize new ctx (#{name})")
 
       instance_variables.each do |v|
         @logger.debug("  #{v} = #{instance_variable_get(v)}")
@@ -25,8 +27,8 @@ module Kameleon
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       @logger.debug("Executing : #{cmd_with_prefix}")
       @shell.execute(cmd_with_prefix, kwargs) do |out, err|
-        @logger.info out.chomp("\n") unless out.nil? || kwargs[:stdout]
-        @logger.error err.chomp("\n") unless err.nil? || kwargs[:stderr]
+        out.split( /\r?\n/ ).each {|m| @logger.info m } unless out.nil?
+        err.split( /\r?\n/ ).each {|m| @logger.error m } unless err.nil?
       end
       @logger.debug("exit status : #{@shell.exit_status}")
       fail ExecError unless @shell.get_status.eql? 0

@@ -34,7 +34,7 @@ module Kameleon
     end
 
     def initialize(path)
-      @logger = Log4r::Logger.new("kameleon::recipe")
+      @logger = Log4r::Logger.new("kameleon::[recipe]")
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
       @sections = Section.new

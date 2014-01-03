@@ -17,7 +17,7 @@ module Kameleon
     attr_accessor :templates
 
     def initialize(options = {})
-      @logger = Log4r::Logger.new("kameleon::environment")
+      @logger = Log4r::Logger.new("kameleon::[env]")
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = options[:workspace]
@@ -34,7 +34,7 @@ module Kameleon
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|
         instance_variable_set("@#{key}".to_sym, options[key])
-        @logger.debug(" - #{key} : #{options[key]}")
+        @logger.debug("  @#{key} : #{options[key]}")
       end
 
       # Definitions

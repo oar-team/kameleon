@@ -7,8 +7,8 @@ module Kameleon
     READ_CHUNK_SIZE = 1048576
 
     def initialize(cmd, shell_workdir, local_workdir, kwargs = {})
-      @logger = Log4r::Logger.new("kameleon::shell")
       @debug = kwargs[:debug].nil? ? false : true
+      @logger = Log4r::Logger.new("kameleon::[shell]")
       @cmd = cmd
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir

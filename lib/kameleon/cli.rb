@@ -15,7 +15,7 @@ module Kameleon
                           ' Default : ./'
     no_commands do
       def logger
-        @logger ||= Log4r::Logger.new("kameleon::cli")
+        @logger ||= Log4r::Logger.new("kameleon::[cli]")
       end
     end
 
@@ -88,9 +88,6 @@ module Kameleon
       options = base_config[:shell].base.options
       workspace ||= options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
       FileUtils.mkdir_p workspace
-      # Update env
-      env_options = options.merge({:workspace => workspace})
-      Kameleon.env = Kameleon::Environment.new(env_options)
       # configure logger
       ENV["KAMELEON_LOG"] = "debug" if options.debug
       if ENV["KAMELEON_LOG"] && ENV["KAMELEON_LOG"] != ""
@@ -109,7 +106,7 @@ module Kameleon
                             "Please use one of the standard log levels: debug," \
                             " info, warn, or error"
       end
-      format = Log4r::PatternFormatter.new(:pattern => '%d %5l [%c]: %M')
+      format = Log4r::PatternFormatter.new(:pattern => '%d %5l %9c: %M')
       if !$stdout.tty? or options.no_color
         console_output = Log4r::StdoutOutputter.new('console',
                                                     :formatter => format)
@@ -132,6 +129,9 @@ module Kameleon
       logger.level = level
       logger = nil
       Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
+      # Update env
+      env_options = options.merge({:workspace => workspace})
+      Kameleon.env = Kameleon::Environment.new(env_options)
     end
 
     def self.start(given_args=ARGV, config={})
