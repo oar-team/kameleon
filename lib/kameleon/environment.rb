@@ -10,11 +10,6 @@ module Kameleon
     attr_accessor :build_path
     attr_accessor :log_file
 
-    # Hash element of all recipes available
-    attr_accessor :recipes
-
-    # Hash element of all templates available
-    attr_accessor :templates
 
     def initialize(options = {})
       @logger = Log4r::Logger.new("kameleon::[env]")
@@ -36,12 +31,6 @@ module Kameleon
         instance_variable_set("@#{key}".to_sym, options[key])
         @logger.debug("  @#{key} : #{options[key]}")
       end
-
-      # Definitions
-      @recipes = nil
-      @templates = nil
-
-      return self
     end
   end
 end
