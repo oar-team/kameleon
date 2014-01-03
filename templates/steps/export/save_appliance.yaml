@@ -2,8 +2,9 @@
 
 - save_as_tgz:
   - pipe:
-    - exec_out: echo "TODO export !"
-    - exec_in: cat
+    - exec_in: tar -zcf - -C / . --numeric-owner --one-file-system --exclude=tmp/*
+    - exec_out: cat > ./$$kameleon_recipe_name.tar.gz
+  - exec_out: echo "Saved tar.gz appliance to $(pwd)/$$kameleon_recipe_name.tar.gz"
 
   # - exec_out: echo "TODO export !"
       # tar -zcf $$distrib\_$$arch.tar.gz -C $$rootfs . \

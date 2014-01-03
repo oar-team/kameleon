@@ -1,7 +1,7 @@
 # Build Appliance
 
 - create_raw_image:
-  - check_cmd: fallocate
+  - check_cmd_out: fallocate
   # FIXME: the size in args must be greater then the appliance
   - exec_out: |
       echo "Appliance size: $(du -bch $$rootfs | awk 'END {print $1}')"
