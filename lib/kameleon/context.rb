@@ -36,23 +36,17 @@ module Kameleon
       fail ExecError
     end
 
-    def pipe(cmd, remote_cmd, remote_context)
-      progressbar = ProgressBar.create(:title => "Forwaring pipe",
-                                       :total => nil)
-      tempfile = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd) }")
-      execute(cmd, :stdout => tempfile)
-      tempfile.close
-      progressbar.total = 100
-
-      dest_pipename = "./pipe-#{ Kameleon::Utils.generate_slug(remote_cmd) }"
-      # binding.pry
-      remote_context.send_file(tempfile.path, dest_pipename) do |p|
-        progressbar.progress = p
-      end
-      progressbar.finish
-      remote_cmd_with_pipe = "cat #{dest_pipename} |" \
-                             " #{remote_cmd} && rm #{dest_pipename}"
-      remote_context.execute(remote_cmd_with_pipe)
+    def pipe(cmd, other_cmd, other_ctx)
+      tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd) }")
+      @logger.info("Running piped commands")
+      @logger.info("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
+      execute(cmd, :stdout => tmp)
+      tmp.close
+      @logger.info("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
+      dest_pipe_path = "./pipe-#{ Kameleon::Utils.generate_slug(other_cmd) }"
+      other_ctx.send_file(tmp.path, dest_pipe_path)
+      other_cmd_with_pipe = "cat #{dest_pipe_path} | #{other_cmd} && rm #{dest_pipe_path}"
+      other_ctx.execute(other_cmd_with_pipe)
     end
 
     def start_shell
@@ -74,9 +68,7 @@ module Kameleon
     end
 
     def send_file(source_path, dest_path)
-      @shell.send_file(source_path, dest_path) do |p|
-        yield p
-      end
+      @shell.send_file(source_path, dest_path)
     end
   end
 
