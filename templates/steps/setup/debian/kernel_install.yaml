@@ -1,5 +1,5 @@
 - kernel-img_conf:
-  - write_file:
+  - write_in:
     - /etc/kernel-img.conf
     - |
       do_symlinks = yes

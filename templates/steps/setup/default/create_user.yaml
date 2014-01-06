@@ -6,7 +6,7 @@
   - exec_in: useradd -m -g $$group $$name -s /bin/bash
   - exec_in: echo -n '$$name:$$password' | chpasswd
 - add_group_to_sudoers:
-  - append_file:
+  - append_in:
     - /etc/sudoers
     - |
       %admin ALL=(ALL:ALL) ALL

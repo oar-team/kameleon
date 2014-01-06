@@ -8,7 +8,7 @@
 - copy_key_to_auth2_file:
   - exec_in: cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys2
 - root_ssh_config:
-  - append_file:
+  - append_in:
     - /root/.ssh/config
     - |
       Host *

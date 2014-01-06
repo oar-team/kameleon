@@ -66,6 +66,14 @@ module Kameleon
     attr_accessor :path, :clean, :microsteps, :variables, :name
 
     ALIASIES = {
+      "write_in" => "exec_in: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 > @1",
+      "write_out" => "exec_out: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 > @1",
+      "append_in" => "exec_in: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 >> @1",
+      "append_out" => "exec_out: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 >> @1",
+      "copy2out" => "exec_out: mkdir -p $(dirname @2)\n" \
+                    "pipe:\n  - exec_in: cat @1\n  - exec_out: cat > @2",
+      "copy2in" => "exec_in: mkdir -p $(dirname @2)\n" \
+                   "pipe:\n  - exec_out: cat @1\n  - exec_in: cat > @2",
     }
 
     def initialize(path, args, recipe)

@@ -92,7 +92,7 @@
 
   #- install_grub:
   #  - exec_appliance: mkdir -p $$workdir/mnt/boot/grub
-  #  - append_file:
+  #  - append_in:
   #    - /boot/grub/device.map
   #    - |
   #      (hd0) $LO_DEVICE
@@ -102,7 +102,7 @@
   #      export kernel=`ls $$workdir/mnt/boot/vmlinuz* | grep -o "2.6.*"`
   #      export hda1=`grub-probe -t fs_uuid -d ${LO_DEVICE_PARTBASE}p1`
   #      export INITRD=`find ./boot -name "initrd*$kernel*"|head -1|tail -c +2`
-  #  - append_file:
+  #  - append_in:
   #    - /etc/fstab 
   #    - |
   #      UUID=$hda1 / $$output_environment_file_system_type  errors=remount-ro 0 1
