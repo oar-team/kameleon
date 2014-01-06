@@ -24,7 +24,7 @@ module Kameleon
 
     def execute(cmd, kwargs = {})
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
-      @logger.debug("Executing : #{cmd_with_prefix}")
+      cmd_with_prefix.split( /\r?\n/ ).each {|m| @logger.debug "+ #{m}" }
       exit_status = @shell.execute(cmd_with_prefix, kwargs) do |out, err|
         out.split( /\r?\n/ ).each {|m| @logger.info m } unless out.nil?
         err.split( /\r?\n/ ).each {|m| @logger.error m } unless err.nil?
