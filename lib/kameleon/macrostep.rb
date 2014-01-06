@@ -65,17 +65,6 @@ module Kameleon
 
     attr_accessor :path, :clean, :microsteps, :variables, :name
 
-    ALIASIES = {
-      "write_in" => "exec_in: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 > @1",
-      "write_out" => "exec_out: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 > @1",
-      "append_in" => "exec_in: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 >> @1",
-      "append_out" => "exec_out: |\n  mkdir -p $(dirname @1) ;\n  echo -e @2 >> @1",
-      "copy2out" => "exec_out: mkdir -p $(dirname @2)\n" \
-                    "pipe:\n  - exec_in: cat @1\n  - exec_out: cat > @2",
-      "copy2in" => "exec_in: mkdir -p $(dirname @2)\n" \
-                   "pipe:\n  - exec_out: cat @1\n  - exec_in: cat > @2",
-    }
-
     def initialize(path, args, recipe)
       @logger = Log4r::Logger.new("kameleon::recipe")
       @recipe = recipe
@@ -138,7 +127,7 @@ module Kameleon
       @microsteps.each do |microstep|
         microstep.commands.map! do |cmd|
           # resolve alias
-          ALIASIES.keys.include?(cmd.key) ? resolve_alias(cmd) : cmd
+          @recipe.aliases.keys.include?(cmd.key) ? resolve_alias(cmd) : cmd
         end
       end
       # flatten for multiple-command alias
@@ -162,7 +151,7 @@ module Kameleon
 
     def resolve_alias(cmd)
       name = cmd.key
-      command_pattern = ALIASIES.fetch(name).clone
+      command_pattern = @recipe.aliases.fetch(name).clone
       args = YAML.load(cmd.string_cmd)[name]
       args = [].push(args).flatten  # convert args to array
       expected_args_number = command_pattern.scan(/@\d+/).uniq.count
@@ -177,8 +166,8 @@ module Kameleon
       args.each_with_index do |arg, i|
         command_pattern.gsub!("@#{i+1}", arg.inspect)
       end
-      YAML.load(command_pattern).map do |key, value|
-        Microstep::Command.new(Hash[*[key, value]])
+      YAML.load(command_pattern).map do |cmd_hash|
+        Microstep::Command.new(cmd_hash)
       end
     end
 

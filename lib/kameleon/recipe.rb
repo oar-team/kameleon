@@ -5,7 +5,7 @@ require 'pry'
 
 module Kameleon
   class Recipe
-    attr_accessor :path, :name, :global, :sections
+    attr_accessor :path, :name, :global, :sections, :aliases, :aliases_path
 
     # define section constant
     class Section < Utils::OrderedHash
@@ -48,6 +48,8 @@ module Kameleon
       }
       @global = {}
       @logger.debug("Initialize new recipe (#{path})")
+      @aliases = {}
+      @aliases_path = nil
       load!
       # TODO: Prints fancy dump
       # @logger.debug("Instance variables")
@@ -65,9 +67,15 @@ module Kameleon
       fail RecipeError, "Invalid yaml error" unless yaml_recipe.kind_of? Hash
       fail RecipeError, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
 
+
       #Load Global variables
       @global.merge!(yaml_recipe.fetch("global"))
       @global.merge!@system_global
+      # Resolve dynamically-defined variables !!
+      @global.merge! YAML.load(Utils.resolve_vars(@global.to_yaml, @path, @global))
+      # Loads aliases
+      load_aliases(yaml_recipe)
+
       #Find and load steps
       Section.sections.each do |section_name|
         @sections[section_name] = []
@@ -79,8 +87,6 @@ module Kameleon
           end
         end
       end
-      # Resolve dynamically-defined variables !!
-      @global.merge! YAML.load(Utils.resolve_vars(YAML.dump(@global), @path, @global))
     end
 
     def load_macrostep(raw_macrostep, section_name)
@@ -98,7 +104,7 @@ module Kameleon
       [@global['distrib'], 'default', ''].each do |search_dir|
         path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
         if File.file?(path)
-          @logger.info("Loading #{path}")
+          @logger.info("Loading step #{path}")
           return Macrostep.new(path, args, self)
         end
         @logger.debug("Step #{name} not found in this path: #{path}")
@@ -116,6 +122,26 @@ module Kameleon
         old_context_args.each do |arg|
           @global[context_name].merge!(arg)
         end
+      end
+    end
+
+    def load_aliases(yaml_recipe)
+      if yaml_recipe.keys.include? "aliases"
+        aliases = yaml_recipe.fetch("aliases")
+        if aliases.kind_of? Hash
+          @aliases = aliases
+        elsif aliases.kind_of? String
+          path = Pathname.new(File.join(File.dirname(@path), aliases))
+          if File.file?(path)
+            @logger.info("Loading aliases #{path}")
+            @aliases = YAML.load_file(path)
+            @aliases_path = path
+          else
+            fail RecipeError, "Aliases file '#{path}' does not exists"
+          end
+        end
+        @aliases.each { |k, v| @aliases[k] = v.to_yaml.gsub("---", "").strip}
+        return @aliases
       end
     end
 

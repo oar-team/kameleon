@@ -13,6 +13,8 @@
 #
 #===============================================================================
 ---
+# Loads some helpful aliases
+aliases: aliases.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : You can define your own global variables here...
@@ -47,6 +49,7 @@ bootstrap:
     - repository: http://ftp.fr.debian.org/debian/
     - archive_file: $$cachedir/$$distrib/$$version_name/$$arch/debootstrap.tar.gz
     - include: openssh-server locales less vim bash-completion zip unzip rsync sudo
+
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the build context (whenever

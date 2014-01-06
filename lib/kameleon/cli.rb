@@ -46,6 +46,12 @@ module Kameleon
             FileUtils.cp(macrostep.path, dst)
           end
         end
+        unless template_recipe.aliases_path.nil?
+          relative_path = template_recipe.aliases_path.relative_path_from(templates_path)
+          dst = File.join(tmp_dir, File.dirname(relative_path))
+          FileUtils.mkdir_p dst
+          FileUtils.cp(template_recipe.aliases_path, dst)
+        end
         # Create recipe dir if not exists
         FileUtils.mkdir_p recipes_path
         FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_path)
