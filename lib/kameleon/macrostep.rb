@@ -13,9 +13,7 @@ module Kameleon
         end
 
         def key
-          object = YAML.load(@string_cmd)
-          object = object[0] if object.kind_of? Array
-          object.keys[0]
+          YAML.load(@string_cmd).keys.first
         rescue
           raise RecipeError, "Invalid recipe syntax : '#{@string_cmd.inspect}'"\
                              " must be Array or Hash"
@@ -23,18 +21,21 @@ module Kameleon
 
         def value
           object = YAML.load(@string_cmd)
-          object = object[0] if object.kind_of? Array
           _, val = object.first
-          return val
+          # Nested commands
+          if val.kind_of? Array
+            val = val.map { |item| Command.new(item) }
+          end
+          val
         end
       end
 
       attr_accessor :commands, :name
 
-      def initialize(yaml_microstep)
-        @name, cmd_list = yaml_microstep.first
+      def initialize(hash_microstep)
+        @name, cmd_list = hash_microstep.first
         @commands = []
-        append(cmd_list)
+        cmd_list.each { |cmd_hash| @commands.push Command.new(cmd_hash) }
       rescue
         fail RecipeError, "Invalid microstep \"#{name}\": should be one of the "\
                         "defined commands (See documentation)"
@@ -45,11 +46,11 @@ module Kameleon
       end
 
       def append(cmd_list)
-        cmd_list.each {|cmd| @commands.push Command.new(cmd)}
+        cmd_list.each {|cmd| @commands.push cmd}
       end
 
-      def push(cmd_string)
-        @commands.push Command.new(cmd_string)
+      def push(cmd)
+        @commands.push cmd
       end
 
       def each(&block)

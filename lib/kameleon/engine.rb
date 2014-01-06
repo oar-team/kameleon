@@ -69,26 +69,19 @@ module Kameleon
       when "exec_out"
         @out_context.execute(cmd.value)
       when "pipe"
-        if ((cmd.value[0].keys == "exec_in" || cmd.value[1].keys == "exec_in")\
+        first_cmd, second_cmd = cmd.value
+        if ((first_cmd.key == "exec_in" || second_cmd.key == "exec_in")\
              && @in_context.nil?)
           skip_alert(cmd)
         else
-          unknown_cmd = false
-          key1, key2 = cmd.value[0].keys[0], cmd.value[1].keys[0]
-          [key1, key2].each do |cmd_key|
-            unless ["exec_in", "exec_out"].include?(cmd_key)
-              @logger.warn("Unknown command : #{cmd_key}")
-              unknown_cmd = true
-            end
+          expected_cmds = ["exec_in", "exec_out"]
+          unless expected_cmds.sort <=> [first_cmd.key, second_cmd.key].sort
+            @logger.warn("Invalid pipe arguments. Expected #{expected_cmds} commands")
           end
-          unless unknown_cmd
-            local_cmd = cmd.value[0].values[0]
-            remote_cmd = cmd.value[1].values[0]
-            map = {"exec_in" => @in_context, "exec_out" => @out_context}
-            local_context = map[key1]
-            remote_context = map[key2]
-            local_context.pipe(local_cmd, remote_cmd, remote_context)
-          end
+          map = {"exec_in" => @in_context, "exec_out" => @out_context}
+          local_context = map[first_cmd.key]
+          remote_context = map[second_cmd.key]
+          local_context.pipe(first_cmd.value, second_cmd.value, remote_context)
         end
       else
         @logger.warn("Unknown command : #{cmd.key}")
