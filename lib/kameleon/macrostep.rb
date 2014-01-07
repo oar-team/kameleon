@@ -77,7 +77,7 @@ module Kameleon
 
       yaml_microsteps = YAML.load_file(@path)
       if not yaml_microsteps.kind_of? Array
-        fail ReciepeError, "The macrostep #{path} is not valid "
+        fail RecipeError, "The macrostep #{path} is not valid "
                            "(should be a list of microsteps)"
       end
       yaml_microsteps.each{ |yaml_microstep|
