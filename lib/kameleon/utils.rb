@@ -5,10 +5,9 @@ module Kameleon
   module Utils
 
     def self.resolve_vars(raw, yaml_path, initial_variables)
-        raw.gsub(/\$\$[a-zA-Z0-9\-_]*/) do |variable|
+      raw.to_s.gsub(/\$\$[a-zA-Z0-9\-_]*/) do |variable|
         # remove the dollars
         strip_variable = variable[2,variable.length]
-
         # check in local vars
         if initial_variables.has_key? strip_variable
           value = initial_variables[strip_variable]
