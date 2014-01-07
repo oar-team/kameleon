@@ -68,20 +68,27 @@ module Kameleon
         @in_context.execute(cmd.value) unless @in_context.nil?
       when "exec_out"
         @out_context.execute(cmd.value)
+      when "exec_local"
+        @local_context.execute(cmd.value)
       when "pipe"
         first_cmd, second_cmd = cmd.value
         if ((first_cmd.key == "exec_in" || second_cmd.key == "exec_in")\
              && @in_context.nil?)
           skip_alert(cmd)
         else
-          expected_cmds = ["exec_in", "exec_out"]
-          unless expected_cmds.sort <=> [first_cmd.key, second_cmd.key].sort
-            @logger.warn("Invalid pipe arguments. Expected #{expected_cmds} commands")
+          expected_cmds = ["exec_in", "exec_out", "exec_local"]
+          [first_cmd.key, second_cmd.key].each do |key|
+            unless expected_cmds.include?(key)
+              @logger.error("Invalid pipe arguments. Expected #{expected_cmds} commands")
+              fail ExecError
+            end
           end
-          map = {"exec_in" => @in_context, "exec_out" => @out_context}
-          local_context = map[first_cmd.key]
-          remote_context = map[second_cmd.key]
-          local_context.pipe(first_cmd.value, second_cmd.value, remote_context)
+          map = {"exec_in" => @in_context,
+                 "exec_out" => @out_context,
+                 "exec_local" => @local_context,}
+          first_context = map[first_cmd.key]
+          second_context = map[second_cmd.key]
+          first_context.pipe(first_cmd.value, second_cmd.value, second_context)
         end
       else
         @logger.warn("Unknown command : #{cmd.key}")
@@ -92,9 +99,11 @@ module Kameleon
       @logger.error("Error executing command : #{cmd.string_cmd}")
       msg = "Press [r] to retry, [c] to continue with execution,"\
             "[a] to abort execution"
+      msg = "#{msg}, [l] to switch to local_context shell" unless @local_context.nil?
       msg = "#{msg}, [o] to switch to out_context shell" unless @out_context.nil?
       msg = "#{msg}, [i] to switch to in_context shell" unless @in_context.nil?
       responses = {"r" => "retry","c" => "continue", "a" => "abort"}
+      responses.merge!({"l" => "launch local_context"}) unless @out_context.nil?
       responses.merge!({"o" => "launch out_context"}) unless @out_context.nil?
       responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
       while true
@@ -104,8 +113,10 @@ module Kameleon
         answer.chomp!
         if responses.keys.include?(answer)
           @logger.info("User choice : [#{answer}] #{responses[answer]}")
-          if ["o", "i"].include?(answer)
-            if answer.eql? "o"
+          if ["o", "i", "l"].include?(answer)
+            if answer.eql? "l"
+              @local_context.start_shell
+            elsif answer.eql? "o"
               @out_context.start_shell
             else
               @in_context.start_shell
@@ -151,16 +162,18 @@ module Kameleon
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
       end
+      @logger.info("Building local context [local]")
+      @local_context = LocalContext.new("local", @cwd)
       begin
-        @logger.info("Building external context [OUT]")
-        @out_context = Context.new("OUT",
+        @logger.info("Building external context [out]")
+        @out_context = Context.new("out",
                                    @recipe.global["out_context"]["cmd"],
                                    @recipe.global["out_context"]["workdir"],
                                    @recipe.global["out_context"]["exec_prefix"],
                                    @cwd)
         do_steps("bootstrap")
-        @logger.info("Building internal context [IN]")
-        @in_context = Context.new("IN",
+        @logger.info("Building internal context [in]")
+        @in_context = Context.new("in",
                                   @recipe.global["in_context"]["cmd"],
                                   @recipe.global["in_context"]["workdir"],
                                   @recipe.global["in_context"]["exec_prefix"],
@@ -170,6 +183,7 @@ module Kameleon
       rescue Exception => e
         @out_context.reopen if !@out_context.nil? && @out_context.closed?
         @in_context.reopen if !@in_context.nil? && @in_context.closed?
+        @local_context.reopen if !@local_context.nil? && @local_context.closed?
         unless @out_context.nil? and @in_context.nil?
           @logger.warn("Waiting for cleanup before exiting...")
           ["bootstrap", "setup", "export"].each do |section_name|
@@ -177,6 +191,7 @@ module Kameleon
           end
           @out_context.close! unless @out_context.nil?
           @in_context.close! unless @in_context.nil?
+          @local_context.close! unless @local_context.nil?
         end
         raise e
       end

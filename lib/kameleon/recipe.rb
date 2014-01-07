@@ -42,6 +42,7 @@ module Kameleon
       kameleon_id = SecureRandom.uuid
       @system_global = {
         "kameleon_recipe_name" => @name,
+        "kameleon_recipe_dir" => File.dirname(@path),
         "kameleon_uuid" => kameleon_id,
         "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),

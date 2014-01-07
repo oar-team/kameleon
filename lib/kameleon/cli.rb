@@ -112,7 +112,7 @@ module Kameleon
                             "Please use one of the standard log levels: debug," \
                             " info, warn, or error"
       end
-      format = Log4r::PatternFormatter.new(:pattern => '%d %5l %9c: %M')
+      format = Log4r::PatternFormatter.new(:pattern => '%d %5l %11c: %M')
       if !$stdout.tty? or options.no_color
         console_output = Log4r::StdoutOutputter.new('console',
                                                     :formatter => format)

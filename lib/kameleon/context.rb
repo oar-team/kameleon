@@ -74,7 +74,9 @@ module Kameleon
 
   class LocalContext < Context
     def initialize(name, local_workdir)
-      super(name, "bash", local_workdir, "", local_workdir)
+      default_shell_cmd = `sh -c "echo $SHELL"`.strip
+      default_shell_cmd = "bash" if default_shell_cmd == ""
+      super(name, default_shell_cmd, local_workdir, "", local_workdir)
     end
   end
 end
