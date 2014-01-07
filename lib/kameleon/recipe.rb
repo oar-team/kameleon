@@ -102,14 +102,14 @@ module Kameleon
       # find the path of the macrostep
       steps_dir = File.join(File.dirname(@path), 'steps')
       [@global['distrib'], 'default', ''].each do |search_dir|
-        path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
-        if File.file?(path)
-          @logger.info("Loading step #{path}")
-          return Macrostep.new(path, args, self)
+        step_path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
+        if File.file?(step_path)
+          @logger.info("Loading step #{step_path}")
+          return Macrostep.new(step_path, args, self)
         end
-        @logger.debug("Step #{name} not found in this path: #{path}")
+        @logger.debug("Step #{name} not found in this path: #{step_path}")
       end
-      fail RecipeError, "Step #{name} not found" unless File.file?(path)
+      fail RecipeError, "Step #{name} not found"
     end
 
     def resolve!
