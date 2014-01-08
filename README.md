@@ -14,11 +14,26 @@ or from source
 
     $ git clone git://scm.gforge.inria.fr/kameleon/kameleon.git
     $ cd kameleon
-    $ bundle install --without development
+    $ gem build kameleon.gemspec
+    $ gem install kameleon-<version>.gem
 
 ## Usage
 
-TODO: Write usage instructions here
+Just type:
+    $ kameleon
+
+## Quick start
+
+First, get a simple example recipe in the current directory (use -w
+to set a diferent workspace).
+
+  $ kameleon new <my_test_recipe>
+
+Then build your new recipe
+
+  $ kameleon build <my_test_recipe>
+
+A build directory was created and contains your new image!
 
 ## Contributing
 

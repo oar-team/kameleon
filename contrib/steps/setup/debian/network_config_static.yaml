@@ -1,19 +1,17 @@
-# # Network Config Static
-- interfaces:
+# Network Static Config
+- network_interfaces:
+  # WARNING: The MTU is set to 1492 to avoid connection failure over some
+  # network du to PPP header
   - write_in:
     - /etc/network/interfaces
     - |
       auto lo
       iface lo inet loopback
-      
+
       auto eth0
       iface eth0 inet static
-        address $$network_eth0_ip
-        netmask $$network_eth0_mask
-        gateway $$network_gateway
-- resolv_conf:
-  - write_in:
-    - /etc/resolv.conf
-    - |
-      search $$network_domain
-      nameserver $$network_dns
+        address $$ip_address
+        netmask $$netmask
+        gateway $$gateway
+        dns-nameservers $$dns
+        mtu $$mtu
