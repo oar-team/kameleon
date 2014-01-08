@@ -16,11 +16,12 @@ module Kameleon
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = options[:workspace]
+      build_path = options[:build_path] || File.join(workspace, "builds")
       defaults = {
         :workspace => Pathname.new(File.join(Kameleon.source_root, 'templates')),
         :templates_path => Pathname.new(File.join(Kameleon.source_root, 'templates')),
         :recipes_path => Pathname.new(File.join(workspace, "recipes")),
-        :build_path => Pathname.new(File.join(workspace, "builds")),
+        :build_path => Pathname.new(build_path),
         :log_file => Pathname.new(File.join(workspace, "kameleon.log"))
       }
 

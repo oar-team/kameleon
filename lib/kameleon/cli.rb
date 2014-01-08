@@ -76,6 +76,9 @@ module Kameleon
     method_option :force, :type => :boolean ,
                   :default => false, :aliases => "-f",
                   :desc => "force the build"
+    method_option :build_path, :type => :string ,
+                  :default => nil, :aliases => "-b",
+                  :desc => "change the build directory path"
     def build(recipe_name)
       logger.info("Starting build recipe '#{recipe_name}'")
       start_time = Time.now.to_i

@@ -96,7 +96,8 @@ module Kameleon
     end
 
     def rescue_exec_error(cmd)
-      @logger.error("Error executing command : #{cmd.string_cmd}")
+      @logger.error("Error occured when executing the following command")
+      cmd.string_cmd.split( /\r?\n/ ).each {|m| @logger.error "+ #{m}" }
       msg = "Press [r] to retry, [c] to continue with execution,"\
             "[a] to abort execution"
       msg = "#{msg}, [l] to switch to local_context shell" unless @local_context.nil?
@@ -157,7 +158,7 @@ module Kameleon
 
     def build
       begin
-        @logger.info("Creating kameleon working directory...")
+        @logger.info("Creating kameleon working directory : #{@cwd}")
         FileUtils.mkdir_p @cwd
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
