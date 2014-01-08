@@ -19,17 +19,7 @@
 
 - set_hostname:
   - exec_in: echo "$$network_hostname" > /etc/hostname
-  - exec_in: echo "$$network_hostname" > /etc/hostname
 
 - set_timezone:
   - exec_in: echo "$$timezone" > /etc/timezone
   - exec_in: "dpkg-reconfigure -f noninteractive tzdata 2>&1"
-
-- keyboard_config:
-  - write_in:
-    - /etc/default/keyboard
-    - |
-      XKBMODEL="pc105"
-      XKBLAYOUT="$$keyboard_layout"
-      XKBVARIANT=""
-      XKBOPTIONS=""
