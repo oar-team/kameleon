@@ -43,7 +43,12 @@ global:
 
 #== Bootstrap the new system and create context
 bootstrap:
-  - chroot:
+  - build_appliance:
+    - mountdir: $$rootfs
+    - image_size: 2G
+    - filesystem_type: ext4
+  - debootstrap:
+    - rootfs: $$rootfs
     - version_name: wheezy
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
