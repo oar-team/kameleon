@@ -62,7 +62,8 @@ module Kameleon
     desc "list", "Lists all defined templates"
     def list
       # TODO: Lists all defined templates
-      logger.fatal("Not implemented command")
+      logger.warn("Not implemented command")
+
     end
     map "-L" => :list
 
@@ -125,9 +126,10 @@ module Kameleon
                        :info   => :green,
                        :warn   => :yellow,
                        :error  => :red,
-                       :fatal  => {:color => :red, :background => :white}},
+                       :fatal  => :red,
+                     },
           :formatter => format,
-      }
+        }
       end
       logger = Log4r::Logger.new('kameleon')
       logger.outputters << console_output
