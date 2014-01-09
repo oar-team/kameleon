@@ -123,14 +123,14 @@ module Kameleon
 
     # Resolve macrosteps variable
     def resolve!()
-      # First pass : resolve aliases + variables
+      # First pass : resolve aliases
       @microsteps.each do |microstep|
         microstep.commands.map! do |cmd|
           # resolve alias
           @recipe.aliases.keys.include?(cmd.key) ? resolve_alias(cmd) : cmd
         end
       end
-      # flatten for multiple-command alias
+      # flatten for multiple-command alias  + variables
       @microsteps.each { |microsteps| microsteps.commands.flatten! }
       # Second pass : resolve variables + check_cmd_in/out hooks
       @microsteps.each do |microstep|
@@ -174,19 +174,28 @@ module Kameleon
     #handle clean methods
     def resolve_hooks(cmd)
       if (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
+        cmds = []
+        if cmd.value.kind_of?(Array)
+          cmds = cmd.value.map do |c|
+            @recipe.aliases.keys.include?(c.key) ? resolve_alias(c) : c
+          end
+          cmds = cmds.flatten
+        else
+          fail RecipeError, "Invalid #{cmd.key} arguments"
+        end
         if cmd.key.eql? "on_clean"
-          @clean.unshift cmd.value
+          @clean.unshift cmds
           return
         elsif cmd.key.eql? "on_init"
-          @init.unshift cmd.value
+          @init.unshift cmds
           return
         else
           Recipe::Section.sections.each do |section|
             if cmd.key.eql? "on_#{section}_clean"
-              @recipe.sections.clean[section].unshift cmd.value
+              @recipe.sections.clean[section].unshift cmds
               return
             elsif cmd.key.eql? "on_#{section}_init"
-              @recipe.sections.init[section].unshift cmd.value
+              @recipe.sections.init[section].unshift cmds
               return
             end
           end
