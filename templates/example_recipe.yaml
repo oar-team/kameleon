@@ -43,6 +43,7 @@ global:
 
 #== Bootstrap the new system and create context
 bootstrap:
+  - initialize_contexts
   - build_appliance:
     - mountdir: $$rootfs
     - image_size: 2G
@@ -53,7 +54,9 @@ bootstrap:
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
     - archive_file: $$cachedir/$$distrib/$$version_name/$$arch/debootstrap.tar.gz
-    - include: openssh-server locales less vim bash-completion zip unzip rsync sudo
+    - include: openssh-server locales less vim bash-completion
+  - start_chroot:
+    - rootfs: $$rootfs
 
 
 #== Install and configuration steps
@@ -62,7 +65,7 @@ bootstrap:
 setup:
   # Install
   - software_install:
-    - packages: "debian-keyring ntp"
+    - packages: "debian-keyring ntp zip unzip rsync sudo"
   - kernel_install:
     - arch: $$arch
   # Configuration
@@ -80,10 +83,8 @@ setup:
     - password: $$user_name
 
 #== Export the generated appliance in the format of your choice
-export:
-  - build_appliance:
-    - image_size: 2G
-    - filesystem_type: ext4
-    - mountdir: ./mnt
+# export:
   # - convert_images:
-  #   - save_as_tgz
+    # - to_tgz
+    # - to_qcqf
+    # - gfdg
