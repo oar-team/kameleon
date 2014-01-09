@@ -76,5 +76,9 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
-  - save_appliance:
-    - save_as_tgz
+  - build_appliance:
+    - image_size: 2G
+    - filesystem_type: ext4
+    - mountdir: ./mnt
+  # - convert_images:
+  #   - save_as_tgz
