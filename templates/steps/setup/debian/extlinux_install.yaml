@@ -1,0 +1,12 @@
+- install_extlinux:
+  - exec_in: apt-get install  -y --force-yes extlinux
+  - exec_in: extlinux-install $DISK
+  - write_in:
+    - /boot/extlinux/extlinux.conf
+    - |
+      default linux
+      timeout 1
+      
+      label linux
+      kernel ../`basename /boot/vmlinuz*`
+      append initrd=../`basename /boot/init*` root=UUID=`blkid -s UUID -o value ${DISK}p2` ro

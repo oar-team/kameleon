@@ -68,6 +68,7 @@ setup:
     - packages: "debian-keyring ntp zip unzip rsync sudo"
   - kernel_install:
     - arch: $$arch
+  - extlinux_install
   # Configuration
   - system_config:
     - locales: fr_FR en_US
