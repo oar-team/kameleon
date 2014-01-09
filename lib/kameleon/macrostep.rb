@@ -97,7 +97,7 @@ module Kameleon
             end
           end
         end
-        if selected_microsteps.nil?
+        unless selected_microsteps.empty?
           # Some steps are selected so remove the others
           # WARN: Allow the user to define this list not in the original order
           strip_microsteps = []
