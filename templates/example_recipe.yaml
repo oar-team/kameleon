@@ -28,9 +28,9 @@ global:
   # Distribution
   distrib: debian
 
-  # Shell session from what we launch exec_out commands. There is often a local
-  # bash session, but it can be a remote shell on other machines or on any
-  # shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
+  # Shell session from where we launch exec_out commands. There is often a
+  # local bash session, but it can be a remote shell on other machines or on
+  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
   out_context:
     - cmd: bash
     - workdir: $$kameleon_cwd
