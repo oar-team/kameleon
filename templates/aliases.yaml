@@ -1,29 +1,24 @@
 write_local:
   - exec_local: |
-      mkdir -p $(dirname @1);
-      echo -e @2 > @1
+      mkdir -p $(dirname @1); echo -e @2 > @1
 write_in:
   - exec_in: |
-      mkdir -p $(dirname @1);
-      echo -e @2 > @1
+      mkdir -p $(dirname @1); echo -e @2 > @1
 write_out:
   - exec_out: |
-      mkdir -p $(dirname @1);
-      echo -e @2 > @1
+      mkdir -p $(dirname @1); echo -e @2 > @1
 append_local:
   - exec_local: |
-      mkdir -p $(dirname @1);
-      echo -e @2 >> @1
+      mkdir -p $(dirname @1); echo -e @2 >> @1
 append_in:
   - exec_in: |
-      mkdir -p $(dirname @1);
-      echo -e @2 >> @1
+      mkdir -p $(dirname @1); echo -e @2 >> @1
 append_out:
   - exec_out: |
-      mkdir -p $(dirname @1);
-      echo -e @2 >> @1
+      mkdir -p $(dirname @1); echo -e @2 >> @1
 local2out:
-  - exec_out: mkdir -p $(dirname @2)
+  - exec_out: |
+      mkdir -p $(dirname @2)"
   - pipe:
       - exec_local: cat @1
       - exec_out: cat > @2

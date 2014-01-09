@@ -141,7 +141,21 @@ module Kameleon
             fail RecipeError, "Aliases file '#{path}' does not exists"
           end
         end
-        @aliases.each { |k, v| @aliases[k] = v.to_yaml.gsub("---", "").strip}
+        ## save raw YAML, because YAML.load/YAML.dump strip escaping !
+        aliases_file = File.open(@aliases_path, "r")
+        raw_yaml_content = aliases_file.read
+        aliases_file.close
+        list_aliases = @aliases.map {|k, _| k}
+        list_aliases.each_with_index  do |k, index|
+            start_content = raw_yaml_content.index("#{k}:\n") + k.length + 2
+            if index == list_aliases.count - 1
+              end_content = raw_yaml_content.length
+            else
+              next_k = list_aliases[index + 1]
+              end_content = raw_yaml_content.index("#{next_k}:\n") - 1
+            end
+            @aliases[k] = raw_yaml_content[start_content..end_content]
+        end
         return @aliases
       end
     end
