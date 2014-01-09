@@ -3,7 +3,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #===============================================================================
 #
-# RECIPE: empty_recipe
+# RECIPE: example_recipe
 #
 # DESCRIPTION: This is an example recipe. It aims at teach the user how to
 # write his own recipe from scratch
@@ -38,10 +38,10 @@ global:
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
   in_context:
-    - cmd: env -i USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=POSIX chroot $$rootfs bash
+    - cmd: chroot $$rootfs bash
     - workdir: /
 
-#== Bootstrap the new system and create context
+#== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - initialize_contexts
   - build_appliance:
@@ -84,8 +84,10 @@ setup:
     - password: $$user_name
 
 #== Export the generated appliance in the format of your choice
-# export:
-  # - convert_images:
-    # - to_tgz
-    # - to_qcqf
-    # - gfdg
+export:
+  - save_appliance:
+    - filename: $$kameleon_recipe_name
+    - save_as_tgz
+    - save_as_qcow2
+    # - save_as_vmdk
+    # - save_as_vdi

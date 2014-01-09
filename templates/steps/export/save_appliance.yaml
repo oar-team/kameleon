@@ -3,55 +3,23 @@
 - save_as_tgz:
   - pipe:
     - exec_in: tar -zcf - -C / . --numeric-owner --one-file-system --exclude=tmp/*
-    - exec_out: cat > ./$$kameleon_recipe_name.tar.gz
-  - exec_out: echo "Saved tar.gz appliance to $(pwd)/$$kameleon_recipe_name.tar.gz"
+    - exec_out: cat > ./$$filename.tar.gz
+  - exec_out: echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
 
-  # - exec_out: echo "TODO export !"
-      # tar -zcf $$distrib\_$$arch.tar.gz -C $$rootfs . \
-      #   --numeric-owner --one-file-system --exclude=tmp/*
+- save_as_vmdk:
+  - check_cmd_out: qemu-img
+  - exec_out: |
+      qemu-img convert -O vmdk $$kameleon_recipe_name.raw $$filename.vmdk
+  - exec_out: echo "Saved vmdk appliance to $(pwd)/$$filename.vmdk"
 
-#TODO update this
-# - save_as_kameleon_env:
-#   # we have to add a postinstall
-#   - write_local_file:
-#     - $$distrib\_$$arch.yaml
-#     - |
-#       ---
-#       name: $$distrib\_$$arch
-#       version: 1
-#       visibility: private
-#       destructive: true
-#       os: linux
-#       image:
-#         file: $$distrib\_$$arch.tar.gz
-#         kind: tar
-#         compression: gzip
-#       boot:
-#         kernel: /vmlinuz
-#         initrd: /initrd.img
-#       multipart: false
-#       filesystem: ext4
-#       partition_type: 0
+- save_as_qcow2:
+  - check_cmd_out: qemu-img
+  - exec_out: |
+      qemu-img convert -O qcow2 $$kameleon_recipe_name.raw $$filename.qcow2
+  - exec_out: echo "Saved qcow2 appliance to $(pwd)/$$filename.qcow2"
 
-# - save_as_raw:
-#   - exec_out: |
-#       mv image.raw $$distrib\_$$arch.raw
-#       ln -s $$distrib\_$$arch.raw image.raw
-
-# - save_as_vmdk:
-#   - check_cmd: qemu-img
-#   - exec_out: |
-#       qemu-img convert -O vmdk image.raw $$distrib\_$$arch.vmdk
-#   - erb_config:
-#     - config.vmx.erb
-#     - $$distrib.vmx
-
-# - save_as_qcow2:
-#   - check_cmd: qemu-img
-#   - exec_out: |
-#       qemu-img convert -O qcow2 image.raw $$distrib\_$$arch.qcow2
-
-# - save_as_vdi:
-#   - check_cmd: VBoxManage
-#   - exec_out: |
-#       VBoxManage convertdd image.raw $$distrib\_$$arch.vdi
+- save_as_vdi:
+  - check_cmd_out: VBoxManage
+  - exec_out: |
+      VBoxManage convertdd $$kameleon_recipe_name.raw $$filename.vdi
+  - exec_out: echo "Saved vdi appliance to $(pwd)/$$filename.vdi"
