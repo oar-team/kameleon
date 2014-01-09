@@ -45,8 +45,8 @@ module Kameleon
         @commands.empty?
       end
 
-      def append(cmd_list)
-        cmd_list.each {|cmd| @commands.push cmd}
+      def unshift(cmd_list)
+        cmd_list.reverse.each {|cmd| @commands.unshift cmd}
       end
 
       def push(cmd)
@@ -175,18 +175,18 @@ module Kameleon
     def resolve_hooks(cmd)
       if (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
         if cmd.key.eql? "on_clean"
-          @clean.append cmd.value
+          @clean.unshift cmd.value
           return
         elsif cmd.key.eql? "on_init"
-          @init.append cmd.value
+          @init.unshift cmd.value
           return
         else
           Recipe::Section.sections.each do |section|
             if cmd.key.eql? "on_#{section}_clean"
-              @recipe.sections.clean[section].append cmd.value
+              @recipe.sections.clean[section].unshift cmd.value
               return
             elsif cmd.key.eql? "on_#{section}_init"
-              @recipe.sections.init[section].append cmd.value
+              @recipe.sections.init[section].unshift cmd.value
               return
             end
           end
