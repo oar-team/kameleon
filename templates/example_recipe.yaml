@@ -14,7 +14,7 @@
 #===============================================================================
 ---
 # Loads some helpful aliases
-aliases: aliases.yaml
+aliases: defaults.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : You can define your own global variables here...

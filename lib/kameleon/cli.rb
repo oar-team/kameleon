@@ -19,15 +19,12 @@ module Kameleon
       end
     end
 
-    method_option :template, :aliases => "-t",
-                  :desc => "Starting from a template",
+    method_option :template, :aliases => "-t", :desc => "Starting from a template",
                   :default => "example_recipe"
-    method_option :force,:type => :boolean ,
-                  :default => false, :aliases => "-f",
+    method_option :force,:type => :boolean , :default => false, :aliases => "-f",
                   :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
-      # Create a logger right away
       logger.info("Cloning template '#{options[:template]}'")
       templates_path = Kameleon.env.templates_path
       recipes_path = Kameleon.env.recipes_path
