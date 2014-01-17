@@ -10,3 +10,5 @@
       label linux
       kernel ../`basename /boot/vmlinuz*`
       append initrd=../`basename /boot/init*` root=UUID=`blkid -s UUID -o value ${DISK}p2` ro
+  - on_clean:
+    - exec_in: umount -f /var/lib/os-prober/mount $$ rm -f /var/lib/os-prober/mount
