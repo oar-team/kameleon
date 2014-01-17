@@ -6,7 +6,7 @@
   - exec_out: mount -o bind /proc  $$rootfs/proc
   - exec_out: mount -o bind /sys  $$rootfs/sys
   - on_setup_clean:
-    - exec_out: echo umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
+    - exec_out: echo umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount $$rootfs/sys  || true
     - exec_out: echo umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
-    - exec_out: echo umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true
-    - exec_out: echo umount $$rootfs/dev... ; mountpoint -q $$rootfs/dev && umount -f -l $$rootfs/dev  || true
+    - exec_out: echo umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount $$rootfs/dev/pts  || true
+    - exec_out: echo umount $$rootfs/dev... ; mountpoint -q $$rootfs/dev && umount $$rootfs/dev  || true
