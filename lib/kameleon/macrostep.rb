@@ -80,9 +80,16 @@ module Kameleon
         fail RecipeError, "The macrostep #{path} is not valid "
                            "(should be a list of microsteps)"
       end
-      yaml_microsteps.each{ |yaml_microstep|
-        @microsteps.push Microstep.new(yaml_microstep)
-      }
+      yaml_microsteps.each do |yaml_microstep|
+        key = yaml_microstep.keys[0]
+        value = yaml_microstep[key]
+        # Set new variable if not defined yet
+        if value.kind_of? String
+          @variables[key] = @variables.fetch(key, value)
+        else
+          @microsteps.push Microstep.new(yaml_microstep)
+        end
+      end
 
       # look for microstep selection in option
       if args
