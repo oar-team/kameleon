@@ -2,7 +2,17 @@
 
 - save_as_tgz:
   - pipe:
-    - exec_in: tar -zcf - -C / . --numeric-owner --one-file-system --exclude=tmp/*
+    - exec_in: |
+        tar -zcf - --numeric-owner \
+        --exclude=tmp/* \
+        --exclude=dev/* \
+        --exclude=proc/* \
+        --exclude=sys/* \
+        --exclude=run/* \
+        --exclude=mnt/* \
+        --exclude=media/* \
+        --exclude=lost+found/* \
+        -C / .
     - exec_out: cat > ./$$filename.tar.gz
   - exec_out: echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
 
