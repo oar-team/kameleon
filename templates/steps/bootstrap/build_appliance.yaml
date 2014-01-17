@@ -38,7 +38,7 @@
       mkfs.$$filesystem_type -q ${DISK}p2 || fail cannot create / ext4
 
 - create_fstab:
-  - on_bootstrap_clean:
+  - on_setup_init:
     - write_out:
       - $$mountdir/etc/fstab
       - |
