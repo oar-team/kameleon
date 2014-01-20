@@ -148,7 +148,7 @@ module Kameleon
               if fail_silent
                 exec_cmd(cmd)
               else
-                exec_cmd_safe(cmd)
+                safe_exec_cmd(cmd)
               end
             rescue Exception => e
               raise e if not fail_silent
