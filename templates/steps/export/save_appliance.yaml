@@ -1,6 +1,13 @@
 # # Save Chroot Appliance
 
 - save_as_tgz:
+  - in2out:
+    - /etc/fstab
+    - ./fstab.bak
+  - write_in:
+    - /etc/fstab
+    - |
+      # UNCONFIGURED FSTAB FOR BASE SYSTEM
   - pipe:
     - exec_in: |
         tar -zcf - --numeric-owner \
@@ -14,6 +21,9 @@
         --exclude=lost+found/* \
         -C / .
     - exec_out: cat > ./$$filename.tar.gz
+  - out2in:
+    - ./fstab.bak
+    - /etc/fstab
   - exec_out: echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
 
 - save_as_vmdk:
