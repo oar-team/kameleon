@@ -4,6 +4,8 @@
   - in2out:
     - /etc/fstab
     - ./fstab.bak
+  - on_clean:
+    - exec_out: rm ./fstab.bak
   - write_in:
     - /etc/fstab
     - |
@@ -24,7 +26,8 @@
   - out2in:
     - ./fstab.bak
     - /etc/fstab
-  - exec_out: echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
+  - exec_out: |
+      echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
 
 - save_as_vmdk:
   - check_cmd_out: qemu-img
