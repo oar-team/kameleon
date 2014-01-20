@@ -22,13 +22,7 @@ module Kameleon
     def do_steps(section_name)
       @logger.info("Initializing #{section_name} section")
       @recipe.sections.init.fetch(section_name).each do |cmd|
-        finished = false
-        begin
-          exec_cmd(cmd)
-          finished = true
-        rescue ExecError
-          finished = rescue_exec_error(cmd)
-        end until finished
+        safe_exec_cmd(cmd)
       end
       if @recipe.sections.fetch(section_name).empty?
         @logger.warn("Section #{section_name} is empty.")
@@ -39,22 +33,29 @@ module Kameleon
           macrostep.microsteps.each do |microstep|
             @logger.info("[microstepstep] #{microstep.name}")
             microstep.commands.each do |cmd|
-              finished = false
-              begin
-                exec_cmd(cmd)
-                finished = true
-              rescue ExecError
-                finished = rescue_exec_error(cmd)
-              end until finished
+              safe_exec_cmd(cmd)
             end
           end
         ensure
           unless macrostep.clean.empty?
-            macrostep.clean.each { |cmd| exec_cmd(cmd) }
+            @logger.info("Cleaning macrostep #{macrostep.name} ")
+            macrostep.clean.each do |cmd|
+              safe_exec_cmd(cmd)
+            end
           end
         end
       end
       do_clean(section_name)
+    end
+
+    def safe_exec_cmd(cmd)
+      finished = false
+      begin
+        exec_cmd(cmd)
+        finished = true
+      rescue ExecError
+        finished = rescue_exec_error(cmd)
+      end until finished
     end
 
     def exec_cmd(cmd)
@@ -144,7 +145,11 @@ module Kameleon
           @logger.info("Cleaning #{section_name} section")
           @recipe.sections.clean.fetch(section_name).each do |cmd|
             begin
-              exec_cmd(cmd)
+              if fail_silent
+                exec_cmd(cmd)
+              else
+                exec_cmd_safe(cmd)
+              end
             rescue Exception => e
               raise e if not fail_silent
               @logger.warn("An error occurred while executing : #{cmd.value}")
@@ -166,6 +171,7 @@ module Kameleon
       @logger.info("Building local context [local]")
       @local_context = LocalContext.new("local", @cwd)
       begin
+        # Signal.trap("INT", "IGNORE")
         @logger.info("Building external context [out]")
         @out_context = Context.new("out",
                                    @recipe.global["out_context"]["cmd"],
