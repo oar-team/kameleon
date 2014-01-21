@@ -1,0 +1,290 @@
+#!/bin/sh -e
+# Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+APPLICATION="${0##*/}"
+ALLCHROOTS=''
+BINDIR="`dirname "\`readlink -f "$0"\`"`"
+CHROOTS="`readlink -f "$BINDIR/../chroots"`"
+EXCLUDEROOT=''
+FORCE=''
+PRINT=''
+SIGNAL='TERM'
+TRIES=5
+YES=''
+
+USAGE="$APPLICATION [options] name [...]
+
+Unmounts one or more chroots, optionally killing any processes still running
+inside them.
+
+By default, it will run in interactive mode where it will ask to kill any
+remaining processes if unable to unmount the chroot within 5 seconds.
+
+Options:
+    -a          Unmount all chroots in the CHROOTS directory.
+    -c CHROOTS  Directory the chroots are in. Default: $CHROOTS
+    -f          Forces a chroot to unmount, potentially breaking or killing
+                other instances of the same chroot.
+    -k KILL     Send the processes SIGKILL instead of SIGTERM.
+    -p          Print to STDOUT the processes stopping a chroot from unmounting.
+    -t TRIES    Number of seconds to try before signalling the processes.
+                Use -t inf to be exceedingly patient. Default: $TRIES
+    -x          Keep the root directory of the chroot mounted.
+    -y          Signal any remaining processes without confirmation.
+                Automatically escalates from SIGTERM to SIGKILL."
+
+# Function to exit with exit code $1, spitting out message $@ to stderr
+error() {
+    local ecode="$1"
+    shift
+    echo "$*" 1>&2
+    exit "$ecode"
+}
+
+# Process arguments
+while getopts 'ac:fkpt:xy' f; do
+    case "$f" in
+    a) ALLCHROOTS='y';;
+    c) CHROOTS="`readlink -f "$OPTARG"`";;
+    f) FORCE='y';;
+    k) SIGNAL="KILL";;
+    p) PRINT='y';;
+    t) TRIES="$OPTARG";;
+    x) EXCLUDEROOT='y';;
+    y) YES='a';;
+    \?) error 2 "$USAGE";;
+    esac
+done
+shift "$((OPTIND-1))"
+
+# Need at least one chroot listed, or -a; not both.
+if [ $# = 0 -a -z "$ALLCHROOTS" ] || [ ! $# = 0 -a -n "$ALLCHROOTS" ]; then
+    error 2 "$USAGE"
+fi
+
+# Make sure TRIES is valid
+if [ "$TRIES" = inf ]; then
+    TRIES=-1
+elif [ "$TRIES" -lt -1 ]; then
+    error 2 "$USAGE"
+fi
+
+# We need to run as root
+if [ ! "$USER" = root -a ! "$UID" = 0 ]; then
+    error 2 "$APPLICATION must be run as root."
+fi
+
+# Check if a chroot is running with this directory. We detect the
+# appropriate commands by checking if the command's parent root is not equal
+# to the pid's root. This avoids not unmounting due to a lazy-quitting
+# background application within the chroot. We also don't consider processes
+# that have a parent PID of 1 (which would mean an orphaned process in this
+# case), as enter-chroot never orphans its children, and we don't consider
+# processes that have CROUTON=CORE in the environment.
+# $1: $base; the canonicalized base path of the chroot
+# Returns: non-zero if the chroot is in use.
+checkusage() {
+    if [ -n "$FORCE" ]; then
+        return 0
+    fi
+    local b="${1%/}/" pid ppid proot prootdir root rootdir
+    for root in /proc/*/root; do
+        if [ ! -r "$root" ]; then
+            continue
+        fi
+        rootdir="`readlink -f "$root"`"
+        rootdir="${rootdir%/}/"
+        if [ "${rootdir#"$b"}" = "$rootdir" ]; then
+            continue
+        fi
+        pid="${root#/proc/}"
+        pid="${pid%/root}"
+        ppid="`ps -p "$pid" -o ppid= 2>/dev/null | sed 's/ //g'`"
+        if [ -z "$ppid" ] || [ "$ppid" -eq 1 ]; then
+            continue
+        fi
+        proot="/proc/$ppid/root"
+        if [ -r "$proot" ]; then
+            prootdir="`readlink -f "$proot"`"
+            if [ "${prootdir%/}/" = "$rootdir" ]; then
+                continue
+            fi
+        fi
+        if grep -q 'CROUTON=CORE' "/proc/$pid/environ" 2>/dev/null; then
+            continue
+        fi
+        if [ -n "$PRINT" ]; then
+            ps -p "$pid" -o pid= -o cmd= || true
+        fi
+        return 1
+    done
+    return 0
+}
+
+# If we specified all chroots, bring in all chroots.
+if [ -n "$ALLCHROOTS" ]; then
+    set -- "$CHROOTS/"*
+fi
+
+# Follows and fixes dangerous symlinks, returning the canonicalized path.
+fixabslinks() {
+    local p="$CHROOT/$1" c
+    # Follow and fix dangerous absolute symlinks
+    while c="`readlink -m "$p"`" && [ ! "$c" = "$p" ]; do
+        p="$CHROOT${c#"$CHROOT"}"
+    done
+    echo "$p"
+}
+
+# Unmount each chroot
+ret=0
+for NAME in "$@"; do
+    if [ -z "$NAME" ]; then
+        continue
+    fi
+
+    NAME="${NAME#"$CHROOTS/"}"
+
+    # Check for existence
+    CHROOT="$CHROOTS/$NAME"
+    if [ ! -d "$CHROOT" ]; then
+        echo "$CHROOT not found." 1>&2
+        ret=1
+        continue
+    fi
+
+    # Switch to the unencrypted mount for encrypted chroots.
+    if [ -f "$CHROOT/.ecryptfs" ]; then
+        CHROOT="$CHROOTS/.secure/$NAME"
+    fi
+
+    base="`readlink -f "$CHROOT"`"
+
+    if ! checkusage "$base"; then
+        echo "Not unmounting $CHROOT as another instance is using it." 1>&2
+        ret=1
+        continue
+    fi
+
+    # Kill the chroot's system dbus if one is running; failure is fine
+    env -i chroot "$CHROOT" su -s '/bin/sh' -c '
+        pidfile="/var/run/dbus/pid"
+        if [ ! -f "$pidfile" ]; then
+            exit 0
+        fi
+        pid="`cat "$pidfile"`"
+        if ! grep -q "^dbus-daemon" "/proc/$pid/cmdline" 2>/dev/null; then
+            exit 0
+        fi
+        kill $pid' - root 2>/dev/null || true
+
+    # Unmount all mounts
+    ntries=0
+    if [ -z "$EXCLUDEROOT" ]; then
+        echo "Unmounting $CHROOT..." 1>&2
+    else
+        echo "Pruning $CHROOT mounts..." 1>&2
+    fi
+    baseesc="`echo "$base" | sed 's= =//=g'`"
+
+    # Define the mountpoint filter to only unmount specific mounts.
+    # The filter is run on the escaped version of the mountpoint.
+    filter() {
+        if [ -z "$EXCLUDEROOT" ]; then
+            grep "^$baseesc\\(/.*\\)\\?\$"
+        else
+            # Don't include the base directory
+            grep "^$baseesc/."
+        fi
+    }
+
+    # Sync for safety
+    sync
+
+    # Make sure the chroot's system media bind-mount is marked as slave to avoid
+    # unmounting devices system-wide. We still want to unmount locally-mounted
+    # media, though.
+    media="`fixabslinks '/var/host/media'`"
+    if mountpoint -q "$media"; then
+        mount --make-rslave "$media"
+    fi
+
+    while ! sed "s=\\\\040=//=g" /proc/mounts | cut -d' ' -f2 \
+              | filter | sed 's=//= =g' | xargs --no-run-if-empty -d '
+' -n 50 umount 2>/dev/null; do
+        if [ "$ntries" -eq "$TRIES" ]; then
+            # Send signal to all processes running under the chroot
+            # ...but confirm first.
+            printonly=''
+            if [ "${YES#[Aa]}" = "$YES" ]; then
+                echo -n "Failed to unmount $CHROOT. Kill processes? [a/k/y/p/N] " 1>&2
+                read YES
+                if [ ! "${YES#[Kk]}" = "$YES" ]; then
+                    SIGNAL='KILL'
+                elif [ ! "${YES#[Pp]}" = "$YES" ]; then
+                    printonly=y
+                elif [ "${YES#[AaYy]}" = "$YES" ]; then
+                    echo "Skipping unmounting of $CHROOT" 1>&2
+                    ret=1
+                    break
+                fi
+            fi
+            if [ -z "$printonly" ]; then
+                echo "Sending SIG$SIGNAL to processes under $CHROOT..." 1>&2
+            fi
+            for root in /proc/*/root; do
+                if [ ! -r "$root" ] \
+                        || [ ! "`readlink -f "$root"`" = "$base" ]; then
+                    continue
+                fi
+                pid="${root#/proc/}"
+                pid="${pid%/root}"
+                if [ -z "$FORCE" ] \
+                        && grep -q 'CROUTON=CORE' \
+                                   "/proc/$pid/environ" 2>/dev/null; then
+                    continue
+                fi
+                if [ -n "${printonly:-"$PRINT"}" ]; then
+                    ps -p "$pid" -o pid= -o cmd= || true
+                fi
+                if [ -z "$printonly" ]; then
+                    kill "-$SIGNAL" "$pid" 2>/dev/null || true
+                fi
+            done
+
+            # Escalate
+            if [ ! "${YES#[Aa]}" = "$YES" ]; then
+                SIGNAL='KILL'
+            fi
+
+            if [ -z "$printonly" ]; then
+                ntries=0
+            fi
+        else
+            ntries="$((ntries+1))"
+        fi
+        sleep 1
+        if ! checkusage "$base"; then
+            echo "Aborting unmounting $CHROOT as another instance has begun using it." 1>&2
+            ret=1
+            break
+        fi
+    done
+
+    # More sync for more safety
+    sync
+done
+
+# Re-disable USB persistence (the Chromium OS default) if we no longer
+# have chroots running with a root in removable media
+if checkusage /media; then
+    for usbp in /sys/bus/usb/devices/*/power/persist; do
+        if [ -e "$usbp" ]; then
+            echo 0 > "$usbp"
+        fi
+    done
+fi
+
+exit $ret
