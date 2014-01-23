@@ -5,7 +5,8 @@ require 'pry'
 
 module Kameleon
   class Recipe
-    attr_accessor :path, :name, :global, :sections, :aliases, :aliases_path
+    attr_accessor :path, :name, :global, :sections, :aliases, :aliases_path, \
+                  :checkpoint, :checkpoint_path
 
     # define section constant
     class Section < Utils::OrderedHash
@@ -51,6 +52,8 @@ module Kameleon
       @logger.debug("Initialize new recipe (#{path})")
       @aliases = {}
       @aliases_path = nil
+      @checkpoint = {}
+      @checkpoint_path = nil
       load!
       # TODO: Prints fancy dump
       # @logger.debug("Instance variables")
@@ -76,6 +79,8 @@ module Kameleon
       @global.merge! YAML.load(Utils.resolve_vars(@global.to_yaml, @path, @global))
       # Loads aliases
       load_aliases(yaml_recipe)
+      # Loads checkpoint configuration
+      load_checkpoint_config(yaml_recipe)
 
       #Find and load steps
       Section.sections.each do |section_name|
@@ -157,6 +162,25 @@ module Kameleon
             @aliases[k] = raw_yaml_content[start_content..end_content]
         end
         return @aliases
+      end
+    end
+
+
+    def load_checkpoint_config(yaml_recipe)
+      if yaml_recipe.keys.include? "checkpoint"
+        checkpoint = yaml_recipe.fetch("checkpoint")
+        if checkpoint.kind_of? Hash
+          @checkpoint = checkpoint
+        elsif checkpoint.kind_of? String
+          path = Pathname.new(File.join(File.dirname(@path), "checkpoints", checkpoint))
+          if File.file?(path)
+            @logger.info("Loading checkpoint configuration #{path}")
+            @checkpoint = YAML.load_file(path)
+            @checkpoint_path = path
+          else
+            fail RecipeError, "Checkpoint configuraiton file '#{path}' does not exists"
+          end
+        end
       end
     end
 

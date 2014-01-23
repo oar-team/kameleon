@@ -1,0 +1,10 @@
+save:
+  - exec_out: |
+      parent_snapshot_of_@step_id="$(readlink $$container)"
+      pushd snapshots
+      qemu-img create -f qcow2 @step_id_$$container
+                      -o backing_file=$(basename "$parent_snapshot_of_@step_id")
+      popd
+      ln -s snapshots/@step_id_$$container $$container
+restore:
+  - exec_out: ln -s snapshots/$$kameleon_checkpoint_id\_$$container $$container
