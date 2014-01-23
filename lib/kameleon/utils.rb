@@ -5,14 +5,18 @@ module Kameleon
   module Utils
 
     def self.resolve_vars(raw, yaml_path, initial_variables)
-      raw.to_s.gsub(/\$\$[a-zA-Z0-9\-_]*/) do |variable|
+      raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]*\}|\$\$[a-zA-Z0-9\-_]*/) do |var|
         # remove the dollars
-        strip_variable = variable[2,variable.length]
-        # check in local vars
-        if initial_variables.has_key? strip_variable
-          value = initial_variables[strip_variable]
+        if var.include? "{"
+          strip_var = var[3,(var.length - 4)]
         else
-          fail RecipeError, "#{yaml_path}: variable #{variable} not found in local or global"
+          strip_var = var[2,(var.length - 2)]
+        end
+        # check in local vars
+        if initial_variables.has_key? strip_var
+          value = initial_variables[strip_var]
+        else
+          fail RecipeError, "#{yaml_path}: variable #{var} not found in local or global"
         end
         return $` + resolve_vars(value.to_s + $', yaml_path, initial_variables)
       end
