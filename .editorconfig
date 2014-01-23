@@ -16,7 +16,7 @@ indent_size = 4
 [*.yaml]
 trim_trailing_whitespace = false
 
-[*.{html,js,rb,scss,xml,less,css,rake}]
+[*.{html,js,rb,scss,xml,less,css,rake,yaml}]
 indent_size = 2
 
 [{Vagrantfile,Rakefile,Gemfile,Gemfile.lock}]
