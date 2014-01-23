@@ -53,13 +53,13 @@
         UUID=`blkid -s UUID -o value ${DISK}p1` /boot           $$filesystem_type    sync               0       2
 
 - mount_mountdir:
-  - exec_out:  "echo Mounting root partition... ;  mount ${DISK}p2 $$mountdir || fail cannot mount /"
+  - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p2 $$mountdir || fail cannot mount /"
   - on_export_clean:
-    - exec_out: "echo umounting $$mountdir... ; mountpoint -q $$mountdir && umount $$mountdir || true"
+    - exec_out: "echo umounting $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
   - exec_out: mkdir -p $$mountdir/boot
-  - exec_out:  "echo Mounting boot partition... ;  mount ${DISK}p1 $$mountdir/boot || fail cannot mount /boot"
+  - exec_out:  "echo Mounting boot partition... ;  mount $${nbd_device}p1 $$mountdir/boot || fail cannot mount /boot"
   - on_export_clean:
-    - exec_out: "echo umounting $$mountdir/boot... ; mountpoint -q $$mountdir/boot && umount $$mountdir/boot || true"
+    - exec_out: "echo umounting $$mountdir/boot... ; mountpoint -q $$mountdir/boot && umount -f -l $$mountdir/boot || true"
 
 - save_disk_path:
   - on_setup_init:
