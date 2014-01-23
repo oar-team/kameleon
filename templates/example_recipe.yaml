@@ -18,14 +18,16 @@ aliases: defaults.yaml
 checkpoint: qcow2.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
-  ## User varibales : You can define your own global variables here...
-  uuid: $$kameleon_short_uuid
+  ## User varibales : used by the recipe
   cachedir: /var/cache/kameleon/
   rootfs: $$kameleon_cwd/rootfs
   user_name: kameleon
   arch: amd64
 
-  ## System variables
+  container: $$kameleon_recipe_name.qcow2
+  nbd_device: /dev/nbd0
+
+  ## System variables. Required by kameleon engine
   # Distribution
   distrib: debian
 

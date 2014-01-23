@@ -1,6 +1,6 @@
 - install_extlinux:
   - exec_in: apt-get install  -y --force-yes extlinux
-  - exec_in: extlinux-install $DISK
+  - exec_in: extlinux-install $$nbd_device
   - write_in:
     - /boot/extlinux/extlinux.conf
     - |
@@ -9,10 +9,10 @@
       
       label linux
       kernel ../`basename /boot/vmlinuz*`
-      append initrd=../`basename /boot/init*` root=UUID=`blkid -s UUID -o value ${DISK}p2` ro
+      append initrd=../`basename /boot/init*` root=UUID=`blkid -s UUID -o value $${nbd_device}p2` ro
   - on_clean:
     - exec_in: |
         dir=/var/lib/os-prober/mount
         if [ -d "$dir" ]
-        then umount -f "$dir" && rmdir "$dir"
+        then umount -f -l "$dir" && rmdir "$dir"
         fi

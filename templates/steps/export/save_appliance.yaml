@@ -32,17 +32,11 @@
 - save_as_vmdk:
   - check_cmd_out: qemu-img
   - exec_out: |
-      qemu-img convert -O vmdk $$kameleon_recipe_name.raw $$filename.vmdk
+      qemu-img convert -O vmdk $$container $$filename.vmdk
   - exec_out: echo "Saved vmdk appliance to $(pwd)/$$filename.vmdk"
-
-- save_as_qcow2:
-  - check_cmd_out: qemu-img
-  - exec_out: |
-      qemu-img convert -O qcow2 $$kameleon_recipe_name.raw $$filename.qcow2
-  - exec_out: echo "Saved qcow2 appliance to $(pwd)/$$filename.qcow2"
 
 - save_as_vdi:
   - check_cmd_out: VBoxManage
   - exec_out: |
-      VBoxManage convertdd $$kameleon_recipe_name.raw $$filename.vdi
+      VBoxManage convertdd $$container $$filename.vdi
   - exec_out: echo "Saved vdi appliance to $(pwd)/$$filename.vdi"
