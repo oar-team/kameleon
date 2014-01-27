@@ -25,10 +25,10 @@
   - check_cmd_out: sfdisk
   - exec_out: |
       echo "Partitioning disk..."
-      sfdisk $${nbd_device} -q -D -uM <<< '
+      sfdisk $${nbd_device} -q -D -uM --force --no-reread <<< '
       ,200,83,*
       ;
-      ' || fail cannot partition $$container
+      ' 2>&1 || fail cannot partition $$container
   - exec_out: |
       echo Creating boot partition...
       mkfs.$$filesystem_type -q $${nbd_device}p1 || fail cannot create /boot ext4
@@ -36,7 +36,7 @@
       echo Creating root partition...
       mkfs.$$filesystem_type -q $${nbd_device}p2 || fail cannot create / ext4
 
-- create_fstab:
+- create_fstab_mtab:
   - on_setup_init:
     - write_out:
       - $$mountdir/etc/fstab
@@ -50,6 +50,7 @@
         # <file system> <mount point>   <type>  <options>       <dump>  <pass>
         UUID=`blkid -s UUID -o value $${nbd_device}p2` /               $$filesystem_type    errors=remount-ro  0       1
         UUID=`blkid -s UUID -o value $${nbd_device}p1` /boot           $$filesystem_type    sync               0       2
+    - exec_out: cat /proc/mounts > $$rootfs/etc/mtab
 
 - mount_mountdir:
   - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p2 $$mountdir || fail cannot mount /"

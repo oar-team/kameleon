@@ -9,4 +9,4 @@
       do_initrd = yes
       link_in_boot = no
 - install_kernel:
-  - exec_in: apt-get -y --force-yes install linux-image-$$arch
+  - exec_in: apt-get -y --force-yes install linux-image-$$arch 2>&1

@@ -1,6 +1,6 @@
 - install_extlinux:
-  - exec_in: apt-get install  -y --force-yes extlinux
-  - exec_in: extlinux-install $$nbd_device
+  - exec_in: apt-get install  -y --force-yes extlinux 2>&1
+  - exec_in: extlinux-install $$nbd_device 2>&1
   - write_in:
     - /boot/extlinux/extlinux.conf
     - |

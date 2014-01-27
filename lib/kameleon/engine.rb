@@ -29,9 +29,9 @@ module Kameleon
       end
       @recipe.sections.fetch(section_name).each do |macrostep|
         begin
-          @logger.info("[macrostep] #{macrostep.name}")
           macrostep.microsteps.each do |microstep|
-            @logger.info("[microstepstep] #{microstep.name}")
+            @logger.info("Step #{section_name}/#{macrostep.name}/#{microstep.name}")
+            @logger.info(" ---> 8dbd9e392a96")
             microstep.commands.each do |cmd|
               safe_exec_cmd(cmd)
             end
