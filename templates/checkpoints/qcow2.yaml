@@ -11,7 +11,7 @@ create: |
       lsmod | grep nbd >/dev/null || modprobe nbd
       sync
       qemu-nbd -d $$nbd_device
-      qemu-nbd -c $$nbd_device "$(readlink $$container)" -t -n ||  fail nbd device $$container is unavailable
+      qemu-nbd -c $$nbd_device "$(readlink $$container)" -n ||  fail nbd device $$container is unavailable
     fi
 
 apply: |
@@ -23,7 +23,7 @@ apply: |
 
     ln -sf "checkpoints/${previous_id}_$${container}" "$$container"
     qemu-nbd -d $$nbd_device
-    qemu-nbd -c $$nbd_device "$(readlink $$container)" -t -n ||  fail nbd device $$container is unavailable
+    qemu-nbd -c $$nbd_device "$(readlink $$container)" -n ||  fail nbd device $$container is unavailable
 
 remove: |
     rm -f "checkpoints/@microstep_id_$${container}"

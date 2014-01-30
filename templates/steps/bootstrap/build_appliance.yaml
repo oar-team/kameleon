@@ -16,7 +16,7 @@
   - exec_out: echo Looking for nbd device...
   - exec_out: lsmod | grep nbd >/dev/null || modprobe nbd || fail failed to load nbd module into kernel
   - exec_out: echo Connecting $$container to nbd device $$nbd_device
-  - exec_out: qemu-nbd -c $$nbd_device "$(readlink $$container)" -t -n ||  fail nbd device $$container is unavailable
+  - exec_out: qemu-nbd -c $$nbd_device "$(readlink $$container)" -n ||  fail nbd device $$container is unavailable
 
 - detach_nbd_device:
   - on_export_clean:
