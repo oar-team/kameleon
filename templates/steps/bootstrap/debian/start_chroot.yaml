@@ -1,5 +1,6 @@
 # # Bootstrap
 - mount_chroot:
+  - on_checkpoint: redo
   - check_cmd_out: chroot
   - exec_out: mount -o bind /dev  $$rootfs/dev
   - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts

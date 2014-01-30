@@ -1,22 +1,24 @@
 # Build Appliance
 - nbd_device: /dev/nbd0
 - create_raw_image:
-
   - check_cmd_out: qemu-img
-  - exec_out: mkdir snapshots
+  - exec_out: mkdir -p checkpoints
   - exec_out: |
       if [ ! -e "$$container" ] ; then
-        qemu-img create -f qcow2 snapshots/base_$$container $$image_size
-        ln -s snapshots/base_$$container $$container
+        qemu-img create -f qcow2 checkpoints/base_$$container $$image_size
+        ln -sf checkpoints/base_$$container $$container
       fi
 
 - attach_nbd_device:
+  - on_checkpoint: skip
   - check_cmd_out: qemu-nbd
-  - exec_out: mkdir -p $$mountdir
+  - exec_out: false
   - exec_out: echo Looking for nbd device...
   - exec_out: lsmod | grep nbd >/dev/null || modprobe nbd || fail failed to load nbd module into kernel
   - exec_out: echo Connecting $$container to nbd device $$nbd_device
-  - exec_out: qemu-nbd -c $$nbd_device $$container -t -n ||  fail nbd device $$container is unavailable
+  - exec_out: qemu-nbd -c $$nbd_device "$(readlink $$container)" -t -n ||  fail nbd device $$container is unavailable
+
+- detach_nbd_device:
   - on_export_clean:
     - exec_out: sync
     - exec_out: qemu-nbd -d $$nbd_device
@@ -53,6 +55,8 @@
     - exec_out: cat /proc/mounts > $$rootfs/etc/mtab
 
 - mount_mountdir:
+  - on_checkpoint: redo
+  - exec_out: mkdir -p $$mountdir
   - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p2 $$mountdir || fail cannot mount /"
   - on_export_clean:
     - exec_out: "echo umounting $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
