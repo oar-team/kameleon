@@ -28,33 +28,12 @@ module Kameleon
       logger.notice("Cloning template '#{options[:template]}'")
       templates_path = Kameleon.env.templates_path
       recipes_path = Kameleon.env.recipes_path
-      template_path = File.join(templates_path, options[:template]) + '.yaml'
-      template_recipe = Recipe.new(template_path)
 
-      # TODO add a warning and add a number to the copied file if already
-      # exists in the workdir
-      Dir::mktmpdir do |tmp_dir|
-        FileUtils.cp(template_path, File.join(tmp_dir, recipe_name + '.yaml'))
-        template_recipe.sections.each do |key, macrosteps|
-          macrosteps.each do |macrostep|
-            relative_path = macrostep.path.relative_path_from(templates_path)
-            dst = File.join(tmp_dir, File.dirname(relative_path))
-            FileUtils.mkdir_p dst
-            FileUtils.cp(macrostep.path, dst)
-          end
-        end
-        [template_recipe.aliases_path, template_recipe.checkpoint_path].each do |path|
-          unless path.nil?
-            relative_path = path.relative_path_from(templates_path)
-            dst = File.join(tmp_dir, File.dirname(relative_path))
-            FileUtils.mkdir_p dst
-            FileUtils.cp(path, dst)
-          end
-        end
-        # Create recipe dir if not exists
-        FileUtils.mkdir_p recipes_path
-        FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_path)
-      end
+      template_path = File.join(templates_path, options[:template]) + '.yaml'
+      template_recipe = RecipeTemplate.new(template_path)
+      template_recipe.copy_template(recipes_path,
+                                    recipe_name,
+                                    options[:force])
       logger.notice("New recipe \"#{recipe_name}\" "\
                     "as been created in #{recipes_path}")
     end

@@ -202,6 +202,28 @@ module Kameleon
           fail RecipeError, "Required argument missing for #{context_name}:"\
                           " #{ arg }" unless args.include?(arg)
         end
+  class RecipeTemplate < Recipe
+
+    def copy_template(dest_path, recipe_name, force)
+      Dir::mktmpdir do |tmp_dir|
+        recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
+        FileUtils.cp(@path, recipe_path)
+        File.open(recipe_path, 'w+') do |file|
+          tpl = ERB.new(@recipe_content)
+          result = tpl.result(binding)
+          file.write(result)
+        end
+
+        @files.each do |path|
+          relative_path = path.relative_path_from(Kameleon.env.templates_path)
+          dst = File.join(tmp_dir, File.dirname(relative_path))
+          FileUtils.mkdir_p dst
+          FileUtils.cp(path, dst)
+          @logger.debug("Copying '#{path}' to '#{dst}'")
+        end
+        # Create recipe dir if not exists
+        FileUtils.mkdir_p Kameleon.env.recipes_path
+        FileUtils.cp_r(Dir[tmp_dir + '/*'], Kameleon.env.recipes_path)
       end
     end
   end
