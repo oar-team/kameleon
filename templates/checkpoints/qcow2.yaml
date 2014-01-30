@@ -18,7 +18,7 @@ apply: |
     # apply command use the backing file that represent the real state to restore 
     previous_id=$(qemu-img info "checkpoints/@microstep_id_$${container}" \
                   | grep backing \
-                  | sed -e 's/.*checkpoints\/\(.*\)_devmachine.qcow2\(.*\)/\1/p' \
+                  | sed -e 's/.*checkpoints\/\(.*\)_$${container}\(.*\)/\1/p' \
                   | uniq)
 
     ln -sf "checkpoints/${previous_id}_$${container}" "$$container"
