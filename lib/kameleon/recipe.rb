@@ -1,132 +1,109 @@
 # Manage kameleon recipes
 require 'kameleon/utils'
-require 'kameleon/macrostep'
-require 'pry'
+require 'kameleon/step'
 
 module Kameleon
+
   class Recipe
     attr_accessor :path, :name, :global, :sections, :aliases, :aliases_path, \
                   :checkpoint, :checkpoint_path
-
-    # define section constant
-    class Section < Utils::OrderedHash
-      attr_accessor :clean, :init
-
-      BOOTSTRAP="bootstrap"
-      SETUP="setup"
-      EXPORT="export"
-      def self.sections()
-        [
-          BOOTSTRAP,
-          SETUP,
-          EXPORT,
-        ]
-      end
-
-      def initialize()
-        @clean = {}
-        @init = {}
-        Section::sections.each do |name|
-          @clean[name] = Macrostep::Microstep.new({"clean_#{name}"=> []})
-          @init[name] = Macrostep::Microstep.new({"init_#{name}"=> []})
-        end
-        super
-      end
-    end
 
     def initialize(path)
       @logger = Log4r::Logger.new("kameleon::[recipe]")
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
-      @sections = Section.new
+      @recipe_content = File.open(@path, 'r') { |f| f.read }
+      @sections = {
+        "bootstrap" => Section.new("bootstrap"),
+        "setup" => Section.new("setup"),
+        "export" => Section.new("export"),
+      }
       @required_global = %w(distrib out_context in_context)
       kameleon_id = SecureRandom.uuid
-      @system_global = {
+      @global = {
         "kameleon_recipe_name" => @name,
         "kameleon_recipe_dir" => File.dirname(@path),
         "kameleon_uuid" => kameleon_id,
         "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
       }
-      @global = {}
-      @logger.debug("Initialize new recipe (#{path})")
       @aliases = {}
-      @aliases_path = nil
-      @checkpoint = {}
-      @checkpoint_path = nil
+      @checkpoint = nil
+      @files = []
+      @logger.debug("Initialize new recipe (#{path})")
       load!
-      # TODO: Prints fancy dump
-      # @logger.debug("Instance variables")
-      # instance_variables.each do |v|
-      #   @logger.debug("  #{v} = #{instance_variable_get(v)}")
-      # end
     end
 
     def load!
       # Find recipe path
-      @logger.info("Loading #{@path}")
+      @logger.notice("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load File.open @path
-      fail RecipeError, "Invalid yaml error" unless yaml_recipe.kind_of? Hash
-      fail RecipeError, "Recipe misses 'global' section" unless yaml_recipe.key? "global"
-
+      unless yaml_recipe.kind_of? Hash
+        fail RecipeError, "Invalid yaml error"
+      end
+      unless yaml_recipe.key? "global"
+        fail RecipeError, "Recipe misses 'global' section"
+      end
 
       #Load Global variables
       @global.merge!(yaml_recipe.fetch("global"))
-      @global.merge!@system_global
       # Resolve dynamically-defined variables !!
-      @global.merge! YAML.load(Utils.resolve_vars(@global.to_yaml, @path, @global))
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      @global.merge! YAML.load(resolved_global)
+
       # Loads aliases
       load_aliases(yaml_recipe)
       # Loads checkpoint configuration
       load_checkpoint_config(yaml_recipe)
 
       #Find and load steps
-      Section.sections.each do |section_name|
-        @sections[section_name] = []
-        if yaml_recipe.key? section_name
-          yaml_recipe.fetch(section_name).each do |macrostep_yaml|
-            macrostep_instance = load_macrostep(macrostep_yaml, section_name)
-            # save the macrostep in the section
-            @sections[section_name].push(macrostep_instance)
-          end
-        end
-      end
-    end
-
-    def load_macrostep(raw_macrostep, section_name)
-      #check if it's a string or a dict
-      if raw_macrostep.kind_of? String
-        name = raw_macrostep
-      elsif raw_macrostep.kind_of? Hash
-        name = raw_macrostep.keys[0]
-        args = raw_macrostep.values[0]
-      else
-        fail RecipeError, "Malformed yaml recipe in section: "+ section_name
-      end
-      # find the path of the macrostep
       steps_dir = File.join(File.dirname(@path), 'steps')
-      [@global['distrib'], 'default', ''].each do |search_dir|
-        step_path = File.join(steps_dir, section_name, search_dir, name + '.yaml')
-        if File.file?(step_path)
-          @logger.info("Loading step #{step_path}")
-          return Macrostep.new(step_path, args, self)
+      @sections.values.each do |section|
+        dir_to_search = [@global['distrib'], 'default', ''].map do |path|
+          [File.join(steps_dir, section.name, path),
+            File.join(steps_dir, path)]
         end
-        @logger.debug("Step #{name} not found in this path: #{step_path}")
-      end
-      fail RecipeError, "Step #{name} not found"
-    end
+        dir_to_search.flatten!
 
-    def resolve!
-      @logger.info("Starting recipe variables resolution")
-      @sections.each{ |key, macrosteps| macrosteps.each{|m| m.resolve!} }
-      # global args more flat
-      %w(out_context in_context).each do |context_name|
-        old_context_args = @global[context_name].clone
-        @global[context_name] = {}
-        old_context_args.each do |arg|
-          @global[context_name].merge!(arg)
+        if yaml_recipe.key? section.name
+          yaml_section = yaml_recipe.fetch(section.name)
+          next unless yaml_section.kind_of? Array
+          yaml_section.each do |raw_macrostep|
+
+            # Get macrostep name and arguments if available
+            if raw_macrostep.kind_of? String
+              name = raw_macrostep
+              args = nil
+            elsif raw_macrostep.kind_of? Hash
+              name = raw_macrostep.keys[0]
+              args = raw_macrostep.values[0]
+            else
+              fail RecipeError, "Malformed yaml recipe in section: "\
+                                "#{section.name}"
+            end
+
+            # Load macrostep yaml
+            loaded = false
+            dir_to_search.each do |dir|
+              macrostep_path = Pathname.new(File.join(dir, name + '.yaml'))
+              if File.file?(macrostep_path)
+                @logger.notice("Loading macrostep #{macrostep_path}")
+                macrostep = load_macrostep(macrostep_path, name, args)
+                section.macrosteps.push(macrostep)
+                @files.push(macrostep_path)
+                @logger.debug("Macrostep '#{name}' found in this path: " \
+                              "#{macrostep_path}")
+                loaded = true
+                break
+              else
+                @logger.debug("Macrostep '#{name}' not found in this path: " \
+                              "#{macrostep_path}")
+              end
+            end
+            fail RecipeError, "Step #{name} not found" unless loaded
+          end
         end
       end
     end
@@ -139,69 +116,367 @@ module Kameleon
         elsif aliases.kind_of? String
           path = Pathname.new(File.join(File.dirname(@path), "aliases", aliases))
           if File.file?(path)
-            @logger.info("Loading aliases #{path}")
+            @logger.notice("Loading aliases #{path}")
             @aliases = YAML.load_file(path)
-            @aliases_path = path
+            @files.push(path)
+
+            ## save raw YAML, because YAML.load/YAML.dump strip escaping !
+            aliases_file = File.open(path, "r")
+            raw_yaml_content = aliases_file.read
+            aliases_file.close
+            list_aliases = @aliases.map {|k, _| k}
+            list_aliases.each_with_index  do |k, index|
+                start_content = raw_yaml_content.index("#{k}:\n") + k.length + 2
+                if index == list_aliases.count - 1
+                  end_content = raw_yaml_content.length
+                else
+                  next_k = list_aliases[index + 1]
+                  end_content = raw_yaml_content.index("#{next_k}:\n") - 1
+                end
+                @aliases[k] = raw_yaml_content[start_content..end_content]
+            end
           else
             fail RecipeError, "Aliases file '#{path}' does not exists"
           end
         end
-        ## save raw YAML, because YAML.load/YAML.dump strip escaping !
-        aliases_file = File.open(@aliases_path, "r")
-        raw_yaml_content = aliases_file.read
-        aliases_file.close
-        list_aliases = @aliases.map {|k, _| k}
-        list_aliases.each_with_index  do |k, index|
-            start_content = raw_yaml_content.index("#{k}:\n") + k.length + 2
-            if index == list_aliases.count - 1
-              end_content = raw_yaml_content.length
-            else
-              next_k = list_aliases[index + 1]
-              end_content = raw_yaml_content.index("#{next_k}:\n") - 1
-            end
-            @aliases[k] = raw_yaml_content[start_content..end_content]
-        end
-        return @aliases
       end
     end
-
 
     def load_checkpoint_config(yaml_recipe)
       if yaml_recipe.keys.include? "checkpoint"
         checkpoint = yaml_recipe.fetch("checkpoint")
         if checkpoint.kind_of? Hash
           @checkpoint = checkpoint
+          @checkpoint["path"] = @path
         elsif checkpoint.kind_of? String
-          path = Pathname.new(File.join(File.dirname(@path), "checkpoints", checkpoint))
+          path = Pathname.new(File.join(File.dirname(@path),
+                              "checkpoints",
+                              checkpoint))
           if File.file?(path)
-            @logger.info("Loading checkpoint configuration #{path}")
+            @logger.notice("Loading checkpoint configuration #{path}")
             @checkpoint = YAML.load_file(path)
-            @checkpoint_path = path
+            @checkpoint["path"] = path.to_s
+            @files.push(path)
           else
-            fail RecipeError, "Checkpoint configuraiton file '#{path}' does not exists"
+            fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
+                              "does not exists"
           end
         end
       end
     end
 
-    def check
-      @logger.info("Starting recipe consistency check")
+    def load_macrostep(step_path, name, args)
+      macrostep_yaml = YAML.load_file(step_path)
+      local_variables = {}
+      microsteps = []
+      # Basic macrostep syntax check
+      if not macrostep_yaml.kind_of? Array
+        fail RecipeError, "The macrostep #{step_path} is not valid "
+                           "(should be a list of microsteps)"
+      end
+      # Load default local variables
+      macrostep_yaml.each do |yaml_microstep|
+        key = yaml_microstep.keys[0]
+        value = yaml_microstep[key]
+        # Set new variable if not defined yet
+        if value.kind_of? String
+          local_variables[key] = @global.fetch(key, value)
+        else
+          microsteps.push Microstep.new(yaml_microstep)
+        end
+      end
+      selected_microsteps = []
+      if args
+        args.each do |entry|
+          if entry.kind_of? Hash
+            # resolve variable before using it
+            entry.each do |key, value|
+              merged_variables = @global.merge(local_variables)
+              # resolve recursive variable definition
+              local_variables[key] = Utils.resolve_vars(value,
+                                                        step_path,
+                                                        merged_variables)
+            end
+          elsif entry.kind_of? String
+            selected_microsteps.push entry
+          end
+        end
+      end
+      unless selected_microsteps.empty?
+        # Some steps are selected so remove the others
+        # WARN: Allow the user to define this list not in the original order
+        strip_microsteps = []
+        selected_microsteps.each do |microstep_name|
+          macrostep = find_microstep(microstep_name, microsteps)
+          if macrostep.nil?
+            fail RecipeError, "Can't find microstep '#{microstep_name}' "\
+                              "in macrostep file '#{step_path}'"
+          else
+            strip_microsteps.push(macrostep)
+          end
+        end
+        microsteps = strip_microsteps
+      end
+      return Macrostep.new(name, microsteps, local_variables, step_path)
+    end
+
+    def find_microstep(microstep_name, microsteps)
+      @logger.debug("Looking for microstep #{microstep_name}")
+      microsteps.each do |microstep|
+        if microstep_name.eql? microstep.name
+          return microstep
+        end
+      end
+    end
+
+    def resolve!
+      consistency_check
+      resolve_checkpoint unless @checkpoint.nil?
+
+      @logger.notice("Resolving recipe")
+      @sections.values.each do |section|
+        section.macrosteps.each do |macrostep|
+          # First pass : resolve aliases
+          @logger.debug("Resolving aliases for macrostep '#{macrostep.name}'")
+          macrostep.microsteps.each do |microstep|
+            microstep.commands.map! do |cmd|
+              # resolve alias
+              @aliases.keys.include?(cmd.key) ? resolve_alias(cmd) : cmd
+            end
+          end
+          # flatten for multiple-command alias + variables
+          @logger.debug("Resolving check statements for macrostep '#{macrostep.name}'")
+          macrostep.microsteps.each { |microstep| microstep.commands.flatten! }
+          # Second pass : resolve variables + check_cmd_in/out hooks
+          macrostep.microsteps.each do |microstep|
+            microstep.commands.map! do |cmd|
+              all_varibales = @global.merge(macrostep.variables)
+              cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd,
+                                                  macrostep.path,
+                                                  all_varibales)
+              resolve_check_cmd(cmd)
+            end
+          end
+          # Third pass : resolve and strip clean/init hooks
+          @logger.debug("Resolving hooks for macrostep '#{macrostep.name}'")
+          macrostep.microsteps.each do |microstep|
+            microstep.commands.map! do |cmd|
+              resolve_hooks(cmd, macrostep) unless cmd.nil?
+            end
+          end
+          # remove nil values
+          @logger.debug("Compacting macrostep '#{macrostep.name}'")
+          macrostep.microsteps.each { |microstep| microstep.commands.compact! }
+        end
+      end
+      calculate_step_identifiers
+    end
+
+    def consistency_check()
+      # flatten list of hash to an a hash
+      %w(out_context in_context).each do |context_name|
+        if @global[context_name].kind_of? Array
+          old_context_args = @global[context_name].clone
+          @global[context_name] = {}
+          old_context_args.each do |arg|
+            @global[context_name].merge!(arg)
+          end
+        end
+      end
+      @logger.notice("Starting recipe consistency check")
       missings = []
-      @required_global.each { |key| missings.push cmd unless @global.key? key }
+      @required_global.each do |key|
+        missings.push cmd unless @global.key? key
+      end
       fail RecipeError, "Required parameters missing in global section :" \
                         " #{missings.join ' '}" unless missings.empty?
       # check context args
       required_args = %w(cmd workdir)
+      missings = []
       %w(out_context in_context).each do |context_name|
         context = @global[context_name]
-        fail RecipeError, "Required arguments missing for #{context_name}:"\
-                        " #{ required_args.inspect }" unless context.kind_of? Array
-        args = context.map { |i| i.keys }.flatten
-        required_args.each do |arg|
-          @global[context] unless args.include?(arg)
-          fail RecipeError, "Required argument missing for #{context_name}:"\
-                          " #{ arg }" unless args.include?(arg)
+        missings = required_args - (context.keys() & required_args)
+        fail RecipeError, "Required paramater missing for #{context_name}:" \
+                          " #{ missings.join ' ' }" unless missings.empty?
+      end
+      unless @checkpoint.nil?
+        required_args = %w(create apply remove list)
+        missings = []
+        missings = required_args - (@checkpoint.keys() & required_args)
+        fail RecipeError, "Required paramater missing for checkpoint:" \
+                          " #{ missings.join ' ' }" unless missings.empty?
+      end
+    end
+
+    def resolve_checkpoint()
+      %w(create apply remove list).each do |key|
+        @checkpoint[key] = Utils.resolve_vars(@checkpoint[key],
+                                              @checkpoint["path"],
+                                              @global)
+      end
+    end
+
+    def resolve_alias(cmd)
+      name = cmd.key
+      command_pattern = @aliases.fetch(name).clone
+      args = YAML.load(cmd.string_cmd)[name]
+      args = [].push(args).flatten  # convert args to array
+      expected_args_number = command_pattern.scan(/@\d+/).uniq.count
+      if expected_args_number != args.count
+        if args.length == 0
+          msg = "#{name} takes no arguments (#{args.count} given)"
+        else
+          msg = "#{name} takes exactly #{expected_args_number} arguments"
+                " (#{args.count} given)"
         end
+        raise RecipeError, msg
+      end
+      args.each_with_index do |arg, i|
+        command_pattern.gsub!("@#{i+1}", arg.inspect)
+      end
+      YAML.load(command_pattern).map { |cmd_hash| Command.new(cmd_hash) }
+    end
+
+    #handle clean methods
+    def resolve_hooks(cmd, macrostep)
+      if (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
+        cmds = []
+        if cmd.value.kind_of?(Array)
+          cmds = cmd.value.map do |c|
+            @aliases.keys.include?(c.key) ? resolve_alias(c) : c
+          end
+          cmds = cmds.flatten
+        else
+          fail RecipeError, "Invalid #{cmd.key} arguments"
+        end
+        if cmd.key.eql? "on_clean"
+          microstep_name = "_clean_#{macrostep.name}_" \
+                           "#{macrostep.clean_microsteps.count}"
+          new_clean_microstep = Microstep.new({microstep_name => []})
+          new_clean_microstep.on_checkpoint = "redo"
+          new_clean_microstep.commands = cmds.clone
+          macrostep.clean_microsteps.unshift new_clean_microstep
+          return
+        elsif cmd.key.eql? "on_init"
+          microstep_name = "_init_#{macrostep.name}_" \
+                           "#{macrostep.init_microsteps.count}"
+          new_init_microstep = Microstep.new({microstep_name=> []})
+          new_init_microstep.on_checkpoint = "redo"
+          new_init_microstep.commands = cmds.clone
+          macrostep.init_microsteps.unshift new_init_microstep
+          return
+        else
+          @sections.values.each do |section|
+            section.clean_macrostep
+            if cmd.key.eql? "on_#{section.name}_clean"
+              microstep_name = "_clean_#{section.name}_"\
+                               "#{section.clean_macrostep.microsteps.count}"
+              new_clean_microstep = Microstep.new({microstep_name=> []})
+              new_clean_microstep.commands = cmds.clone
+              new_clean_microstep.on_checkpoint = "redo"
+              section.clean_macrostep.microsteps.unshift new_clean_microstep
+              return
+            elsif cmd.key.eql? "on_#{section.name}_init"
+              microstep_name = "_init_#{section.name}_"\
+                               "#{section.init_macrostep.microsteps.count}"
+              new_init_microstep = Microstep.new({microstep_name=> []})
+              new_init_microstep.commands = cmds.clone
+              new_init_microstep.on_checkpoint = "redo"
+              section.init_macrostep.microsteps.push new_init_microstep
+              return
+            end
+          end
+        end
+        fail RecipeError, "Invalid command : '#{cmd.key}'"
+      else
+        return cmd
+      end
+    end
+
+    def resolve_check_cmd(cmd)
+      if %w(check_cmd_out check_cmd_in).include?(cmd.key)
+        section_name = cmd.key.include?("in") ? "setup" : "bootstrap"
+        cmd_key = "exec_#{cmd.key.gsub("check_cmd_", "")}"
+        names = cmd.value.split(%r{,\s*}).map(&:split).flatten
+        names.each do |name|
+          shell_cmd = "command -V #{name} ||" \
+                      " (echo 1>&2 '#{name} is missing' && false )"
+          check_cmd = Command.new({cmd_key => shell_cmd})
+          @sections.values.each do |section|
+            if section.name == section_name
+              microstep_name = "_init_#{section.name}_"\
+                               "#{section.init_macrostep.microsteps.count}"
+              init_microstep = Microstep.new({microstep_name=> [check_cmd]})
+              section.init_macrostep.microsteps.push init_microstep
+            end
+          end
+        end
+        return
+      else
+        return cmd
+      end
+    end
+
+    def microsteps
+      if @microsteps.nil?
+        microsteps = []
+        @sections.values.each do |section|
+          section.sequence do |macrostep|
+            macrostep.sequence do |microstep|
+              microsteps.push microstep
+            end
+          end
+        end
+        @microsteps = microsteps
+      end
+      return @microsteps
+    end
+
+    def calculate_step_identifiers
+      @logger.notice("Calculating microstep identifiers")
+      base_salt = ""
+      order = 0
+      @sections.values.each do |section|
+        section.sequence do |macrostep|
+          macrostep.sequence do |microstep|
+            base_salt = microstep.calculate_identifier base_salt
+            slug = "#{section.name}/#{macrostep.name}/#{microstep.name}"
+            microstep.slug = slug
+            microstep.order = (order += 1)
+            @logger.debug("  #{microstep.slug}: #{microstep.identifier}")
+          end
+        end
+      end
+    end
+
+    def to_hash
+      recipe_hash = {
+        "name" => @name,
+        "path" => @path.to_s,
+        "files" => @files.map {|p| p.to_s },
+        "global" => @global,
+        "required_global" => @required_global,
+      }
+      unless @aliases.nil?
+        aliases = {}
+        @aliases.each { |k, v| aliases[k] = YAML.load(v) }
+        recipe_hash["aliases"] = aliases
+      end
+      recipe_hash["checkpoint"] = @checkpoint unless @checkpoint.nil?
+      recipe_hash["steps"] = to_array
+      return recipe_hash
+    end
+
+    def to_array
+      array = []
+      @sections.values.each do |section|
+        section.to_array.each { |m|  array.push m }
+      end
+      return array
+    end
+
+  end
+
   class RecipeTemplate < Recipe
 
     def copy_template(dest_path, recipe_name, force)

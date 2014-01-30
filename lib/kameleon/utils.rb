@@ -27,7 +27,7 @@ module Kameleon
         value.gsub!(/['`]/, "")
         value.gsub!(/\s*@\s*/, " at ")
         value.gsub!(/\s*&\s*/, " and ")
-        value.gsub!(/\s*[^A-Za-z0-9\.\-]\s*/, '_')
+        value.gsub!(/\s*[^A-Za-z0-9\.]\s*/, '_')
         value.gsub!(/_+/, "_")
         value.gsub!(/\A[_\.]+|[_\.]+\z/, "")
         value
