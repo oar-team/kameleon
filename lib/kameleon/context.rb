@@ -22,12 +22,19 @@ module Kameleon
       @shell.start
     end
 
+    def log(log_level, msg)
+      @logger.info msg if log_level == "info"
+      @logger.error msg if log_level == "error"
+      @logger.debug msg if log_level == "debug"
+    end
+
     def execute(cmd, kwargs = {})
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       cmd_with_prefix.split( /\r?\n/ ).each {|m| @logger.debug "+ #{m}" }
+      log_level = kwargs.fetch(:log_level, "info")
       exit_status = @shell.execute(cmd_with_prefix, kwargs) do |out, err|
-        out.split( /\r?\n/ ).each {|m| @logger.info m } unless out.nil?
-        err.split( /\r?\n/ ).each {|m| @logger.error m } unless err.nil?
+        out.split( /\r?\n/ ).each {|m| log(log_level, m) } unless out.nil?
+        err.split( /\r?\n/ ).each {|m| log("error", m) } unless err.nil?
       end
       @logger.debug("Exit status : #{exit_status}")
       fail ExecError unless exit_status.eql? 0
