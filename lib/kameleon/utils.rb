@@ -33,6 +33,17 @@ module Kameleon
         value
     end
 
+    def self.extract_meta_var(name, content)
+        start_regex = Regexp.escape("# #{name.upcase}: ")
+        end_regex = Regexp.escape("\n#\n")
+        reg = %r/#{ start_regex }(.*?)#{ end_regex }/m
+        var = content.match(reg).captures.first
+        var.gsub!("\n#", "")
+        var.gsub!("  ", " ")
+        return var
+    rescue
+    end
+
     ### Hash that keeps elements in the insertion order -- it's more
     ### convenient for storing macrostep->microstep->comand structure
     class OrderedHash < Hash

@@ -106,6 +106,12 @@ module Kameleon
           end
         end
       end
+      @logger.notice("Loading recipe metadata")
+      @metainfo = {
+        "description" => Utils.extract_meta_var("description", @recipe_content),
+        "recipe" => Utils.extract_meta_var("recipe", @recipe_content),
+        "template" => Utils.extract_meta_var("template", @recipe_content),
+      }
     end
 
     def load_aliases(yaml_recipe)

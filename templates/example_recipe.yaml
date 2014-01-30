@@ -1,20 +1,24 @@
 
-#===============================================================================
+#==============================================================================
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
-#===============================================================================
+#==============================================================================
 #
-# RECIPE: example_recipe
+# RECIPE: <%= recipe_name %>
 #
 # DESCRIPTION: This is an example recipe. It aims at teach the user how to
 # write his own recipe from scratch
 #
+# TEMPLATE: <%= @name %>
+#
 # WARNING: It is recommended to use the template provided by Kameleon available
 # from the *new* command.
 #
-#===============================================================================
+#==============================================================================
+
 ---
 # Loads some helpful aliases
 aliases: defaults.yaml
+# Enables qcow checkpoint
 checkpoint: qcow2.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
