@@ -39,9 +39,13 @@ module Kameleon
     Kameleon.logger.fatal("Quitting...")
     exit 1
   rescue Exception => e
-    $stderr << "Unfortunately, a fatal error has occurred : "\
-               "#{e.message}.\nUse --debug option for more details\n"
-    e.backtrace.each {|m| Kameleon.logger.debug m }
+    # if ENV["KAMELEON_LOG"] != "debug"
+      $stderr << "Unfortunately, a fatal error has occurred : "\
+                 "#{e.message}.\nUse --debug option for more details\n"
+    #else
+      Kameleon.logger.debug "Error : #{e}"
+      e.backtrace.each {|m| puts "==> #{m}" }
+    #end
     exit 666
   end
 end

@@ -177,7 +177,7 @@ module Kameleon
 
     def fork(io)
       command = ["bash", "-c", @shell_cmd]
-      @logger.info("Starting process: #{@cmd.inspect}")
+      @logger.notice("Starting process: #{@cmd.inspect}")
       ChildProcess.posix_spawn = true
       process = ChildProcess.build(*command)
       # Create the pipes so we can read the output in real time as

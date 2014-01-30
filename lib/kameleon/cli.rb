@@ -25,7 +25,7 @@ module Kameleon
                   :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
-      logger.info("Cloning template '#{options[:template]}'")
+      logger.notice("Cloning template '#{options[:template]}'")
       templates_path = Kameleon.env.templates_path
       recipes_path = Kameleon.env.recipes_path
       template_path = File.join(templates_path, options[:template]) + '.yaml'
@@ -55,14 +55,14 @@ module Kameleon
         FileUtils.mkdir_p recipes_path
         FileUtils.cp_r(Dir[tmp_dir + '/*'], recipes_path)
       end
-      logger.info("New recipe \"#{recipe_name}\" as been created in #{recipes_path}")
+      logger.notice("New recipe \"#{recipe_name}\" "\
+                    "as been created in #{recipes_path}")
     end
 
     desc "list", "Lists all defined templates"
     def list
       # TODO: Lists all defined templates
       logger.warn("Not implemented command")
-
     end
     map "-L" => :list
 
@@ -72,24 +72,31 @@ module Kameleon
     end
     map %w(-v --version) => :version
 
+
     desc "build [RECIPE_NAME]", "Build box from the recipe"
-    method_option :force, :type => :boolean ,
-                  :default => false, :aliases => "-f",
-                  :desc => "force the build"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "change the build directory path"
+    method_option :from_checkpoint, :type => :string ,
+                  :default => nil,
+                  :desc => "Using specific checkpoint to build the image. " \
+                           "Default value is the last checkpoint."
+    method_option :no_checkpoint, :type => :boolean ,
+                  :default => false,
+                  :desc => "Do not use previous checkpoint"
     def build(recipe_name)
-      logger.info("Starting build recipe '#{recipe_name}'")
+      logger.notice("Starting build recipe '#{recipe_name}'")
       start_time = Time.now.to_i
       recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
-      Kameleon::Engine.new(Recipe.new(recipe_path)).build
+      engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+      engine.build
       total_time = Time.now.to_i - start_time
-      logger.info("")
-      logger.info("Build recipe '#{recipe_name}' is completed !")
-      logger.info("Build total duration : #{total_time} secs")
-      logger.info("Build directory : #{Kameleon.env.build_path}")
-      logger.info("Kameleon log file : #{Kameleon.env.log_file}")
+      logger.notice("")
+      logger.notice("Build recipe '#{recipe_name}' is completed !")
+      logger.notice("Build total duration : #{total_time} secs")
+      logger.notice("Build directory : #{engine.cwd}")
+      logger.notice("Kameleon build recipe file : #{engine.build_recipe_path}")
+      logger.notice("Kameleon log file : #{Kameleon.env.log_file}")
     end
 
     # Hack Thor to init Kameleon env soon
@@ -115,14 +122,17 @@ module Kameleon
                             "Please use one of the standard log levels: debug," \
                             " info, warn, or error"
       end
-      format = Log4r::PatternFormatter.new(:pattern => '%11c: %M')
+      format = ConsoleFormatter.new
+      # format = Log4r::PatternFormatter.new(:pattern => '%11c: %M')
       if !$stdout.tty? or options.no_color
         console_output = Log4r::StdoutOutputter.new('console',
                                                     :formatter => format)
       else
         console_output = Log4r::ColorOutputter.new 'console', {
-          :colors => { :debug  => :white,
+          :colors => { :debug  => :light_black,
                        :info   => :green,
+                       :notice => :light_blue,
+                       :progress => :light_blue,
                        :warn   => :yellow,
                        :error  => :red,
                        :fatal  => :red,
@@ -133,9 +143,11 @@ module Kameleon
       logger = Log4r::Logger.new('kameleon')
       logger.outputters << console_output
       log_file = File.join(workspace, "kameleon.log")
+      format_file = FileFormatter.new
       logger.outputters << Log4r::FileOutputter.new('logfile',
                                                     :trunc=>false,
-                                                    :filename => log_file)
+                                                    :filename => log_file,
+                                                    :formatter => format_file)
       logger.level = level
       logger = nil
       Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
