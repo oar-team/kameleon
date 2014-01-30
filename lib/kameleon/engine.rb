@@ -112,24 +112,21 @@ module Kameleon
           @logger.notice("Step #{ microstep.order } : #{ microstep.slug }")
           @logger.notice(" ---> #{ microstep.identifier }")
           if @enable_checkpoint
-            if microstep.on_checkpoint == "redo"
-              @logger.notice(" ---> Running step again without using cache")
-              microstep.commands.each do |cmd|
-                safe_exec_cmd(cmd)
-              end
-              next
-            elsif microstep.on_checkpoint == "skip"
+            if microstep.on_checkpoint == "skip"
               @logger.notice(" ---> Skipped")
               next
             end
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
-                @logger.notice(" ---> Using cache")
+              @logger.notice(" ---> Using cache")
             else
+              @logger.notice(" ---> Running step")
               microstep.commands.each do |cmd|
                 safe_exec_cmd(cmd)
               end
-              @logger.notice(" ---> Creating checkpoint : #{ microstep.identifier }")
-              create_checkpoint(microstep.identifier)
+              unless microstep.on_checkpoint == "redo"
+                @logger.notice(" ---> Creating checkpoint : #{ microstep.identifier }")
+                create_checkpoint(microstep.identifier)
+              end
             end
           else
             @logger.notice(" ---> Running step")
@@ -295,8 +292,10 @@ module Kameleon
 
     def load_build_recipe
       if File.file?(@build_recipe_path)
-        return YAML.load_file(@build_recipe_path)
+        result = YAML.load_file(@build_recipe_path)
+        return result if result
       end
+      return nil
     end
   end
 end

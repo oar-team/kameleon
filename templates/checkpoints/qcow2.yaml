@@ -8,6 +8,7 @@ create: |
                       -o backing_file=$(basename "$parent_of_@microstep_id")
       popd
       ln -sf checkpoints/@microstep_id_$$container $$container
+      lsmod | grep nbd >/dev/null || modprobe nbd
       sync
       qemu-nbd -d $$nbd_device
       qemu-nbd -c $$nbd_device "$(readlink $$container)" -t -n ||  fail nbd device $$container is unavailable

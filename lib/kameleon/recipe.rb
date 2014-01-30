@@ -174,7 +174,7 @@ module Kameleon
     def load_macrostep(step_path, name, args)
       macrostep_yaml = YAML.load_file(step_path)
       local_variables = {}
-      microsteps = []
+      loaded_microsteps = []
       # Basic macrostep syntax check
       if not macrostep_yaml.kind_of? Array
         fail RecipeError, "The macrostep #{step_path} is not valid "
@@ -188,7 +188,7 @@ module Kameleon
         if value.kind_of? String
           local_variables[key] = @global.fetch(key, value)
         else
-          microsteps.push Microstep.new(yaml_microstep)
+          loaded_microsteps.push Microstep.new(yaml_microstep)
         end
       end
       selected_microsteps = []
@@ -213,7 +213,7 @@ module Kameleon
         # WARN: Allow the user to define this list not in the original order
         strip_microsteps = []
         selected_microsteps.each do |microstep_name|
-          macrostep = find_microstep(microstep_name, microsteps)
+          macrostep = find_microstep(microstep_name, loaded_microsteps)
           if macrostep.nil?
             fail RecipeError, "Can't find microstep '#{microstep_name}' "\
                               "in macrostep file '#{step_path}'"
@@ -221,14 +221,14 @@ module Kameleon
             strip_microsteps.push(macrostep)
           end
         end
-        microsteps = strip_microsteps
+        loaded_microsteps = strip_microsteps
       end
-      return Macrostep.new(name, microsteps, local_variables, step_path)
+      return Macrostep.new(name, loaded_microsteps, local_variables, step_path)
     end
 
-    def find_microstep(microstep_name, microsteps)
+    def find_microstep(microstep_name, loaded_microsteps)
       @logger.debug("Looking for microstep #{microstep_name}")
-      microsteps.each do |microstep|
+      loaded_microsteps.each do |microstep|
         if microstep_name.eql? microstep.name
           return microstep
         end

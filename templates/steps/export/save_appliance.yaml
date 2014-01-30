@@ -1,5 +1,4 @@
 # # Save Chroot Appliance
-
 - save_as_tgz:
   - in2out:
     - /etc/fstab

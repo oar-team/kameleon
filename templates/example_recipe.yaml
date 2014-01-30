@@ -95,6 +95,6 @@ export:
   - save_appliance:
     - filename: $$kameleon_recipe_name
     - save_as_tgz
-    - save_as_qcow2
+    # - save_as_qcow2
     # - save_as_vmdk
     # - save_as_vdi

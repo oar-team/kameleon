@@ -29,7 +29,7 @@ module Kameleon
 
     def to_array
       if value.kind_of? Array
-        return value.map { val.to_array }
+        return value.map { |val| val.to_array }
       else
         return { key => value }
       end
