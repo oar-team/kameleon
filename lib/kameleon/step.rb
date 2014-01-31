@@ -73,7 +73,7 @@ module Kameleon
     def calculate_identifier(salt)
       commands_str = @commands.map { |cmd| cmd.string_cmd.to_s }
       content_id = commands_str.join(' ') + salt
-      @identifier = "#{ Digest::SHA1.hexdigest content_id }"
+      @identifier = "#{ Digest::SHA1.hexdigest content_id }"[0..11]
     end
 
     def to_array
