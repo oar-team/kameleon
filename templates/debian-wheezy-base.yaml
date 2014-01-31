@@ -1,24 +1,21 @@
-
 #==============================================================================
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: This is an example recipe. It aims at teach the user how to
-# write his own recipe from scratch
+# DESCRIPTION: This recipe build a base debian wheezy appliance.
 #
 # TEMPLATE: <%= @name %>
 #
-# WARNING: It is recommended to use the template provided by Kameleon available
-# from the *new* command.
+# WARNING: autologin means anyone booting this image get acces WITHOUT password
 #
 #==============================================================================
 
 ---
 # Loads some helpful aliases
 aliases: defaults.yaml
-# Enables qcow checkpoint
+# Enables qcow2 checkpoint
 checkpoint: qcow2.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
@@ -29,7 +26,7 @@ global:
   arch: amd64
 
   container: $$kameleon_recipe_name.qcow2
-  nbd_device: /dev/nbd0
+  nbd_device: /dev/nbd1
 
   ## System variables. Required by kameleon engine
   # Distribution

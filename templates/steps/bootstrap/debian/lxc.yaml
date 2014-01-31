@@ -1,9 +1,0 @@
-# # Bootstrap
-- create:
-  - check_cmd: lxc-create lxc-start
-  - exec_out: lxc-create -n $$name -t $$template
-- start:
-  - exec_out: lxc-start -n $$name -d
-  - exec_out: lxc-wait -n $$name -s RUNNING
-  - on_export_clean:
-    - exec_out: lxc-stop -n $$name

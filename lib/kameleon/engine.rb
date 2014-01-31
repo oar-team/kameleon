@@ -22,7 +22,7 @@ module Kameleon
         build_recipe = load_build_recipe
         # restore previous build uuid
         unless build_recipe.nil?
-          binding.pry
+          # binding.pry
           %w(kameleon_uuid kameleon_short_uuid).each do |key|
             @recipe.global[key] = build_recipe["global"][key]
           end
