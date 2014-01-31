@@ -6,7 +6,7 @@ require 'pry'
 module Kameleon
 
   class Engine
-    attr_accessor :recipe, :cwd, :build_recipe_path
+    attr_accessor :recipe, :cwd, :build_recipe_path, :pretty_list_checkpoints
 
     def initialize(recipe, options)
       @logger = Log4r::Logger.new("kameleon::[engine]")
@@ -22,6 +22,7 @@ module Kameleon
         build_recipe = load_build_recipe
         # restore previous build uuid
         unless build_recipe.nil?
+          binding.pry
           %w(kameleon_uuid kameleon_short_uuid).each do |key|
             @recipe.global[key] = build_recipe["global"][key]
           end
@@ -296,6 +297,26 @@ module Kameleon
         return result if result
       end
       return nil
+    end
+
+    def pretty_checkpoints_list
+      def find_microstep_slug_by_id(id)
+        @recipe.microsteps.each do |m|
+          return m.slug if m.identifier == id
+        end
+      end
+      dict_checkpoints = {}
+      if @enable_checkpoint
+        list_checkpoints.each do |id|
+          slug = find_microstep_slug_by_id id
+          dict_checkpoints[id] = slug unless slug.nil?
+        end
+      end
+      if dict_checkpoints.empty?
+        puts "Any checkpoint available"
+      else
+        pp dict_checkpoints
+      end
     end
   end
 end

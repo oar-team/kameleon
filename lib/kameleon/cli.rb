@@ -76,6 +76,16 @@ module Kameleon
       logger.notice("Build directory : #{engine.cwd}")
       logger.notice("Kameleon build recipe file : #{engine.build_recipe_path}")
       logger.notice("Kameleon log file : #{Kameleon.env.log_file}")
+
+    desc "checkpoints [RECIPE_NAME]", "List all availables checkpoints"
+    method_option :build_path, :type => :string ,
+                  :default => nil, :aliases => "-b",
+                  :desc => "Set the build directory path"
+    def checkpoints(recipe_name)
+      Log4r::Outputter['console'].level = Log4r::ERROR unless options.debug
+      recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
+      engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+      engine.pretty_checkpoints_list
     end
 
     # Hack Thor to init Kameleon env soon
