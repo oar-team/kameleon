@@ -1,6 +1,5 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
-require 'pry'
 
 
 module Kameleon

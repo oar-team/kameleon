@@ -10,6 +10,7 @@ require 'thor'
 require 'childprocess'
 require 'log4r-color'
 require 'log4r-color/configurator'
+require 'pathname'
 
 module Kameleon
   # to force yaml to dump ASCII-8Bit strings as strings

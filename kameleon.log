@@ -1,0 +1,12 @@
+DEBUG [global]: `kameleon` invoked: ["--debug"]
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/lib/kameleon/environment.rb:20:in `initialize'
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/lib/kameleon/cli.rb:140:in `new'
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/lib/kameleon/cli.rb:140:in `init'
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/lib/kameleon/cli.rb:145:in `start'
+DEBUG [global]: /var/lib/gems/1.8/gems/thor-0.18.1/lib/thor.rb:360:in `dispatch'
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/lib/kameleon/cli.rb:145:in `start'
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/bin/kameleon:16
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/lib/kameleon/error.rb:26:in `with_friendly_errors'
+DEBUG [global]: /var/lib/gems/1.8/gems/kameleon-2.0.0.dev/bin/kameleon:16
+DEBUG [global]: /usr/local/bin/kameleon:23:in `load'
+DEBUG [global]: /usr/local/bin/kameleon:23
