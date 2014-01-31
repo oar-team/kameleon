@@ -1,6 +1,7 @@
 create: |
     if [ -e "$$container" ] ; then
       parent_of_@microstep_id="$(readlink $$container)"
+      lsmod | grep nbd >/dev/null || modprobe nbd max_part=63 || fail failed to load nbd module into kernel
       mkdir -p checkpoints
       pushd checkpoints
       rm -f @microstep_id_$${container}
@@ -16,6 +17,7 @@ create: |
 
 apply: |
     # apply command use the backing file that represent the real state to restore 
+    lsmod | grep nbd >/dev/null || modprobe nbd max_part=63 || fail failed to load nbd module into kernel
     previous_id=$(qemu-img info "checkpoints/@microstep_id_$${container}" \
                   | grep backing \
                   | sed -e 's/.*checkpoints\/\(.*\)_$${container}\(.*\)/\1/p' \
