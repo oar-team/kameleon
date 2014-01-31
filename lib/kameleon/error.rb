@@ -28,24 +28,24 @@ module Kameleon
     Kameleon.logger.fatal("#{e.message}")
     exit e.status_code
   rescue Thor::UndefinedTaskError => e
-    Kameleon.logger.error("#{e.message}")
+    $stderr << "#{e.message}\n"
     e.backtrace.each {|m| Kameleon.logger.debug m }
     exit 15
   rescue Thor::Error => e
-    Kameleon.logger.error("#{e.message}")
+    $stderr << "#{e.message}\n"
     e.backtrace.each {|m| Kameleon.logger.debug m }
     exit 15
   rescue SystemExit, Interrupt => e
     Kameleon.logger.fatal("Quitting...")
     exit 1
   rescue Exception => e
-    # if ENV["KAMELEON_LOG"] != "debug"
+    if ENV["KAMELEON_LOG"] != "debug"
       $stderr << "Unfortunately, a fatal error has occurred : "\
                  "#{e.message}.\nUse --debug option for more details\n"
-    #else
+    else
       Kameleon.logger.debug "Error : #{e}"
       e.backtrace.each {|m| puts "==> #{m}" }
-    #end
+    end
     exit 666
   end
 end

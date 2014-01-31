@@ -19,9 +19,11 @@ module Kameleon
       end
     end
 
-    method_option :template, :aliases => "-t", :desc => "Starting from a template",
-                  :default => "example_recipe"
-    method_option :force,:type => :boolean , :default => false, :aliases => "-f",
+    method_option :template, :aliases => "-t",
+                  :desc => "Starting from a template", :required => true,
+                  :enum => Kameleon.templates_names
+    method_option :force,:type => :boolean,
+                  :default => false, :aliases => "-f",
                   :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Create a new recipe"
     def new(recipe_name)
@@ -34,35 +36,42 @@ module Kameleon
       template_recipe.copy_template(recipes_path,
                                     recipe_name,
                                     options[:force])
+      recipe_path = File.join(recipes_path, recipe_name + ".yaml")
       logger.notice("New recipe \"#{recipe_name}\" "\
-                    "as been created in #{recipes_path}")
+                    "as been created in #{recipe_path}")
     end
 
-    desc "list", "Lists all defined templates"
-    def list
-      # TODO: Lists all defined templates
-      logger.warn("Not implemented command")
+    desc "templates", "Lists all defined templates"
+    def templates
+      Log4r::Outputter['console'].level = Log4r::ERROR unless options.debug
+      $stdout << "The following definitions are available in " \
+                 "#{ Kameleon.templates_path }:"
+      Kameleon.templates_files.each do |f|
+        recipe = RecipeTemplate.new(f)
+        $stdout << "#{recipe.name} : "
+        $stdout << "#{recipe.metainfo['description']}\n"
+      end
     end
-    map "-L" => :list
 
     desc "version", "Prints the Kameleon's version information"
     def version
+      Log4r::Outputter['console'].level = Log4r::OFF unless options.debug
       puts "Kameleon version #{Kameleon::VERSION}"
     end
     map %w(-v --version) => :version
 
 
-    desc "build [RECIPE_NAME]", "Build box from the recipe"
+    desc "build [RECIPE_NAME]", "Build the appliance from the recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
-                  :desc => "change the build directory path"
+                  :desc => "Set the build directory path"
     method_option :from_checkpoint, :type => :string ,
                   :default => nil,
                   :desc => "Using specific checkpoint to build the image. " \
                            "Default value is the last checkpoint."
     method_option :no_checkpoint, :type => :boolean ,
                   :default => false,
-                  :desc => "Do not use previous checkpoint"
+                  :desc => "Do not use checkpoints"
     def build(recipe_name)
       logger.notice("Starting build recipe '#{recipe_name}'")
       start_time = Time.now.to_i
@@ -74,8 +83,9 @@ module Kameleon
       logger.notice("Build recipe '#{recipe_name}' is completed !")
       logger.notice("Build total duration : #{total_time} secs")
       logger.notice("Build directory : #{engine.cwd}")
-      logger.notice("Kameleon build recipe file : #{engine.build_recipe_path}")
-      logger.notice("Kameleon log file : #{Kameleon.env.log_file}")
+      logger.notice("Build recipe file : #{engine.build_recipe_path}")
+      logger.notice("Log file : #{Kameleon.env.log_file}")
+    end
 
     desc "checkpoints [RECIPE_NAME]", "List all availables checkpoints"
     method_option :build_path, :type => :string ,

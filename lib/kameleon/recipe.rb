@@ -6,7 +6,7 @@ module Kameleon
 
   class Recipe
     attr_accessor :path, :name, :global, :sections, :aliases, :aliases_path, \
-                  :checkpoint, :checkpoint_path
+                  :checkpoint, :checkpoint_path, :metainfo
 
     def initialize(path)
       @logger = Log4r::Logger.new("kameleon::[recipe]")

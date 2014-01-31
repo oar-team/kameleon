@@ -19,12 +19,12 @@ module Kameleon
       build_path = File.expand_path(options[:build_path] || File.join(workspace, "builds"))
       defaults = {
         :workspace => Pathname.new(workspace),
-        :templates_path => Pathname.new(File.join(Kameleon.source_root, 'templates')),
+        :templates_path => Kameleon.templates_path,
+        :templates_names => Kameleon.templates_names,
         :recipes_path => Pathname.new(File.join(workspace, "recipes")),
         :build_path => Pathname.new(build_path),
         :log_file => Pathname.new(File.join(workspace, "kameleon.log"))
       }
-
       options = defaults.merge(options)
       @logger.debug("Environment initialized (#{self})")
       # Injecting all variables of the options and assign the variables
