@@ -49,9 +49,6 @@ module Kameleon
 
       #Load Global variables
       @global.merge!(yaml_recipe.fetch("global"))
-      # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
-      @global.merge! YAML.load(resolved_global)
 
       # Loads aliases
       load_aliases(yaml_recipe)
@@ -197,11 +194,7 @@ module Kameleon
           if entry.kind_of? Hash
             # resolve variable before using it
             entry.each do |key, value|
-              merged_variables = @global.merge(local_variables)
-              # resolve recursive variable definition
-              local_variables[key] = Utils.resolve_vars(value,
-                                                        step_path,
-                                                        merged_variables)
+              local_variables[key] = value
             end
           elsif entry.kind_of? String
             selected_microsteps.push entry
@@ -236,10 +229,19 @@ module Kameleon
     end
 
     def resolve!
+      # Resolve dynamically-defined variables !!
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      @global.merge! YAML.load(resolved_global)
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
-      @logger.notice("Resolving recipe")
+      @logger.notice("Resolving variables")
+      @sections.values.each do |section|
+        section.macrosteps.each do |macrostep|
+          macrostep.resolve_variables!(@global)
+        end
+      end
+
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
           # First pass : resolve aliases

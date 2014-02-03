@@ -98,6 +98,26 @@ module Kameleon
       @init_microsteps = []
     end
 
+    def resolve_variables!(global)
+      # Resolve dynamically-defined variables !!
+      tmp_resolved_vars = {}
+      @variables.clone.each do |key, value|
+        yaml_vars = { key => value }.to_yaml
+        yaml_resolved = Utils.resolve_vars(yaml_vars,
+                                           @path,
+                                           tmp_resolved_vars.merge(global))
+        tmp_resolved_vars.merge! YAML.load(yaml_resolved)
+      end
+      @variables.merge! tmp_resolved_vars
+      @microsteps.each do |m|
+        m.commands.each do |cmd|
+          cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd,
+                                              @path,
+                                              global.merge(@variables))
+        end
+      end
+    end
+
     def sequence
       @init_microsteps.each { |m| yield m }
       @microsteps.each { |m| yield m }
