@@ -5,7 +5,7 @@ module Kameleon
   module Utils
 
     def self.resolve_vars(raw, yaml_path, initial_variables)
-      raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]*\}|\$\$[a-zA-Z0-9\-_]*/) do |var|
+      raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]+\}|\$\$[a-zA-Z0-9\-_]+/) do |var|
         # remove the dollars
         if var.include? "{"
           strip_var = var[3,(var.length - 4)]
