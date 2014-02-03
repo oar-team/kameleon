@@ -310,9 +310,13 @@ module Kameleon
         end
       end
       if dict_checkpoints.empty?
-        puts "Any checkpoint available"
+        puts "Any checkpoint available for the recipe '#{recipe.name}'"
       else
+        puts "The following checkpoints are available for  " \
+                 "the recipe '#{recipe.name}':"
+        puts "=" * 80
         pp dict_checkpoints
+        puts "=" * 80
       end
     end
   end

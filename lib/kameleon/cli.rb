@@ -44,12 +44,22 @@ module Kameleon
     desc "templates", "Lists all defined templates"
     def templates
       Log4r::Outputter['console'].level = Log4r::ERROR unless options.debug
-      $stdout << "The following definitions are available in " \
+      puts "The following templates are available in " \
                  "#{ Kameleon.templates_path }:"
+      templates_hash = {}
       Kameleon.templates_files.each do |f|
+        begin
         recipe = RecipeTemplate.new(f)
-        $stdout << "#{recipe.name} : "
-        $stdout << "#{recipe.metainfo['description']}\n"
+        templates_hash[recipe.name] = recipe.metainfo['description']
+        rescue
+        end
+      end
+      if templates_hash.empty?
+        puts "Any templates available"
+      else
+        puts "=" * 80
+        pp templates_hash
+        puts "=" * 80
       end
     end
 
