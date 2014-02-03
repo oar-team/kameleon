@@ -1,6 +1,0 @@
-- sample:
-  - exec_in: echo "hello"
-
-- sample_0:
-  - exec_in: echo " world!"
-
