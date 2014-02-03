@@ -28,14 +28,26 @@
   - exec_out: |
       echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
 
+- save_as_raw:
+  - check_cmd_out: qemu-img
+  - exec_out: |
+      qemu-img convert -O raw $(readlink $$container) $$filename.raw
+  - exec_out: echo "Saved raw appliance to $(pwd)/$$filename.raw"
+
+- save_as_qcow2:
+  - check_cmd_out: qemu-img
+  - exec_out: |
+      qemu-img convert -O qcow2 $(readlink $$container) $$filename.qcow2
+  - exec_out: echo "Saved qcow2 appliance to $(pwd)/$$filename.qcow2"
+
 - save_as_vmdk:
   - check_cmd_out: qemu-img
   - exec_out: |
-      qemu-img convert -O vmdk $$container $$filename.vmdk
+      qemu-img convert -O vmdk $(readlink $$container) $$filename.vmdk
   - exec_out: echo "Saved vmdk appliance to $(pwd)/$$filename.vmdk"
 
 - save_as_vdi:
-  - check_cmd_out: VBoxManage
+  - check_cmd_out: qemu-img
   - exec_out: |
-      VBoxManage convertdd $$container $$filename.vdi
+      qemu-img convert -O vdi $(readlink $$container) $$filename.vdi
   - exec_out: echo "Saved vdi appliance to $(pwd)/$$filename.vdi"

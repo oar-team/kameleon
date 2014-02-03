@@ -1,4 +1,4 @@
-# Build Appliance
+# Prepare Appliance
 - nbd_device: /dev/nbd0
 - create_raw_image:
   - check_cmd_out: qemu-img
@@ -16,18 +16,18 @@
         || modprobe nbd max_part=63 \
         || fail failed to load nbd module into kernel
 
-
 - attach_nbd_device:
   - on_checkpoint: skip
   - check_cmd_out: qemu-nbd
   - exec_out: echo Connecting $$container to nbd device $$nbd_device
   - exec_out: qemu-nbd -c $$nbd_device "$(readlink $$container)" -n || fail nbd device $$container is unavailable
 
+
 - detach_nbd_device:
   - on_export_clean:
-    - exec_out: sync
-    - exec_out: qemu-nbd -d $$nbd_device
-    - exec_out: ps -ef | grep "qemu-nbd" | grep "$$nbd_device" | awk '{print $2}' | xargs -I {} kill -9 {}
+    - exec_out: echo "sync" ; sync
+    - exec_out: "pgrep qemu-nbd | xargs -I {} kill -9 {} || true"
+    # - exec_out: qemu-nbd -d $$nbd_device
 
 - partition_disk:
   - check_cmd_out: sfdisk

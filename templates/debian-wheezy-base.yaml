@@ -25,8 +25,8 @@ global:
   user_name: kameleon
   arch: amd64
 
-  container: $$kameleon_recipe_name.qcow2
   nbd_device: /dev/nbd1
+  container: "$${kameleon_recipe_name}_temp.qcow2"
 
   ## System variables. Required by kameleon engine
   # Distribution
@@ -47,8 +47,7 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - initialize_contexts
-  - build_appliance:
+  - prepare_appliance:
     - mountdir: $$rootfs
     - image_size: 2G
     - filesystem_type: ext4
