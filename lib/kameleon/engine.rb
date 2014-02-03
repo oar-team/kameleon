@@ -30,8 +30,14 @@ module Kameleon
       end
       @recipe.resolve!
       @in_context = nil
-      @local_context = nil
-      @out_context = nil
+      @logger.notice("Building local context [local]")
+      @local_context = LocalContext.new("local", @cwd)
+      @logger.notice("Building external context [out]")
+      @out_context = Context.new("out",
+                                 @recipe.global["out_context"]["cmd"],
+                                 @recipe.global["out_context"]["workdir"],
+                                 @recipe.global["out_context"]["exec_prefix"],
+                                 @cwd)
     end
 
     def create_checkpoint(microstep_id)
@@ -221,14 +227,6 @@ module Kameleon
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
       end
-      @logger.notice("Building local context [local]")
-      @local_context = LocalContext.new("local", @cwd)
-      @logger.notice("Building external context [out]")
-      @out_context = Context.new("out",
-                                 @recipe.global["out_context"]["cmd"],
-                                 @recipe.global["out_context"]["workdir"],
-                                 @recipe.global["out_context"]["exec_prefix"],
-                                 @cwd)
       if @enable_checkpoint
         @from_checkpoint = @options[:from_checkpoint]
         if @from_checkpoint.nil?
