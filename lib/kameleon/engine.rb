@@ -9,13 +9,14 @@ module Kameleon
     attr_accessor :recipe, :cwd, :build_recipe_path, :pretty_list_checkpoints
 
     def initialize(recipe, options)
+      @options = options
       @logger = Log4r::Logger.new("kameleon::[engine]")
       @recipe = recipe
       @cleaned_sections = []
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
 
-      @enable_checkpoint = !options[:no_checkpoint]
+      @enable_checkpoint = !@options[:no_checkpoint]
       # Check if the recipe have checkpoint entry
       @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
       if @enable_checkpoint
@@ -29,46 +30,9 @@ module Kameleon
         end
       end
       @recipe.resolve!
-
-      @logger.notice("Building local context [local]")
-      @local_context = LocalContext.new("local", @cwd)
-      @logger.notice("Building external context [out]")
-      @out_context = Context.new("out",
-                                 @recipe.global["out_context"]["cmd"],
-                                 @recipe.global["out_context"]["workdir"],
-                                 @recipe.global["out_context"]["exec_prefix"],
-                                 @cwd)
-      if @enable_checkpoint
-        @from_checkpoint = options[:from_checkpoint]
-        if @from_checkpoint.nil?
-          @from_checkpoint = list_checkpoints.last
-        else
-          unless list_checkpoints.include?@from_checkpoint
-            fail BuildError, "Unknown checkpoint hash : #{@from_checkpoint}." \
-                             " Use checkpoints command to find a valid" \
-                             " checkpoint"
-          end
-        end
-        unless @from_checkpoint.nil?
-          @logger.notice("Restoring last build from step : #{@from_checkpoint}")
-          apply_checkpoint @from_checkpoint
-          @recipe.microsteps.each do |microstep|
-            microstep.in_cache = true
-            if microstep.identifier == @from_checkpoint
-              break
-            end
-          end
-        end
-      else
-        unless @recipe.checkpoint.nil?
-          @logger.notice("Removing all old checkpoints")
-          list_checkpoints.each do |macrostep_id|
-            @logger.notice(" ---> Removing checkpoint #{macrostep_id}")
-            remove_checkpoint macrostep_id
-          end
-        end
-      end
       @in_context = nil
+      @local_context = nil
+      @out_context = nil
     end
 
     def create_checkpoint(microstep_id)
@@ -257,6 +221,44 @@ module Kameleon
         FileUtils.mkdir_p @cwd
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
+      end
+      @logger.notice("Building local context [local]")
+      @local_context = LocalContext.new("local", @cwd)
+      @logger.notice("Building external context [out]")
+      @out_context = Context.new("out",
+                                 @recipe.global["out_context"]["cmd"],
+                                 @recipe.global["out_context"]["workdir"],
+                                 @recipe.global["out_context"]["exec_prefix"],
+                                 @cwd)
+      if @enable_checkpoint
+        @from_checkpoint = @options[:from_checkpoint]
+        if @from_checkpoint.nil?
+          @from_checkpoint = list_checkpoints.last
+        else
+          unless list_checkpoints.include?@from_checkpoint
+            fail BuildError, "Unknown checkpoint hash : #{@from_checkpoint}." \
+                             " Use checkpoints command to find a valid" \
+                             " checkpoint"
+          end
+        end
+        unless @from_checkpoint.nil?
+          @logger.notice("Restoring last build from step : #{@from_checkpoint}")
+          apply_checkpoint @from_checkpoint
+          @recipe.microsteps.each do |microstep|
+            microstep.in_cache = true
+            if microstep.identifier == @from_checkpoint
+              break
+            end
+          end
+        end
+      else
+        unless @recipe.checkpoint.nil?
+          @logger.notice("Removing all old checkpoints")
+          list_checkpoints.each do |macrostep_id|
+            @logger.notice(" ---> Removing checkpoint #{macrostep_id}")
+            remove_checkpoint macrostep_id
+          end
+        end
       end
       dump_build_recipe
       begin
