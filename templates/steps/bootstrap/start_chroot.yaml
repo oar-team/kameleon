@@ -6,7 +6,14 @@
   - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
   - exec_out: mount -t proc /proc  $$rootfs/proc
   - exec_out: mount -t sysfs /sys  $$rootfs/sys
-  - on_setup_clean:
+  - on_export_clean:
+    - exec_in: echo $$ > /tmp/appliance_pid
+    - exec_out: |
+        if [ -f "$$rootfs/tmp/appliance_pid" ]; then
+          echo "Stopping chroot (PID:$(cat $$rootfs/tmp/appliance_pid))"
+          kill -9 $(cat $$rootfs/tmp/appliance_pid)
+          rm -f $$rootfs/tmp/appliance_pid
+        fi
     - exec_out: echo umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
     - exec_out: echo umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
     - exec_out: echo umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true

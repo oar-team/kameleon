@@ -50,7 +50,6 @@ module Kameleon
           end
         end
         unless @from_checkpoint.nil?
-          @logger.info
           @logger.notice("Restoring last build from step : #{@from_checkpoint}")
           apply_checkpoint @from_checkpoint
           @recipe.microsteps.each do |microstep|
@@ -271,16 +270,14 @@ module Kameleon
         do_steps("setup")
         do_steps("export")
       rescue Exception => e
-        @out_context.reopen if !@out_context.nil? && @out_context.closed?
-        @in_context.reopen if !@in_context.nil? && @in_context.closed?
-        @local_context.reopen if !@local_context.nil? && @local_context.closed?
-        unless @out_context.nil? and @in_context.nil?
-          @logger.warn("Waiting for cleanup before exiting...")
-          finish_clean
-          @out_context.close! unless @out_context.nil?
-          @in_context.close! unless @in_context.nil?
-          @local_context.close! unless @local_context.nil?
-        end
+        @logger.warn("Waiting for cleanup before exiting...")
+        @out_context.reopen if !@out_context.nil?
+        @in_context.reopen if !@in_context.nil?
+        @local_context.reopen if !@local_context.nil?
+        finish_clean
+        @out_context.close! unless @out_context.nil?
+        @in_context.close! unless @in_context.nil?
+        @local_context.close! unless @local_context.nil?
         raise e
       end
     end

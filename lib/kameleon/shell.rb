@@ -7,7 +7,7 @@ module Kameleon
     READ_CHUNK_SIZE = 1048576
     EXIT_TIMEOUT = 60
 
-    attr :exit_status
+    attr :exit_status, :process
 
     def initialize(cmd, shell_workdir, local_workdir, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[shell]")
@@ -196,9 +196,11 @@ module Kameleon
       # Start the process
       begin
         process.cwd = @cwd
+        trap('INT', 'IGNORE')
         process.start
+        trap('INT', 'DEFAULT')
         # Wait to child starting
-        sleep(0.1)
+        sleep(0.2)
       rescue ChildProcess::LaunchError => e
         # Raise our own version of the error
         raise ShellError, "Cannot launch #{command.inspect}: #{e.message}"
