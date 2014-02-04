@@ -46,21 +46,18 @@ module Kameleon
       Log4r::Outputter['console'].level = Log4r::ERROR unless options.debug
       puts "The following templates are available in " \
                  "#{ Kameleon.templates_path }:"
-      templates_hash = {}
+      templates_hash = []
       Kameleon.templates_files.each do |f|
         begin
         recipe = RecipeTemplate.new(f)
-        templates_hash[recipe.name] = recipe.metainfo['description']
+        templates_hash.push({
+          "name" => recipe.name,
+          "description" => recipe.metainfo['description'],
+        })
         rescue
         end
       end
-      if templates_hash.empty?
-        puts "Any templates available"
-      else
-        puts "=" * 80
-        pp templates_hash
-        puts "=" * 80
-      end
+      tp templates_hash, {"name" => {:width => 30}}, { "description" => {:width => 60}}
     end
 
     desc "version", "Prints the Kameleon's version information"

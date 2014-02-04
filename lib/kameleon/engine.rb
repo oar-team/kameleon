@@ -301,11 +301,16 @@ module Kameleon
           return m.slug if m.identifier == id
         end
       end
-      dict_checkpoints = {}
+      dict_checkpoints = []
       if @enable_checkpoint
         list_checkpoints.each do |id|
           slug = find_microstep_slug_by_id id
-          dict_checkpoints[id] = slug unless slug.nil?
+          unless slug.nil?
+            dict_checkpoints.push({
+              "id" => id,
+              "step" => slug
+            })
+          end
         end
       end
       if dict_checkpoints.empty?
@@ -313,9 +318,7 @@ module Kameleon
       else
         puts "The following checkpoints are available for  " \
                  "the recipe '#{recipe.name}':"
-        puts "=" * 80
-        pp dict_checkpoints
-        puts "=" * 80
+        tp dict_checkpoints, {"id" => {:width => 20}}, { "step" => {:width => 60}}
       end
     end
   end
