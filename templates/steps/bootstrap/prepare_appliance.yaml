@@ -1,5 +1,12 @@
 # Prepare Appliance
 - nbd_device: /dev/nbd0
+
+- init_contexts:
+  - on_bootstrap_init:
+    - exec_out: "fail() { echo $@ 1>&2; false; }"
+  - on_setup_init:
+    - exec_in: "fail() { echo $@ 1>&2; false; }"
+
 - create_raw_image:
   - check_cmd_out: qemu-img
   - exec_out: mkdir -p checkpoints
@@ -26,8 +33,8 @@
 - detach_nbd_device:
   - on_export_clean:
     - exec_out: echo "sync" ; sync
+    - exec_out: qemu-nbd -d $$nbd_device
     - exec_out: "pgrep qemu-nbd | xargs -I {} kill -9 {} || true"
-    # - exec_out: qemu-nbd -d $$nbd_device
 
 - partition_disk:
   - check_cmd_out: sfdisk

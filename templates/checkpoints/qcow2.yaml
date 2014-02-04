@@ -1,7 +1,7 @@
 create: |
     if [ -e "$$container" ] ; then
       parent_of_@microstep_id="$(readlink $$container)"
-      lsmod | grep nbd >/dev/null || modprobe nbd max_part=63 || fail failed to load nbd module into kernel
+      lsmod | grep nbd >/dev/null || modprobe nbd max_part=63
       mkdir -p checkpoints
       pushd checkpoints
       rm -f @microstep_id_$${container}
@@ -11,7 +11,7 @@ create: |
       ln -sf checkpoints/@microstep_id_$$container $$container
       echo "sync" ; sync
       qemu-nbd -d $$nbd_device
-      qemu-nbd -c $$nbd_device "$(readlink $$container)" -n || fail nbd device $$container is unavailable
+      qemu-nbd -c $$nbd_device "$(readlink $$container)" -n
     fi
 
 apply: |
@@ -24,7 +24,7 @@ apply: |
     ln -sf "checkpoints/${previous_id}_$${container}" "$$container"
     echo "sync" ; sync
     qemu-nbd -d $$nbd_device
-    qemu-nbd -c $$nbd_device "$(readlink $$container)" -n ||  fail nbd device $$container is unavailable
+    qemu-nbd -c $$nbd_device "$(readlink $$container)" -n
 
 remove: |
     rm -f "checkpoints/@microstep_id_$${container}"
