@@ -1,7 +1,6 @@
 create: |
     if [ -e "$$container" ] ; then
       parent_of_@microstep_id="$(readlink $$container)"
-      lsmod | grep nbd >/dev/null || modprobe nbd max_part=63
       mkdir -p checkpoints
       pushd checkpoints
       rm -f @microstep_id_$${container}
@@ -9,6 +8,9 @@ create: |
                       -o backing_file=$(basename "$parent_of_@microstep_id")
       popd
       ln -sf checkpoints/@microstep_id_$$container $$container
+
+      lsmod | grep nbd >/dev/null || modprobe nbd max_part=63
+
       echo "sync" ; sync
       qemu-nbd -d $$nbd_device
       qemu-nbd -c $$nbd_device "$(readlink $$container)" -n
@@ -20,8 +22,11 @@ apply: |
                   | grep backing \
                   | sed -e 's/.*checkpoints\/\(.*\)_$${container}\(.*\)/\1/p' \
                   | uniq)
-
+    
     ln -sf "checkpoints/${previous_id}_$${container}" "$$container"
+
+    lsmod | grep nbd >/dev/null || modprobe nbd max_part=63
+
     echo "sync" ; sync
     qemu-nbd -d $$nbd_device
     qemu-nbd -c $$nbd_device "$(readlink $$container)" -n
