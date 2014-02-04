@@ -1,0 +1,100 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# RECIPE: <%= recipe_name %>
+#
+# DESCRIPTION: This is an example recipe. It aims at teach the user how to
+# write his own recipe from scratch
+#
+# TEMPLATE: <%= @name %>
+#
+# WARNING: It is recommended to use the template provided by Kameleon available
+# from the *new* command.
+#
+#==============================================================================
+
+---
+# Loads some helpful aliases
+aliases: defaults.yaml
+# Enables qcow2 checkpoint
+checkpoint: qcow2.yaml
+#== Global variables use by Kameleon engine and the steps
+global:
+  ## User varibales : used by the recipe
+  cachedir: /var/cache/kameleon/
+  lxc_lib_path: /var/lib/lxc/
+  lxc_container_name: "kameleon_$${kameleon_short_uuid}"
+  rootfs: $$lxc_lib_path/$$lxc_container_name/rootfs
+  user_name: kameleon
+  arch: amd64
+
+  nbd_device: /dev/nbd11
+  container: "$${kameleon_recipe_name}_temp.qcow2"
+
+  ## System variables. Required by kameleon engine
+  # Distribution
+  distrib: debian
+
+  # Shell session from where we launch exec_out commands. There is often a
+  # local bash session, but it can be a remote shell on other machines or on
+  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
+  out_context:
+    cmd: bash
+    workdir: $$kameleon_cwd
+
+  # Shell session that allows us to connect to the building machine in order to
+  # configure it and setup additional programs
+  in_context:
+    cmd: lxc-attach -n $$lxc_container_name --clear-env -- /bin/bash
+    workdir: /
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - prepare_appliance:
+    - mountdir: $$rootfs
+    - image_size: 2G
+    - filesystem_type: ext4
+  - debootstrap:
+    - rootfs: $$rootfs
+    - version_name: wheezy
+    - arch: $$arch
+    - repository: http://ftp.fr.debian.org/debian/
+    - archive_file: $$cachedir/$$distrib/$$version_name/$$arch/debootstrap.tar.gz
+  - prepare_lxc:
+    - rootfs: $$rootfs
+
+
+#== Install and configuration steps
+# WARNING: this part should be independante from the build context (whenever
+# possible...)
+setup:
+  # Install
+  - software_install:
+    - packages: "debian-keyring ntp zip unzip rsync sudo"
+  - kernel_install:
+    - arch: $$arch
+  - extlinux_install
+  # Configuration
+  - system_config:
+    - locales: fr_FR en_US
+    - lang: fr_FR.UTF-8
+    - timezone: Europe/Paris
+    - network_hostname: mydebian
+  - keyboard_config:
+    - layout: "fr,us"
+  - network_config
+  - create_user:
+    - name: $$user_name
+    - group: admin
+    - password: $$user_name
+
+#== Export the generated appliance in the format of your choice
+export:
+  - save_appliance:
+    - filename: $$kameleon_recipe_name
+    - save_as_qcow2
+    # - save_as_tgz
+    # - save_as_raw
+    # - save_as_vmdk
+    # - save_as_vdi
