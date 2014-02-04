@@ -1,5 +1,5 @@
 # # Bootstrap
-- include: ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase net-tools iproute openssh-server
+- include: ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase net-tools iproute openssh-server pciutils
 - debootstrap:
   - check_cmd_out: debootstrap
   - on_bootstrap_init:
