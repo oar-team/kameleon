@@ -8,9 +8,11 @@ generic you can probably do a lot more than that.
 
 ## Installation
 Simply install it from the Gem repository (not working yet):
+
     gem install kameleon
 
 Or from source:
+
     git clone git://scm.gforge.inria.fr/kameleon/kameleon.git
     cd kameleon
     gem build kameleon.gemspec
@@ -19,11 +21,13 @@ Or from source:
 ## Usage
 
 Just type:
+
     kameleon
 
 ## Quick start
 
 First, you should select a template. To see the available templates use:
+
     kameleon templates
 
 Then, create a new recipe from the template you've just choose. This will
@@ -32,7 +36,7 @@ different workspace).
 
     kameleon new my_test_recipe -t template_name
 
-Then build your new recipe
+Then build your new recipe with the build command:
 
     kameleon build my_test_recipe
 
