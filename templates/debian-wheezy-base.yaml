@@ -51,7 +51,7 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - prepare_appliance:
+  - prepare_appliance_with_nbd:
     - mountdir: $$rootfs
     - image_size: 2G
     - filesystem_type: ext4
@@ -90,7 +90,7 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
-  - save_appliance:
+  - save_appliance_from_nbd:
     - filename: "$${distrib}-$${release}"
     - save_as_qcow2
     # - save_as_tgz
