@@ -1,39 +1,44 @@
 # Kameleon
 
-Kameleon should be seen as a simple but powerfull tool to generate customized
+Kameleon should be seen as a simple but powerful tool to generate customized
 appliances. With Kameleon, you make your recipe that describes how to create
-step by step your own distribution. At start kameleon is used to create custom
-kvm, VirtualBox, iso images, ... but as it is designed to be very generic you
-can probably do a lot more than that.
+step by step your own distribution. At start Kameleon is used to create custom
+kvm, LXC, VirtualBox, iso images, ..., but as it is designed to be very
+generic you can probably do a lot more than that.
 
 ## Installation
+Simply install it from the Gem repository (not working yet):
+    gem install kameleon
 
-    $ gem install kameleon
-
-or from source
-
-    $ git clone git://scm.gforge.inria.fr/kameleon/kameleon.git
-    $ cd kameleon
-    $ gem build kameleon.gemspec
-    $ gem install kameleon-<version>.gem
+Or from source:
+    git clone git://scm.gforge.inria.fr/kameleon/kameleon.git
+    cd kameleon
+    gem build kameleon.gemspec
+    gem install kameleon-<version>.gem
 
 ## Usage
 
 Just type:
-    $ kameleon
+    kameleon
 
 ## Quick start
 
-First, get a simple example recipe in the current directory (use -w
-to set a diferent workspace).
+First, you should select a template. To see the available templates use:
+    kameleon templates
 
-  $ kameleon new <my_test_recipe>
+Then, create a new recipe from the template you've just choose. This will
+create a `recipes` folder in the current directory. (use `-w` option to set a
+different workspace).
+
+    kameleon new my_test_recipe -t template_name
 
 Then build your new recipe
 
-  $ kameleon build <my_test_recipe>
+    kameleon build my_test_recipe
 
-A build directory was created and contains your new image!
+A `builds` directory was created and contains your new image!
+
+To go further, get more documentation in the docs folder.
 
 ## Contributing
 
