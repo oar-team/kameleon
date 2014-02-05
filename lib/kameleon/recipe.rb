@@ -294,12 +294,12 @@ module Kameleon
       @logger.notice("Starting recipe consistency check")
       missings = []
       @required_global.each do |key|
-        missings.push cmd unless @global.key? key
+        missings.push key unless @global.key? key
       end
       fail RecipeError, "Required parameters missing in global section :" \
                         " #{missings.join ' '}" unless missings.empty?
       # check context args
-      required_args = %w(cmd workdir)
+      required_args = %w(cmd)
       missings = []
       %w(out_context in_context).each do |context_name|
         context = @global[context_name]

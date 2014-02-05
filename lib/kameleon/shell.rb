@@ -24,7 +24,9 @@ module Kameleon
     end
 
     def start
+      trap('INT', 'IGNORE')
       @process, @stdout, @stderr = fork("pipe")
+      trap('INT', 'DEFAULT')
     end
 
     def stop
@@ -195,17 +197,13 @@ module Kameleon
 
       # Start the process
       begin
-        process.cwd = @cwd
-        trap('INT', 'IGNORE')
+        process.cwd = @local_workdir
         process.start
-        trap('INT', 'DEFAULT')
         # Wait to child starting
         sleep(0.2)
       rescue ChildProcess::LaunchError => e
         # Raise our own version of the error
         raise ShellError, "Cannot launch #{command.inspect}: #{e.message}"
-      else
-        raise ShellError, "Invalid shell command: '#{@cmd}'" if process.exited?
       end
       if io.eql? "pipe"
         # Make sure the stdin does not buffer
