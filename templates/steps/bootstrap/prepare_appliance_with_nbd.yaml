@@ -65,7 +65,6 @@
         # <file system> <mount point>   <type>  <options>       <dump>  <pass>
         UUID=`blkid -s UUID -o value $${nbd_device}p2` /               $$filesystem_type    errors=remount-ro  0       1
         UUID=`blkid -s UUID -o value $${nbd_device}p1` /boot           $$filesystem_type    sync               0       2
-    - exec_out: cat /proc/mounts > $$rootfs/etc/mtab
 
 - mount_mountdir:
   - on_checkpoint: redo
@@ -77,3 +76,21 @@
   - exec_out:  "echo Mounting boot partition... ;  mount $${nbd_device}p1 $$mountdir/boot || fail cannot mount /boot"
   - on_export_clean:
     - exec_out: "echo umounting $$mountdir/boot... ; mountpoint -q $$mountdir/boot && umount -f -l $$mountdir/boot || true"
+
+- install_extlinux:
+  - on_export_init:
+    - exec_in: extlinux-install $$nbd_device 2>&1
+    - write_in:
+      - /boot/extlinux/extlinux.conf
+      - |
+        default linux
+        timeout 1
+        
+        label linux
+        kernel ../`basename /boot/vmlinuz*`
+        append initrd=../`basename /boot/init*` root=UUID=`blkid -s UUID -o value $${nbd_device}p2` ro
+    - exec_in: |
+        dir=/var/lib/os-prober/mount
+        if [ -d "$dir" ]
+        then umount -f -l "$dir" && rmdir "$dir"
+        fi
