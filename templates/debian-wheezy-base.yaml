@@ -71,7 +71,7 @@ bootstrap:
 setup:
   # Install
   - software_install:
-    - packages: "debian-keyring ntp zip unzip rsync sudo less vim bash-completion"
+    - packages: "debian-keyring ntp zip unzip rsync sudo less vim bash-completion extlinux"
   - kernel_install:
     - arch: $$arch
   # Configuration
