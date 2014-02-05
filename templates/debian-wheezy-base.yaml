@@ -20,17 +20,20 @@ checkpoint: qcow2.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
-  cachedir: /var/cache/kameleon/
+  cachedir: /var/cache/kameleon
   rootfs: $$kameleon_cwd/rootfs
   user_name: kameleon
   arch: amd64
 
-  nbd_device: /dev/nbd9
+  nbd_device: /dev/nbd10
   container: "$${kameleon_recipe_name}_temp.qcow2"
 
-  ## System variables. Required by kameleon engine
-  # Distribution
   distrib: debian
+  release: wheezy
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps: [$$distrib/$$release, $$distrib]
 
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
@@ -54,11 +57,10 @@ bootstrap:
     - filesystem_type: ext4
   - debootstrap:
     - rootfs: $$rootfs
-    - version_name: wheezy
+    - release: $$release
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
-    - archive_file: $$cachedir/$$distrib/$$version_name/$$arch/debootstrap.tar.gz
-    - include: openssh-server locales less vim bash-completion
+    - archive_file: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - start_chroot:
     - rootfs: $$rootfs
 
@@ -69,7 +71,7 @@ bootstrap:
 setup:
   # Install
   - software_install:
-    - packages: "debian-keyring ntp zip unzip rsync sudo"
+    - packages: "debian-keyring ntp zip unzip rsync sudo less vim bash-completion"
   - kernel_install:
     - arch: $$arch
   - extlinux_install
@@ -90,7 +92,7 @@ setup:
 #== Export the generated appliance in the format of your choice
 export:
   - save_appliance:
-    - filename: $$kameleon_recipe_name
+    - filename: "$${distrib}-$${release}"
     - save_as_qcow2
     # - save_as_tgz
     # - save_as_raw

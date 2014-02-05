@@ -18,7 +18,7 @@ module Kameleon
         "setup" => Section.new("setup"),
         "export" => Section.new("export"),
       }
-      @required_global = %w(distrib out_context in_context)
+      @required_global = %w(out_context in_context)
       kameleon_id = SecureRandom.uuid
       @global = {
         "kameleon_recipe_name" => @name,
@@ -49,6 +49,9 @@ module Kameleon
 
       #Load Global variables
       @global.merge!(yaml_recipe.fetch("global"))
+      # Resolve dynamically-defined variables !!
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      @global.merge! YAML.load(resolved_global)
 
       # Loads aliases
       load_aliases(yaml_recipe)
@@ -57,13 +60,16 @@ module Kameleon
 
       #Find and load steps
       steps_dir = File.join(File.dirname(@path), 'steps')
+      @global['include_steps'] ||= []
+      @global['include_steps'] = [global['include_steps']].push ''
+      @global['include_steps'].flatten!
+      @global['include_steps'].compact!
       @sections.values.each do |section|
-        dir_to_search = [@global['distrib'], 'default', ''].map do |path|
+        dir_to_search = @global['include_steps'].map do |path|
           [File.join(steps_dir, section.name, path),
             File.join(steps_dir, path)]
         end
         dir_to_search.flatten!
-
         if yaml_recipe.key? section.name
           yaml_section = yaml_recipe.fetch(section.name)
           next unless yaml_section.kind_of? Array
@@ -229,9 +235,6 @@ module Kameleon
     end
 
     def resolve!
-      # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
-      @global.merge! YAML.load(resolved_global)
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
