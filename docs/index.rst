@@ -110,7 +110,8 @@ Steps
 Each *step* contains a list of microsteps that contains a list of Commands_
 written in one YAML file.  To be found by Kameleon this file must be named by
 with the step name plus the YAML extension ``.yaml``. For example the
-``software_install.yaml`` step file looks like this: ::
+``software_install.yaml`` step file looks like this:
+::
 
     # Software Install
     - add_contribs_source:
@@ -133,7 +134,8 @@ with the step name plus the YAML extension ``.yaml``. For example the
 A step will be called like a function in the recipe. You should provide a set
 of local variables if needed by the step or to override default variables (see
 Variables_). Optionally, you can select only some microsteps to execute. Here
-is an example of step call: ::
+is an example of step call:
+::
 
     - software_install:
         - update_repositories
@@ -151,7 +153,8 @@ are stored by default in specific folders depending on the sections.
 Kameleon is looking for the steps files using the ``include_steps`` list value,
 if it is set in the recipe (NOT mandatory). These includes are often the
 distribution steps. For example if you are building an ubuntu based
-distribution you can use: ::
+distribution you can use:
+::
 
     include_steps:
         - ubuntu
@@ -160,7 +163,8 @@ distribution you can use: ::
 
 It also search uppermost within the current section folder. For the previous
 example, in the bootstrap section, the search paths are scanned in this
-order: ::
+order: 
+::
     steps/bootstrap/ubuntu
     steps/ubuntu
     steps/bootstrap/debian/wheezy
@@ -177,7 +181,8 @@ key/value syntax ``my_var: my_value``.To access these variables you have to use
 the two dollars (``$$``) prefix.  Like in a Shell you can also use
 ``$${var_name}`` to include your variables in string like this
 ``my-$${variable_name}-templated``. It's also possible to use nested variables
-like: ::
+like: 
+::
 
     my_var: foo
     my_nested_var: $${my_var}-bar
@@ -192,7 +197,7 @@ Global variables
 ~~~~~~~~~~~~~~~~~
 Global variables are defined in the ``global`` dictionary of the recipe.
 Kameleon use some global variable to enable the appliance build. See Context_
-and `Steps_path`_ for more details
+and `Steps path`_ for more details
 
 Step local variables
 ~~~~~~~~~~~~~~~~~~~~
@@ -201,7 +206,8 @@ variable override the global and the default variables.
 
 Step default variables
 ~~~~~~~~~~~~~~~~~~~~~~
-In the step file, you can define some default variables for your microsteps. Be careful, to avoid some mistakes, these variables can be override by the step local variables but not by the global ones. If this is the behavior you expected just add a step local variable that take the global variable value like this: ::
+In the step file, you can define some default variables for your microsteps. Be careful, to avoid some mistakes, these variables can be override by the step local variables but not by the global ones. If this is the behavior you expected just add a step local variable that take the global variable value like this: 
+::
     global:
         foo: bar
     setup:
@@ -229,7 +235,8 @@ exec_prefix (optional)
     The command to execute before every Kameleon command in this context
 
 For example, you are building an appliance on your laptop and you run Kameleon
-in a bash shell with this configuration: ::
+in a bash shell with this configuration: 
+::
     out_context:
         cmd: bash
         workdir: $$kameleon_cwd
@@ -261,7 +268,8 @@ Pipe command
 The ``pipe`` command allow to transfert any content from one context to
 another. It takes exec command in arguments. The transfert is done by sending
 the STDOUT of the first command to the STDIN of the second.
-For example: ::
+For example: 
+::
     - pipe:
             - exec_out: cat my_file
             - exec_in: cat > new_file
@@ -282,7 +290,8 @@ filesystem.
 
 Aliases
 -------
-Alias example: ::
+Alias example: 
+::
     out2in:
         - exec_in: mkdir -p $(dirname @2)
         - pipe:
@@ -293,171 +302,6 @@ Alias example: ::
 Making your own recipes
 =======================
 
-Define a global variable and use it
------------------------------------
+Work in progress...
 
-To define a global variable in kameleon, you just have do define it in the *global* section of your recipe,
-then to access it in a microstep command, simply call $$my_global_var.
-
-
-Create a recipe
----------------
-
-You will describe your recipe through a YAML file that.
-A recipe file is a configuration file. It has a global part configuring some variables 
-and a steps part listing all the steps (macrosteps composed of microsteps) that have 
-to be executed in the given order. In the global part, some variables are mandatory 
-and others may be custom variables used into microsteps. In the steps part, 
-if no microsteps are given, then it means that all the microsteps are executed in the 
-order they have been defined into the corresponding macrostep file. 
-
-Here is a simple example of a recipe file: ::
-
-  global:
-    distrib: debian-lenny
-    workdir_base: /var/tmp/kameleon/
-    distrib_repository: http://ftp.us.debian.org/debian/
-    arch: i386
-    kernel_arch: "686"
-  steps:
-    - check_deps
-    - bootstrap
-    - debian/system_config
-    - software_install
-    - kernel_install
-    - strip
-    - build_appliance:
-      - create_raw_image
-      - copy_system_tree
-      - install_grub
-      - save_as_raw
-      - save_as_qcow2
-      - clean
-    - clean
-
-
-
-Here, *create_raw_image*, *install_grub*, ... are microsteps and *build_appliance*, *bootstrap*, ...
-are macrosteps. In this recipe, in the *build_appliance* macrostep definition, only the specified
-microsteps will be called, on all the other macrosteps, all the microsteps composing them will be called.
-
-Note that you can include macrosteps from other distribs, for example here we included *debian/system_config* that may be a generic macrostep for every debian distribs.
-
-
-Installing kameleon
-===================
-
-
-Prerequisites to the kameleon installation:
-Make sure ruby, debootstrap, rsync, parted, kpartx, losetup, dmsetup, grub-install, awk, sed are installed
-on your computer, you may also need qemu-img and VBoxManage to generate qemu or VirtualBox images.
-
-The only non-standard ruby module that's needed is "session". Installation tarball can be 
-found in the *redist* directory.
-Upon extracting, session module can be installed by invoking "ruby install.rb" script.
-
-Note: also available as a gem: "gem install session" and then run as "sudo ruby -rubygems ./kameleon.rb"
-
-To run kameleon, simply run as root (because we need to create a chroot): ::
-
-   $ sudo ./kameleon.rb path_to_your_recipe_file.yaml
-
-This will, by default, create appliances in /var/tmp/kameleon/<timestamp>/debian-lenny.{raw|vmdk|qcow2|vdi}
-and tgz-ed system in /var/tmp/kameleon/<timestamp>/debian-lenny.tgz
-
-
-Using appliances
-================
-
-    - Username/password for appliance: kameleon/kameleon
-    - Becoming root: sudo -s
-    - Mysql user/pass: root/kameleon
-    - Hostname: oar
-    - Network is configured for dhcp
-    - Appliances are preconfigured to use OpenDSN servers
-    - X can be started using "startx" (fedora still needs some tweaking here)
-
-
-If something goes wrong
-=======================
-
-If something goes wrong and kameleon hangs or you need to kill it, there's a helper script to be used for cleaning. 
-It's very important to run this script right after the kameleon process dies (i.e. before starting kameleon again), 
-because some important resources might be deadlocked (proc filesystem mounted inside chroot, image mounted on loop device etc).
-
-Run the clean script: ::
-
-  $ sudo /bin/bash /var/tmp/kameleon/<timestamp>/clean.sh
-
-Note: starting from version 1.0, kameleon now executes automatically this script on a ctrl-C or abort on error.
-
-
-Directory structure:
-====================
-::
-
-   --/recipes
-    |
-    |/redist
-    |
-    |/steps/default
-          |
-          |/include
-          |
-          |/debian-lenny
-
-
-Since you pass path to the recipe file as a command line arg, recipes can be stored anywhere. 
-Macrostep definitions, however, have to be stored in the dir structure under the "steps" dir.
-In the recipe file, under global->distrib, one defines distribution name. Kameleon uses that 
-info to look for macrostep definition files under "<kameleon_root>/steps/$distrib/". 
-If the file can't be found there, kameleon looks into "default" dir 
-(one such example is /steps/default/clean.yaml).
-
-
-Provided recipes
-================
-
-Warning: This section is obsolete...
-
-Recipes are stored in "<kameleon_root>/recipes/" directory.
-
-
-There are two recipes:
-
- - debian-lenny.yaml
- - fedora-10.yaml
-
-IMPORTANT: if you have mysqld, apache or sshd running on the building platform, shut them down before starting kameleon.
-
-Feel free to take a look at macrostep files. You'll find some lines quoted with single hash (#), and some others with double hash (##). 
-Those that are quoted with single hash are working pieces of code that is opted out, and you can plug it in by removing the hashes. 
-One such example is installation of X server in fedora recipe. Lines that are quoted with double hash are non working code, probably 
-some legacy or work in progres, and in most of the cases, you should just live them like that.
-
-Debian lenny
-------------
-
-Prerequisites: debootstrap, rsync, parted, kpartx, losetup, dmsetup, grub-install, awk, sed, qemu-img, VBoxManage
-
-If you're using Debian/Ubuntu as building platform, all dependencies can be installed using apt-get and default repositories.
-
-By default, recipe will download and build i386 system. If you want to build appliances for amd64 platform, you would have to:
-
- - use 64bit system as building platform
- - alter "arch" and "kernel_arch" and set them both to "amd64"
-
-Fedora 10
----------
-
-Prerequisites: debootstrap, rsync, parted, kpartx, losetup, dmsetup, grub-install, awk, sed, qemu-img, VBoxManage
-
-If you're using Debian/Ubuntu as building platform, all dependencies but rinse can be installed using apt-get and default repositories. 
-Rinse is also available, but it's outdated and somehow broken. The best way to work around is to manually download and install 
-Rinse from here: http://www.xen-tools.org/software/rinse/rinse-1.7.tar.gz. Don't for get to take a look at Rinse's INSTALL - 
-it says you need rpm and rpm2cpio commands installed on the building platform.
-
-By default, recipe will download and build i386 system. If you want to build appliances for amd64 platform, you would have to:
-
- - use 64bit system as building platform
- - alter "arch" set it to "amd64"
+For now, see the quick Start guide in the README file.
