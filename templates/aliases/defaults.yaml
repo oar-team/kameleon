@@ -47,3 +47,18 @@ in2out:
   - pipe:
       - exec_in: cat @1
       - exec_out: cat > @2
+
+check_cmd_out:
+  - on_bootstrap_init:
+    - exec_out: |
+        echo @1 | tr ' ' '\n' | xargs -I {} bash -c "(command -V {} && exit 0) || (echo 1>&2 '{} is missing' && exit 1)"
+
+check_cmd_local:
+  - on_bootstrap_init:
+    - exec_local: |
+        echo @1 | tr ' ' '\n' | xargs -I {} bash -c "(command -V {} && exit 0) || (echo 1>&2 '{} is missing' && exit 1)"
+
+check_cmd_in:
+  - on_setup_init:
+    - exec_in: |
+        echo @1 | tr ' ' '\n' | xargs -I {} bash -c "(command -V {} && exit 0) || (echo 1>&2 '{} is missing' && exit 1)"
