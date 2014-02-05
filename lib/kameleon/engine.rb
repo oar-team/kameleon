@@ -15,21 +15,27 @@ module Kameleon
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
 
+      build_recipe = load_build_recipe
+      # restore previous build uuid
+      unless build_recipe.nil?
+        # binding.pry
+        %w(kameleon_uuid kameleon_short_uuid).each do |key|
+          @recipe.global[key] = build_recipe["global"][key]
+        end
+      end
+
       @enable_checkpoint = !@options[:no_checkpoint]
       # Check if the recipe have checkpoint entry
       @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
-      if @enable_checkpoint
-        build_recipe = load_build_recipe
-        # restore previous build uuid
-        unless build_recipe.nil?
-          # binding.pry
-          %w(kameleon_uuid kameleon_short_uuid).each do |key|
-            @recipe.global[key] = build_recipe["global"][key]
-          end
-        end
-      end
+
       @recipe.resolve!
       @in_context = nil
+      begin
+        @logger.notice("Creating kameleon working directory : #{@cwd}")
+        FileUtils.mkdir_p @cwd
+      rescue
+        raise BuildError, "Failed to create working directory #{@cwd}"
+      end
       @logger.notice("Building local context [local]")
       @local_context = LocalContext.new("local", @cwd)
       @logger.notice("Building external context [out]")
@@ -221,12 +227,6 @@ module Kameleon
     end
 
     def build
-      begin
-        @logger.notice("Creating kameleon working directory : #{@cwd}")
-        FileUtils.mkdir_p @cwd
-      rescue
-        raise BuildError, "Failed to create working directory #{@cwd}"
-      end
       if @enable_checkpoint
         @from_checkpoint = @options[:from_checkpoint]
         if @from_checkpoint.nil?

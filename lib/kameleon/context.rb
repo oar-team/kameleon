@@ -12,7 +12,7 @@ module Kameleon
       @workdir = workdir
       @exec_prefix = exec_prefix
       @local_workdir = local_workdir
-      @shell = Kameleon::Shell.new(@cmd, @workdir, @local_workdir)
+      @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir)
       @logger.debug("Initialize new ctx (#{name})")
 
       instance_variables.each do |v|
