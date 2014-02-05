@@ -258,21 +258,10 @@ module Kameleon
           # flatten for multiple-command alias + variables
           @logger.debug("Resolving check statements for macrostep '#{macrostep.name}'")
           macrostep.microsteps.each { |microstep| microstep.commands.flatten! }
-          # Second pass : resolve variables + check_cmd_in/out hooks
+          # Second pass : resolve variables + clean/init hooks
           macrostep.microsteps.each do |microstep|
             microstep.commands.map! do |cmd|
-              all_varibales = @global.merge(macrostep.variables)
-              cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd,
-                                                  macrostep.path,
-                                                  all_varibales)
-              resolve_check_cmd(cmd)
-            end
-          end
-          # Third pass : resolve and strip clean/init hooks
-          @logger.debug("Resolving hooks for macrostep '#{macrostep.name}'")
-          macrostep.microsteps.each do |microstep|
-            microstep.commands.map! do |cmd|
-              resolve_hooks(cmd, macrostep) unless cmd.nil?
+              resolve_hooks(cmd, macrostep)
             end
           end
           # remove nil values
@@ -399,30 +388,6 @@ module Kameleon
           end
         end
         fail RecipeError, "Invalid command : '#{cmd.key}'"
-      else
-        return cmd
-      end
-    end
-
-    def resolve_check_cmd(cmd)
-      if %w(check_cmd_out check_cmd_in).include?(cmd.key)
-        section_name = cmd.key.include?("in") ? "setup" : "bootstrap"
-        cmd_key = "exec_#{cmd.key.gsub("check_cmd_", "")}"
-        names = cmd.value.split(%r{,\s*}).map(&:split).flatten
-        names.each do |name|
-          shell_cmd = "command -V #{name} ||" \
-                      " (echo 1>&2 '#{name} is missing' && false )"
-          check_cmd = Command.new({cmd_key => shell_cmd})
-          @sections.values.each do |section|
-            if section.name == section_name
-              microstep_name = "_init_#{section.name}_"\
-                               "#{section.init_macrostep.microsteps.count}"
-              init_microstep = Microstep.new({microstep_name=> [check_cmd]})
-              section.init_macrostep.microsteps.push init_microstep
-            end
-          end
-        end
-        return
       else
         return cmd
       end
