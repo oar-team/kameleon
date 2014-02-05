@@ -1,4 +1,5 @@
 require 'kameleon/utils'
+require 'shellwords'
 
 
 module Kameleon
@@ -9,13 +10,34 @@ module Kameleon
 
     attr :exit_status, :process
 
-    def initialize(cmd, shell_workdir, local_workdir, kwargs = {})
+    def initialize(name, cmd, shell_workdir, local_workdir, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[shell]")
-      @cmd = cmd
+      @cmd = cmd.chomp
+      @name = name
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
-      @shell_cmd = "#{@cmd} -c 'mkdir -p #{@shell_workdir} && cd #{@shell_workdir} && bash'"
-      @history = []
+      @bash_init_file = "/tmp/kameleon_#{@name}_bash_init"
+      @bash_history_file = "/tmp/kameleon_#{@name}_bash_history"
+      @bash_env_file = "/tmp/kameleon_#{@name}_bash_env"
+      @sent_first_cmd = false
+      if @shell_workdir
+        change_dir_cmd = "mkdir -p #{@shell_workdir} && cd #{@shell_workdir}"
+      else
+        change_dir_cmd = ""
+      end
+      init_bash = <<-eos
+        #{change_dir_cmd}
+        source #{@bash_env_file} 2> /dev/null
+        source /etc/bash.bashrc 2> /dev/null
+        source ~/.bashrc 2> /dev/null
+      eos
+      bash_cmd = "mkdir -p /tmp/ ; " \
+                 "HISTFILE=#{@bash_history_file} ; " \
+                 "export HISTFILE ; "\
+                 "history -a ; "\
+                 "echo -e #{init_bash.inspect} > #{@bash_init_file} ; "\
+                 "bash --init-file #{@bash_init_file}"
+      @shell_cmd = "#{@cmd} -c '#{bash_cmd}'"
       @logger.debug("Initialize shell (#{self})")
       # Injecting all variables of the options and assign the variables
       instance_variables.each do |v|
@@ -60,7 +82,11 @@ module Kameleon
     def send_command cmd
       shell_cmd = "#{ ECHO_CMD } -n #{ cmd.begin_err } 1>&2\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.begin_out }\n"
+      shell_cmd << "KAMELEON_LAST_COMMAND=#{Shellwords.escape(cmd.value)}\n"
+      shell_cmd << "set > #{@bash_env_file}\n"
+      shell_cmd << "env | xargs -I {} echo export {} >> #{@bash_env_file}\n"
       shell_cmd << "#{ cmd.value }\nexport __exit_status__=$?\n"
+      shell_cmd << "#{ ECHO_CMD } $KAMELEON_LAST_COMMAND >> \"$HISTFILE\"\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_err } 1>&2\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_out }\n"
       @process.io.stdin.puts shell_cmd
@@ -68,7 +94,6 @@ module Kameleon
     end
 
     def execute(cmd, kwargs = {})
-      @history.push(cmd) unless kwargs[:skip_history]
       cmd_obj = Command.new(cmd)
       send_command cmd_obj = Command.new(cmd)
       iodata = {:stderr => { :io        => @stderr,
@@ -235,7 +260,7 @@ module Kameleon
       attr :end_err_pat
 
       def initialize(raw)
-        @value = raw.to_s
+        @value = raw.to_s.strip
         @number = self.class.counter
         @slug = Kameleon::Utils.generate_slug(@value)[0...30]
         @id = "%d_%d_%d" % [$$, @number, rand(Time.now.usec)]
