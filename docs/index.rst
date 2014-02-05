@@ -37,7 +37,8 @@ A recipe is a hierarchical structure of `Sections`_, `Steps`_, `Microsteps`_ and
 The recipe also contains set of `Global variables`_ declaration and some
 imports like `Aliases`_ and `Checkpoint`_.
 
-This is an example of a dummy recipe: ::
+This is an example of a dummy recipe: 
+::
     #===============================================================================
     # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
     #===============================================================================
