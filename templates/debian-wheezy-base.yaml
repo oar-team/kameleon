@@ -16,7 +16,7 @@
 # Loads some helpful aliases
 aliases: defaults.yaml
 # Enables qcow2 checkpoint
-checkpoint: qcow2.yaml
+# checkpoint: qcow2.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
