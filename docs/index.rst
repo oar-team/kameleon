@@ -276,41 +276,82 @@ For example, this pipe command copy my_file located in the out context workdir
 to the new_file within the out context workdir: 
 ::
     - pipe:
-            - exec_out: cat my_file
-            - exec_in: cat > new_file
+        - exec_out: cat my_file
+        - exec_in: cat > new_file
             
 This command are usually not used directly but with Aliases_.
 
 Hook commands
 ~~~~~~~~~~~~~
-The hook commands are design to defer some initialization or clean actions. It 
-takes a list of exec and pipe command in arguments. They
-are named like this ``on_[section]_init`` and ``on_[section]_clean``. The section
-inside the command define on which section this clean will be executed. If the 
-section is not specified the hook will be executed at the init or the clean of
-the current step.
+The hook commands are design to defer some initialization or clean actions. It
+takes a list of exec and pipe command in arguments. They are named like this
+``on_[section]_init`` and ``on_[section]_clean``. The section inside the
+command define on which section this clean will be executed. If the section is
+not specified the hook will be executed at the init or the clean of the current
+step. For example, if you want to clean the ``/tmp`` folder at the end of the
+setup, you can add anywhere in a step:
+::
+    - on_setup_clean:
+        - exec_in: rm -rf /tmp/mytemp 
 
-Workspace
----------
-The workspace is a folder containing your Kameleon recipes and builds.
+
+Workspaces
+----------
+The workspaces are the folders containing your Kameleon recipes and builds. When
+you use ``kameleon new`` a workspace is created if it does not exists. A
+workspace may contains several recipes. 
+
+*Be careful*: All the *steps are shared between recipes within a workspace*. So
+if you do NOT want to share steps between different recipes you MUST use
+different workspace.
 
 Checkpoints
 -----------
-Kameleon provide a modular Checkpoint mechanism. TODO
-The killer feature of Kameleon is the possibility to implement your own
-checkpoint mechanism, using for example the snapshot of your underneath
-filesystem.
+Kameleon provide a modular Checkpoint mechanism. Indeed, Kameleon give you the
+possibility to implement your own checkpoint mechanism, using for example the
+snapshot feature of your underneath filesystem. To do so, you have to fill in a
+YAML file, located in the ``checkpoints`` folder of your workspace, in which you
+have to define 4 commands:
+
+create
+    The checkpoint first creation command
+
+apply
+    The command applies a previous checkpoint state before starting build
+
+remove
+    Remove an old checkpoint
+    
+list
+    List the available checkpoints
+
+You can use the Kameleon current microstep id in your command with like this
+``@microstep_id``.
+
+The checkpoint is selected in the recipe with a key/value couple where the value
+is the checkpoint yaml file name: ``checkpoint: qcow2.yaml``
 
 Aliases
 -------
-Alias example: 
+The aliases can be used anywhere instead of a Kameleon command. Some aliases are
+provided with the templates in the ``aliases/defaults.yaml`` files within your
+workspace. You can add your own aliases in this file.
+An alias is define by his name as a key and a list of commands as a value. You
+can call an alias with any number of arguments given in a list. The alias access
+to this arguments using the ``@arg_index`` notation. The argument index start at
+1. So, ``@1`` is the first argument ``@2`` is the second ans so on. A good
+example is the alias define to copy from the out to the in context: 
 ::
+    # alias definition
     out2in:
         - exec_in: mkdir -p $(dirname @2)
         - pipe:
             - exec_out: cat @1
             - exec_in: cat > @2
-
+    # alias call
+    out2in:
+        - ./my_file_out
+        - ./copy_of_my_file_in
 
 Making your own recipes
 =======================
