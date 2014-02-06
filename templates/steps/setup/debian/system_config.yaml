@@ -1,8 +1,10 @@
 # # System Config
 - configure_locales:
   # set locales programtically, based on http://linux.livejournal.com/1880366.html
-  - exec_in: "echo $$locales | tr ' ' '\n' | xargs -I {} sed -i 's/^# {}/{}/' /etc/locale.gen"
-  - exec_in: locale-gen
+  - exec_in: |
+      test ! -f /etc/locale.gen || \
+        (echo $$locales | tr ' ' '\n' | xargs -I {} sed -i 's/^# {}/{}/' /etc/locale.gen)
+  - exec_in: locale-gen $$lang
   - exec_in: update-locale LANG=$$lang
 
 - set_hosts:
