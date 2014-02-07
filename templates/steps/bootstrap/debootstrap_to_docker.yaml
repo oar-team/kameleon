@@ -1,0 +1,23 @@
+# # Bootstrap
+- include: ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase net-tools iproute openssh-server pciutils
+- debootstrap:
+  - check_cmd_out: debootstrap
+  - on_bootstrap_init:
+    - exec_out: export DEBIAN_FRONTEND=noninteractive
+  - on_setup_init:
+    - exec_in: export DEBIAN_FRONTEND=noninteractive
+  - exec_out: mkdir -p $(dirname "$$archive_file")
+  - exec_out: |
+      if [ ! -f "$$archive_file" ]
+      then
+        debootstrap \
+          --no-check-gpg \
+          --arch=$$arch \
+          --include="$$include" \
+          $$release "$$image" $$repository
+        tar zcf "$$archive_file" -C "$$image" --numeric-owner --one-file-system .
+        rm -fr $$image
+      fi
+  - exec_out: |
+      docker images | grep $$image \
+      || (echo "Importing $$image from docker..." && cat "$$archive_file" | docker import - $$image)
