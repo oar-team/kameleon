@@ -46,9 +46,7 @@ module Kameleon
     end
 
     def start
-      trap('INT', 'IGNORE')
       @process, @stdout, @stderr = fork("pipe")
-      trap('INT', 'DEFAULT')
     end
 
     def stop
