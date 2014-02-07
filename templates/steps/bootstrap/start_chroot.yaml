@@ -35,9 +35,10 @@
             kill -9 $pid
           done
           echo "Waiting for all processes of the in context to terminate..."
-          while [ ! -z $(cat $$rootfs/$$cpuset_base_name/$$cpuset_name/tasks) ]; do
+          while [ ! -z "$(cat $$rootfs/$$cpuset_base_name/$$cpuset_name/tasks)" ]; do
             sleep .2
           done
+          sleep .2
           echo > $$rootfs/$$cpuset_base_name/$$cpuset_name/cpuset.cpus
           echo > $$rootfs/$$cpuset_base_name/$$cpuset_name/cpuset.mems
           rmdir $$rootfs/$$cpuset_base_name/$$cpuset_name
