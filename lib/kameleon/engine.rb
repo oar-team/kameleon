@@ -52,24 +52,22 @@ module Kameleon
       safe_exec_cmd(create_cmd, :log_level => "debug")
     end
 
-    def remove_checkpoint(microstep_id)
-      cmd = @recipe.checkpoint["remove"].gsub("@microstep_id", microstep_id)
-      remove_cmd = Kameleon::Command.new({"exec_out" => cmd})
-      safe_exec_cmd(remove_cmd, :log_level => "debug")
-    end
-
     def apply_checkpoint(microstep_id)
       cmd = @recipe.checkpoint["apply"].gsub("@microstep_id", microstep_id)
       apply_cmd = Kameleon::Command.new({"exec_out" => cmd})
       safe_exec_cmd(apply_cmd, :log_level => "debug")
     end
 
+    def list_all_checkpoints
+      list = ""
+      cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']})
+      safe_exec_cmd(cmd, :stdout => list)
+      return list.split(/\r?\n/)
+    end
+
     def list_checkpoints
       if @list_checkpoints.nil?
-        list = ""
-        cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']})
-        safe_exec_cmd(cmd, :stdout => list)
-        checkpoints = list.split(/\r?\n/)
+        checkpoints = list_all_checkpoints
         all_microsteps_ids = @recipe.microsteps.map { |m| m.identifier }
         # get sorted checkpoints by microsteps order
         @list_checkpoints = []
@@ -226,6 +224,15 @@ module Kameleon
       end
     end
 
+    def clear
+      unless @recipe.checkpoint.nil?
+        @logger.notice("Removing all old checkpoints")
+        cmd = @recipe.checkpoint["clear"]
+        clear_cmd = Kameleon::Command.new({"exec_out" => cmd})
+        safe_exec_cmd(clear_cmd, :log_level => "info")
+      end
+    end
+
     def build
       if @enable_checkpoint
         @from_checkpoint = @options[:from_checkpoint]
@@ -246,14 +253,6 @@ module Kameleon
             if microstep.identifier == @from_checkpoint
               break
             end
-          end
-        end
-      else
-        unless @recipe.checkpoint.nil?
-          @logger.notice("Removing all old checkpoints")
-          list_checkpoints.each do |macrostep_id|
-            @logger.notice(" ---> Removing checkpoint #{macrostep_id}")
-            remove_checkpoint macrostep_id
           end
         end
       end

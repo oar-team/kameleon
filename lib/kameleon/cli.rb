@@ -105,6 +105,17 @@ module Kameleon
       engine.pretty_checkpoints_list
     end
 
+    desc "clear [RECIPE_NAME]", "Cleaning out context and removing all checkpoints"
+    method_option :build_path, :type => :string ,
+                  :default => nil, :aliases => "-b",
+                  :desc => "Set the build directory path"
+    def clear(recipe_name)
+      Log4r::Outputter['console'].level = Log4r::INFO
+      recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
+      engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+      engine.clear
+    end
+
     # Hack Thor to init Kameleon env soon
     def self.init(base_config)
       options = base_config[:shell].base.options

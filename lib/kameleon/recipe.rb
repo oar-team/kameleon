@@ -300,7 +300,7 @@ module Kameleon
                           " #{ missings.join ' ' }" unless missings.empty?
       end
       unless @checkpoint.nil?
-        required_args = %w(create apply remove list)
+        required_args = %w(create apply list clear)
         missings = []
         missings = required_args - (@checkpoint.keys() & required_args)
         fail RecipeError, "Required paramater missing for checkpoint:" \
@@ -309,7 +309,7 @@ module Kameleon
     end
 
     def resolve_checkpoint()
-      %w(create apply remove list).each do |key|
+      %w(create apply list clear).each do |key|
         @checkpoint[key] = Utils.resolve_vars(@checkpoint[key],
                                               @checkpoint["path"],
                                               @global)
