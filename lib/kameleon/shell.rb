@@ -10,34 +10,27 @@ module Kameleon
 
     attr :exit_status, :process
 
-    def initialize(name, cmd, shell_workdir, local_workdir, kwargs = {})
+    def initialize(context_name, cmd, shell_workdir, local_workdir, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[shell]")
       @cmd = cmd.chomp
-      @name = name
+      @context_name = context_name
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
-      @bash_init_file = "/tmp/kameleon_#{@name}_bash_init"
-      @bash_history_file = "/tmp/kameleon_#{@name}_bash_history"
-      @bash_env_file = "/tmp/kameleon_#{@name}_bash_env"
-      @sent_first_cmd = false
+      @bashrc_file = "/tmp/kameleon_#{@context_name}_bash_rc"
+      @bash_history_file = "/tmp/kameleon_#{@context_name}_bash_history"
+      @bash_env_file = "/tmp/kameleon_#{@context_name}_bash_env"
+      change_dir_cmd = ""
       if @shell_workdir
-        change_dir_cmd = "mkdir -p #{@shell_workdir} && cd #{@shell_workdir}"
-      else
-        change_dir_cmd = ""
+        unless @shell_workdir.eql? "/"
+          change_dir_cmd = "mkdir -p #{@shell_workdir} &&"
+        end
+        change_dir_cmd = "#{change_dir_cmd} cd #{@shell_workdir} && "
       end
-      init_bash = <<-eos
-        #{change_dir_cmd}
-        source #{@bash_env_file} 2> /dev/null
-        source /etc/bash.bashrc 2> /dev/null
-        source ~/.bashrc 2> /dev/null
-      eos
-      bash_cmd = "mkdir -p /tmp/ ; " \
-                 "HISTFILE=#{@bash_history_file} ; " \
-                 "export HISTFILE ; "\
-                 "history -a ; "\
-                 "echo -e #{init_bash.inspect} > #{@bash_init_file} ; "\
-                 "bash --init-file #{@bash_init_file}"
-      @shell_cmd = "#{@cmd} -c '#{bash_cmd}'"
+      @default_bashrc_file = File.join(Kameleon.source_root,
+                                       "contrib",
+                                       "kameleon_bashrc.sh")
+      bash_cmd = "bash --rcfile #{@bashrc_file}"
+      @shell_cmd = "#{@cmd} -c '#{change_dir_cmd}#{bash_cmd}'"
       @logger.debug("Initialize shell (#{self})")
       # Injecting all variables of the options and assign the variables
       instance_variables.each do |v|
@@ -46,6 +39,7 @@ module Kameleon
     end
 
     def start
+      @sent_first_cmd = false
       @process, @stdout, @stderr = fork("pipe")
     end
 
@@ -77,11 +71,28 @@ module Kameleon
       copy_process.poll_for_exit(EXIT_TIMEOUT)
     end
 
+    def init_shell_cmd
+      bashrc_content = ""
+      if File.file?(@default_bashrc_file)
+        tpl = ERB.new(File.read(@default_bashrc_file))
+        bashrc_content = tpl.result(binding)
+      end
+      bashrc = Shellwords.escape(bashrc_content)
+      shell_cmd = "mkdir -p $(dirname #{@bashrc_file})\n"
+      shell_cmd << "echo #{bashrc} > #{@bashrc_file}\n"
+      shell_cmd << "source #{@bashrc_file}\n"
+      shell_cmd
+    end
+
     def send_command cmd
       shell_cmd = "#{ ECHO_CMD } -n #{ cmd.begin_err } 1>&2\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.begin_out }\n"
+      unless @sent_first_cmd
+        shell_cmd << init_shell_cmd
+        @sent_first_cmd = true
+      end
       shell_cmd << "KAMELEON_LAST_COMMAND=#{Shellwords.escape(cmd.value)}\n"
-      shell_cmd << "set > #{@bash_env_file}\n"
+      shell_cmd << "( set -o posix ; set ) > #{@bash_env_file}\n"
       shell_cmd << "env | xargs -I {} echo export {} >> #{@bash_env_file}\n"
       shell_cmd << "#{ cmd.value }\nexport __exit_status__=$?\n"
       shell_cmd << "#{ ECHO_CMD } $KAMELEON_LAST_COMMAND >> \"$HISTFILE\"\n"

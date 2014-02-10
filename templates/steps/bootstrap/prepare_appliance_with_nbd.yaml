@@ -1,12 +1,6 @@
 # Prepare Appliance
 - nbd_device: /dev/nbd0
 
-- init_contexts:
-  - on_bootstrap_init:
-    - exec_out: "fail() { echo $@ 1>&2; false; }"
-  - on_setup_init:
-    - exec_in: "fail() { echo $@ 1>&2; false; }"
-
 - create_raw_image:
   - check_cmd_out: qemu-img
   - exec_out: mkdir -p checkpoints
@@ -31,6 +25,7 @@
 
 
 - detach_nbd_device:
+  - on_checkpoint: redo
   - on_export_clean:
     - exec_out: echo "sync" ; sync
     - exec_out: qemu-nbd -d $$nbd_device
@@ -70,10 +65,12 @@
   - on_checkpoint: redo
   - exec_out: mkdir -p $$mountdir
   - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p2 $$mountdir || fail cannot mount /"
+  - on_checkpoint: redo
   - on_export_clean:
     - exec_out: "echo umounting $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
   - exec_out: mkdir -p $$mountdir/boot
   - exec_out:  "echo Mounting boot partition... ;  mount $${nbd_device}p1 $$mountdir/boot || fail cannot mount /boot"
+  - on_checkpoint: redo
   - on_export_clean:
     - exec_out: "echo umounting $$mountdir/boot... ; mountpoint -q $$mountdir/boot && umount -f -l $$mountdir/boot || true"
 

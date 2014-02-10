@@ -37,7 +37,7 @@ module Kameleon
         raise BuildError, "Failed to create working directory #{@cwd}"
       end
       @logger.notice("Building local context [local]")
-      @local_context = LocalContext.new("local", @cwd)
+      @local_context = Context.new("local", "bash", @cwd, "", @cwd)
       @logger.notice("Building external context [out]")
       @out_context = Context.new("out",
                                  @recipe.global["out_context"]["cmd"],
@@ -48,19 +48,20 @@ module Kameleon
 
     def create_checkpoint(microstep_id)
       cmd = @recipe.checkpoint["create"].gsub("@microstep_id", microstep_id)
-      create_cmd = Kameleon::Command.new({"exec_out" => cmd})
+      create_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
       safe_exec_cmd(create_cmd, :log_level => "debug")
     end
 
     def apply_checkpoint(microstep_id)
       cmd = @recipe.checkpoint["apply"].gsub("@microstep_id", microstep_id)
-      apply_cmd = Kameleon::Command.new({"exec_out" => cmd})
+      apply_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
       safe_exec_cmd(apply_cmd, :log_level => "debug")
     end
 
     def list_all_checkpoints
       list = ""
-      cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']})
+      cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']},
+                                  "checkpoint")
       safe_exec_cmd(cmd, :stdout => list)
       return list.split(/\r?\n/)
     end
@@ -228,7 +229,7 @@ module Kameleon
       unless @recipe.checkpoint.nil?
         @logger.notice("Removing all old checkpoints")
         cmd = @recipe.checkpoint["clear"]
-        clear_cmd = Kameleon::Command.new({"exec_out" => cmd})
+        clear_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
         safe_exec_cmd(clear_cmd, :log_level => "info")
       end
     end

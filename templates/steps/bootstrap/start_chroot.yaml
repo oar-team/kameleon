@@ -16,6 +16,7 @@
 - cpuset_base_name: /dev/cpuset
 - cpuset_name: kameleon
 - init_cpuset:
+  - on_checkpoint: redo
   - on_setup_init:
     - exec_in: |
         if [ ! -f $$cpuset_base_name/cpus ]; then
@@ -28,6 +29,9 @@
     - exec_in: echo 0 > $$cpuset_base_name/$$cpuset_name/cpuset.cpus
     - exec_in: echo 0 > $$cpuset_base_name/$$cpuset_name/cpuset.mems
     - exec_in: echo $$ > $$cpuset_base_name/$$cpuset_name/tasks
+
+- clean_cpuset:
+  - on_checkpoint: redo
   - on_export_clean:
     - exec_out: |
         if [ -f $$rootfs/$$cpuset_base_name/$$cpuset_name/tasks ]; then

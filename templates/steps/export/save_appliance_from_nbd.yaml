@@ -38,7 +38,6 @@
 - save_as_qcow2:
   - exec_out: echo "sync..." ; sync
   - exec_out: |
-      sync
       qemu-img convert -O qcow2 $(readlink $$container) $$filename.qcow2
   - exec_out: echo "Saved qcow2 appliance to $(pwd)/$$filename.qcow2"
 
