@@ -15,19 +15,17 @@
 # Loads some helpful aliases
 aliases: defaults.yaml
 # Enables qcow2 checkpoint
-# checkpoint: docker.yaml
+checkpoint: docker.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
   cachedir: /var/cache/kameleon
-  rootfs: $$kameleon_cwd/rootfs
   user_name: kameleon
   arch: amd64
 
   distrib: debian
   release: wheezy
   docker_image: kameleon-$${distrib}-$$release
-  docker_container: kameleon_$$kameleon_uuid
   # DNS servers : opendns
   docker_dns: 208.67.222.222
 
@@ -44,12 +42,11 @@ global:
 
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
-  ssh_options: -o "StrictHostKeyChecking=no" -o "ForwardAgent=yes"
-  default_env: "USER=root HOME=/root PATH=/usr/bin:/usr/sbin:/bin:/sbin LC_ALL=POSIX"
+  ssh_options: -o StrictHostKeyChecking=no -o ForwardAgent=yes
+  ssh_port: $(cat MAIN_CONTAINER_PORT)
+  insecure_ssh_key: insecure_ssh_dsa_key
   in_context:
-    cmd: >
-      env -i $$default_env ssh $$ssh_options localhost \
-      -p $(cat CONTAINER_PORT) -i insecure_ssh_dsa_key /bin/bash
+    cmd: LC_ALL=POSIX ssh $$ssh_options localhost -p $$ssh_port -i $$insecure_ssh_key -t /bin/bash
     workdir: /
 
 #== Bootstrap the new system and create the 'in_context'
@@ -60,11 +57,13 @@ bootstrap:
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
     - archive_file: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
+  - prepare_docker:
+    - image: $$docker_image
+    - dns: $$docker_dns
   - start_docker:
     - image: $$docker_image
-    - container: $$docker_container
     - dns: $$docker_dns
-
+    - hostname: kameleon-$$distrib
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the build context (whenever
@@ -82,21 +81,18 @@ setup:
     - locales: fr_FR en_US
     - lang: fr_FR.UTF-8
     - timezone: Europe/Paris
-    - network_hostname: mydebian
   - keyboard_config:
     - layout: "fr,us"
-  - network_config
   - create_user:
     - name: $$user_name
     - group: admin
     - password: $$user_name
 
 #== Export the generated appliance in the format of your choice
-# export:
-#   - save_appliance_from_nbd:
-#     - filename: "$${distrib}-$${release}"
-#     - save_as_qcow2
-    # - save_as_tgz
-    # - save_as_raw
-    # - save_as_vmdk
-    # - save_as_vdi
+export:
+  - build_appliance_from_docker:
+    - mountdir: $$kameleon_cwd/rootfs
+    - rootfs_archive: $$docker_image.tar.gz
+    - image_size: 2G
+    - filesystem_type: ext4
+    - filename: $$docker_image.qcow2
