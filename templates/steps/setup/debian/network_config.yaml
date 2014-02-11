@@ -21,8 +21,8 @@
       #
       
       #<ip-address> <hostname.domain.org> <hostname>
-      127.0.0.1 localhost.localdomain localhost $$network_hostname
+      127.0.0.1 localhost.localdomain localhost $$hostname
       ::1   localhost.localdomain localhost
 
 - set_hostname:
-  - exec_in: echo "$$network_hostname" > /etc/hostname
+  - exec_in: echo "$$hostname" > /etc/hostname
