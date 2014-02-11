@@ -8,8 +8,6 @@
 #
 # TEMPLATE: <%= @name %>
 #
-# WARNING: autologin means anyone booting this image get acces WITHOUT password
-#
 #==============================================================================
 
 ---
