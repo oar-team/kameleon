@@ -20,7 +20,7 @@ module Kameleon
       end
       # Start the shell process
       @shell.start
-      execute("echo 'Context #{name} is initialized'", :log_level => "info")
+      execute("echo The '#{name}_context' has been initialized", :log_level => "info")
     end
 
     def log(log_level, msg)

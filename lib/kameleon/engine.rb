@@ -226,6 +226,20 @@ module Kameleon
     end
 
     def clear
+      @recipe.sections.values.each do |section|
+        @logger.notice("Cleaning #{section.name} section")
+        section.clean_macrostep.sequence do |microstep|
+          microstep.commands.each do |cmd|
+            if (cmd.key == "exec_out" || cmd.key == "exec_local")
+              begin
+                exec_cmd(cmd)
+              rescue
+                @logger.warn("An error occurred while executing : #{cmd.value}")
+              end
+            end
+          end
+        end
+      end
       unless @recipe.checkpoint.nil?
         @logger.notice("Removing all old checkpoints")
         cmd = @recipe.checkpoint["clear"]
@@ -314,7 +328,7 @@ module Kameleon
         end
       end
       if dict_checkpoints.empty?
-        puts "Any checkpoint available for the recipe '#{recipe.name}'"
+        puts "No checkpoint available for the recipe '#{recipe.name}'"
       else
         puts "The following checkpoints are available for  " \
                  "the recipe '#{recipe.name}':"
