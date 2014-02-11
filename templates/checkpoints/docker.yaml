@@ -7,7 +7,7 @@ apply: |
     docker tag $$docker_image:@microstep_id $$docker_image:latest
 
 list: |
-  docker images | grep -v latest | grep $$docker_image | awk '{print $2}'
+    docker images | grep $$docker_image | awk '{print $2}'
 
 clear: |
     docker images | grep $$docker_image | awk '{print $3}' \

@@ -1,8 +1,8 @@
-- nbd_device: /dev/nbd0
+- nbd_device: /dev/nbd1
 
-- create_qcow2_image:
+- create_raw_image:
   - check_cmd_out: qemu-img
-  - exec_out: qemu-img create -f qcow2 $$filename $$image_size
+  - exec_out: bash -c "qemu-img create -f qcow2 $$filename $$image_size"
 
 - load_nbd_module:
   - on_bootstrap_init:
@@ -12,6 +12,7 @@
         || fail failed to load nbd module into kernel
 
 - attach_nbd_device:
+  - on_checkpoint: redo
   - check_cmd_out: qemu-nbd
   - exec_out: echo Connecting $$filename to nbd device $$nbd_device
   - exec_out: qemu-nbd -c $$nbd_device $$filename -n || fail nbd device $$filename is unavailable
@@ -36,18 +37,23 @@
       mkfs.$$filesystem_type -q $${nbd_device}p2 || fail cannot create / ext4
 
 - mount_mountdir:
+  - on_checkpoint: redo
   - exec_out: mkdir -p $$mountdir
   - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p2 $$mountdir || fail cannot mount /"
+  - on_checkpoint: redo
   - on_export_clean:
     - exec_out: "echo umounting $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
   - exec_out: mkdir -p $$mountdir/boot
   - exec_out:  "echo Mounting boot partition... ;  mount $${nbd_device}p1 $$mountdir/boot || fail cannot mount /boot"
+  - on_checkpoint: redo
   - on_export_clean:
     - exec_out: "echo umounting $$mountdir/boot... ; mountpoint -q $$mountdir/boot && umount -f -l $$mountdir/boot || true"
+
 
 - copy_rootfs:
   - exec_out: tar -xf $$rootfs_archive -C $$mountdir
   - exec_out: echo "sync..." ; sync
+
 
 - create_fstab:
   - write_out:
@@ -62,11 +68,25 @@
       # <file system> <mount point>   <type>  <options>       <dump>  <pass>
       UUID=`blkid -s UUID -o value $${nbd_device}p2` /               $$filesystem_type    errors=remount-ro  0       1
       UUID=`blkid -s UUID -o value $${nbd_device}p1` /boot           $$filesystem_type    sync               0       2
+  - exec_out: cat /proc/mounts > $$mountdir/etc/mtab
   - exec_out: echo "sync..." ; sync
+
+- mount_chroot:
+  - on_checkpoint: redo
+  - check_cmd_out: chroot
+  - exec_out: mount -o bind /dev  $$mountdir/dev
+  - exec_out: mount -o bind /dev/pts $$mountdir/dev/pts
+  - exec_out: mount -t proc /proc  $$mountdir/proc
+  - exec_out: mount -t sysfs /sys  $$mountdir/sys
+  - on_export_clean:
+    - exec_out: echo umount $$mountdir/sys... ; mountpoint -q $$mountdir/sys && umount -f -l $$mountdir/sys  || true
+    - exec_out: echo umount $$mountdir/proc... ; mountpoint -q $$mountdir/proc && umount  -f -l $$mountdir/proc  || true
+    - exec_out: echo umount $$mountdir/dev/pts... ; mountpoint -q $$mountdir/dev/pts && umount -f -l $$mountdir/dev/pts  || true
+    - exec_out: echo umount $$mountdir/dev... ; mountpoint -q $$mountdir/dev && umount -f -l $$mountdir/dev  || true
 
 - install_extlinux:
   - check_cmd_out: extlinux-install
-  - exec_out: extlinux-install $$nbd_device 2>&1
+  - exec_out: chroot $$mountdir extlinux-install $$nbd_device 2>&1
   - write_out:
     - $$mountdir/boot/extlinux/extlinux.conf
     - |

@@ -10,7 +10,6 @@
     - exec_out: rm -f CONTAINERS_TO_CLEAN
 
 - configure_sshd:
-  - on_checkpoint: redo
   - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
   - exec_out: chmod 600 $$insecure_ssh_key*
   - exec_out: |
