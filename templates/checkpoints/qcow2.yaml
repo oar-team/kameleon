@@ -32,9 +32,11 @@ apply: |
     qemu-nbd -c $$nbd_device "$(readlink $$container)" -n
 
 clear: |
-    ls checkpoints/ | \
-      xargs -I {} bash -c "echo Removing checkpoints/{} ; rm checkpoints/{}"
-    rm -f $$container
+    if [ -d "checkpoints" ] ; then
+      ls checkpoints/ | \
+        xargs -I {} bash -c "echo Removing checkpoints/{} ; rm checkpoints/{}"
+      rm -f $$container
+    fi
 
 list: |
     if [ -d "checkpoints" ] ; then
