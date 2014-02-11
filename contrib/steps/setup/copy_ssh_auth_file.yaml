@@ -1,0 +1,10 @@
+# Copy auth file from local to in
+- home_in: /root
+- auth_file_in: $$home_in/.ssh/authorized_keys
+- auth_file_local: $$auth_file_in
+
+- copy_ssh_auth_content:
+  - exec_in: mkdir -p $$home_in/.ssh
+  - pipe:
+    - exec_local: cat $$auth_file_local
+    - exec_in: cat >> $$auth_file_in

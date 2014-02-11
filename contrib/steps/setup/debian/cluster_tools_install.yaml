@@ -1,28 +1,16 @@
-# # Cluster Tools Install
+# Cluster Tools Install
 - install_build_essentials:
-  - include:
-    - pkg_install:
-      - pkg: build-essential
+  - deb_install_in: build-essential
 - install_openmpi:
-  - include:
-    - pkg_install:
-      - pkg: |
+  - deb_install_in: |
         openmpi-bin openmpi-common \
         openssh-client openssh-server \
         libopenmpi1.3 libopenmpi-dbg libopenmpi-dev
-- install_python: 
-  - include:
-    - pkg_install:
-      - pkg: python python-dev
+- install_python:
+  - deb_install_in: python python-dev
 - install_java:
-  - include:
-    - pkg_install:
-      - pkg: openjdk-6-jre
+  - deb_install_in: openjdk-6-jre
 - install_perl:
-  - include:
-    - pkg_install:
-      - pkg: perl
+  - deb_install_in: perl
 - install_tcl:
-  - include:
-    - pkg_install:
-      - pkg: tcl
+  - deb_install_in: tcl

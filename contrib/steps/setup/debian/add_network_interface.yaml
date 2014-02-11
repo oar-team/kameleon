@@ -1,0 +1,7 @@
+- add_interface:
+  - append_in:
+    - /etc/network/interfaces
+    - |
+      auto eth1
+      iface eth1 inet dhcp
+          pre-up ip link set mtu 1492 eth1

@@ -1,0 +1,26 @@
+# Install your own key in the selected user home
+# By default from local root to in root
+
+- local_private_key: /root/.ssh/id_rsa
+- local_public_key: $$local_private_key.pub
+- in_user: root
+- in_group: root
+- in_home: /root
+- in_private_key: $$in_home/.ssh/id_rsa
+- in_public_key: $$in_private_key.pub
+
+- copy_my_key:
+  - local2in:
+    - $$local_private_key
+    - $$in_private_key
+  - local2in:
+    - $$local_public_key
+    - $$in_public_key
+
+
+- fix_permissions:
+  - exec_in: |
+      chown -R $$in_user:$$in_group $$in_home/.ssh
+      chmod 755 $$in_home/.ssh
+      chmod 600 $$in_private_key
+      chmod 644 $$in_public_key
