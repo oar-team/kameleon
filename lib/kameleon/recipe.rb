@@ -172,10 +172,10 @@ module Kameleon
         key = yaml_microstep.keys[0]
         value = yaml_microstep[key]
         # Set new variable if not defined yet
-        if value.kind_of? String
-          local_variables[key] = @global.fetch(key, value)
-        else
+        if value.kind_of? Array
           loaded_microsteps.push Microstep.new(yaml_microstep)
+        else
+          local_variables[key] = @global.fetch(key, value)
         end
       end
       selected_microsteps = []
