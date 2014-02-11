@@ -2,7 +2,7 @@
 
 # WARNING: The MTU is set to 1492 to avoid connection failure over some
 # network du to PPP header
-- mtu: 1492
+- mtu: "1492"
 - network_interfaces:
   - write_in:
     - /etc/network/interfaces
