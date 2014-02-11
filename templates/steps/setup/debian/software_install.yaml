@@ -4,7 +4,7 @@
 - update_repositories:
   - exec_in: apt-get -y --force-yes update
 - upgrade_system:
-  - exec_in: apt-get -y --force-yes dist-upgrade
+  - exec_in: apt-get -y --force-yes dist-upgrade 2>&1
 - clean:
   - on_export_init:
     - exec_in: apt-get -y --force-yes autoclean
