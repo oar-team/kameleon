@@ -11,3 +11,18 @@
       auto eth0
       iface eth0 inet dhcp
           pre-up ip link set mtu 1492 eth0
+
+- set_hosts:
+  - write_in:
+    - /etc/hosts
+    - |
+      #
+      # /etc/hosts: static lookup table for host names
+      #
+      
+      #<ip-address> <hostname.domain.org> <hostname>
+      127.0.0.1 localhost.localdomain localhost $$network_hostname
+      ::1   localhost.localdomain localhost
+
+- set_hostname:
+  - exec_in: echo "$$network_hostname" > /etc/hostname

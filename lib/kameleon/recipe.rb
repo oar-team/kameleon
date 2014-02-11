@@ -261,12 +261,21 @@ module Kameleon
           # Second pass : resolve variables + clean/init hooks
           macrostep.microsteps.each do |microstep|
             microstep.commands.map! do |cmd|
-              resolve_hooks(cmd, macrostep)
+              resolve_hooks(cmd, macrostep, microstep)
             end
           end
-          # remove nil values
           @logger.debug("Compacting macrostep '#{macrostep.name}'")
-          macrostep.microsteps.each { |microstep| microstep.commands.compact! }
+          # remove empty steps
+          macrostep.microsteps.map! do |microstep|
+            microstep.commands.compact!
+            microstep.commands.empty? ? nil : microstep
+          end
+          # remove nil values
+          macrostep.microsteps.compact!
+          @logger.debug("Resolving commands for macrostep '#{macrostep.name}'")
+          macrostep.microsteps.each do |microstep|
+            microstep.resolve!
+          end
         end
       end
       calculate_step_identifiers
@@ -300,7 +309,7 @@ module Kameleon
                           " #{ missings.join ' ' }" unless missings.empty?
       end
       unless @checkpoint.nil?
-        required_args = %w(create apply remove list)
+        required_args = %w(create apply list clear)
         missings = []
         missings = required_args - (@checkpoint.keys() & required_args)
         fail RecipeError, "Required paramater missing for checkpoint:" \
@@ -309,7 +318,7 @@ module Kameleon
     end
 
     def resolve_checkpoint()
-      %w(create apply remove list).each do |key|
+      %w(create apply list clear).each do |key|
         @checkpoint[key] = Utils.resolve_vars(@checkpoint[key],
                                               @checkpoint["path"],
                                               @global)
@@ -334,11 +343,13 @@ module Kameleon
       args.each_with_index do |arg, i|
         command_pattern.gsub!("@#{i+1}", arg.inspect)
       end
-      YAML.load(command_pattern).map { |cmd_hash| Command.new(cmd_hash) }
+      YAML.load(command_pattern).map do |cmd_hash|
+        Command.new(cmd_hash, cmd.microstep_name)
+      end
     end
 
     #handle clean methods
-    def resolve_hooks(cmd, macrostep)
+    def resolve_hooks(cmd, macrostep, microstep)
       if (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
         cmds = []
         if cmd.value.kind_of?(Array)
@@ -350,18 +361,19 @@ module Kameleon
           fail RecipeError, "Invalid #{cmd.key} arguments"
         end
         if cmd.key.eql? "on_clean"
-          microstep_name = "_clean_#{macrostep.name}_" \
-                           "#{macrostep.clean_microsteps.count}"
+          microstep_name = "_clean_#{macrostep.clean_microsteps.count}" \
+                           "_#{microstep.name}"
           new_clean_microstep = Microstep.new({microstep_name => []})
-          new_clean_microstep.on_checkpoint = "redo"
+          new_clean_microstep.on_checkpoint = microstep.on_checkpoint
           new_clean_microstep.commands = cmds.clone
           macrostep.clean_microsteps.unshift new_clean_microstep
           return
         elsif cmd.key.eql? "on_init"
-          microstep_name = "_init_#{macrostep.name}_" \
-                           "#{macrostep.init_microsteps.count}"
-          new_init_microstep = Microstep.new({microstep_name=> []})
-          new_init_microstep.on_checkpoint = "redo"
+          microstep_name = "_init_#{macrostep.init_microsteps.count}"\
+                           "_#{microstep.name}"
+          new_init_microstep = Microstep.new({microstep_name=> []},
+                                             microstep)
+          new_init_microstep.on_checkpoint = microstep.on_checkpoint
           new_init_microstep.commands = cmds.clone
           macrostep.init_microsteps.unshift new_init_microstep
           return
@@ -369,19 +381,19 @@ module Kameleon
           @sections.values.each do |section|
             section.clean_macrostep
             if cmd.key.eql? "on_#{section.name}_clean"
-              microstep_name = "_clean_#{section.name}_"\
-                               "#{section.clean_macrostep.microsteps.count}"
+              microstep_name = "_clean_#{section.clean_macrostep.microsteps.count}" \
+                               "_#{microstep.name}"
               new_clean_microstep = Microstep.new({microstep_name=> []})
               new_clean_microstep.commands = cmds.clone
-              new_clean_microstep.on_checkpoint = "redo"
+              new_clean_microstep.on_checkpoint = microstep.on_checkpoint
               section.clean_macrostep.microsteps.unshift new_clean_microstep
               return
             elsif cmd.key.eql? "on_#{section.name}_init"
-              microstep_name = "_init_#{section.name}_"\
-                               "#{section.init_macrostep.microsteps.count}"
+              microstep_name = "_init_#{section.init_macrostep.microsteps.count}" \
+                               "_#{microstep.name}"
               new_init_microstep = Microstep.new({microstep_name=> []})
               new_init_microstep.commands = cmds.clone
-              new_init_microstep.on_checkpoint = "redo"
+              new_init_microstep.on_checkpoint = microstep.on_checkpoint
               section.init_macrostep.microsteps.push new_init_microstep
               return
             end

@@ -1,0 +1,38 @@
+
+- clean_containers:
+  - on_checkpoint: redo
+  - on_export_clean:
+    - exec_out: echo "Stopping trailing containers"
+    - exec_out: touch CONTAINERS_TO_CLEAN
+    - exec_out: cat CONTAINERS_TO_CLEAN | xargs -I {} docker kill {}
+    - exec_out: echo "Removing trailing containers"
+    - exec_out: cat CONTAINERS_TO_CLEAN | xargs -I {} docker rm {}
+    - exec_out: rm -f CONTAINERS_TO_CLEAN
+
+- import_rootfs:
+  - exec_out: |
+      docker images | grep -q $$image \
+      || (echo "Importing $$image to docker..." && cat "$$rootfs_archive"\
+          | docker import - $$image \
+          | xargs -I {} docker tag {} $$image:base)
+  - exec_out: docker tag $$image:base $$image:latest
+
+- configure_sshd:
+  - on_checkpoint: redo
+  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
+  - exec_out: chmod 600 $$insecure_ssh_key*
+  - exec_out: |
+      CID=$(docker run --dns $$dns -d -v "$(pwd):/tmp" $$image:latest \
+            /bin/bash -c "rm -fr /root/.ssh ;  \
+                          mkdir -p /root/.ssh ;  \
+                          ssh-keygen -q -t dsa -f /root/.ssh/id_dsa -N '' ; \
+                          cat /tmp/$${insecure_ssh_key}.pub > /root/.ssh/authorized_keys")
+  - exec_out: bash -c "exit $(docker wait $CID)"
+  - exec_out: echo "$CID" >> CONTAINERS_TO_CLEAN
+  - exec_out: |
+      docker images | grep $$image \
+                    | grep sshd \
+                    | awk '{print $3}' \
+                    | xargs -I {} docker rmi {}
+  - exec_out: docker commit $CID $$image:sshd > /dev/null
+  - exec_out: docker tag $$image:sshd $$image:latest

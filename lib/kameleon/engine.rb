@@ -37,7 +37,7 @@ module Kameleon
         raise BuildError, "Failed to create working directory #{@cwd}"
       end
       @logger.notice("Building local context [local]")
-      @local_context = LocalContext.new("local", @cwd)
+      @local_context = Context.new("local", "bash", @cwd, "", @cwd)
       @logger.notice("Building external context [out]")
       @out_context = Context.new("out",
                                  @recipe.global["out_context"]["cmd"],
@@ -48,28 +48,27 @@ module Kameleon
 
     def create_checkpoint(microstep_id)
       cmd = @recipe.checkpoint["create"].gsub("@microstep_id", microstep_id)
-      create_cmd = Kameleon::Command.new({"exec_out" => cmd})
+      create_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
       safe_exec_cmd(create_cmd, :log_level => "debug")
-    end
-
-    def remove_checkpoint(microstep_id)
-      cmd = @recipe.checkpoint["remove"].gsub("@microstep_id", microstep_id)
-      remove_cmd = Kameleon::Command.new({"exec_out" => cmd})
-      safe_exec_cmd(remove_cmd, :log_level => "debug")
     end
 
     def apply_checkpoint(microstep_id)
       cmd = @recipe.checkpoint["apply"].gsub("@microstep_id", microstep_id)
-      apply_cmd = Kameleon::Command.new({"exec_out" => cmd})
+      apply_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
       safe_exec_cmd(apply_cmd, :log_level => "debug")
+    end
+
+    def list_all_checkpoints
+      list = ""
+      cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']},
+                                  "checkpoint")
+      safe_exec_cmd(cmd, :stdout => list)
+      return list.split(/\r?\n/)
     end
 
     def list_checkpoints
       if @list_checkpoints.nil?
-        list = ""
-        cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']})
-        safe_exec_cmd(cmd, :stdout => list)
-        checkpoints = list.split(/\r?\n/)
+        checkpoints = list_all_checkpoints
         all_microsteps_ids = @recipe.microsteps.map { |m| m.identifier }
         # get sorted checkpoints by microsteps order
         @list_checkpoints = []
@@ -226,6 +225,29 @@ module Kameleon
       end
     end
 
+    def clear
+      @recipe.sections.values.each do |section|
+        @logger.notice("Cleaning #{section.name} section")
+        section.clean_macrostep.sequence do |microstep|
+          microstep.commands.each do |cmd|
+            if (cmd.key == "exec_out" || cmd.key == "exec_local")
+              begin
+                exec_cmd(cmd)
+              rescue
+                @logger.warn("An error occurred while executing : #{cmd.value}")
+              end
+            end
+          end
+        end
+      end
+      unless @recipe.checkpoint.nil?
+        @logger.notice("Removing all old checkpoints")
+        cmd = @recipe.checkpoint["clear"]
+        clear_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
+        safe_exec_cmd(clear_cmd, :log_level => "info")
+      end
+    end
+
     def build
       if @enable_checkpoint
         @from_checkpoint = @options[:from_checkpoint]
@@ -246,14 +268,6 @@ module Kameleon
             if microstep.identifier == @from_checkpoint
               break
             end
-          end
-        end
-      else
-        unless @recipe.checkpoint.nil?
-          @logger.notice("Removing all old checkpoints")
-          list_checkpoints.each do |macrostep_id|
-            @logger.notice(" ---> Removing checkpoint #{macrostep_id}")
-            remove_checkpoint macrostep_id
           end
         end
       end
@@ -314,7 +328,7 @@ module Kameleon
         end
       end
       if dict_checkpoints.empty?
-        puts "Any checkpoint available for the recipe '#{recipe.name}'"
+        puts "No checkpoint available for the recipe '#{recipe.name}'"
       else
         puts "The following checkpoints are available for  " \
                  "the recipe '#{recipe.name}':"

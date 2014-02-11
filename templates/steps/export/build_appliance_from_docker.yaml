@@ -1,14 +1,13 @@
-# Prepare Appliance
-- nbd_device: /dev/nbd0
+- nbd_device: /dev/nbd1
+
+- export_targz:
+  - on_export_init:
+    - exec_out: echo "Exporting the rootfs..."
+    - exec_out: docker export $(cat MAIN_CONTAINER_ID) > $$filename.tar.gz
 
 - create_raw_image:
   - check_cmd_out: qemu-img
-  - exec_out: mkdir -p checkpoints
-  - exec_out: |
-      if [ ! -e "$$container" ] ; then
-        qemu-img create -f qcow2 checkpoints/base_$$container $$image_size
-        ln -sf checkpoints/base_$$container $$container
-      fi
+  - exec_out: bash -c "qemu-img create -f $$format $$filename.$$format $$image_size"
 
 - load_nbd_module:
   - on_bootstrap_init:
@@ -18,14 +17,10 @@
         || fail failed to load nbd module into kernel
 
 - attach_nbd_device:
-  - on_checkpoint: skip
-  - check_cmd_out: qemu-nbd
-  - exec_out: echo Connecting $$container to nbd device $$nbd_device
-  - exec_out: qemu-nbd -c $$nbd_device "$(readlink $$container)" -n || fail nbd device $$container is unavailable
-
-
-- detach_nbd_device:
   - on_checkpoint: redo
+  - check_cmd_out: qemu-nbd
+  - exec_out: echo Connecting $$filename.$$format to nbd device $$nbd_device
+  - exec_out: qemu-nbd -c $$nbd_device $$filename.$$format -n || fail nbd device $$filename.$$format is unavailable
   - on_export_clean:
     - exec_out: echo "sync" ; sync
     - exec_out: qemu-nbd -d $$nbd_device
@@ -38,7 +33,7 @@
       sfdisk $${nbd_device} -q -D -uM --force --no-reread <<< '
       ,200,83,*
       ;
-      ' 2>&1 || fail cannot partition $$container
+      ' 2>&1 || fail cannot partition $$filename.$$format
   - exec_out: |
       echo Creating boot partition...
       mkfs.$$filesystem_type -q $${nbd_device}p1 || fail cannot create /boot ext4
@@ -60,7 +55,10 @@
     - exec_out: "test -d $$mountdir/boot && rmdir $$mountdir/boot || true"
 
 - copy_rootfs:
-  - exec_out: tar -xf $$rootfs_archive -C $$mountdir
+  - exec_out: echo "Copying the rootfs to $$mountdir..."
+  - exec_out: tar -xf $$filename.tar.gz -C $$mountdir
+  - exec_out: rm -f $$mountdir/.dockerinit
+  - exec_out: rm -f $$mountdir/.dockerenv
   - exec_out: echo "sync..." ; sync
 
 - create_fstab:
@@ -76,18 +74,33 @@
       # <file system> <mount point>   <type>  <options>       <dump>  <pass>
       UUID=`blkid -s UUID -o value $${nbd_device}p2` /               $$filesystem_type    errors=remount-ro  0       1
       UUID=`blkid -s UUID -o value $${nbd_device}p1` /boot           $$filesystem_type    sync               0       2
+  - exec_out: cat /proc/mounts > $$mountdir/etc/mtab
+  - exec_out: echo "sync..." ; sync
 
+- mount_chroot:
+  - on_checkpoint: redo
+  - check_cmd_out: chroot
+  - exec_out: mount -o bind /dev  $$mountdir/dev
+  - exec_out: mount -o bind /dev/pts $$mountdir/dev/pts
+  - exec_out: mount -t proc /proc  $$mountdir/proc
+  - exec_out: mount -t sysfs /sys  $$mountdir/sys
+  - exec_out: test -f $$mountdir/etc/mtab || cat /proc/mounts > $$mountdir/etc/mtab
+  - on_export_clean:
+    - exec_out: echo try umount $$mountdir/sys... ; mountpoint -q $$mountdir/sys && umount -f -l $$mountdir/sys  || true
+    - exec_out: echo try umount $$mountdir/proc... ; mountpoint -q $$mountdir/proc && umount  -f -l $$mountdir/proc  || true
+    - exec_out: echo try umount $$mountdir/dev/pts... ; mountpoint -q $$mountdir/dev/pts && umount -f -l $$mountdir/dev/pts  || true
+    - exec_out: echo try umount $$mountdir/dev... ; mountpoint -q $$mountdir/dev && umount -f -l $$mountdir/dev  || true
 
 - install_bootloader:
-  - on_export_init:
-    - exec_in: extlinux-install $$nbd_device 2>&1
-    - write_in:
-      - /boot/extlinux/extlinux.conf
-      - |
-        default linux
-        timeout 1
-        
-        label linux
-        kernel ../`basename /boot/vmlinuz*`
-        append initrd=../`basename /boot/init*` root=UUID=`blkid -s UUID -o value $${nbd_device}p2` ro
-    - exec_out: echo " sync..." ; sync
+  - check_cmd_out: extlinux-install
+  - exec_out: chroot $$mountdir extlinux-install $$nbd_device 2>&1
+  - write_out:
+    - $$mountdir/boot/extlinux/extlinux.conf
+    - |
+      default linux
+      timeout 1
+      
+      label linux
+      kernel ../`basename $$mountdir/boot/vmlinuz*`
+      append initrd=../`basename $$mountdir/boot/init*` root=UUID=`blkid -s UUID -o value $${nbd_device}p2` ro
+  - exec_out: echo "sync..." ; sync

@@ -20,6 +20,7 @@ module Kameleon
       end
       # Start the shell process
       @shell.start
+      execute("echo The '#{name}_context' has been initialized", :log_level => "info")
     end
 
     def log(log_level, msg)
@@ -79,11 +80,4 @@ module Kameleon
     end
   end
 
-  class LocalContext < Context
-    def initialize(name, local_workdir)
-      default_shell_cmd = `sh -c "echo $SHELL"`.strip
-      default_shell_cmd = "bash" if default_shell_cmd == ""
-      super(name, default_shell_cmd, local_workdir, "", local_workdir)
-    end
-  end
 end

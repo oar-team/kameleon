@@ -1,30 +1,54 @@
 module Kameleon
 
   class Command
-    attr_accessor :string_cmd
+    attr_accessor :string_cmd, :microstep_name
 
-    def initialize(yaml_cmd)
+    def initialize(yaml_cmd, microstep_name)
       @string_cmd = YAML.dump(yaml_cmd).gsub("---", "").strip
+      @microstep_name = microstep_name
+    end
+
+    def resolve!
+      key
+      value
     end
 
     def key
-      YAML.load(@string_cmd).keys.first
+      if @key.nil?
+        @key = YAML.load(@string_cmd).keys.first
+      end
+      @key
     rescue
-      raise RecipeError, "Invalid recipe syntax : '#{@string_cmd.inspect}'"\
-                         " must be Array or Hash"
+      lines = @string_cmd.split( /\r?\n/ ).map {|l| "> #{l}" }
+      fail RecipeError, "Syntax error for microstep #{@microstep_name} : \n"\
+                        "#{ lines.join "\n"}"
     end
 
     def value
-      object = YAML.load(@string_cmd)
-      if object.kind_of? Command
-        return object
+      if @value.nil?
+        object = YAML.load(@string_cmd)
+        if object.kind_of? Command
+          @value = object
+        else
+          raise RecipeError unless object.kind_of? Hash
+          raise RecipeError unless object.keys.count == 1
+          _, val = object.first
+          unless val.kind_of?(Array)
+            val = val.to_s
+          end
+          # Nested commands
+          if val.kind_of? Array
+            val = val.map { |item| Command.new(item, @microstep_name) }
+          end
+          @value = val
+        end
       end
-      _, val = object.first
-      # Nested commands
-      if val.kind_of? Array
-        val = val.map { |item| Command.new(item) }
-      end
-      val
+      @value
+    rescue
+      lines = YAML.dump(object).gsub("---", "").strip
+      lines = lines.split( /\r?\n/ ).map {|l| "> #{l}" }
+      fail RecipeError, "Syntax error for microstep #{@microstep_name} : \n"\
+                        "#{ lines.join "\n"}"
     end
 
     def to_array
@@ -54,12 +78,16 @@ module Kameleon
           if cmd_hash.kind_of?(Hash) && cmd_hash.keys.first == "on_checkpoint"
             @on_checkpoint = cmd_hash["on_checkpoint"]
           else
-            @commands.push Command.new(cmd_hash)
+            @commands.push Command.new(cmd_hash, @name)
           end
         end
       end
     rescue
       fail RecipeError, "Syntax error for microstep #{name}"
+    end
+
+    def resolve!
+      @commands.each {|cmd| cmd.resolve! }
     end
 
     def unshift(cmd_list)

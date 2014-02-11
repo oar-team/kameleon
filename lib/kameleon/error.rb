@@ -25,7 +25,7 @@ module Kameleon
   def self.with_friendly_errors
     yield
   rescue Kameleon::KameleonError => e
-    Kameleon.logger.fatal("#{e.message}")
+    e.message.split( /\r?\n/ ).each {|m| Kameleon.logger.fatal m }
     exit e.status_code
   rescue Thor::UndefinedTaskError => e
     $stderr << "#{e.message}\n"

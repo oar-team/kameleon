@@ -7,7 +7,9 @@
       chmod 700 /home/$$user_name/.ssh
       chmod 644 /home/$$user_name/.ssh/id_rsa.pub
       chmod 600 /home/$$user_name/.ssh/id_rsa
-  - exec_in: chown -R $$user_name:$$user_group home/$$user_name/.ssh 
+  - exec_in: chown -R $$user_name:$$user_group home/$$user_name/.ssh
 - save_public_key:
-  - exec_out: scp $$rootfs/home/$$user_name/.ssh/id_rsa.pub $$generated_rsa_pub_dir
+  - in2local:
+    - /home/$$user_name/.ssh/id_rsa.pub
+    - $$generated_rsa_pub_dir
 
