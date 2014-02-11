@@ -30,7 +30,8 @@ module Kameleon
                                        "contrib",
                                        "kameleon_bashrc.sh")
       bash_cmd = "bash --rcfile #{@bashrc_file}"
-      @shell_cmd = "#{@cmd} -c '#{change_dir_cmd}#{bash_cmd}'"
+      @shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
+                   "#{@cmd} -c '#{change_dir_cmd}#{bash_cmd}'"
       @logger.debug("Initialize shell (#{self})")
       # Injecting all variables of the options and assign the variables
       instance_variables.each do |v|
