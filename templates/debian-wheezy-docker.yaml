@@ -51,15 +51,15 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - debootstrap_to_docker:
-    - image: $$docker_image
+  - debootstrap:
     - release: $$release
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
-    - archive_file: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
+    - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - prepare_docker:
     - image: $$docker_image
     - dns: $$docker_dns
+    - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - start_docker:
     - image: $$docker_image
     - dns: $$docker_dns
@@ -92,7 +92,7 @@ setup:
 export:
   - build_appliance_from_docker:
     - mountdir: $$kameleon_cwd/rootfs
-    - rootfs_archive: $$docker_image.tar.gz
-    - image_size: 2G
+    - filename: $$kameleon_recipe_name
     - filesystem_type: ext4
-    - filename: $$docker_image.qcow2
+    - format: qcow2  # Should be raw, qcow2 or qed format
+    - image_size: 2G

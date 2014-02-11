@@ -51,16 +51,16 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
+  - debootstrap:
+    - release: $$release
+    - arch: $$arch
+    - repository: http://ftp.fr.debian.org/debian/
+    - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - prepare_appliance_with_nbd:
     - mountdir: $$rootfs
     - image_size: 2G
     - filesystem_type: ext4
-  - debootstrap:
-    - rootfs: $$rootfs
-    - release: $$release
-    - arch: $$arch
-    - repository: http://ftp.fr.debian.org/debian/
-    - archive_file: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
+    - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - start_chroot:
     - rootfs: $$rootfs
 
@@ -71,7 +71,8 @@ bootstrap:
 setup:
   # Install
   - software_install:
-    - packages: "debian-keyring ntp zip unzip rsync sudo less vim bash-completion extlinux"
+    - packages: >
+        debian-keyring ntp zip unzip rsync sudo less vim bash-completion
   - kernel_install:
     - arch: $$arch
   # Configuration
@@ -82,7 +83,7 @@ setup:
   - keyboard_config:
     - layout: "fr,us"
   - network_config:
-    - network_hostname: mydebian
+    - hostname: kameleon-$$distrib
   - create_user:
     - name: $$user_name
     - group: admin
@@ -91,7 +92,7 @@ setup:
 #== Export the generated appliance in the format of your choice
 export:
   - save_appliance_from_nbd:
-    - filename: "$${distrib}-$${release}"
+    - filename: "$${kameleon_recipe_name}"
     - save_as_qcow2
     # - save_as_tgz
     # - save_as_raw
