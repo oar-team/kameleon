@@ -128,22 +128,6 @@ module Kameleon
             @logger.notice("Loading aliases #{path}")
             @aliases = YAML.load_file(path)
             @files.push(path)
-
-            ## save raw YAML, because YAML.load/YAML.dump strip escaping !
-            aliases_file = File.open(path, "r")
-            raw_yaml_content = aliases_file.read
-            aliases_file.close
-            list_aliases = @aliases.map {|k, _| k}
-            list_aliases.each_with_index  do |k, index|
-                start_content = raw_yaml_content.index("#{k}:\n") + k.length + 2
-                if index == list_aliases.count - 1
-                  end_content = raw_yaml_content.length
-                else
-                  next_k = list_aliases[index + 1]
-                  end_content = raw_yaml_content.index("#{next_k}:\n") - 1
-                end
-                @aliases[k] = raw_yaml_content[start_content..end_content]
-            end
           else
             fail RecipeError, "Aliases file '#{path}' does not exists"
           end
@@ -188,10 +172,10 @@ module Kameleon
         key = yaml_microstep.keys[0]
         value = yaml_microstep[key]
         # Set new variable if not defined yet
-        if value.kind_of? String
-          local_variables[key] = @global.fetch(key, value)
-        else
+        if value.kind_of? Array
           loaded_microsteps.push Microstep.new(yaml_microstep)
+        else
+          local_variables[key] = @global.fetch(key, value)
         end
       end
       selected_microsteps = []
@@ -327,10 +311,11 @@ module Kameleon
 
     def resolve_alias(cmd)
       name = cmd.key
-      command_pattern = @aliases.fetch(name).clone
+      aliases_cmd = @aliases.fetch(name).clone
+      aliases_cmd_str = aliases_cmd.to_yaml
       args = YAML.load(cmd.string_cmd)[name]
       args = [].push(args).flatten  # convert args to array
-      expected_args_number = command_pattern.scan(/@\d+/).uniq.count
+      expected_args_number = aliases_cmd_str.scan(/@\d+/).uniq.count
       if expected_args_number != args.count
         if args.length == 0
           msg = "#{name} takes no arguments (#{args.count} given)"
@@ -340,11 +325,12 @@ module Kameleon
         end
         raise RecipeError, msg
       end
+      microstep = Microstep.new({cmd.microstep_name => aliases_cmd})
       args.each_with_index do |arg, i|
-        command_pattern.gsub!("@#{i+1}", arg.inspect)
+        microstep.gsub!("@#{i+1}", arg)
       end
-      YAML.load(command_pattern).map do |cmd_hash|
-        Command.new(cmd_hash, cmd.microstep_name)
+      microstep.commands.map do |escaped_cmd|
+        Command.new(YAML.load(escaped_cmd.string_cmd), cmd.microstep_name)
       end
     end
 
@@ -444,12 +430,8 @@ module Kameleon
         "files" => @files.map {|p| p.to_s },
         "global" => @global,
         "required_global" => @required_global,
+        "aliases" => @aliases,
       }
-      unless @aliases.nil?
-        aliases = {}
-        @aliases.each { |k, v| aliases[k] = YAML.load(v) }
-        recipe_hash["aliases"] = aliases
-      end
       recipe_hash["checkpoint"] = @checkpoint unless @checkpoint.nil?
       recipe_hash["steps"] = to_array
       return recipe_hash

@@ -53,10 +53,20 @@ module Kameleon
 
     def to_array
       if value.kind_of? Array
-        return value.map { |val| val.to_array }
+        map = value.map { |val| val.to_array }
+        return { key => map }
       else
         return { key => value }
       end
+    end
+
+    def gsub!(arg1, arg2)
+      if value.kind_of? Array
+        value.each { |cmd| cmd.gsub!(arg1, arg2) }
+      else
+        @value.gsub!(arg1, arg2)
+      end
+      @string_cmd = YAML.dump(to_array).gsub("---", "").strip
     end
 
   end
@@ -88,6 +98,10 @@ module Kameleon
 
     def resolve!
       @commands.each {|cmd| cmd.resolve! }
+    end
+
+    def gsub!(arg1, arg2)
+      @commands.each {|cmd| cmd.gsub!(arg1, arg2) }
     end
 
     def unshift(cmd_list)
