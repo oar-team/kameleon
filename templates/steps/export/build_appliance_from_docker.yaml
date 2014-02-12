@@ -20,7 +20,7 @@
   - on_checkpoint: redo
   - check_cmd_out: qemu-nbd
   - exec_out: echo Connecting $$filename.$$format to nbd device $$nbd_device
-  - exec_out: qemu-nbd -c $$nbd_device $$filename.$$format -n || fail nbd device $$filename.$$format is unavailable
+  - exec_out: qemu-nbd -c $$nbd_device $$filename.$$format || fail nbd device $$filename.$$format is unavailable
   - on_export_clean:
     - exec_out: echo "sync" ; sync
     - exec_out: qemu-nbd -d $$nbd_device

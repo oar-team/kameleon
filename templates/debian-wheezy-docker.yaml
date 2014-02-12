@@ -4,8 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: This recipe build a base debian wheezy appliance using lxc 
-# container.
+# DESCRIPTION: Build a debian wheezy appliance using Docker.
 #
 # TEMPLATE: <%= @name %>
 #

@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: This recipe build a base debian wheezy appliance.
+# DESCRIPTION: Build a debian wheezy appliance using chroot and qemu-nbd.
 #
 # TEMPLATE: <%= @name %>
 #

@@ -13,7 +13,7 @@ create: |
 
       echo "sync" ; sync
       qemu-nbd -d $$nbd_device
-      qemu-nbd -c $$nbd_device "$(readlink $$container)" -n
+      qemu-nbd -c $$nbd_device "$(readlink $$container)"
     fi
 
 apply: |
@@ -29,7 +29,7 @@ apply: |
 
     echo "sync" ; sync
     qemu-nbd -d $$nbd_device
-    qemu-nbd -c $$nbd_device "$(readlink $$container)" -n
+    qemu-nbd -c $$nbd_device "$(readlink $$container)"
 
 clear: |
     if [ -d "checkpoints" ] ; then
