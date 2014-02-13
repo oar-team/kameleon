@@ -9,6 +9,7 @@ module Kameleon
     attr_accessor :recipes_path
     attr_accessor :build_path
     attr_accessor :log_file
+    attr_accessor :debug
 
 
     def initialize(options = {})

@@ -43,7 +43,7 @@ module Kameleon
 
     desc "templates", "Lists all defined templates"
     def templates
-      Log4r::Outputter['console'].level = Log4r::ERROR unless options.debug
+      Log4r::Outputter['console'].level = Log4r::ERROR unless Kameleon.env.debug
       puts "The following templates are available in " \
                  "#{ Kameleon.templates_path }:"
       templates_hash = []
@@ -54,7 +54,8 @@ module Kameleon
           "name" => recipe.name,
           "description" => recipe.metainfo['description'],
         })
-        rescue
+        rescue => e
+          raise e if Kameleon.env.debug
         end
       end
       tp templates_hash, {"name" => {:width => 30}}, { "description" => {:width => 60}}
@@ -62,7 +63,7 @@ module Kameleon
 
     desc "version", "Prints the Kameleon's version information"
     def version
-      Log4r::Outputter['console'].level = Log4r::OFF unless options.debug
+      Log4r::Outputter['console'].level = Log4r::OFF unless Kameleon.env.debug
       puts "Kameleon version #{Kameleon::VERSION}"
     end
     map %w(-v --version) => :version
@@ -99,7 +100,7 @@ module Kameleon
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
     def checkpoints(recipe_name)
-      Log4r::Outputter['console'].level = Log4r::ERROR unless options.debug
+      Log4r::Outputter['console'].level = Log4r::ERROR unless Kameleon.env.debug
       recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       engine.pretty_checkpoints_list
@@ -120,9 +121,11 @@ module Kameleon
     def self.init(base_config)
       options = base_config[:shell].base.options
       workspace ||= options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
+      env_options = options.merge({:workspace => workspace})
       FileUtils.mkdir_p workspace
       # configure logger
-      ENV["KAMELEON_LOG"] = "debug" if options.debug
+      env_options["debug"] = true if ENV["KAMELEON_LOG"] == "debug"
+      ENV["KAMELEON_LOG"] = "debug" if env_options["debug"]
       if ENV["KAMELEON_LOG"] && ENV["KAMELEON_LOG"] != ""
         level_name = ENV["KAMELEON_LOG"]
       else
@@ -141,7 +144,7 @@ module Kameleon
       end
       format = ConsoleFormatter.new
       # format = Log4r::PatternFormatter.new(:pattern => '%11c: %M')
-      if !$stdout.tty? or options.no_color
+      if !$stdout.tty? or env_options["no_color"]
         console_output = Log4r::StdoutOutputter.new('console',
                                                     :formatter => format)
       else
@@ -168,8 +171,6 @@ module Kameleon
       logger.level = level
       logger = nil
       Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
-      # Update env
-      env_options = options.merge({:workspace => workspace})
       Kameleon.env = Kameleon::Environment.new(env_options)
     end
 
