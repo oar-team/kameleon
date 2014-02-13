@@ -1,6 +1,6 @@
 # # Create User
 - create_group:
-  - exec_in: addgroup $$group
+  - exec_in: groupadd $$group
 - add_user:
   # use the create_passwd.py script to generate the crypted password
   - exec_in: useradd -m -g $$group $$name -s /bin/bash

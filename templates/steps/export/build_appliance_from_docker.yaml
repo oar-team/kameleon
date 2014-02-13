@@ -74,7 +74,6 @@
       # <file system> <mount point>   <type>  <options>       <dump>  <pass>
       UUID=`blkid -s UUID -o value $${nbd_device}p2` /               $$filesystem_type    errors=remount-ro  0       1
       UUID=`blkid -s UUID -o value $${nbd_device}p1` /boot           $$filesystem_type    sync               0       2
-  - exec_out: cat /proc/mounts > $$mountdir/etc/mtab
   - exec_out: echo "sync..." ; sync
 
 - mount_chroot:

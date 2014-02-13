@@ -1,0 +1,25 @@
+# # Bootstrap
+- repository: mattdm/fedora
+- rootfs: rootfs
+- include: >
+    yum initscripts passwd rsyslog vim-minimal dhclient chkconfig rootfiles openssh-server
+    policycoreutils fedora-release openssh-server net-tools nc traceroute
+- create_rootfs:
+  - exec_out: test -f "$$rootfs_archive" || mkdir -p $(dirname "$$rootfs_archive")
+  - exec_out: test -f "$$rootfs_archive" || echo "Pulling image from '$$repository'"
+  - exec_out: test -f "$$rootfs_archive" || docker pull -t f$$release $$repository  > /dev/null
+  - exec_out: |
+      echo "Installing core packages : $$include"
+      if [ ! -f "$$rootfs_archive" ]
+      then
+          BASE_CID=$(docker run --dns $$dns -d $$repository:f$${release} \
+                     bash -c "yum -y --nogpgcheck update ; \
+                              yum -y --nogpgcheck install $$include ; \
+                              /usr/bin/ssh-keygen -A")
+      fi
+  - exec_out: test -f "$$rootfs_archive" || bash -c "exit $(docker wait $BASE_CID)"
+  - exec_out: test -f "$$rootfs_archive" || docker export $BASE_CID > "$$rootfs_archive"
+  - on_bootstrap_clean:
+    - exec_out: test -f "$$rootfs_archive" || docker kill "$BASE_CID"
+    - exec_out: test -f "$$rootfs_archive" || docker rm "$BASE_CID"
+    - exec_out: test -f "$$rootfs_archive" || docker rmi $$repository

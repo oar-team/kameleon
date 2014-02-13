@@ -1,0 +1,27 @@
+- setup_build_environment:
+  - exec_in: kversion=3.12.10-300
+  - exec_in: yum install -y rpmdevtools yum-utils rpm-build ncurses-devel pesign
+  - exec_in: rpmdev-setuptree
+  - exec_in: yumdownloader --source kernel
+  - exec_in: yum-builddep -y kernel-${kversion}.fc$${release}.src.rpm
+  - exec_in: rpm -Uvh kernel-${kversion}.fc$${release}.src.rpm
+  - exec_in: pushd ~/rpmbuild/SPECS
+  - exec_in: rpmbuild -bp --target=$(uname -m) kernel.spec 2>&1
+  - exec_in: popd
+
+- build_kernel:
+  - exec_in: pushd ~/rpmbuild/SPECS
+  - exec_in: rpmbuild -bb --target=$(uname -m) --define "buildid .vbox" --with baseonly --with firmware --without debuginfo kernel.spec
+  - exec_in: popd
+
+- install_kernel:
+  - exec_in: pushd ~/rpmbuild/RPMS/x86_64
+  - exec_in: rpm -ivh kernel-${kversion}.vbox.fc$${release}.x86_64.rpm kernel-headers-${kversion}.vbox.fc$${release}.x86_64.rpm 2>&1
+  - exec_in: popd
+
+- install_extlinux:
+  - exec_in: "yum install -y install syslinux-extlinux 2>&1"
+  - on_setup_clean:
+    - exec_in: |
+        dir=/var/lib/os-prober/mount
+        test ! -d "$dir" || (umount -f -l "$dir" && rmdir "$dir")
