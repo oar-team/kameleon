@@ -120,6 +120,7 @@ module Kameleon
         finished = true
       rescue ExecError
         finished = rescue_exec_error(cmd)
+        @logger.notice("Retrying the previous command...")
       end until finished
     end
 
@@ -129,6 +130,8 @@ module Kameleon
                      " not ready yet")
       end
       case cmd.key
+      when "breakpoint"
+        breakpoint(cmd.value, )
       when "exec_in"
         skip_alert(cmd) if @in_context.nil?
         @in_context.execute(cmd.value, kwargs) unless @in_context.nil?
@@ -162,16 +165,19 @@ module Kameleon
       end
     end
 
-    def rescue_exec_error(cmd)
-      @logger.error("Error occured when executing the following command")
-      cmd.string_cmd.split( /\r?\n/ ).each {|m| @logger.error "+ #{m}" }
-      msg = "Press [r] to retry"
-      msg << "\n      [c] to continue with execution"
-      msg << "\n      [a] to abort execution"
-      msg << "\n      [l] to switch to local_context shell" unless @local_context.nil?
-      msg << "\n      [o] to switch to out_context shell" unless @out_context.nil?
-      msg << "\n      [i] to switch to in_context shell" unless @in_context.nil?
-      responses = {"r" => "retry","c" => "continue", "a" => "abort"}
+
+    def breakpoint(message, kwargs = {})
+      message.split( /\r?\n/ ).each {|m| @logger.error "#{m}" }
+      enable_retry = kwargs[:enable_retry]
+      msg = ""
+      msg << "Press [r] to retry\n" if enable_retry
+      msg << "Press [c] to continue with execution"
+      msg << "\nPress [a] to abort execution"
+      msg << "\nPress [l] to switch to local_context shell" unless @local_context.nil?
+      msg << "\nPress [o] to switch to out_context shell" unless @out_context.nil?
+      msg << "\nPress [i] to switch to in_context shell" unless @in_context.nil?
+      responses = {"c" => "continue", "a" => "abort"}
+      responses["r"] = "retry" if enable_retry
       responses.merge!({"l" => "launch local_context"}) unless @out_context.nil?
       responses.merge!({"o" => "launch out_context"}) unless @out_context.nil?
       responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
@@ -200,11 +206,16 @@ module Kameleon
             @out_context.execute("true") unless @out_context.nil?
             return true
           elsif answer.eql? "r"
-            @logger.notice("Retrying the previous command...")
             return false
           end
         end
       end
+    end
+
+    def rescue_exec_error(cmd)
+      message = "Error occured when executing the following command :\n"
+      cmd.string_cmd.split( /\r?\n/ ).each {|m| message << "\n> #{m}" }
+      return breakpoint(message, :enable_retry => true)
     end
 
     def finish_clean()
