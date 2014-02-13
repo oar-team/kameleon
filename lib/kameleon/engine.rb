@@ -120,7 +120,6 @@ module Kameleon
         finished = true
       rescue ExecError
         finished = rescue_exec_error(cmd)
-        @logger.notice("Retrying the previous command...")
       end until finished
     end
 
@@ -159,6 +158,13 @@ module Kameleon
           first_context = map[first_cmd.key]
           second_context = map[second_cmd.key]
           first_context.pipe(first_cmd.value, second_cmd.value, second_context)
+        end
+      when "rescue"
+        first_cmd, second_cmd = cmd.value
+        begin
+          exec_cmd(first_cmd)
+        rescue ExecError
+          exec_cmd(second_cmd)
         end
       else
         @logger.warn("Unknown command : #{cmd.key}")
@@ -206,6 +212,7 @@ module Kameleon
             @out_context.execute("true") unless @out_context.nil?
             return true
           elsif answer.eql? "r"
+            @logger.notice("Retrying the previous command...")
             return false
           end
         end
