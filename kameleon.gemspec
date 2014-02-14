@@ -4,10 +4,16 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'kameleon/version'
 
 Gem::Specification.new do |s|
-  s.name          = "kameleon"
+  s.name          = "kameleon-builder"
   s.version       = Kameleon::VERSION
-  s.authors       = ["Darko Illic", "Bruno Bzeznik", "Joseph Emeras", "Olivier Richard", "Philippe Le Brouster"]
-  s.email         = ["darko.ilic@gmail.com", "bruno.bzeznik@imag.fr", "Joseph.Emeras@imag.fr", "olivier.richard@imag.fr", "philippe.le-brouster@imag.fr"]
+  s.authors       = ["Salem Harrache",
+                     "Michael Mercier",
+                     "Cristan Ruiz",
+                     "Bruno Bzeznik"]
+  s.email         = ["salem.harrache@inria.fr",
+                     "michael.mercier@inria.fr",
+                     "cristian.ruiz@imag.fr",
+                     "bruno.bzeznik@imag.fr"]
   s.description   = %q{Kameleon is a tool to build virtual machines from scratch}
   s.summary       = s.description
   s.homepage      = ""
