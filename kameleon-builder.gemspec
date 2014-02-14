@@ -14,9 +14,9 @@ Gem::Specification.new do |s|
                      "michael.mercier@inria.fr",
                      "cristian.ruiz@imag.fr",
                      "bruno.bzeznik@imag.fr"]
-  s.description   = %q{Kameleon is a tool to build virtual machines from scratch}
-  s.summary       = s.description
-  s.homepage      = ""
+  s.description   = %q{The mindful appliance builder}
+  s.summary       = %q{Kameleon is a tool to build virtual machines from scratch}
+  s.homepage      = "http://kameleon.readthedocs.org/"
   s.license       = "GPL-2"
 
   s.files         = `git ls-files`.split($/)
@@ -24,15 +24,14 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency "childprocess", "~> 0.3.7"
-  s.add_runtime_dependency "session", "~> 3.1.0"
-  s.add_runtime_dependency "thor", "~> 0.15"
-  s.add_runtime_dependency "table_print"
-  s.add_runtime_dependency "log4r-color", "~> 1.2.2"
+  s.add_dependency 'childprocess', '~> 0.3'
+  s.add_dependency 'thor', '~> 0.15'
+  s.add_dependency 'table_print', '~> 1.5'
+  s.add_dependency 'log4r-color', '~> 1.2'
 
-  s.add_development_dependency "pry"
-  s.add_development_dependency "pry-debugger"
-  s.add_development_dependency "rake"
-  s.add_development_dependency "minitest", "~> 4.7.3"
-  s.add_development_dependency "coveralls"
+  s.add_development_dependency 'pry', '~> 0.9'
+  s.add_development_dependency 'pry-debugger', '~> 0.2'
+  s.add_development_dependency 'rake', '~> 10.1'
+  s.add_development_dependency 'minitest', '~> 4.7'
+  s.add_development_dependency 'coveralls', '~> 0.7'
 end
