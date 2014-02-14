@@ -1,4 +1,3 @@
-# Manage kameleon recipes
 require 'kameleon/utils'
 require 'kameleon/step'
 
