@@ -2,14 +2,17 @@ write_local:
   - exec_local: |
       mkdir -p $(dirname @1);
       cat >@1 <<<"@2"
+
 write_in:
   - exec_in: |
       mkdir -p $(dirname @1);
       cat >@1 <<<"@2"
+
 write_out:
   - exec_out: |
       mkdir -p $(dirname @1);
       cat >@1 <<<"@2"
+
 append_local:
   - exec_local: |
       mkdir -p $(dirname @1);
@@ -18,36 +21,43 @@ append_in:
   - exec_in: |
       mkdir -p $(dirname @1);
       cat >>@1 <<<"@2"
+
 append_out:
   - exec_out: |
       mkdir -p $(dirname @1);
       cat >>@1 <<<"@2"
+
 local2out:
   - exec_out: |
       mkdir -p $(dirname @2)"
   - pipe:
       - exec_local: cat @1
       - exec_out: cat > @2
+
 local2in:
   - exec_in: mkdir -p $(dirname @2)
   - pipe:
       - exec_local: cat @1
       - exec_in: cat > @2
+
 out2local:
   - exec_local: mkdir -p $(dirname @2)
   - pipe:
       - exec_out: cat @1
       - exec_local: cat > @2
+
 out2in:
   - exec_in: mkdir -p $(dirname @2)
   - pipe:
       - exec_out: cat @1
       - exec_in: cat > @2
+
 in2local:
   - exec_local: mkdir -p $(dirname @2)
   - pipe:
       - exec_in: cat @1
       - exec_local: cat > @2
+
 in2out:
   - exec_out: mkdir -p $(dirname @2)
   - pipe:
@@ -56,15 +66,18 @@ in2out:
 
 check_cmd_out:
   - on_bootstrap_init:
-    - exec_out: |
-        echo "@1" | tr ' ' '\n' | xargs -I {} bash -c "(command -V {} && exit 0) || (echo 1>&2 '{} is missing' && exit 1)"
+    - rescue: 
+      - exec_out: command -V @1 2> /dev/null
+      - breakpoint: "@1 is missing"
 
 check_cmd_local:
   - on_bootstrap_init:
-    - exec_local: |
-        echo "@1" | tr ' ' '\n' | xargs -I {} bash -c "(command -V {} && exit 0) || (echo 1>&2 '{} is missing' && exit 1)"
+    - rescue: 
+      - exec_local: command -V @1 2> /dev/null
+      - breakpoint: "@1 is missing"
 
 check_cmd_in:
-  - on_setup_init:
-    - exec_in: |
-        echo "@1" | tr ' ' '\n' | xargs -I {} bash -c "(command -V {} && exit 0) || (echo 1>&2 '{} is missing' && exit 1)"
+  - on_bootstrap_init:
+    - rescue: 
+      - exec_in: command -V @1 2> /dev/null
+      - breakpoint: "@1 is missing"

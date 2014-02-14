@@ -3,7 +3,8 @@
     yum initscripts passwd rsyslog vim-minimal dhclient chkconfig rootfiles
     policycoreutils fedora-release openssh-server net-tools nc traceroute
 - bootstrap_fedora:
-  - check_cmd_out: yum curl
+  - check_cmd_out: yum
+  - check_cmd_out: curl
   - exec_out: test -f "$$rootfs_archive" || mkdir -p $(dirname "$$rootfs_archive")
   - exec_out: test -f "$$rootfs_archive" || ROOTFS=$(dirname "$$rootfs_archive")/rootfs
   - exec_out: test -f "$$rootfs_archive" || mkdir -p $ROOTFS
