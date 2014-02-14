@@ -25,7 +25,7 @@ module Kameleon
     method_option :force,:type => :boolean,
                   :default => false, :aliases => "-f",
                   :desc => "overwrite the recipe"
-    desc "new [RECIPE_NAME]", "Create a new recipe"
+    desc "new [RECIPE_NAME]", "Creates a new recipe"
     def new(recipe_name)
       logger.notice("Cloning template '#{options[:template]}'")
       templates_path = Kameleon.env.templates_path
@@ -69,7 +69,7 @@ module Kameleon
     map %w(-v --version) => :version
 
 
-    desc "build [RECIPE_NAME]", "Build the appliance from the recipe"
+    desc "build [RECIPE_NAME]", "Builds the appliance from the recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
@@ -95,7 +95,7 @@ module Kameleon
       logger.notice("Log file : #{Kameleon.env.log_file}")
     end
 
-    desc "checkpoints [RECIPE_NAME]", "List all availables checkpoints"
+    desc "checkpoints [RECIPE_NAME]", "Lists all availables checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
