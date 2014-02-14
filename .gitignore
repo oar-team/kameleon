@@ -19,3 +19,4 @@ coverage
 
 # Vagrant local workspace
 .vagrant
+*.log
