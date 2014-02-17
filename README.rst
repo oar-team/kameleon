@@ -80,8 +80,10 @@ Then build your new recipe with the build command:
 
 A `builds` directory was created and contains your new image!
 
-To go further, it is highly recommended you start with the :doc:`getting_started`
-guide.
+To go further, it is highly recommended you start with the `Getting Started`_ guide.
+
+
+.. _Getting Started: http://kameleon.readthedocs.org/en/latest/getting_started.html
 
 ------------
 Contributing
