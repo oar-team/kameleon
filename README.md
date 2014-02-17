@@ -9,14 +9,14 @@ generic you can probably do a lot more than that.
 ## Installation
 Simply install it from the Gem repository (not working yet):
 
-    gem install kameleon
+    gem install kameleon-builder --pre
 
 Or from source:
 
-    git clone git://scm.gforge.inria.fr/kameleon/kameleon.git
+    git clone https://github.com/oar-team/kameleon.git
     cd kameleon
-    gem build kameleon.gemspec
-    gem install kameleon-<version>.gem
+    gem build kameleon-builder.gemspec
+    gem install kameleon-builder-<version>.gem
 
 ## Usage
 
