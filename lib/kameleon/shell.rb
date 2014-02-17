@@ -167,8 +167,7 @@ module Kameleon
     end
 
     def fork_and_wait
-      process, = fork("inherit")
-      process.wait
+      system(@shell_cmd)
     end
 
     protected
