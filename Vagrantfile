@@ -1,15 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'libvirt'
 
 Vagrant.configure("2") do |config|
   config.vm.box = "debian7-dev"
-  config.vm.box_url = "http://cdn.quicker.fr/vagrant/libvirt/debian7-dev.box"
+  config.vm.box_url = "http://cdn.quicker.fr/vagrant/virtualbox/debian7-dev.box"
   config.vm.hostname = "kameleon-devel"
 
   # Config provider
-  config.vm.provider :libvirt do |vm|
+  config.vm.provider :virtualbox do |vm|
     vm.memory = 2024
     vm.cpus = 2
   end
