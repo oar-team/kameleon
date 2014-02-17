@@ -34,31 +34,31 @@ This is an example of a recipe:
       rootfs: $$kameleon_cwd/rootfs
       user_name: kameleon
       arch: amd64
-    
+
       nbd_device: /dev/nbd10
       container: "$${kameleon_recipe_name}_temp.qcow2"
-    
+
       distrib: debian
       release: wheezy
-    
+
       ## System variables. Required by kameleon engine
       # Include specific steps
       include_steps: [$$distrib/$$release, $$distrib]
-    
+
       # Shell session from where we launch exec_out commands. There is often a
       # local bash session, but it can be a remote shell on other machines or on
       # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
       out_context:
         cmd: bash
         workdir: $$kameleon_cwd
-    
+
       # Shell session that allows us to connect to the building machine in order to
       # configure it and setup additional programs
       default_env: "USER=root HOME=/root LC_ALL=POSIX"
       in_context:
         cmd: $$default_env chroot $$rootfs bash
         workdir: /
-    
+
     #== Bootstrap the new system and create the 'in_context'
     bootstrap:
       - debootstrap:
@@ -73,8 +73,8 @@ This is an example of a recipe:
         - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
       - start_chroot:
         - rootfs: $$rootfs
-    
-    
+
+
     #== Install and configuration steps
     # WARNING: this part should be independante from the build context (whenever
     # possible...)
@@ -98,7 +98,7 @@ This is an example of a recipe:
         - name: $$user_name
         - group: admin
         - password: $$user_name
-        
+
     #== Export the generated appliance in the format of your choice
     export:
       - save_appliance_from_nbd:

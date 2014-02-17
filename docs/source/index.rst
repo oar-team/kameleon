@@ -6,6 +6,14 @@
 Welcome to Kameleon's documentation!
 ====================================
 
+
+.. note::
+    This documentation is currently being written...
+
+-----
+About
+-----
+
 Kameleon should be seen as a simple but powerful tool to generate customized
 appliances. With Kameleon, you make your recipe that describes how to create
 step by step your own distribution. At start Kameleon is used to create custom
@@ -13,13 +21,16 @@ kvm, LXC, VirtualBox, iso images, ..., but as it is designed to be very generic
 you can probably do a lot more than that.
 
 
+------------------
+User Documentation
+------------------
+
+
 .. toctree::
     :maxdepth: 2
 
-    why.rst
     installation.rst
     getting_started.rst
-    cli.rst
     recipe.rst
     context.rst
     commands.rst
@@ -27,7 +38,6 @@ you can probably do a lot more than that.
     checkpoint.rst
     aliases.rst
     faq.rst
-
 
 Indices and tables
 ==================
