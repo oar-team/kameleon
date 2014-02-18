@@ -32,7 +32,10 @@ global:
 
   ## System variables. Required by kameleon engine
   # Include specific steps
-  include_steps: [$$distrib/$$release, $$distrib]
+  include_steps:
+    - $$distrib
+    - $$release
+    - $$distrib
 
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
@@ -66,7 +69,7 @@ bootstrap:
 
 
 #== Install and configuration steps
-# WARNING: this part should be independante from the build context (whenever
+# WARNING: this part should be independante from the out context (whenever
 # possible...)
 setup:
   # Install
