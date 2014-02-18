@@ -2,6 +2,7 @@
 - include: >
     yum initscripts passwd rsyslog vim-minimal dhclient chkconfig rootfiles
     policycoreutils fedora-release openssh-server net-tools nc traceroute
+- mirrorlist_url: "http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-$$release&arch=$$arch"
 - bootstrap_fedora:
   - check_cmd_out: yum
   - check_cmd_out: curl
