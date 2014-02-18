@@ -80,7 +80,27 @@
 
 - install_bootloader:
   - on_export_init:
-    - exec_in: extlinux-install $$nbd_device 2>&1
+    - rescue:
+      - exec_in: command -V extlinux 2> /dev/null
+      - breakpoint: "@1 is missing from in_context"
+    - exec_in: extlinux --install /boot/
+    - exec_in: |
+        MBR_PATH=
+        PATHS=("/usr/share/syslinux/mbr.bin"
+               "/usr/lib/bios/syslinux/mbr.bin"
+               "/usr/lib/syslinux/bios/mbr.bin")
+        for element in "${PATHS[@]}"
+        do
+          if [ -f "$element" ]; then
+            MBR_PATH="$element"
+          fi
+        done
+        if [ "$MBR_PATH" == "" ]; then
+          fail "unable to locate the bootloader mdr"
+        else
+          dd if="$MBR_PATH" conv=notrunc bs=440 count=1 of="$$nbd_device"
+        fi
+    - exec_out: echo " sync..." ; sync
     - write_in:
       - /boot/extlinux/extlinux.conf
       - |
