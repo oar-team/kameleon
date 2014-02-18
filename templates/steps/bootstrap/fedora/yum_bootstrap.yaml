@@ -17,6 +17,5 @@
   - exec_out: test -f "$$rootfs_archive" || rpm --root $ROOTFS --initdb
   - exec_out: test -f "$$rootfs_archive" || rpm --root $ROOTFS -ivh "$(basename $RELEASE_URL)"
   - exec_out: test -f "$$rootfs_archive" || yum --installroot $ROOTFS -y --nogpgcheck install $$include
-  - exec_out: test -f "$$rootfs_archive" || cat /etc/resolv.conf > $ROOTFS/etc/resolv.conf
   - exec_out: test -f "$$rootfs_archive" || tar zcf "$$rootfs_archive" -C "$ROOTFS" --numeric-owner --one-file-system .
   - exec_out: test -f "$$rootfs_archive" || rm -fr $ROOTFS
