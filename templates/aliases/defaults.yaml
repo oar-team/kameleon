@@ -66,18 +66,18 @@ in2out:
 
 check_cmd_out:
   - on_bootstrap_init:
-    - rescue: 
+    - rescue:
       - exec_out: command -V @1 2> /dev/null
-      - breakpoint: "@1 is missing"
+      - breakpoint: "@1 is missing from out_context"
 
 check_cmd_local:
   - on_bootstrap_init:
-    - rescue: 
+    - rescue:
       - exec_local: command -V @1 2> /dev/null
-      - breakpoint: "@1 is missing"
+      - breakpoint: "@1 is missing from local_context"
 
 check_cmd_in:
   - on_bootstrap_init:
-    - rescue: 
+    - rescue:
       - exec_in: command -V @1 2> /dev/null
-      - breakpoint: "@1 is missing"
+      - breakpoint: "@1 is missing from in_context"
