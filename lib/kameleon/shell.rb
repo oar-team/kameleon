@@ -167,7 +167,9 @@ module Kameleon
     end
 
     def fork_and_wait
-      system(@shell_cmd)
+      command = ["bash", "-c", @shell_cmd]
+      @logger.notice("Starting process: #{@cmd.inspect}")
+      system(*command)
     end
 
     protected
