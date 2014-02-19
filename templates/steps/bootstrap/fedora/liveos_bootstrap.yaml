@@ -1,0 +1,73 @@
+# # Bootstrap
+- include: >
+    python yum rpm initscripts passwd rsyslog vim-minimal dhclient chkconfig
+    rootfiles policycoreutils fedora-release openssh-server net-tools nc
+    traceroute
+- mirrorlist_url: mirrors.kernel.org
+
+- init_rootfs:
+  - exec_out: |
+      if [ ! -f "$$rootfs_archive" ]; then
+        mkdir -p $(dirname "$$rootfs_archive")
+      fi
+
+- download_live_os:
+  - check_cmd_out: rsync
+  - exec_out: |
+      if [ ! -f "$$rootfs_archive" ]; then
+        if [ ! -f "./LiveOS/squashfs.img" ]; then
+          echo "Downloading LiveOS squashfs file system from mirrors.kernel.org..."
+          rsync -av $$mirrorlist_url::fedora/releases/$$release/Fedora/$$arch/os/LiveOS .
+          echo "Download of squashfs image complete."
+        else
+          echo "Using cached LiveOS squashfs file system."
+        fi
+      fi
+
+- copy_ro_to_rw:
+  - exec_out: |
+      if [ ! -f "$$rootfs_archive" ]; then
+        mkdir -p squashfs readonlyfs partial
+        mount -o loop ./LiveOS/squashfs.img squashfs ||  \
+          fail Mount of LiveOS squashfs image failed! You mush have squashfs support available to mount image.
+        mount -o loop squashfs/LiveOS/rootfs.img readonlyfs
+        rsync -aAHS readonlyfs/ partial/
+      fi
+  - umount_out: readonlyfs
+  - umount_out: squashfs
+
+- bootstrap_partial:
+  - exec_out: |
+      if [ ! -f "$$rootfs_archive" ]; then
+        mount -o bind /dev  partial/dev
+        mount -o bind /dev/pts partial/dev/pts
+        mount -t proc /proc  partial/proc
+        mount -t sysfs /sys  partial/sys
+        test -f partial/etc/mtab || cat /proc/mounts > partial/etc/mtab
+        cp /etc/resolv.conf partial/etc/
+        rsync -av mirrors.kernel.org::fedora/releases/$${release}/Fedora/$$arch/os/Packages/r/rpm-[0-9]* \
+        mirrors.kernel.org::fedora/releases/$${release}/Fedora/$$arch/os/Packages/y/yum-[0-9]* partial
+        chroot partial rpm -ivh --nodeps --replacepkgs rpm-* yum-* > /dev/null
+        rsync -av mirrors.kernel.org::fedora/releases/$$release/Fedora/$$arch/os/Packages/f/fedora-release-$${release}* partial
+        mkdir -p partial/run/install
+        chroot partial  rpm --root /run/install --nodeps -ivh fedora-release-*
+        false ;
+        sed -i "s|\$basearch|$$arch|" partial/etc/yum.repos.d/*
+        chroot partial yum --installroot /run/install -y --nogpgcheck install $$include
+      fi
+
+- create_rootfs_archive:
+  - exec_out: |
+      if [ ! -f "$$rootfs_archive" ]; then
+        tar zcf "$$rootfs_archive" -C partial/run/install --numeric-owner --one-file-system .
+      fi
+
+- clean:
+  - on_bootstrap_clean:
+    - umount_out: partial/dev/pts
+    - umount_out: partial/dev
+    - umount_out: partial/proc
+    - umount_out: partial/sys
+    - umount_out: readonlyfs
+    - umount_out: squashfs
+

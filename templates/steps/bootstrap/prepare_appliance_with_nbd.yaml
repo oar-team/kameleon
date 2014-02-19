@@ -52,12 +52,10 @@
   - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p2 $$mountdir || fail cannot mount /"
   - on_export_clean:
     - exec_out: "echo try umount $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
-    - exec_out: "test -d $$mountdir && rmdir $$mountdir || true"
   - exec_out: mkdir -p $$mountdir/boot
   - exec_out:  "echo Mounting boot partition... ;  mount $${nbd_device}p1 $$mountdir/boot || fail cannot mount /boot"
   - on_export_clean:
     - exec_out: "echo try umount $$mountdir/boot... ; mountpoint -q $$mountdir/boot && umount -f -l $$mountdir/boot || true"
-    - exec_out: "test -d $$mountdir/boot && rmdir $$mountdir/boot || true"
 
 - copy_rootfs:
   - exec_out: tar -xf $$rootfs_archive -C $$mountdir
@@ -83,7 +81,7 @@
     - rescue:
       - exec_in: command -V extlinux 2> /dev/null
       - breakpoint: "@1 is missing from in_context"
-    - exec_in: extlinux --install /boot/
+    - exec_in: extlinux --install /boot/extlinux 2>&1
     - exec_in: |
         MBR_PATH=
         PATHS=("/usr/share/syslinux/mbr.bin"
@@ -98,7 +96,7 @@
         if [ "$MBR_PATH" == "" ]; then
           fail "unable to locate the bootloader mdr"
         else
-          dd if="$MBR_PATH" conv=notrunc bs=440 count=1 of="$$nbd_device"
+          cat "$MBR_PATH" > "$$nbd_device"
         fi
     - exec_out: echo " sync..." ; sync
     - write_in:

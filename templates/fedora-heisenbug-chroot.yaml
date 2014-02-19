@@ -51,7 +51,7 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - yum_bootstrap:
+  - liveos_bootstrap:
     - release: $$release
     - arch: $$arch
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/bootstrap.tar.gz

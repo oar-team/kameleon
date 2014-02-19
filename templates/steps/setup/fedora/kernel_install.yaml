@@ -1,5 +1,5 @@
 - install_kernel:
-  - exec_in: yum install -y kernel kernel-devel
+  - exec_in: yum install -y kernel
 
 - update_initramfs:
   - exec_in: INITRAMFS=$(basename /boot/vmlinuz-* | tr 'vmlinuz' 'initramfs')
