@@ -1,31 +1,44 @@
 write_local:
   - exec_local: |
       mkdir -p $(dirname @1);
-      cat >@1 <<<"@2"
+      cat >@1 <<EOF
+      @2
+      EOF
 
 write_in:
   - exec_in: |
       mkdir -p $(dirname @1);
-      cat >@1 <<<"@2"
+      cat >@1 <<EOF
+      @2
+      EOF
 
 write_out:
   - exec_out: |
       mkdir -p $(dirname @1);
-      cat >@1 <<<"@2"
+      cat >>@1 <<EOF
+      @2
+      EOF
 
 append_local:
   - exec_local: |
       mkdir -p $(dirname @1);
-      cat >>@1 <<<"@2"
+      cat >>@1 <<EOF
+      @2
+      EOF
+
 append_in:
   - exec_in: |
       mkdir -p $(dirname @1);
-      cat >>@1 <<<"@2"
+      cat >>@1 <<EOF
+      @2
+      EOF
 
 append_out:
   - exec_out: |
       mkdir -p $(dirname @1);
-      cat >>@1 <<<"@2"
+      cat >@1 <<EOF
+      @2
+      EOF
 
 local2out:
   - exec_out: |
