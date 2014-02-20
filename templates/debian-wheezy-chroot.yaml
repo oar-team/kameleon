@@ -58,9 +58,11 @@ bootstrap:
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
-  - prepare_appliance_with_nbd:
+  - create_disk_nbd:
+    - image_size: 5G
+  - populate_disk:
+    - device: $$nbd_device
     - mountdir: $$rootfs
-    - image_size: 2G
     - filesystem_type: ext4
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - start_chroot:

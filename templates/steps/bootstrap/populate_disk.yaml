@@ -1,0 +1,73 @@
+# Populate disk
+#
+# This step is partionning and populating the disk
+
+- partition_disk:
+  - check_cmd_out: sfdisk
+  - exec_out: |
+      echo "Partitioning disk..."
+      sfdisk $${device} -q -D -uM --force --no-reread <<< '
+      ,,83,*;
+      ' 2>&1 || fail cannot partition $$container
+  - exec_out: |
+      echo Creating root partition...
+      mkfs.$$filesystem_type -q $${device}p1 || fail cannot create / ext4
+
+- mount_mountdir:
+  - on_checkpoint: redo
+  - exec_out: mkdir -p $$mountdir
+  - exec_out:  "echo Mounting root partition... ;  mount $${device}p1 $$mountdir || fail cannot mount /"
+  - on_export_clean:
+    - exec_out: "echo try umount $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
+
+- copy_rootfs:
+  - exec_out: tar -xf $$rootfs_archive -C $$mountdir
+  - exec_out: echo "sync..." ; sync
+
+- create_fstab:
+  - write_out:
+    - $$mountdir/etc/fstab
+    - |
+      # /etc/fstab: static file system information.
+      #
+      # Use 'blkid' to print the universally unique identifier for a
+      # device; this may be used with UUID= as a more robust way to name devices
+      # that works even if disks are added and removed. See fstab(5).
+      #
+      # <file system> <mount point>   <type>  <options>       <dump>  <pass>
+      UUID=`blkid -s UUID -o value $${device}p1` /               $$filesystem_type    errors=remount-ro  0       1
+
+
+- install_bootloader:
+  - on_export_init:
+    - rescue:
+      - exec_in: command -V extlinux 2> /dev/null
+      - breakpoint: "@1 is missing from in_context"
+    - exec_in: extlinux --install /boot/extlinux 2>&1
+    - exec_in: |
+        MBR_PATH=
+        PATHS=("/usr/share/syslinux/mbr.bin"
+               "/usr/lib/bios/syslinux/mbr.bin"
+               "/usr/lib/syslinux/bios/mbr.bin")
+        for element in "${PATHS[@]}"
+        do
+          if [ -f "$element" ]; then
+            MBR_PATH="$element"
+          fi
+        done
+        if [ "$MBR_PATH" == "" ]; then
+          fail "unable to locate the bootloader mdr"
+        else
+          cat "$MBR_PATH" > "$$device"
+        fi
+    - exec_out: echo " sync..." ; sync
+    - write_in:
+      - /boot/extlinux/extlinux.conf
+      - |
+        default linux
+        timeout 1
+        
+        label linux
+        kernel ../`basename /boot/vmlinuz*`
+        append initrd=../`basename /boot/init*` root=UUID=`blkid -s UUID -o value $${device}p1` ro
+    - exec_out: echo " sync..." ; sync
