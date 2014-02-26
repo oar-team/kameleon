@@ -10,6 +10,8 @@ Welcome to Kameleon's documentation!
 .. note::
     This documentation is currently being written...
 
+.. image:: _static/kameleon-long.png
+     :align: right
 -----
 About
 -----
