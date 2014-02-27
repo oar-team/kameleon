@@ -1,3 +1,5 @@
+.. _`commands`:
+
 --------
 Commands
 --------
@@ -40,7 +42,7 @@ to the new_file within the in context workdir:
         - exec_out: cat my_file
         - exec_in: cat > new_file
 
-This command are usually not used directly but with Aliases_.
+This command are usually not used directly but with :ref:`Aliases`.
 
 Hooks
 ~~~~~

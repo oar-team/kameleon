@@ -12,6 +12,7 @@ Welcome to Kameleon's documentation!
 
 .. image:: _static/kameleon-long.png
      :align: right
+
 -----
 About
 -----

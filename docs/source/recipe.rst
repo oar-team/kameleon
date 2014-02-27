@@ -3,9 +3,9 @@ Recipe
 ------
 
 Kameleon compute YAML files, named  *recipes*, that describes how you will
-build your appliance. These files are stored in the root of your `Workspace`_.
-A recipe is a hierarchical structure of `Sections`_, `Steps`_, `Microsteps`_ and
-`Commands`_. Here is an overview of this structure:
+build your appliance. These files are stored in the root of your :ref:`workspace`.
+A recipe is a hierarchical structure of `Section`_, `Step`_, `Microstep`_ and
+:ref:`commands`. Here is an overview of this structure:
 
 .. code-block:: yaml
 
@@ -16,7 +16,7 @@ A recipe is a hierarchical structure of `Sections`_, `Steps`_, `Microsteps`_ and
                 └──command
 
 The recipe also contains set of `Global variables`_ declaration and some
-imports like `Aliases`_ and `Checkpoint`_.
+imports like :ref:`aliases` and :ref:`checkpoint`.
 
 This is an example of a recipe:
 
@@ -112,11 +112,11 @@ This is an example of a recipe:
 Section
 -------
 
-Each section is a list of `Steps`_. Currently, there is 3 sections:
+Each section is a list of steps. Currently, there is 3 sections:
 
 bootstrap
     This section contains the bootstrap of the new system and create the *in*
-    context (see `Contexts`_).
+    context (see :ref:`context`).
 
 setup
     This one is dedicated to the install and configuration steps.
@@ -125,10 +125,13 @@ export
     Export the generated appliance in the format of your choice.
 
 
-Step
-----
+.. _`step`:
+.. _`microstep`:
 
-Each *step* contains a list of microsteps that contains a list of Commands_
+Step and microstep
+-------------------
+
+Each *step* contains a list of *microsteps* that contains a list of :ref:`commands`
 written in one YAML file.  To be found by Kameleon this file must be named by
 with the step name plus the YAML extension ``.yaml``. For example the
 ``software_install.yaml`` step file looks like this:
@@ -171,7 +174,7 @@ Steps path
 ~~~~~~~~~~
 
 The steps are YAML formated files stored in the ``recipe/steps`` directory of
-the Workspace_. To enable a better recipe reuse and ease of write the steps
+the :ref:`workspace`. To enable a better recipe reuse and ease of write the steps
 are stored by default in specific folders depending on the sections.
 
 Kameleon is looking for the steps files using the ``include_steps`` list value,
@@ -227,7 +230,7 @@ Global variables
 ~~~~~~~~~~~~~~~~~
 
 Global variables are defined in the ``global`` dictionary of the recipe.
-Kameleon use some global variable to enable the appliance build. See Context_
+Kameleon use some global variable to enable the appliance build. See :ref:`context`
 and `Steps path`_ for more details
 
 

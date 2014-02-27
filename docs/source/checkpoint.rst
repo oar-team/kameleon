@@ -1,3 +1,5 @@
+.. _`checkpoint`:
+
 ----------
 Checkpoint
 ----------

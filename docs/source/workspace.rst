@@ -1,3 +1,5 @@
+.. _`workspace`:
+
 ---------
 Workspace
 ---------
