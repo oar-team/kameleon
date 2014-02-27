@@ -10,10 +10,14 @@ A recipe is a hierarchical structure of `Section`_, `Step`_, `Microstep`_ and
 .. code-block:: yaml
 
     recipe
-    └── section
-        └── step
-            └── microstep
-                └──command
+    |
+    `-- section
+        |
+        `-- step
+            |
+            `-- microstep
+                |
+                `-- command
 
 The recipe also contains set of `Global variables`_ declaration and some
 imports like :ref:`aliases` and :ref:`checkpoint`.

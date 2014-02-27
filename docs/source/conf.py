@@ -28,7 +28,7 @@ import datetime
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = []
-
+AUTHORS = "Michael Mercier, Salem Harrache"
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -124,7 +124,7 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+# html_logo = '_static/kameleon-long.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -188,14 +188,22 @@ htmlhelp_basename = 'Kameleondoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {}
+latex_logo = '_static/kameleon-long.png'
+
+latex_elements = {
+    'tableofcontents': "\\tableofcontents",
+    'preamble': '''%
+    \pagestyle{plain}
+    \pagenumbering{arabic}
+    ''',
+}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'Kameleon.tex', u'Kameleon Documentation',
-     u'Salem Harrache, Michael Mercier', 'manual'),
+     AUTHORS, 'howto'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -225,7 +233,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'kameleon', u'Kameleon Documentation',
-     [u'Salem Harrache', u'Michael Mercier'], 1)
+     AUTHORS.split(', '), 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -239,7 +247,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'Kameleon', u'Kameleon Documentation',
-     u'Salem Harrache, Michael Mercier', 'Kameleon',
+     AUTHORS, 'Kameleon',
      'One line description of project.', 'Miscellaneous'),
 ]
 
