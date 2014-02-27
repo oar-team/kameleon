@@ -2,7 +2,7 @@
 - include: >
     python yum rpm initscripts passwd rsyslog vim-minimal dhclient chkconfig
     rootfiles policycoreutils fedora-release openssh-server net-tools nc
-    traceroute
+    traceroute kernel syslinux-extlinux
 - mirrorlist_url: mirrors.kernel.org
 
 - init_rootfs:
