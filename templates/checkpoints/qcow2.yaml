@@ -25,12 +25,6 @@ apply: |
     
     ln -sf "checkpoints/${previous_id}_$${container}" "$$container"
 
-    lsmod | grep nbd >/dev/null || modprobe nbd max_part=63
-
-    echo "sync" ; sync
-    qemu-nbd -d $$nbd_device
-    qemu-nbd -c $$nbd_device "$(readlink $$container)"
-
 clear: |
     if [ -d "checkpoints" ] ; then
       ls checkpoints/ | \
