@@ -30,7 +30,9 @@ global:
 
   ## System variables. Required by kameleon engine
   # Include specific steps
-  include_steps: [$$distrib/$$release, $$distrib]
+  include_steps:
+    - $$distrib/$$release
+    - $$distrib
 
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
@@ -72,9 +74,7 @@ setup:
   - software_install:
     - packages: > 
         debian-keyring ntp zip unzip rsync sudo less vim bash-completion
-        extlinux
-  - kernel_install:
-    - arch: $$arch
+  - config_kernel
   # Configuration
   - system_config:
     - locales: fr_FR en_US
@@ -89,9 +89,27 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
-  - build_appliance_from_docker:
-    - mountdir: $$kameleon_cwd/rootfs
-    - filename: $$kameleon_recipe_name
-    - filesystem_type: ext4
-    - format: qcow2  # Should be raw, qcow2 or qed format
+  - export_docker_image:
+    - image: $(cat MAIN_CONTAINER_ID)
+    - rootfs_archive: "$${kameleon_recipe_name}.tar.gz"
+  - create_disk_nbd:
+    - consider_checkpoint: false
     - image_size: 2G
+    - filename: "$${kameleon_recipe_name}.qcow2"
+    - device: /dev/nbd1
+  - populate_disk:
+    - filename: "$${kameleon_recipe_name}.qcow2"
+    - device: /dev/nbd1
+    - mountdir: rootfs
+    - filesystem_type: ext4
+    - rootfs_archive: "$${kameleon_recipe_name}.tar.gz"
+  - start_chroot:
+    - rootfs: rootfs
+    - dns: $$docker_dns
+    - mount_chroot
+  - install_bootloader:
+    - mountdir: rootfs
+    - device: /dev/nbd1
+  - compact_qcow_img:
+    - mountdir: rootfs
+    - filename: "$${kameleon_recipe_name}.qcow2"

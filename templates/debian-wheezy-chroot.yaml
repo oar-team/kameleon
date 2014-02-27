@@ -24,7 +24,7 @@ global:
   arch: amd64
   dns: 208.67.222.222
 
-  nbd_device: /dev/nbd10
+  nbd_device: /dev/nbd1
   container: "$${kameleon_recipe_name}_temp.qcow2"
 
   distrib: debian
@@ -33,8 +33,7 @@ global:
   ## System variables. Required by kameleon engine
   # Include specific steps
   include_steps:
-    - $$distrib
-    - $$release
+    - $$distrib/$$release
     - $$distrib
 
   # Shell session from where we launch exec_out commands. There is often a
@@ -59,8 +58,11 @@ bootstrap:
     - repository: http://ftp.fr.debian.org/debian/
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - create_disk_nbd:
-    - image_size: 5G
+    - image_size: 2G
+    - filename: $$container
+    - device: $$nbd_device
   - populate_disk:
+    - filename: $$container
     - device: $$nbd_device
     - mountdir: $$rootfs
     - filesystem_type: ext4
@@ -78,7 +80,7 @@ setup:
   - software_install:
     - packages: >
         debian-keyring ntp zip unzip rsync sudo less vim bash-completion
-  - kernel_install:
+  - config_kernel:
     - arch: $$arch
   # Configuration
   - system_config:
@@ -96,7 +98,11 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
+  - install_bootloader:
+    - mountdir: $$rootfs
+    - device: $$nbd_device
   - save_appliance_from_nbd:
+    - mountdir: $$rootfs
     - filename: "$${kameleon_recipe_name}"
     - save_as_qcow2
     # - save_as_tgz

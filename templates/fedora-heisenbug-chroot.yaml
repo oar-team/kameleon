@@ -23,7 +23,7 @@ global:
   rootfs: $$kameleon_cwd/rootfs
   arch: x86_64
 
-  nbd_device: /dev/nbd1
+  nbd_device: /dev/nbd2
   container: "$${kameleon_recipe_name}_temp.qcow2"
 
   distrib: fedora
@@ -33,7 +33,9 @@ global:
 
   ## System variables. Required by kameleon engine
   # Include specific steps
-  include_steps: [$$distrib/$$release, $$distrib]
+  include_steps:
+    - $$distrib/$$release
+    - $$distrib
 
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
@@ -55,9 +57,14 @@ bootstrap:
     - release: $$release
     - arch: $$arch
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/bootstrap.tar.gz
-  - prepare_appliance_with_nbd:
-    - mountdir: $$rootfs
+  - create_disk_nbd:
     - image_size: 2G
+    - filename: $$container
+    - device: $$nbd_device
+  - populate_disk:
+    - filename: $$container
+    - device: $$nbd_device
+    - mountdir: $$rootfs
     - filesystem_type: ext4
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/bootstrap.tar.gz
   - start_chroot:
@@ -75,7 +82,7 @@ setup:
         ntp zip unzip rsync sudo less vim bash-completion wget
     - group_packages: >
         "Development Tools"
-  - kernel_install
+  - config_kernel
   # # Configuration
   # - system_config:
   #   - locales: fr_FR en_US
@@ -90,7 +97,11 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
+  - install_bootloader:
+    - mountdir: $$rootfs
+    - device: $$nbd_device
   - save_appliance_from_nbd:
+    - mountdir: $$rootfs
     - filename: "$${kameleon_recipe_name}"
     - save_as_qcow2
     # - save_as_tgz
