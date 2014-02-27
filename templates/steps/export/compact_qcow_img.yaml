@@ -1,0 +1,12 @@
+
+
+- nullify_freespace:
+  - exec_out: |
+      echo "Nullify freespace..."
+      dd if=/dev/zero of=$$mountdir/bigemptyfile bs=1M 2>&1 >/dev/null || true
+      rm -f $$mountdir/bigemptyfile
+      echo "sync..." ; sync
+
+- compact_qcow_img:
+  - exec_out: qemu-img convert -c -O qcow2 $$filename compressed_$$filename
+  - exec_out: mv compressed_$$filename $$filename
