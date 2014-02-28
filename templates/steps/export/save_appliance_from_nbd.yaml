@@ -41,6 +41,12 @@
       qemu-img convert -c -O qcow2 $(readlink $$container) $$filename.qcow2
   - exec_out: echo "Saved qcow2 appliance to $(pwd)/$$filename.qcow2"
 
+- save_as_qed:
+  - exec_out: echo "sync..." ; sync
+  - exec_out: |
+      qemu-img convert -O qed $(readlink $$container) $$filename.qed
+  - exec_out: echo "Saved qed appliance to $(pwd)/$$filename.qed"
+
 - save_as_vmdk:
   - exec_out: echo "sync..." ; sync
   - exec_out: |
