@@ -3,12 +3,12 @@
 # This step is partionning and populating the disk
 
 - partition_disk:
-  - check_cmd_out: sfdisk
+  - check_cmd_out: parted
   - exec_out: |
       echo "Partitioning disk..."
-      sfdisk $${device} -q -D -uM --force --no-reread <<< '
-      ,,83,*;
-      ' 2>&1 || fail cannot partition $$filename
+      parted $${device} mklabel msdos
+      parted $${device} mkpart primary 0% 100%
+      parted $${device} set 1 boot on
   - exec_out: |
       echo Creating root partition...
       mkfs.$$filesystem_type -q $${device}p1 || fail cannot create / ext4
