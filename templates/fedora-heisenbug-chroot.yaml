@@ -70,7 +70,9 @@ bootstrap:
   - start_chroot:
     - rootfs: $$rootfs
     - dns: $$dns
-
+  - install_bootloader:
+    - mountdir: $$rootfs
+    - device: $$nbd_device
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the build context (whenever
@@ -97,9 +99,6 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
-  - install_bootloader:
-    - mountdir: $$rootfs
-    - device: $$nbd_device
   - save_appliance_from_nbd:
     - mountdir: $$rootfs
     - filename: "$${kameleon_recipe_name}"
