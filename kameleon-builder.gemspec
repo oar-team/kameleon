@@ -29,8 +29,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'table_print', '~> 1.5'
   s.add_dependency 'log4r-color', '~> 1.2'
 
-  s.add_development_dependency 'pry', '~> 0.9'
-  s.add_development_dependency 'pry-debugger', '~> 0.2'
   s.add_development_dependency 'rake', '~> 10.1'
   s.add_development_dependency 'minitest', '~> 4.7'
   s.add_development_dependency 'coveralls', '~> 0.7'
