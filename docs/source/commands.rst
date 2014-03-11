@@ -14,8 +14,7 @@ The exec command is a simple command execute, in the given context, the user
 command in argument. The context is specified by the name suffix local, out or
 in like this ``exec_[in/out/local]``.
 
-It is currently used most to execute bash script, but you can use any tools
-callable with bash.
+It is mostly used to execute bash script or other comand line application.
 
 For example this command save the message "Hello world:" in the hello.txt file
 within the workdir of the *in* context:

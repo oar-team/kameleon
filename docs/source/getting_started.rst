@@ -15,7 +15,7 @@ Create a new recipe from template
 
 First thing to know is that Kameleon is an automation tool for bash. It brings
 the ease of error handling, retry, checkpointing, easy debugging and cleaning
-to your scripts to help you to build your software appliance.
+to your scripts to help you build your software appliance.
 
 The template system built-in allows you quickly build a system and to understand the
 Kameleon basics. Let see the template list::
@@ -37,7 +37,7 @@ will create a new recipe from this template.  Let's name it ``debian_test``::
 
     kameleon new debian_test -t debian-wheezy-chroot
 
-Actually, Kameleon make a direct copy of the YAML template recipe file and all
+Kameleon make a direct copy of the YAML template recipe file and all
 the other required files like steps or aliases ones. You can see that in the
 ``new`` command output::
 
@@ -97,14 +97,14 @@ Build my new recipe
     Be sure to be `root` to run the following steps. It is needed for loading
     modules, chrooting,...
 
-There is no magic computation in Kameleon everything is written in YAML files:
-from your system bootstrap to his export. It empowers you to customize anything
+There is no magic in Kameleon, everything is written in YAML:
+from your system bootstrap to its export. It empowers you to customize anything
 you want at anytime during the appliance build. But before changing anything
 just build the template to see how it works::
 
      kameleon build debian_test
 
-Oups! Maybe you got an error like this::
+Oups! Maybe you get an error like this::
 
     ...
     [engine]: qemu-img is missing
@@ -114,12 +114,12 @@ Oups! Maybe you got an error like this::
     [engine]: Press [o] to switch to out_context shell
     [engine]: answer ? [c/a/l/o]:
 
-This is the interactive prompt of Kameleon. It is a powerful tool because if
-something wrong happen, anytime during the build process, it appears and give
-you a chance to fix the problem.
-For now, the problem is that the ``qemu-img`` binary is missing. So you have to
-install it on your ``out`` context (to read more about context see the
-:doc:`context` page). Just push the ``o`` button and ``Enter``. Now you are logged
+This is the interactive prompt of Kameleon. 
+It is a powerful tool that offers you the possibility to fix a problem
+if something goes wrong during the build process.
+For this example, the problem is due to the missing ``qemu-img`` binary. 
+So you have to install it on your ``out`` context (to read more about context see the
+:doc:`context` page). Just type the ``o`` key and ``Enter``. Now you are logged
 in your out context. If you are on a Debian based system install the missing
 package::
 
@@ -130,9 +130,9 @@ Press ``Ctrl-d`` or type ``exit`` to go back to the Kameleon prompt then press
 
 The first time it will take a while to finish the building process. But, Thanks
 to the :doc:`checkpoint` mechanism you can abort with ``Ctrl-c`` anytime during
-the build without problem. Everything steps is backup and if you start the
-build again, it will skip all the steps already done to restart at the very
-point you have just stopped. Moreover, if you change anything in the recipe
+the build without problem. Every step is backed up and if you start the
+build again, it will skip all the steps already done 
+to restart at the point you have just stopped. Moreover, if you change anything in the recipe
 Kameleon will know it (using recipe and steps hashes), so your next build will
 automatically restart at the right steps. Here is a good example: The first
 time you built your recipe you should have something like this::
@@ -164,7 +164,7 @@ You just have to run the build again and you will notice that it is much faster:
     [cli]: Build total duration : 4 secs
     ...
 
-As you can see Kameleon has used the checkpoint cache for each steps and in
+As you can see Kameleon has used the checkpoint cache for each step and in
 doing so it takes just 4 seconds to build the recipe again. Well the recipe did
 not change so there is no real challenge to build it so fast. Let's change
 the user name for example. Open the ``debian_test.yaml`` recipe file and in the
@@ -203,15 +203,15 @@ using the ``add_user`` value.
 Add a new step
 ~~~~~~~~~~~~~~
 
-Let's assume that you what to add a step to put a timestamp in your image to
-know when you have build it. First, you have to create a step file in the
+Let's assume that you want to add a step to put a timestamp in your image to
+know when it was built. First, you have to create a step file in the
 ``steps/setup`` folder because you want your timestamp to be added inside the
 newly created appliance before exporting it. Let's call it ``add_timestamp.yaml``:
 
 .. literalinclude:: ../../contrib/steps/setup/add_timestamp.yaml
     :language: yaml
 
-Then you should had this step to the recipe at the end of the setup section::
+Then you should have this step to the recipe at the end of the setup section::
 
     ...
     setup:

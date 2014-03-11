@@ -8,10 +8,10 @@ The aliases can be used anywhere instead of a Kameleon command. Some aliases
 are provided with the templates in the ``aliases/defaults.yaml`` files within
 your workspace. You can add your own aliases in this file.
 
-An alias is define by his name as a key and a list of commands as a value. You
+An alias is define by its name as a key and a list of commands as a value. You
 can call an alias with any number of arguments given in a list.
 
-The alias access to this arguments using the ``@arg_index`` notation. The
+The alias access this arguments using the ``@arg_index`` notation. The
 argument index start at 1. So, ``@1`` is the first argument ``@2`` is the
 second ans so on.
 
