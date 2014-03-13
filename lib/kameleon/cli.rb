@@ -5,6 +5,7 @@ require 'kameleon/utils'
 module Kameleon
   class CLI < Thor
 
+
     class_option :no_color, :type => :boolean, :default => false,
                  :desc => "Disable colorization in output"
     class_option :debug, :type => :boolean, :default => false,
@@ -80,6 +81,16 @@ module Kameleon
     method_option :no_checkpoint, :type => :boolean ,
                   :default => false,
                   :desc => "Do not use checkpoints"
+    method_option :cache, :type => :boolean,
+                  :default => false,
+                  :desc => "generate a persistent cache for the appliance."
+    method_option :from_cache, :type => :string ,
+                  :default => nil,
+                  :desc => "Using a persistent cache tar file to build the image."
+    method_option :proxy_path, :type => :string ,
+                  :default => nil,
+                  :desc => "Full path of the proxy binary to use for the persistent cache."
+
     def build(recipe_name)
       logger.notice("Starting build recipe '#{recipe_name}'")
       start_time = Time.now.to_i

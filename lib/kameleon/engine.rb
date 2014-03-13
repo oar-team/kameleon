@@ -1,6 +1,6 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
-
+require 'kameleon/persistent_cache'
 
 module Kameleon
 
@@ -29,6 +29,18 @@ module Kameleon
       @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
 
       @recipe.resolve!
+
+      if @options[:cache] || @options[:from_cache] then
+        @cache = Kameleon::Persistent_cache.instance
+        @cache.activated = true
+        @cache.cwd = @cwd
+        @cache.polipo_path = @options[:proxy_path]
+        @cache.check_polipo_binary
+        @cache.name = @recipe.name
+        #saving_steps_files
+      end
+
+
       @in_context = nil
       begin
         @logger.notice("Creating kameleon working directory : #{@cwd}")
@@ -44,6 +56,29 @@ module Kameleon
                                  @recipe.global["out_context"]["workdir"],
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd)
+
+      if @options[:from_cache] then
+        begin
+          @cache.unpack(@options[:from_cache])
+        rescue
+          raise BuildError, "Failed to untar the persistent cache file"
+        end
+      end
+    end
+
+    def saving_steps_files
+      @recipe.files.each do |file| 
+        @logger.notice("File #{file} loaded from the recipe")
+        sleep 1
+      end
+      
+    end
+    
+    def create_cache_directory(step_name)
+      @logger.notice("Creating directory for cache #{step_name}")
+      directory_name = @cache.cache_dir + "/#{step_name}"
+      FileUtils.mkdir_p directory_name
+      directory_name
     end
 
     def create_checkpoint(microstep_id)
@@ -82,6 +117,13 @@ module Kameleon
     def do_steps(section_name)
       section = @recipe.sections.fetch(section_name)
       section.sequence do |macrostep|
+        
+        if @cache then
+          # the following function start a polipo web proxy and stops a previous run
+          dir_cache = @cache.create_cache_directory(macrostep.name) #unless @options[:from_cache]
+          @cache.start_web_proxy_in(dir_cache) 
+        end
+
         macrostep.sequence do |microstep|
           @logger.notice("Step #{ microstep.order } : #{ microstep.slug }")
           @logger.notice(" ---> #{ microstep.identifier }")
@@ -91,7 +133,7 @@ module Kameleon
               next
             end
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
-              @logger.notice(" ---> Using cache")
+              @logger.notice(" ---> Using cache this time")
             else
               @logger.notice(" ---> Running step")
               microstep.commands.each do |cmd|
@@ -111,6 +153,12 @@ module Kameleon
         end
       end
       @cleaned_sections.push(section.name)
+
+      if @cache then
+        @cache.stop_web_proxy 
+        @cache.pack unless @options[:from_cache]
+      end
+
     end
 
     def safe_exec_cmd(cmd, kwargs = {})
@@ -241,6 +289,7 @@ module Kameleon
           end
         end
       end
+      @cache.stop_web_proxy if @options[:cache] ## stopping polipo
     end
 
     def clear
@@ -328,6 +377,8 @@ module Kameleon
     end
 
     def pretty_checkpoints_list
+
+
       def find_microstep_slug_by_id(id)
         @recipe.microsteps.each do |m|
           return m.slug if m.identifier == id

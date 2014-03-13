@@ -39,6 +39,7 @@ User Documentation
     commands.rst
     workspace.rst
     checkpoint.rst
+    persistent_cache.rst
     aliases.rst
     faq.rst
 

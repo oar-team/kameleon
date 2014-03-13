@@ -18,6 +18,8 @@ module Kameleon
       instance_variables.each do |v|
         @logger.debug("  #{v} = #{instance_variable_get(v)}")
       end
+
+      @cache = Kameleon::Persistent_cache.instance
       # Start the shell process
       @shell.start
       execute("echo The '#{name}_context' has been initialized", :log_level => "info")
@@ -51,7 +53,7 @@ module Kameleon
       execute(cmd, :stdout => tmp)
       tmp.close
       @logger.info("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
-      dest_pipe_path = "./pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
+      dest_pipe_path = "/pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
       other_ctx.send_file(tmp.path, dest_pipe_path)
       other_cmd_with_pipe = "cat #{dest_pipe_path} | #{other_cmd} && rm #{dest_pipe_path}"
       other_ctx.execute(other_cmd_with_pipe)
