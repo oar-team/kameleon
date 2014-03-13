@@ -15,10 +15,6 @@ If you are under a debian distribution you can install it using the package mana
     
    sudo apt-get install polipo
 
-Then, you have to remove from the services that will be run at boot::
-
-    sudo update-rc.d -f polipo remove 
-
 You can as well build it from sources and then specify the path of the generated binary using 
 the option ``--proxy_path``. To use, you just have to add the option ``--cache`` as an argument of the build command.
 For example::

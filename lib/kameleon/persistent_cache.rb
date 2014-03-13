@@ -1,12 +1,13 @@
 require 'childprocess'
 require 'singleton'
+require 'socket'
 
 module Kameleon
   #This ruby class will control the execution of Polipo web proxy
   class Persistent_cache
     
     include Singleton
-    attr_reader :polipo_env, :cache_dir
+    attr_reader :polipo_env, :cache_dir,:polipo_port
     attr_writer :activated, :cwd, :polipo_path, :name
     def initialize()
       @logger = Log4r::Logger.new("kameleon::[Persistent cache]")
@@ -18,9 +19,12 @@ module Kameleon
                               "polipo_env.sh")
 
       @polipo_process = nil
+      @polipo_port = find_unused_port
+
       @polipo_cmd_options = {:diskCacheRoot => "",
                             :idleTime => "5",
                             :chunkHighMark => "425165824",
+                            :proxyPort => @polipo_port,
                             #:proxyOffline => "true"
                             :relaxTransparency =>"true"
                             }
@@ -30,6 +34,24 @@ module Kameleon
       @cache_dir = ""
       @polipo_path = nil
       @cwd = ""
+
+    end
+    
+    def find_unused_port
+      ports = (8000..9000)
+      port = 0
+      tmp = nil
+      ports.each do |p|
+        begin
+          port = p
+          tmp = TCPServer.new('localhost',port) 
+        rescue 
+          port =0
+        end
+        break if(port>0)         
+      end
+      tmp.close
+      port
     end
     
     def check_polipo_binary
@@ -65,7 +87,7 @@ module Kameleon
       ## This function assumes that the cache directory has already been created by the engine
       ## Stopping first the previous proxy
       ## have to check if polipo is running
-      @logger.notice("Starting web proxy Polipo in directory #{directory}")
+      @logger.notice("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
       @polipo_process.stop unless @polipo_process.nil?
       command = ["#{@polipo_path}/polipo"]
       @polipo_cmd_options[:diskCacheRoot] = directory

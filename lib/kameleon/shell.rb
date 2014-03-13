@@ -36,9 +36,10 @@ module Kameleon
       if @cache.activated? then
         new_kameleon_bashrc = Tempfile.new('kameleon_bashrc').path
         FileUtils.cp @default_bashrc_file, new_kameleon_bashrc
-        polipo_env = File.open(@cache.polipo_env,'r')
+        tpl = ERB.new(File.read(@cache.polipo_env))
+        polipo_env_content = tpl.result(binding)
         File.open(new_kameleon_bashrc,'a') do |f|
-          f.puts(polipo_env.read)
+          f.puts(polipo_env_content)
         end
         @default_bashrc_file = new_kameleon_bashrc
       end
