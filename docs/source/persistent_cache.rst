@@ -19,7 +19,7 @@ You can as well build it from sources and then specify the path of the generated
 the option ``--proxy_path``. To use, you just have to add the option ``--cache`` as an argument of the build command.
 For example::
 
-  kameleon build debian_test -b /tamp/kameleon/ --cache
+  kameleon build debian_test -b /tmp/kameleon/ --cache
 
 This will create a tar file in the build directory ``/tmp/kameleon`` called ``debian_test-cache.tar``.
 In order to use this generated cache file in another build, we have just to use the options ``--from_cache`` as follows::
