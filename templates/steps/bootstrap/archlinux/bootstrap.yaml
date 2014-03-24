@@ -1,0 +1,54 @@
+# This Step is bootstrapping an Archlinux minimal system 
+# it is inspired on this page: 
+# https://wiki.archlinux.org/index.php/Install_from_Existing_Linux
+
+# Change to the mirror which best fits for you. You can find the list here:
+# https://www.archlinux.org/mirrors/status/
+- mirror: http://mir.archlinux.fr
+
+- bootstrap_minimal_archlinux:
+  - exec_out: |
+      FIRST_PACKAGE=(filesystem)
+      BASH_PACKAGES=(glibc ncurses readline bash)
+      PACMAN_PACKAGES=(acl archlinux-keyring attr bzip2 coreutils curl \
+        e2fsprogs expat gnupg gpgme keyutils krb5 libarchive libassuan \
+        libgpg-error libgcrypt libssh2 lzo2 openssl pacman xz zlib \
+        pacman-mirrorlist tar libcap arch-install-scripts util-linux systemd)
+      PACKAGES=(${FIRST_PACKAGE[*]} ${BASH_PACKAGES[*]} ${PACMAN_PACKAGES[*]})
+  
+  - exec_out: |
+      # You can set the ARCH variable to i686 or x86_64
+      ARCH=`uname -m`
+      LIST=`mktemp`
+      CHROOT_DIR=$$rootfs_tmp
+      DIR=archinstall-pkg
+      mkdir -p "$DIR"
+      mkdir -p "$CHROOT_DIR"
+  - exec_out: |
+      # Create a list of filenames for the arch packages
+      wget -q -O- "$$mirror/core/os/$ARCH/" | sed -n "s|.*href=\"\\([^\"]*xz\\)\".*|\\1|p" >> $LIST
+  - exec_out: |
+      # Download and extract each package.
+      for PACKAGE in ${PACKAGES[*]}; do
+        FILE=`grep "$PACKAGE-[0-9]" $LIST|head -n1`
+        [[ -z "$FILE" ]] && echo "$PACKAGE not found" || echo "$FILE"
+        wget -q "$$mirror/core/os/$ARCH/$FILE" -c -O "$DIR/$FILE"
+        xz -dc "$DIR/$FILE" | tar x -k -C "$CHROOT_DIR"
+        rm -f "$CHROOT_DIR/.PKGINFO" "$CHROOT_DIR/.MTREE" "$CHROOT_DIR/.INSTALL"
+      done
+
+
+- configure_pacman:
+  - on_setup_init:
+    # workaround for debian host
+    - exec_out: mkdir /run/shm
+    # init repository
+    - exec_in: mkdir -p "/etc/pacman.d/"
+    - exec_in: echo "Server = $$mirror/\$repo/os/$ARCH" >> "/etc/pacman.d/mirrorlist"
+    # init pacman keyring
+    - exec_in: pacman-key --init
+    - exec_in: pacman-key --populate archlinux
+
+- finish_base_install:
+  - on_setup_init:
+    - exec_in: pacstrap /mnt base
