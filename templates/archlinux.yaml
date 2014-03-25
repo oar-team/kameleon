@@ -52,10 +52,11 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - bootstrap:
-    - arch: $$arch
+  - arch-bootstrap:
+    - arch: x86_64
+    - mirror: http://mir.archlinux.fr/
   - create_disk_nbd:
-    - image_size: 2G
+    - image_size: 5G
     - filename: $$container
     - device: $$nbd_device
   - populate_disk:
