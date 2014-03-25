@@ -4,7 +4,8 @@
   - rescue:
     - exec_out: LC_ALL=POSIX chroot $$mountdir bash -c "command -V extlinux 2> /dev/null"
     - breakpoint: "extlinux is missing"
-  - exec_out: LC_ALL=POSIX chroot $$mountdir extlinux --install /boot/extlinux 2>&1
+  - exec_out: cp -r $$mountdir/usr/lib/syslinux/bios/*.c32 $$mountdir/boot/syslinux/
+  - exec_out: LC_ALL=POSIX chroot $$mountdir extlinux --install /boot/syslinux 2>&1
   - exec_out: |
       MBR_PATH=
       PATHS=("$$mountdir/usr/share/syslinux/mbr.bin"
@@ -26,12 +27,12 @@
       fi
   - exec_out: echo " sync..." ; sync
   - write_out:
-    - $$mountdir/boot/extlinux/extlinux.conf
+    - $$mountdir/boot/syslinux/syslinux.cfg
     - |
-      default linux
-      timeout 1
+      default kameleon
+      timeout 5
       
-      label linux
+      label kameleon
       kernel ../`basename $$mountdir/boot/vmlinuz*`
       append initrd=../`basename $$mountdir/boot/init*` root=UUID=`blkid -s UUID -o value $${device}p1` ro
   - exec_out: echo " sync..." ; sync

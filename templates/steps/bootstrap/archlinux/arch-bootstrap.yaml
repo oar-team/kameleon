@@ -5,7 +5,7 @@
 
 - import_script:
   - exec_out: |
-      cat > arch-bootstrap.sh <<<'
+      cat > arch-bootstrap.sh <<'EOF'
       #!/bin/bash
       #
       # arch-bootstrap: Bootstrap a base Arch Linux system using any GNU distribution.
@@ -32,10 +32,13 @@
       PACMAN_PACKAGES=(
         acl archlinux-keyring attr bzip2 curl expat glibc gpgme libarchive
         libassuan libgpg-error libssh2 lzo2 openssl pacman pacman-mirrorlist xz
-        zlib krb5 e2fsprogs keyutils
+        zlib krb5 e2fsprogs keyutils util-linux procps-ng
       )
       BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
-      EXTRA_PACKAGES=(coreutils bash grep gawk file tar systemd)
+      EXTRA_PACKAGES=(
+        coreutils bash grep gawk file tar systemd systemd-sysvcompat haveged
+        syslinux arch-install-scripts
+      )
       DEFAULT_REPO_URL="http://mirrors.kernel.org/archlinux"
       DEFAULT_ARCH=`uname -m`
       
@@ -164,8 +167,19 @@
       }
       
       main "$@"
-      '
+      EOF
 
 - call_arch-boostrap:
   - exec_out: chmod +x ./arch-bootstrap.sh
   - exec_out: ./arch-bootstrap.sh -a $$arch -r $$mirror $$rootfs_tmp
+
+- call_pacstrap:
+  - exec_out: chroot $$rootfs_tmp pacstrap $$rootfs_tmp base
+
+- configure_pacman:
+  - on_setup_init:
+    # init pacman keyring
+    - exec_in: haveged -w 1024
+    - exec_in: pacman-key --init
+    - exec_in: pkill haveged
+    - exec_in: pacman-key --populate archlinux
