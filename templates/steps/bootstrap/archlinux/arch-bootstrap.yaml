@@ -5,7 +5,7 @@
 
 - import_script:
   - exec_out: |
-      cat > arch-bootstrap.sh <<EOF
+      cat > arch-bootstrap.sh <<<'
       #!/bin/bash
       #
       # arch-bootstrap: Bootstrap a base Arch Linux system using any GNU distribution.
@@ -164,7 +164,7 @@
       }
       
       main "$@"
-      EOF
+      '
 
 - call_arch-boostrap:
   - exec_out: chmod +x ./arch-bootstrap.sh
