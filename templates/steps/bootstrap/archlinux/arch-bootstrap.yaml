@@ -3,6 +3,10 @@
 # Call the arch-bootstrap.sh script to bootstrap an archlinux distro from
 # any GNU system
 
+# You can choose any group from https://www.archlinux.org/groups/
+# It's recommended to use 'base' (default) or 'base-devel' (with dev tools)
+- pkg_group: base
+
 - import_script:
   - exec_out: |
       cat > arch-bootstrap.sh <<'EOF'
@@ -32,12 +36,11 @@
       PACMAN_PACKAGES=(
         acl archlinux-keyring attr bzip2 curl expat glibc gpgme libarchive
         libassuan libgpg-error libssh2 lzo2 openssl pacman pacman-mirrorlist xz
-        zlib krb5 e2fsprogs keyutils util-linux procps-ng
+        zlib krb5 e2fsprogs keyutils
       )
       BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
       EXTRA_PACKAGES=(
-        coreutils bash grep gawk file tar systemd systemd-sysvcompat haveged
-        syslinux arch-install-scripts
+        $$pkg_group haveged syslinux
       )
       DEFAULT_REPO_URL="http://mirrors.kernel.org/archlinux"
       DEFAULT_ARCH=`uname -m`
@@ -46,7 +49,7 @@
       stderr() { echo "$@" >&2; }
       
       # Output debug message to standard error
-      debug() { stderr "--- $@"; }
+      debug() { echo "--- $@"; }
       
       # Extract href attribute from HTML link
       extract_href() { sed -n '/<a / s/^.*<a [^>]*href="\([^\"]*\)".*$/\1/p'; }
@@ -121,8 +124,12 @@
       install_packages() {
         local ARCH=$1 DEST=$2 PACKAGES=$3
         debug "install packages: $PACKAGES"
+        mount -t proc /proc $DEST/proc
+        mount /dev $DEST/dev -o bind
         LC_ALL=C chroot "$DEST" /usr/bin/pacman \
           --noconfirm --arch $ARCH -Sy --force $PACKAGES
+        sync
+        umount $DEST/{proc,dev}
       }
       
       show_usage() {
@@ -171,10 +178,9 @@
 
 - call_arch-boostrap:
   - exec_out: chmod +x ./arch-bootstrap.sh
-  - exec_out: ./arch-bootstrap.sh -a $$arch -r $$mirror $$rootfs_tmp
-
-- call_pacstrap:
-  - exec_out: chroot $$rootfs_tmp pacstrap $$rootfs_tmp base
+  - exec_out: ./arch-bootstrap.sh -a $$arch -r $$mirror $$rootfs_cache
+  - on_clean:
+    - exec_out: umount $$rootfs_cache/{proc,dev} || true
 
 - configure_pacman:
   - on_setup_init:

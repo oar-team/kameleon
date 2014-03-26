@@ -19,21 +19,19 @@ checkpoint: qcow2.yaml
 global:
   ## User varibales : used by the recipe
   rootfs: $$kameleon_cwd/rootfs
-  rootfs_tmp: /tmp/arch
-  user_name: kameleon
-  arch: amd64
+  rootfs_cache: /var/cache/kameleon/arch
+  arch: x86_64
   dns: 208.67.222.222
+  user_name: kameleon
 
   nbd_device: /dev/nbd4
   container: "$${kameleon_recipe_name}_temp.qcow2"
 
   distrib: archlinux
-  release: '2014-1'
 
   ## System variables. Required by kameleon engine
   # Include specific steps
   include_steps:
-    - $$distrib/$$release
     - $$distrib
 
   # Shell session from where we launch exec_out commands. There is often a
@@ -53,8 +51,10 @@ global:
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - arch-bootstrap:
-    - arch: x86_64
     - mirror: http://mir.archlinux.fr/
+    # You can choose any group from https://www.archlinux.org/groups/
+    # It's recommended to use 'base' (default) or 'base-devel' (with dev tools)
+    - pkg_group: base
   - create_disk_nbd:
     - image_size: 5G
     - filename: $$container
@@ -73,25 +73,24 @@ bootstrap:
 # WARNING: this part should be independante from the out context (whenever
 # possible...)
 setup:
-  ## Install
-  #- software_install:
-  #  - packages: >
-  #      debian-keyring ntp zip unzip rsync sudo less vim bash-completion
-  #- config_kernel:
-  #  - arch: $$arch
-  ## Configuration
-  #- system_config:
-  #  - locales: fr_FR en_US
-  #  - lang: fr_FR.UTF-8
-  #  - timezone: Europe/Paris
-  #- keyboard_config:
-  #  - layout: "fr,us"
-  #- network_config:
-  #  - hostname: kameleon-$$distrib
-  #- create_user:
-  #  - name: $$user_name
-  #  - group: admin
-  #  - password: $$user_name
+  # Install
+  - software_install:
+    - packages: >
+        ntp zip unzip rsync sudo vim bash-completion
+  # Configuration
+  - system_config:
+    - locales: fr_FR en_US
+    - lang: fr_FR.UTF-8
+    - timezone: Europe/Paris
+  - keyboard_config:
+    # set to french keyboard use 'localectl list-keymaps' to see available list
+    - layout: fr
+  - network_config:
+    - hostname: kameleon-$$distrib
+  - create_user:
+    - name: $$user_name
+    - group: admin
+    - password: $$user_name
 
 #== Export the generated appliance in the format of your choice
 export:

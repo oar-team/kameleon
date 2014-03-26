@@ -1,0 +1,9 @@
+# Network config for Archlinux
+#
+# This should work for every systemd powered system
+
+- set_hostname:
+  - exec_in: echo $$hostname > /etc/hostname
+
+- set_interface:
+  - exec_in: systemctl enable dhcpcd.service
