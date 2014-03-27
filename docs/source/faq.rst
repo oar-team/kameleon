@@ -32,3 +32,12 @@ change the value of ``nbd_device`` to something else like ``/dev/nbd3``.
 
 If the problem persist you can try to reboot your computer or remove the entire build directory.
 
+What is a *mapping value*?
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you write a command and you got this error::
+  
+  Error: ... mapping values are not allowed in this context at line 6 column 27
+  
+In YAML the mapping value is a ``:`` character. If you put this in a command the YAML parser 
+will not understand and raise an error. Just put some quotes around your command and that's it! 
