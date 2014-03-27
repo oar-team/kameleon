@@ -6,7 +6,7 @@
   # uncomment the locales
   - exec_in: |
       test ! -f /etc/locale.gen || \
-        (echo $$locales | tr ' ' '\n' | xargs -I {} sed -i 's/^# {}/{}/' /etc/locale.gen)
+        (echo $$locales | tr ' ' '\n' | xargs -I {} sed -i 's/^#{}/{}/' /etc/locale.gen)
   # generate the locales
   - exec_in: locale-gen
   # save and apply

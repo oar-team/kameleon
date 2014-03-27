@@ -2,11 +2,16 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# RECIPE: archlinux-2014
+# RECIPE: archlinux-desktop
 #
-# DESCRIPTION: Build an Archlinux appliance using chroot and qemu-nbd.
+# VERSION: 1.0
 #
-# TEMPLATE: archlinux-2014
+# DESCRIPTION: Build an Archlinux Gnome Desktop appliance using chroot and
+# qemu-nbd.
+#
+# WARNING: this is just an extension to the archlinux template.
+#
+# TEMPLATE: archlinux
 #
 #==============================================================================
 
@@ -48,6 +53,11 @@ global:
     cmd: $$default_env chroot $$rootfs bash
     workdir: /
 
+
+  ## BEGIN added for this recipe
+  lang: fr
+  ## END added for this recipe
+ 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - arch-bootstrap:
@@ -91,6 +101,18 @@ setup:
     - name: $$user_name
     - group: admin
     - password: $$user_name
+  ## BEGIN added for this recipe
+  - yaourt_install
+  - ruby_config
+  - software_install:
+    # reinstall glibc because of ruby native extensions problem
+    - packages: base-devel wget git meld glibc
+  - desktop_install:
+    # This should be a 2-letter country id
+    - keyboard_layout: $$lang,us
+    - extra_packages: >
+        firefox-i18n-$$lang telepathy hunspell-$$lang faenza-icon-theme
+  ## END added for this recipe
 
 #== Export the generated appliance in the format of your choice
 export:

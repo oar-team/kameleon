@@ -21,7 +21,8 @@
     - exec_out: "echo try umount $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
 
 - copy_rootfs:
-  - exec_out: tar -xf $$rootfs_archive -C $$mountdir
+  - check_cmd_out: rsync
+  - exec_out: rsync -aAX $$rootfs_cache/* $$rootfs
   - exec_out: echo "sync..." ; sync
 
 - create_fstab:
