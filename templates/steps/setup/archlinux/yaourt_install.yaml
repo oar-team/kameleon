@@ -1,0 +1,29 @@
+# Yaourt install for Archlinux
+#
+# Installing the pacman overlay that handles AUR packages
+
+- add_repository:
+  - exec_in: |
+      cat >> /etc/pacman.conf <<'EOF'
+      [archlinuxfr]
+      SigLevel = Never
+      Server = http://repo.archlinux.fr/$arch
+      EOF
+
+- do_install:
+  - exec_in: pacman -Sy yaourt --noconfirm
+
+#- manual_install:
+#  # script taken from http://archlinux.fr/yaourt-en
+#  - exec_in: |
+#     curl -O https://aur.archlinux.org/packages/pa/package-query/package-query.tar.gz
+#     tar zxvf package-query.tar.gz
+#     cd package-query
+#     makepkg -si --asroot --noconfirm
+#     cd ..
+#     curl -O https://aur.archlinux.org/packages/ya/yaourt/yaourt.tar.gz
+#     tar zxvf yaourt.tar.gz
+#     cd yaourt
+#     makepkg -si --asroot --noconfirm
+#     cd .. 
+

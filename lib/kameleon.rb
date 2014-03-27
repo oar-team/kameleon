@@ -15,7 +15,7 @@ require 'table_print'
 
 module Kameleon
   # to force yaml to dump ASCII-8Bit strings as strings
-  YAML::ENGINE.yamler='syck'
+  #YAML::ENGINE.yamler='syck'
 
   # add a PROGRESS and NOTICE level
   Log4r::Configurator.custom_levels(:DEBUG, :INFO, :NOTICE,
