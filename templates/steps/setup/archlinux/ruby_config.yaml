@@ -1,0 +1,7 @@
+# Ruby configuration for Archlinux
+#
+# Set no document by default and install system wide
+- ruby_install:
+  - exec_in: pacman -S ruby --noconfirm
+- do_ruby_config:
+  - exec_in: "sed -i 's/^gem: --user-install/gem: --no-document/' /etc/gemrc"

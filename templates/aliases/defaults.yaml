@@ -15,7 +15,7 @@ write_in:
 write_out:
   - exec_out: |
       mkdir -p $(dirname @1);
-      cat >>@1 <<EOF
+      cat >@1 <<EOF
       @2
       EOF
 

@@ -1,0 +1,9 @@
+# Keyboard configuration for Archlinux
+#
+# This should work on every systemd powered system
+
+- set_keyboard_layout:
+  - write_in:
+    - /etc/vconsole.conf
+    - |
+      KEYMAP=$$layout
