@@ -47,11 +47,23 @@ module Kameleon
     end
 
     def pipe(cmd, other_cmd, other_ctx)
-      tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
-      @logger.info("Running piped commands")
-      @logger.info("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
-      execute(cmd, :stdout => tmp)
-      tmp.close
+
+      if @cache.mode == :from then 
+        @logger.info("Redirecting pipe into cache")
+        tmp = @cache.get_cache_cmd(cmd)
+      else
+
+        tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
+        @logger.info("Running piped commands")
+        @logger.info("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
+        execute(cmd, :stdout => tmp)
+        tmp.close
+      end
+      ## Saving one side of the pipe into the cache
+      if @cache.mode == :build then
+        @cache.cache_cmd(cmd,tmp.path)  
+      end
+
       @logger.info("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
       dest_pipe_path = "/pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
       other_ctx.send_file(tmp.path, dest_pipe_path)

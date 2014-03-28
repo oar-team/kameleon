@@ -32,11 +32,12 @@ module Kameleon
 
       if @options[:cache] || @options[:from_cache] then
         @cache = Kameleon::Persistent_cache.instance
-        @cache.activated = true
         @cache.cwd = @cwd
         @cache.polipo_path = @options[:proxy_path]
         @cache.check_polipo_binary
         @cache.name = @recipe.name
+        @cache.mode = @options[:cache] ? :build : :from
+        @cache.cache_path = @options[:from_cache]
         #saving_steps_files
       end
 
@@ -57,13 +58,8 @@ module Kameleon
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd)
 
-      if @options[:from_cache] then
-        begin
-          @cache.unpack(@options[:from_cache])
-        rescue
-          raise BuildError, "Failed to untar the persistent cache file"
-        end
-      end
+      @cache.start if @cache
+
     end
 
     def saving_steps_files
@@ -120,7 +116,7 @@ module Kameleon
         
         if @cache then
           # the following function start a polipo web proxy and stops a previous run
-          dir_cache = @cache.create_cache_directory(macrostep.name) #unless @options[:from_cache]
+          dir_cache = @cache.create_cache_directory(macrostep.name) 
           @cache.start_web_proxy_in(dir_cache) 
         end
 
@@ -154,10 +150,8 @@ module Kameleon
       end
       @cleaned_sections.push(section.name)
 
-      if @cache then
-        @cache.stop_web_proxy 
-        @cache.pack unless @options[:from_cache]
-      end
+
+      @cache.stop if @cache
 
     end
 
@@ -205,6 +199,7 @@ module Kameleon
                  "exec_local" => @local_context,}
           first_context = map[first_cmd.key]
           second_context = map[second_cmd.key]
+          @cache.cache_cmd_id(cmd.identifier) if @cache
           first_context.pipe(first_cmd.value, second_cmd.value, second_context)
         end
       when "rescue"

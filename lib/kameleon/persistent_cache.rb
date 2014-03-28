@@ -8,7 +8,8 @@ module Kameleon
     
     include Singleton
     attr_reader :polipo_env, :cache_dir,:polipo_port
-    attr_writer :activated, :cwd, :polipo_path, :name
+    attr_writer :activated, :cwd, :polipo_path, :name, :cache_path
+    attr_accessor :mode
     def initialize()
       @logger = Log4r::Logger.new("kameleon::[Persistent cache]")
       ## we must configure Polipo to be execute for the in and out context
@@ -31,10 +32,15 @@ module Kameleon
 
       @activated = false
 
+      @mode = nil #It could be build or from
       @cache_dir = ""
       @polipo_path = nil
       @cwd = ""
-
+      #structure {:cmd => "cmd", :stdout_filename => "file_name"}
+      @cmd_cached = []
+      @cache_path = ""
+      @current_cmd_id = nil
+      @current_step_dir = nil
     end
     
     def find_unused_port
@@ -84,6 +90,9 @@ module Kameleon
     end
     
     def start_web_proxy_in(directory)
+
+      ## setting current step dir
+      @current_step_dir = directory
       ## This function assumes that the cache directory has already been created by the engine
       ## Stopping first the previous proxy
       ## have to check if polipo is running
@@ -96,6 +105,7 @@ module Kameleon
       @polipo_process = ChildProcess.build(*command)
       @polipo_process.io.stdout = Tempfile.new("polipo_output")
       @polipo_process.start
+      return true
     end
 
 
@@ -113,6 +123,59 @@ module Kameleon
     def unpack(cache_path)
       @logger.notice("Unpacking persistent cache: #{cache_path}")
       execute("tar","-xf #{cache_path} -C #{@cwd}")
+    end
+
+
+    # This function caches the command with its respective stdout
+    # a command id is associate to a file
+    def cache_cmd_id(cmd_identifier)
+      @current_cmd_id = cmd_identifier
+      return true
+    end
+
+    def cache_cmd(cmd,file_path)
+      @logger.notice("Caching file")
+      @logger.debug("command: cp #{file_path} #{@cwd}/cache/files/")
+      FileUtils.mkdir_p @current_step_dir + "/data/" 
+      FileUtils.cp file_path, @current_step_dir + "/data/"
+      @cmd_cached.push({:cmd_id => @current_cmd_id,
+                        :cmd => cmd , 
+                        :stdout_filename => File.basename(file_path)})
+    end
+
+    def get_cache_cmd(cmd)
+      return false if @mode == :build
+      cache_line = @cmd_cached.select{ |reg| 
+        (reg[:cmd_id] == @current_cmd_id && reg[:cmd] == cmd) }.first
+
+      return File.new("#{@current_step_dir}/data/#{cache_line[:stdout_filename]}","r")
+    end
+
+    def stop()
+      if @mode == :build then
+        pack
+      end
+      @polipo_process.stop
+      @logger.notice("Stopping web proxy polipo")
+      @logger.notice("Finishing persistent cache with last files")
+      File.open("#{@cache_dir}/cache_cmd_index",'w+') do |f|
+        f.puts(@cmd_cached.to_yaml)
+      end 
+    end
+
+    def start()
+    
+      if @mode == :from then
+        begin
+          unpack(@cache_path)
+        rescue
+          raise BuildError, "Failed to untar the persistent cache file"
+        end
+        ## We have to load the file 
+        @cmd_cached = YAML.load(File.read("#{@cache_dir}/cache_cmd_index"))
+      end
+      @activated = true
+      
     end
     
     def execute(cmd,args,dir=nil)
