@@ -1,7 +1,7 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
 require 'kameleon/persistent_cache'
-
+require 'pry'
 module Kameleon
 
   class Engine
@@ -10,15 +10,22 @@ module Kameleon
     def initialize(recipe, options)
       @options = options
       @logger = Log4r::Logger.new("kameleon::[engine]")
-      @recipe = recipe
-      @cleaned_sections = []
-      @cwd = @recipe.global["kameleon_cwd"]
-      @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
 
+      #if @options[:recipe_from_cache] then
+        #@recipe = load_build_recipe
+      #else
+        @recipe = recipe
+        @cwd = @recipe.global["kameleon_cwd"]
+        @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
+      #end
+      @cleaned_sections = []
+
+
+      #binding.pry
       build_recipe = load_build_recipe
       # restore previous build uuid
       unless build_recipe.nil?
-        # binding.pry
+
         %w(kameleon_uuid kameleon_short_uuid).each do |key|
           @recipe.global[key] = build_recipe["global"][key]
         end
@@ -28,16 +35,18 @@ module Kameleon
       # Check if the recipe have checkpoint entry
       @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
 
-      @recipe.resolve!
+      @recipe.resolve! #unless @options[:recipe_from_cache]
 
+      #binding.pry
       if @options[:cache] || @options[:from_cache] then
         @cache = Kameleon::Persistent_cache.instance
         @cache.cwd = @cwd
         @cache.polipo_path = @options[:proxy_path]
-        @cache.check_polipo_binary
         @cache.name = @recipe.name
         @cache.mode = @options[:cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
+        @cache.metadata_files = @recipe.files # I'm passing the Pathname objects
+        @cache.metadata_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
         #saving_steps_files
       end
 
@@ -94,6 +103,7 @@ module Kameleon
       cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']},
                                   "checkpoint")
       safe_exec_cmd(cmd, :stdout => list)
+      #binding.pry
       return list.split(/\r?\n/)
     end
 
@@ -123,6 +133,7 @@ module Kameleon
         macrostep.sequence do |microstep|
           @logger.notice("Step #{ microstep.order } : #{ microstep.slug }")
           @logger.notice(" ---> #{ microstep.identifier }")
+       
           if @enable_checkpoint
             if microstep.on_checkpoint == "skip"
               @logger.notice(" ---> Skipped")

@@ -1,4 +1,3 @@
-
 module Kameleon
 
   class Command
@@ -210,6 +209,7 @@ module Kameleon
             "identifier" => microstep.identifier.to_s,
             "cmds" => microstep.to_array
           }
+         
           section_array.push({ microstep.slug => hash })
         end
       end

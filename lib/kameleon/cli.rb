@@ -2,6 +2,7 @@ require 'kameleon/engine'
 require 'kameleon/recipe'
 require 'kameleon/utils'
 
+require 'pry'
 module Kameleon
   class CLI < Thor
 
@@ -91,11 +92,22 @@ module Kameleon
                   :default => nil,
                   :desc => "Full path of the proxy binary to use for the persistent cache."
 
-    def build(recipe_name)
+    def build(recipe_name=nil)
+      if recipe_name== nil then
+        logger.notice("Using the cache to get the recipe")
+        #options.merge!({:recipe_from_cache => true})
+        @cache = Kameleon::Persistent_cache.instance
+        @cache.cache_path = options[:from_cache]
+        recipe_path =  @cache.get_metadata
+        recipe_name = @cache.name
+        #binding.pry
+      else
+        recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
+      end
+      recipe = Recipe.new(recipe_path)
       logger.notice("Starting build recipe '#{recipe_name}'")
-      start_time = Time.now.to_i
-      recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
-      engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+      start_time = Time.now.to_i  
+      engine = Kameleon::Engine.new(recipe, options)
       engine.build
       total_time = Time.now.to_i - start_time
       logger.notice("")
@@ -106,6 +118,7 @@ module Kameleon
       logger.notice("Log file : #{Kameleon.env.log_file}")
     end
 
+   
     desc "checkpoints [RECIPE_NAME]", "Lists all availables checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",

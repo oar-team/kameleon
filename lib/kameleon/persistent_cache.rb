@@ -1,15 +1,15 @@
 require 'childprocess'
 require 'singleton'
 require 'socket'
-
+require 'pry'
 module Kameleon
   #This ruby class will control the execution of Polipo web proxy
   class Persistent_cache
     
     include Singleton
     attr_reader :polipo_env, :cache_dir,:polipo_port
-    attr_writer :activated, :cwd, :polipo_path, :name, :cache_path
-    attr_accessor :mode
+    attr_writer :activated, :cwd, :polipo_path, :cache_path
+    attr_accessor :mode, :name, :metadata_files
     def initialize()
       @logger = Log4r::Logger.new("kameleon::[Persistent cache]")
       ## we must configure Polipo to be execute for the in and out context
@@ -41,6 +41,8 @@ module Kameleon
       @cache_path = ""
       @current_cmd_id = nil
       @current_step_dir = nil
+      @metadata_files = []
+      @metadata_dir = nil
     end
     
     def find_unused_port
@@ -61,7 +63,6 @@ module Kameleon
     end
     
     def check_polipo_binary
-
       
       @polipo_path ||= which("polipo") 
 
@@ -116,7 +117,7 @@ module Kameleon
 
     def pack()
       @logger.notice("Packing up the generated cache in #{@cwd}")
-      execute("tar","-cf #{@name}-cache.tar cache/",@cwd)
+      execute("tar","-cf #{@name}-cache.tar cache/ ",@cwd)
       # The cache directory cannot be deleted due to the checkpoints
     end
 
@@ -152,19 +153,44 @@ module Kameleon
     end
 
     def stop()
-      if @mode == :build then
-        pack
-      end
+      
       @polipo_process.stop
       @logger.notice("Stopping web proxy polipo")
       @logger.notice("Finishing persistent cache with last files")
-      File.open("#{@cache_dir}/cache_cmd_index",'w+') do |f|
-        f.puts(@cmd_cached.to_yaml)
-      end 
+      
+      if @mode == :build then
+        File.open("#{@cache_dir}/cache_cmd_index",'w+') do |f|
+          f.puts(@cmd_cached.to_yaml)
+        end
+        
+        @metadata_files.each do |file|
+          ## Getting the recipe path
+          recipe_path = nil
+          file.ascend do |path|
+            if path.to_s.include?("recipe") then
+              recipe_path = path
+            end
+          end
+          recipe_dir = file.relative_path_from(recipe_path).dirname.to_s
+          FileUtils.mkdir_p @metadata_dir + "/" + recipe_dir
+          FileUtils.cp file, @metadata_dir + "/"+ recipe_dir
+        end
+
+        ## Saving metadata information
+        @logger.notice("Saving metadata into Cache")    
+        File.open("#{@metadata_dir}/header",'w+') do |f|
+          f.puts({:name => @name}.to_yaml)
+        end
+  
+        pack
+        
+      end
+        
     end
 
     def start()
     
+      check_polipo_binary
       if @mode == :from then
         begin
           unpack(@cache_path)
@@ -175,9 +201,20 @@ module Kameleon
         @cmd_cached = YAML.load(File.read("#{@cache_dir}/cache_cmd_index"))
       end
       @activated = true
-      
+      @metadata_dir = @cache_dir + "/metadata"
+      FileUtils.mkdir_p @metadata_dir
     end
     
+    def get_metadata()
+      metadata_tmp=Dir.mktmpdir("cache")
+      execute("tar","-xf #{@cache_path} -C #{metadata_tmp} cache/metadata")
+      @logger.notice("Getting cache metadata")
+      # This will look for the name of the recipe
+      cache_meta = YAML::load(File.read("#{metadata_tmp}/cache/metadata/header"))
+      @name = cache_meta[:name]
+      return "#{metadata_tmp}/cache/metadata/#{@name}.yaml"
+    end
+
     def execute(cmd,args,dir=nil)
       command = [cmd ] + args.split(" ")
 #      @logger.notice(" command generated: #{command}")
@@ -195,6 +232,7 @@ module Kameleon
       return nil
     end
     
+
     
   end
 
