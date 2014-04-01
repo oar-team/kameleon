@@ -45,8 +45,8 @@ module Kameleon
         @cache.name = @recipe.name
         @cache.mode = @options[:cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
-        @cache.metadata_files = @recipe.files # I'm passing the Pathname objects
-        @cache.metadata_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
+        @cache.recipe_files = @recipe.files # I'm passing the Pathname objects
+        @cache.recipe_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
         #saving_steps_files
       end
 

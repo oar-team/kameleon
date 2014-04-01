@@ -94,11 +94,11 @@ module Kameleon
 
     def build(recipe_name=nil)
       if recipe_name== nil then
-        logger.notice("Using the cache to get the recipe")
+        logger.notice("Using the cached recipe")
         #options.merge!({:recipe_from_cache => true})
         @cache = Kameleon::Persistent_cache.instance
         @cache.cache_path = options[:from_cache]
-        recipe_path =  @cache.get_metadata
+        recipe_path =  @cache.get_recipe
         recipe_name = @cache.name
         #binding.pry
       else

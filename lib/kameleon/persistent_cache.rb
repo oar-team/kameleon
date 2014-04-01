@@ -9,7 +9,7 @@ module Kameleon
     include Singleton
     attr_reader :polipo_env, :cache_dir,:polipo_port
     attr_writer :activated, :cwd, :polipo_path, :cache_path
-    attr_accessor :mode, :name, :metadata_files
+    attr_accessor :mode, :name, :recipe_files
     def initialize()
       @logger = Log4r::Logger.new("kameleon::[Persistent cache]")
       ## we must configure Polipo to be execute for the in and out context
@@ -41,8 +41,8 @@ module Kameleon
       @cache_path = ""
       @current_cmd_id = nil
       @current_step_dir = nil
-      @metadata_files = []
-      @metadata_dir = nil
+      @recipe_files = []
+      @cached_recipe_dir = nil
     end
     
     def find_unused_port
@@ -77,15 +77,14 @@ module Kameleon
       @activated
     end
     
-
     def cwd=(dir)
       @cwd = dir
-      @cache_dir = @cwd + "/cache/"
+      @cache_dir = File.join(@cwd,"/cache/")
     end
 
     def create_cache_directory(step_name)
       @logger.notice("Creating  cache directory #{step_name} for Polipo")
-      directory_name = @cache_dir + "/#{step_name}"
+      directory_name = File.join(@cache_dir,"#{step_name}")
       FileUtils.mkdir_p directory_name
       directory_name
     end
@@ -117,13 +116,14 @@ module Kameleon
 
     def pack()
       @logger.notice("Packing up the generated cache in #{@cwd}")
-      execute("tar","-cf #{@name}-cache.tar cache/ ",@cwd)
+      execute("tar","-cf #{@name}-cache.tar -C cache/ .",@cwd)
       # The cache directory cannot be deleted due to the checkpoints
     end
 
     def unpack(cache_path)
       @logger.notice("Unpacking persistent cache: #{cache_path}")
-      execute("tar","-xf #{cache_path} -C #{@cwd}")
+      FileUtils.mkdir_p @cache_dir
+      execute("tar","-xf #{cache_path} -C #{@cache_dir}")
     end
 
 
@@ -163,7 +163,7 @@ module Kameleon
           f.puts(@cmd_cached.to_yaml)
         end
         
-        @metadata_files.each do |file|
+        @recipe_files.each do |file|
           ## Getting the recipe path
           recipe_path = nil
           file.ascend do |path|
@@ -172,13 +172,13 @@ module Kameleon
             end
           end
           recipe_dir = file.relative_path_from(recipe_path).dirname.to_s
-          FileUtils.mkdir_p @metadata_dir + "/" + recipe_dir
-          FileUtils.cp file, @metadata_dir + "/"+ recipe_dir
+          FileUtils.mkdir_p @cached_recipe_dir + "/" + recipe_dir
+          FileUtils.cp file, @cached_recipe_dir + "/"+ recipe_dir
         end
 
         ## Saving metadata information
-        @logger.notice("Saving metadata into Cache")    
-        File.open("#{@metadata_dir}/header",'w+') do |f|
+        @logger.notice("Caching recipe")    
+        File.open("#{@cached_recipe_dir}/header",'w+') do |f|
           f.puts({:name => @name}.to_yaml)
         end
   
@@ -201,18 +201,18 @@ module Kameleon
         @cmd_cached = YAML.load(File.read("#{@cache_dir}/cache_cmd_index"))
       end
       @activated = true
-      @metadata_dir = @cache_dir + "/metadata"
-      FileUtils.mkdir_p @metadata_dir
+      @cached_recipe_dir = @cache_dir + "/recipe"
+      FileUtils.mkdir_p @cached_recipe_dir
     end
     
-    def get_metadata()
-      metadata_tmp=Dir.mktmpdir("cache")
-      execute("tar","-xf #{@cache_path} -C #{metadata_tmp} cache/metadata")
-      @logger.notice("Getting cache metadata")
+    def get_recipe()
+      cached_recipe=Dir.mktmpdir("cache")
+      execute("tar","-xf #{@cache_path} -C #{cached_recipe} ./recipe")
+      @logger.notice("Getting cached recipe")
       # This will look for the name of the recipe
-      cache_meta = YAML::load(File.read("#{metadata_tmp}/cache/metadata/header"))
-      @name = cache_meta[:name]
-      return "#{metadata_tmp}/cache/metadata/#{@name}.yaml"
+      recipe_header = YAML::load(File.read("#{cached_recipe}/recipe/header"))
+      @name = recipe_header[:name]
+      return "#{cached_recipe}/recipe/#{@name}.yaml"
     end
 
     def execute(cmd,args,dir=nil)
