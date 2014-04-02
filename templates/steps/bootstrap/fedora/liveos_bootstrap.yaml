@@ -2,8 +2,9 @@
 - include: >
     python yum rpm initscripts passwd rsyslog vim-minimal dhclient chkconfig
     rootfiles policycoreutils fedora-release openssh-server net-tools nc
-    traceroute kernel syslinux-extlinux
-- mirrorlist_url: mirrors.kernel.org
+    traceroute kernel syslinux-extlinux systemd procps-ng console-setup
+    bash grep coreutils findutils sed cpio cyrus-sasl file-libs gawk xz
+- mirrorlist_url: fedora.mirrors.ovh.net::download.fedora.redhat.com/linux/releases/$${release}/Fedora/$$arch/os
 
 - init_rootfs:
   - exec_out: |
@@ -16,8 +17,8 @@
   - exec_out: |
       if [ ! -f "$$rootfs_archive" ]; then
         if [ ! -f "./LiveOS/squashfs.img" ]; then
-          echo "Downloading LiveOS squashfs file system from mirrors.kernel.org..."
-          rsync -av $$mirrorlist_url::fedora/releases/$$release/Fedora/$$arch/os/LiveOS .
+          echo "Downloading LiveOS squashfs file system from $$mirrorlist_url ..."
+          rsync -avh --progress $$mirrorlist_url/LiveOS .
           echo "Download of squashfs image complete."
         else
           echo "Using cached LiveOS squashfs file system."
@@ -45,15 +46,17 @@
         mount -t sysfs /sys  partial/sys
         test -f partial/etc/mtab || cat /proc/mounts > partial/etc/mtab
         cp /etc/resolv.conf partial/etc/
-        rsync -av mirrors.kernel.org::fedora/releases/$${release}/Fedora/$$arch/os/Packages/r/rpm-[0-9]* \
-        mirrors.kernel.org::fedora/releases/$${release}/Fedora/$$arch/os/Packages/y/yum-[0-9]* partial
+        rsync -av $$mirrorlist_url/Packages/r/rpm-[0-9]* $$mirrorlist_url//Packages/y/yum-[0-9]* partial
         chroot partial rpm -ivh --nodeps --replacepkgs rpm-* yum-* > /dev/null
-        rsync -av mirrors.kernel.org::fedora/releases/$$release/Fedora/$$arch/os/Packages/f/fedora-release-$${release}* partial
+        rsync -av $$mirrorlist_url/Packages/f/fedora-release-$${release}* partial
         mkdir -p partial/run/install
         chroot partial  rpm --root /run/install --nodeps -ivh fedora-release-*
         false ;
         sed -i "s|\$basearch|$$arch|" partial/etc/yum.repos.d/*
         chroot partial yum --installroot /run/install -y --nogpgcheck install $$include
+        chroot partial chroot /run/install dracut -f \
+          "/boot/$(basename partial/run/install/boot/vmlinuz-* | tr 'vmlinuz' 'initramfs').img" \
+          /boot/$(basename partial/run/install/boot/vmlinuz-*)
       fi
 
 - create_rootfs_archive:
@@ -70,4 +73,3 @@
     - umount_out: partial/sys
     - umount_out: readonlyfs
     - umount_out: squashfs
-

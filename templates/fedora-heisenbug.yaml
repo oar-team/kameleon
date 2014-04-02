@@ -36,6 +36,8 @@ global:
   include_steps:
     - $$distrib/$$release
     - $$distrib
+    - ""
+    - "archlinux"
 
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
@@ -58,7 +60,7 @@ bootstrap:
     - arch: $$arch
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/bootstrap.tar.gz
   - create_disk_nbd:
-    - image_size: 2G
+    - image_size: 5G
     - filename: $$container
     - device: $$nbd_device
   - populate_disk:
@@ -84,14 +86,16 @@ setup:
         ntp zip unzip rsync sudo less vim bash-completion wget
     - group_packages: >
         "Development Tools"
-  - config_kernel
-  # # Configuration
-  # - system_config:
-  #   - locales: fr_FR en_US
-  #   - lang: fr_FR.UTF-8
-  #   - timezone: Europe/Paris
-  # - keyboard_config:
-  #   - layout: "fr,us"
+  # Configuration
+  - system_config:
+    - locales: en_US fr_FR
+    - lang: fr_FR.UTF-8
+    - timezone: Europe/Paris
+  - keyboard_config:
+    - layout: "fr"
+  - network_config:
+    - hostname: kameleon2
+    - dns: $dns
   - create_user:
     - name: $$user_name
     - group: admin

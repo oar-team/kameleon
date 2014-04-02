@@ -1,0 +1,28 @@
+# Network config for Archlinux
+#
+# This should work for every systemd powered system
+
+- set_hostname:
+  - exec_in: echo $$hostname > /etc/hostname
+
+- set_host:
+  - exec_in: echo "127.0.0.1 localhost $$hostname" > /etc/hosts
+
+- set_dns:
+  - exec_in: echo "nameserver $$dns" > /etc/resolv.conf
+
+- set_interface:
+  - write_in:
+    - /etc/sysconfig/network-scripts/ifcfg-eth0
+    - |
+      DEVICE=eth0
+      BOOTPROTO=dhcp
+      ONBOOT=yes
+      USERCTL=no
+      DNS=$$dns
+  - exec_in: yum install -y e2fsprogs
+  - write_in:
+    - /etc/sysconfig/network
+    - |
+      NETWORKING=yes
+      HOSTNAME=$$hostname
