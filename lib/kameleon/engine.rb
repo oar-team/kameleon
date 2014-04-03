@@ -178,7 +178,7 @@ module Kameleon
       end
       case cmd.key
       when "breakpoint"
-        breakpoint(cmd.value, )
+        breakpoint(cmd.value)
       when "exec_in"
         skip_alert(cmd) if @in_context.nil?
         @in_context.execute(cmd.value, kwargs) unless @in_context.nil?

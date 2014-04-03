@@ -1,5 +1,3 @@
-require 'securerandom'
-require 'yaml'
 require 'fileutils'
 require 'optparse'
 require 'erb'
@@ -14,9 +12,6 @@ require 'pathname'
 require 'table_print'
 
 module Kameleon
-  # to force yaml to dump ASCII-8Bit strings as strings
-  #YAML::ENGINE.yamler='syck'
-
   # add a PROGRESS and NOTICE level
   Log4r::Configurator.custom_levels(:DEBUG, :INFO, :NOTICE,
                                     :PROGRESS, :WARN, :ERROR,
@@ -67,6 +62,7 @@ module Kameleon
 end
 
 # Load the things which must be loaded before anything else
+require 'kameleon/compat'
 require 'kameleon/utils'
 require 'kameleon/error'
 require 'kameleon/cli'
