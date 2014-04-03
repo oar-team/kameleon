@@ -106,7 +106,7 @@ module Kameleon
       end
       recipe = Recipe.new(recipe_path)
       logger.notice("Starting build recipe '#{recipe_name}'")
-      start_time = Time.now.to_i  
+      start_time = Time.now.to_i
       engine = Kameleon::Engine.new(recipe, options)
       engine.build
       total_time = Time.now.to_i - start_time
@@ -118,7 +118,7 @@ module Kameleon
       logger.notice("Log file : #{Kameleon.env.log_file}")
     end
 
-   
+
     desc "checkpoints [RECIPE_NAME]", "Lists all availables checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",

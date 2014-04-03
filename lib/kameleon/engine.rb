@@ -72,13 +72,13 @@ module Kameleon
     end
 
     def saving_steps_files
-      @recipe.files.each do |file| 
+      @recipe.files.each do |file|
         @logger.notice("File #{file} loaded from the recipe")
         sleep 1
       end
-      
+
     end
-    
+
     def create_cache_directory(step_name)
       @logger.notice("Creating directory for cache #{step_name}")
       directory_name = @cache.cache_dir + "/#{step_name}"
@@ -123,17 +123,17 @@ module Kameleon
     def do_steps(section_name)
       section = @recipe.sections.fetch(section_name)
       section.sequence do |macrostep|
-        
+
         if @cache then
           # the following function start a polipo web proxy and stops a previous run
-          dir_cache = @cache.create_cache_directory(macrostep.name) 
-          @cache.start_web_proxy_in(dir_cache) 
+          dir_cache = @cache.create_cache_directory(macrostep.name)
+          @cache.start_web_proxy_in(dir_cache)
         end
 
         macrostep.sequence do |microstep|
           @logger.notice("Step #{ microstep.order } : #{ microstep.slug }")
           @logger.notice(" ---> #{ microstep.identifier }")
-       
+
           if @enable_checkpoint
             if microstep.on_checkpoint == "skip"
               @logger.notice(" ---> Skipped")

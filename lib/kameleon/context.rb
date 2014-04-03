@@ -48,7 +48,7 @@ module Kameleon
 
     def pipe(cmd, other_cmd, other_ctx)
 
-      if @cache.mode == :from then 
+      if @cache.mode == :from then
         @logger.info("Redirecting pipe into cache")
         tmp = @cache.get_cache_cmd(cmd)
       else
@@ -61,7 +61,7 @@ module Kameleon
       end
       ## Saving one side of the pipe into the cache
       if @cache.mode == :build then
-        @cache.cache_cmd(cmd,tmp.path)  
+        @cache.cache_cmd(cmd,tmp.path)
       end
 
       @logger.info("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
