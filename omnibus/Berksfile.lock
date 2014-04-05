@@ -1,0 +1,25 @@
+DEPENDENCIES
+  apt (~> 2.0)
+  omnibus
+    git: git://github.com/opscode-cookbooks/omnibus.git
+    branch: master
+
+GRAPH
+  7-zip (1.0.2)
+    windows (>= 1.2.2)
+  apt (2.3.8)
+  build-essential (2.0.0)
+  chef-sugar (1.2.8)
+  chef_handler (1.1.5)
+  homebrew (1.5.4)
+  omnibus (1.2.5)
+    7-zip (~> 1.0)
+    build-essential (~> 2.0)
+    chef-sugar (~> 1.1)
+    homebrew (~> 1.5)
+    windows (~> 1.30)
+    wix (~> 1.1)
+  windows (1.30.2)
+    chef_handler (>= 0.0.0)
+  wix (1.1.0)
+    windows (>= 1.2.2)

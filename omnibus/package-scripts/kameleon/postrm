@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Perform necessary kameleon removal steps
+# after package is uninstalled.
+#
+
+echo "kameleon has been uninstalled!"
+
+exit 0
