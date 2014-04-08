@@ -1,10 +1,10 @@
 require 'securerandom'
 require 'yaml'
+require 'syck'
 
 # Fast and backwards compatible YAML with Syck
 # Snippet from http://developer.zendesk.com/blog/2013/10/03/using-syck-for-yaml/
 if RUBY_VERSION >= "1.9.3"
-  require 'syck'
   # to force yaml to dump ASCII-8Bit strings as strings
   YAML::ENGINE.yamler = 'syck'
   engine = YAML::ENGINE
