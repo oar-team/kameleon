@@ -55,9 +55,10 @@ global:
 
 
   ## BEGIN added for this recipe
+  # This should be a 2-letter country id
   lang: fr
   ## END added for this recipe
- 
+
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - arch-bootstrap:
@@ -66,7 +67,7 @@ bootstrap:
     # It's recommended to use 'base' (default) or 'base-devel' (with dev tools)
     - pkg_group: base
   - create_disk_nbd:
-    - image_size: 5G
+    - image_size: 10G
     - filename: $$container
     - device: $$nbd_device
   - populate_disk:
@@ -94,24 +95,22 @@ setup:
     - timezone: Europe/Paris
   - keyboard_config:
     # set to french keyboard use 'localectl list-keymaps' to see available list
-    - layout: fr
+    - layout: $$lang
   - network_config:
     - hostname: kameleon-$$distrib
   - create_user:
     - name: $$user_name
-    - group: admin
     - password: $$user_name
   ## BEGIN added for this recipe
-  - yaourt_install
-  - ruby_config
-  - software_install:
-    # reinstall glibc because of ruby native extensions problem
-    - packages: base-devel wget git meld glibc
+  # Install dev tools
   - desktop_install:
-    # This should be a 2-letter country id
     - keyboard_layout: $$lang,us
     - extra_packages: >
-        firefox-i18n-$$lang telepathy hunspell-$$lang faenza-icon-theme
+        firefox-i18n-$$lang flashplugin libreoffice libreoffice-$$lang telepathy
+        hunspell-$$lang faenza-icon-theme file-roller
+  - yaourt_install
+  - ruby_config
+  - dev_tools_install
   ## END added for this recipe
 
 #== Export the generated appliance in the format of your choice
@@ -121,7 +120,7 @@ export:
     - filename: "$${kameleon_recipe_name}"
     - save_as_qcow2
     #- save_as_qed
-    # - save_as_tgz
-    # - save_as_raw
-    # - save_as_vmdk
-    # - save_as_vdi
+    #- save_as_tgz
+    #- save_as_raw
+    #- save_as_vmdk
+    #- save_as_vdi

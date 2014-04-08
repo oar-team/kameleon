@@ -89,7 +89,6 @@ setup:
     - hostname: kameleon-$$distrib
   - create_user:
     - name: $$user_name
-    - group: admin
     - password: $$user_name
 
 #== Export the generated appliance in the format of your choice

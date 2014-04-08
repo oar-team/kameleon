@@ -1,12 +1,26 @@
-# # Create User
+# Create User
+# This step create the group if not present, and create an admin user
+
+# the 'wheel' group is the admin group in most Linux
+- group: wheel
+
 - create_group:
-  - exec_in: groupadd $$group
+  - exec_in: |
+      # check if a group is present before adding it
+      if [ $(egrep -i "^$$group" /etc/group) ]
+      then
+        echo "WARNING: the group '$$group' is alredy present"
+      else
+        groupadd $$group
+      fi
+
 - add_user:
   # use the create_passwd.py script to generate the crypted password
   - exec_in: useradd -m -g $$group $$name -s /bin/bash
   - exec_in: echo -n '$$name:$$password' | chpasswd
+
 - add_group_to_sudoers:
   - append_in:
     - /etc/sudoers
     - |
-      %admin ALL=(ALL:ALL) ALL
+      %$$group ALL=(ALL:ALL) ALL

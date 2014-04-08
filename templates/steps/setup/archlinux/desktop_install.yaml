@@ -15,7 +15,7 @@
 - X11_config:
   # keyboard config
   - write_in:
-    - /etc/X11/xorg.conf.d/10-keyboard.conf 
+    - /etc/X11/xorg.conf.d/10-keyboard.conf
     - |
       Section "InputClass"
               Identifier "system-keyboard"
