@@ -12,7 +12,7 @@
   - exec_in: ln -s '/usr/lib/systemd/system/libvirtd.service' '/etc/systemd/system/multi-user.target.wants/libvirtd.service'
   # The default libvirt network is conflicting with the host libvirt network so
   # change the defaults
-  - exec_in: sed "s/192.168.122/192.168.123/g" /etc/libvirt/qemu/networks/default.xml
+- exec_in: sed -i "s/192.168.122/192.168.123/g" /etc/libvirt/qemu/networks/default.xml
 
 - docker_lxc:
   - exec_in: pacman -Sy --noconfirm docker lxc
