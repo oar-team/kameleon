@@ -1,0 +1,33 @@
+- walltime: "1:00:00"
+
+- deploy_image:
+  - exec_out: echo "Deploying image $$kenv with kadeploy"
+  - exec_out: sleep 1
+  - exec_out: echo "Submitting a job for deployment"
+    # We wait long to keep the job
+    # We submit a job only if there is no job already
+  - exec_out : oarstat | grep -q "$${kameleon_recipe_name}" || oarsub -n "$${kameleon_recipe_name}" -l walltime=$$walltime -t deploy "sleep 100000"
+  - exec_out : |
+      until $(oarstat -fu $$g5k_user | grep -q "state = Running")
+      do
+        echo "Waiting for the reservation to be ready"
+        sleep 1
+      done
+      sleep 1
+  - exec_out: echo "Getting the machine name"
+  - exec_out: export machine=`oarstat -fu $$g5k_user | grep assigned_hostnames | cut -d ' ' -f 7`
+  - exec_out: echo "Deploying environment $$kenv on $machine"
+  - exec_out: kadeploy3 -e $$kenv -m $machine -k
+  - exec_out: sleep 1
+- ssh_tunnel:
+  - exec_out: echo "Setting ssh tunnel"
+  - pipe:
+      - exec_out: echo $machine
+      - exec_local: cat >$$kameleon_cwd/g5k_machine
+
+  - exec_local: export machine_target=`cat $$kameleon_cwd/g5k_machine`
+  - exec_local: ssh -fNL $$ssh_port:$machine_target:22 $$g5k_frontend
+  - exec_local: export tunnel_pid=$(lsof -t -i @localhost:$$ssh_port -sTCP:listen)
+  - on_export_clean:
+    - exec_local: echo "Shutting down ssh Tunnel"
+    - exec_local: kill -9 $tunnel_pid

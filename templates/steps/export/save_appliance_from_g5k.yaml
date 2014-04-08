@@ -1,0 +1,37 @@
+# # Save G5k Appliance
+
+- save_as_g5k:
+  - exec_out: echo "Using tgz g5k to Export the machine"
+  - exec_out: sleep 2
+  - exec_in: tgz-g5k /tmp/$$filename.tar.gz
+  - in2out:
+    - /tmp/$$filename.tar.gz
+    - $$filename.tar.gz
+  - exec_out: |
+      echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
+  - write_in:
+    - $${kameleon_recipe_name}_img.yaml
+    - |
+      #
+      # Kameleon generated based on kadeploy description file
+      #
+      ---
+      name: $${kameleon_recipe_name}
+
+      version: 1
+
+      os: linux
+
+      image:
+        file: $$filename.tar.gz
+        kind: tar
+        compression: gzip
+
+      boot:
+        kernel: /boot/`basename /boot/vmlinu*`
+        initrd: /boot/`basename /boot/init*`
+
+      filesystem: $$filesystem
+  - in2out:
+    - $${kameleon_recipe_name}_img.yaml
+    - $${kameleon_recipe_name}_img.yaml
