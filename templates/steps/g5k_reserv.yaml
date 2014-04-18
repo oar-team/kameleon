@@ -11,7 +11,7 @@
       until $(oarstat -fu $$g5k_user | grep -q "state = Running")
       do
         echo "Waiting for the reservation to be ready"
-        sleep 1
+        sleep 2
       done
       sleep 1
   - exec_out: echo "Getting the machine name"
@@ -28,6 +28,7 @@
   - exec_local: export machine_target=`cat $$kameleon_cwd/g5k_machine`
   - exec_local: ssh -fNL $$ssh_port:$machine_target:22 $$g5k_frontend
   - exec_local: export tunnel_pid=$(lsof -t -i @localhost:$$ssh_port -sTCP:listen)
+
   - on_export_clean:
     - exec_local: echo "Shutting down ssh Tunnel"
     - exec_local: kill -9 $tunnel_pid

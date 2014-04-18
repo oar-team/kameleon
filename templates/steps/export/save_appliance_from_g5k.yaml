@@ -8,7 +8,14 @@
     - /tmp/$$filename.tar.gz
     - $$filename.tar.gz
   - exec_out: |
-      echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
+              echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
+  - exec_out: |
+              echo "Getting the appropiate post install"
+              export postinstall=`kaenv3 -p $$kenv | grep archive`
+  - pipe:
+    - exec_out: echo $postinstall
+    - exec_in: cat > /tmp/postinstall
+
   - write_in:
     - $${kameleon_recipe_name}_img.yaml
     - |
@@ -26,6 +33,11 @@
         file: $$filename.tar.gz
         kind: tar
         compression: gzip
+
+      postinstalls:
+      `cat /tmp/postinstall`
+        compression: gzip
+        script: traitement.ash /rambin
 
       boot:
         kernel: /boot/`basename /boot/vmlinu*`

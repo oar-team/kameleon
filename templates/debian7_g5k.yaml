@@ -64,7 +64,7 @@ setup:
   # Install
   - software_install:
     - packages: >
-        debian-keyring ntp zip unzip rsync sudo less vim bash-completion
+        debian-keyring zip unzip rsync sudo less vim bash-completion
   - config_kernel:
     - arch: $$arch
   # Configuration
