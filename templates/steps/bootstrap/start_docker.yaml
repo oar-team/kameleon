@@ -1,8 +1,8 @@
 - start_sshd:
   - on_checkpoint: redo
   - exec_out: |
-      CID=$(docker run -d -p 22 -i --dns $$dns -h $$hostname -privileged "$$image:latest" \
-            /bin/bash -c "mkdir /var/run/sshd ; /usr/sbin/sshd -D")
+      CID=$(docker run -d -p 22 -i --dns $$dns -h $$hostname --privileged "$$image:latest" \
+            /bin/bash -c "service ssh restart ; tail -f /dev/null")
   - exec_out: echo "$CID" >> CONTAINERS_TO_CLEAN
   - exec_out: echo $CID > MAIN_CONTAINER_ID
   - on_export_clean:
