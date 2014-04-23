@@ -47,7 +47,7 @@ global:
   ssh_port: $(cat MAIN_CONTAINER_PORT)
   insecure_ssh_key: insecure_ssh_dsa_key
   in_context:
-    cmd: LC_ALL=POSIX ssh $$ssh_options localhost -p $$ssh_port -i $$insecure_ssh_key -t /bin/bash
+    cmd: LC_ALL=POSIX ssh $$ssh_options root@localhost -p $$ssh_port -i $$insecure_ssh_key -t /bin/bash
     workdir: /
 
 #== Bootstrap the new system and create the 'in_context'
