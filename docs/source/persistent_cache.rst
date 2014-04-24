@@ -1,5 +1,7 @@
 .. _`persistent_cache`:
 
+.. versionadded:: 2.0.1
+
 ----------------
 Persistent Cache
 ----------------
