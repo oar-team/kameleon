@@ -29,7 +29,7 @@
   ## Temporarily disable dpkg fsync to make building faster.
   - exec_in: echo force-unsafe-io > /etc/dpkg/dpkg.cfg.d/02apt-speedup
   - on_export_init:
-    - exec_init: rm /etc/dpkg/dpkg.cfg.d/02apt-speedup
+    - exec_in: rm /etc/dpkg/dpkg.cfg.d/02apt-speedup
   - write_in:
     - /etc/locale.nopurge
     - |
@@ -46,9 +46,9 @@
   - write_in:
     - /etc/apt/sources.list
     - |
-      deb http://ftp.fr.debian.org/debian stable main contrib non-free
-      deb http://ftp.debian.org/debian/ wheezy-updates main contrib non-free
-      deb http://security.debian.org/ wheezy/updates main contrib non-free
+      deb http://ftp.fr.debian.org/debian $$release main contrib non-free
+      deb http://ftp.debian.org/debian/ $${release}-updates main contrib non-free
+      deb http://security.debian.org/ $${release}/updates main contrib non-free
 - update_repositories:
   - exec_in: apt-get -y --force-yes update
   - exec_in: apt-get -y --force-yes --no-install-recommends install localepurge
