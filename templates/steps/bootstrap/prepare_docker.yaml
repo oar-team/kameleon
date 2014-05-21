@@ -1,4 +1,14 @@
 
+- check_docker:
+  - on_bootstrap_init:
+    - exec_out: DOCKER=${DOCKER:-docker}
+    - rescue:
+      - exec_out: command -V $DOCKER
+      - breakpoint: >
+          error: Docker executable no found. Make sure Docker
+          is installed and/or use the DOCKER variable to set Docker
+          executable.
+
 - clean_containers:
   - on_checkpoint: redo
   - on_export_clean:
