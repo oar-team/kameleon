@@ -34,6 +34,7 @@ User Documentation
 
     installation.rst
     getting_started.rst
+    use_cases.rst
     recipe.rst
     context.rst
     commands.rst
