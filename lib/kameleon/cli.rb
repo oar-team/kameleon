@@ -6,8 +6,8 @@ module Kameleon
   class CLI < Thor
 
 
-    class_option :no_color, :type => :boolean, :default => false,
-                 :desc => "Disable colorization in output"
+    class_option :color, :type => :boolean, :default => true,
+                 :desc => "Enable colorization in output"
     class_option :debug, :type => :boolean, :default => false,
                  :desc => "Enable debug output"
     class_option :workspace, :aliases => '-w', :type => :string,
@@ -155,7 +155,7 @@ module Kameleon
       end
       format = ConsoleFormatter.new
       # format = Log4r::PatternFormatter.new(:pattern => '%11c: %M')
-      if !$stdout.tty? or env_options["no_color"]
+      if !$stdout.tty? or !env_options["color"]
         console_output = Log4r::StdoutOutputter.new('console',
                                                     :formatter => format)
       else

@@ -1,4 +1,14 @@
 
+- check_docker:
+  - on_bootstrap_init:
+    - exec_out: DOCKER=${DOCKER:-docker}
+    - rescue:
+      - exec_out: command -V $DOCKER
+      - breakpoint: >
+          error: Docker executable no found. Make sure Docker
+          is installed and/or use the DOCKER variable to set Docker
+          executable.
+
 - clean_containers:
   - on_checkpoint: redo
   - on_export_clean:
@@ -19,15 +29,15 @@
 
 - configure_sshd:
   - on_checkpoint: redo
-  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
-  - exec_out: chmod 600 $$insecure_ssh_key*
+  - exec_out: cat $$insecure_ssh_key
   - exec_out: |
-      CID=$(docker run --dns $$dns -d -v "$(pwd):/tmp" $$image:latest \
-            /bin/bash -c "rm -fr /root/.ssh ;  \
-                          mkdir -p /root/.ssh ;  \
-                          ssh-keygen -q -t dsa -f /root/.ssh/id_dsa -N '' ; \
-                          cat /tmp/$${insecure_ssh_key}.pub > /root/.ssh/authorized_keys")
-  - exec_out: bash -c "exit $(docker wait $CID)"
+      CID="kameleon_container_$[($RANDOM % ($[50000 - 50] + 1)) + 50]"
+      cat $${insecure_ssh_key}.pub | \
+        docker run -i -a stdin --dns $$dns --name $CID $$image:latest \
+          /bin/bash -c "mkdir -p /root/.ssh ; \
+                        tee -a /root/.ssh/authorized_keys"
+  - on_export_init:
+    - exec_in: rm -rf /root/.ssh
   - exec_out: echo "$CID" >> CONTAINERS_TO_CLEAN
   - exec_out: |
       docker images | grep $$image \
