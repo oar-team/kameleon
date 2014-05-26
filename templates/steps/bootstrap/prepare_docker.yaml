@@ -29,6 +29,7 @@
 
 - configure_sshd:
   - on_checkpoint: redo
+  - exec_out: echo -e  'y\n' | ssh-keygen -q -t rsa -f $$insecure_ssh_key -N ''
   - exec_out: cat $$insecure_ssh_key
   - exec_out: |
       CID="kameleon_container_$[($RANDOM % ($[50000 - 50] + 1)) + 50]"
