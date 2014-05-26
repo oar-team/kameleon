@@ -128,6 +128,21 @@ module Kameleon
       engine.clear
     end
 
+    desc "completions command", "Used for shell completion", :hide => true
+    def completions(*args)
+      if %w(clear checkpoints build).include?(args[0])
+          recipes = Dir.foreach(Kameleon.env.recipes_path).map do |f|
+            File.basename(f, ".yaml") if f.include?(".yaml")
+          end
+          puts recipes.compact
+      end
+    end
+
+    desc "commands", "Lists all available commands", :hide => true
+    def commands
+      puts CLI.all_commands.keys - ["commands", "completions"]
+    end
+
     # Hack Thor to init Kameleon env soon
     def self.init(base_config)
       options = base_config[:shell].base.options
