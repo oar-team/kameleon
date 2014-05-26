@@ -1,56 +1,34 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-if Vagrant.has_plugin?("vagrant-kvm")
-    ENV['VAGRANT_DEFAULT_PROVIDER'] = 'kvm'
-end
+
+# Require vagrant-libvirt plugin
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'kvm'
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "oar-team/debian-dev"
+  config.vm.box = "oar-team/kameleon-dev"
   config.vm.hostname = "kameleon-devel"
 
   config.vm.provision "docker", images: ["scratch"]
 
-  # Config provider
-  config.vm.provider :virtualbox do |vm|
-    vm.memory = 2024
-    vm.cpus = 2
-  end
-
-  config.vm.network :forwarded_port, guest: 22, host: 5522
   config.ssh.forward_x11 = true
-  config.vm.provider :kvm do |vm|
-    vm.memory_size = "2GiB"
-    vm.core_number = 2
+  config.ssh.forward_agent = true
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.connect_via_ssh = false
+    libvirt.storage_pool_name = "default"
+    libvirt.memory = 2048
+    libvirt.cpus = 2
+    libvirt.nested = true
+    libvirt.volume_cache = 'none'
   end
 
   config.vm.synced_folder ".", "/home/vagrant/kameleon"
 
-  # Provision
-  config.vm.provision "shell", privileged: true, inline: <<-EOF
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update
-    apt-get -y --force-yes install git python-pip debootstrap \
-      rsync sed qemu-utils parted xserver-xephyr
-
-    apt-get -y --force-yes install ruby ruby-dev \
-      rubygems build-essential libopenssl-ruby libssl-dev zlib1g-dev
-    gem install bundle
-    # Helpful tools
-    pip install pyped
-  EOF
-
   config.vm.provision "shell", privileged: false, inline: <<-EOF
-    cat > ~/.bash_profile <<< "
-    export FORCE_AUTOENV=1
-    source ~/.profile
-    source /home/vagrant/kameleon/.env
-    cd /home/vagrant/kameleon
-    "
     cd /home/vagrant/kameleon && bundle install
   EOF
 
-  config.ssh.forward_agent = true
 
   # Network
   config.vm.network :private_network, ip: "10.10.20.130"
@@ -64,4 +42,23 @@ Vagrant.configure("2") do |config|
     config.apt_proxy.https = "http://10.10.20.1:3128/"
     config.apt_proxy.ftp = "http://10.10.20.1:3128/"
   end
+
+  if Vagrant.has_plugin?("vagrant-cachier")
+    # Configure cached packages to be shared between instances of the same base box.
+    # More info on http://fgrehm.viewdocs.io/vagrant-cachier/usage
+    config.cache.scope = :box
+
+    # If you are using VirtualBox, you might want to use that to enable NFS for
+    # shared folders. This is also very useful for vagrant-libvirt if you want
+    # bi-directional sync
+    config.cache.synced_folder_opts = {
+      type: :nfs,
+      # The nolock option can be useful for an NFSv3 client that wants to avoid the
+      # NLM sideband protocol. Without this option, apt-get might hang if it tries
+      # to lock files needed for /var/cache/* operations. All of this can be avoided
+      # by using NFSv4 everywhere. Please note that the tcp option is not the default.
+      mount_options: ['rw', 'vers=3', 'tcp', 'nolock']
+    }
+  end
+
 end
