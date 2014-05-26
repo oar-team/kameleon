@@ -24,6 +24,7 @@ global:
   arch: amd64
   dns: 208.67.222.222
 
+  ## Disk options
   nbd_device: /dev/nbd1
   container: "$${kameleon_recipe_name}_temp.qcow2"
 
@@ -95,7 +96,7 @@ setup:
     - hostname: kameleon-$$distrib
   - create_user:
     - name: $$user_name
-    - group: admin
+    - group: sudo
     - password: $$user_name
 
 #== Export the generated appliance in the format of your choice
