@@ -1,0 +1,94 @@
+- mount_chroot:
+  - on_checkpoint: redo
+  - check_cmd_out: chroot
+  - exec_out: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -t proc /proc  $$rootfs/proc
+  - exec_out: mount -t sysfs /sys  $$rootfs/sys
+  - exec_out: test -f $$rootfs/etc/mtab || cat /proc/mounts > $$rootfs/etc/mtab
+  - on_bootstrap_clean:
+    - exec_out: echo try umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
+    - exec_out: echo try umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
+    - exec_out: echo try umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true
+    - exec_out: echo try umount $$rootfs/dev... ; mountpoint -q $$rootfs/dev && umount -f -l $$rootfs/dev  || true
+
+- configure_sshd:
+  - on_checkpoint: redo
+  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
+  - exec_out: cat $$insecure_ssh_key
+  - exec_out: chroot $$rootfs mkdir -p /root/.ssh
+  - exec_out: |
+      cat $${insecure_ssh_key}.pub | tee -a $$rootfs/root/.ssh/authorized_keys
+  - on_export_init:
+    - exec_in: rm -rf /root/.ssh
+
+- enable_9p_modules:
+  - exec_out: printf '%s\n' 9p 9pnet 9pnet_virtio | tee -a $$rootfs/etc/initramfs-tools/modules
+
+- update_initramfs:
+  - exec_out: chroot $$rootfs update-initramfs -u
+
+- custom_init_script:
+  - write_out:
+    - $$rootfs/.kameleon/kvm/init
+    - |
+      #!/bin/sh
+      mount -o rw,remount /
+      hostname \$(cat /etc/hostname)
+      ip addr add $$qemu_ip_guest/$$qemu_netmask dev eth0
+      ip link set lo up
+      ip link set eth0 up
+      ip route add default via $$qemu_ip_host
+      exec bash -c "service ssh restart ; tail -f /dev/null"
+  - exec_out: chmod +x $$rootfs/.kameleon/kvm/init
+
+- custom_netinit_script:
+  - write_out:
+    - $$rootfs/.kameleon/kvm/ifup
+    - |
+      #!/bin/sh
+      sysctl -w net.ipv4.ip_forward=1
+      iptables -t nat -A POSTROUTING -s $$qemu_network/$$qemu_netmask -j MASQUERADE
+      ip addr add $$qemu_ip_host/$$qemu_netmask dev "\$1"
+      ip link set "\$1" up
+  - exec_out: chmod +x $$rootfs/.kameleon/kvm/ifup
+
+  - write_out:
+    - $$rootfs/.kameleon/kvm/ifdown
+    - |
+      #!/bin/sh
+      iptables -t nat -D POSTROUTING -s $$qemu_network/$$qemu_netmask -j MASQUERADE
+  - exec_out: chmod +x $$rootfs/.kameleon/kvm/ifdown
+
+- start_kvm:
+  - check_cmd_out: qemu-system-x86_64
+  - exec_out: ROOTFS=$$rootfs
+  - exec_out: KERNEL=$(echo $$rootfs/boot/vmlinuz* | tr ' ' '\n' | head -n 1)
+  - exec_out: INITRD=$(echo $$rootfs/boot/initrd* | tr ' ' '\n' | head -n 1)
+  - exec_out: |
+        CMDLINE="root=guestroot rootfstype=9p rootflags=trans=virtio,version=9p2000.L rw"
+        CMDLINE="console=ttyS0 quiet panic=0 $CMDLINE"
+        CMDLINE="init=/.kameleon/kvm/init $CMDLINE"
+  - exec_out: echo "+++ Starting kvm."
+  # - rescue:
+  - exec_out: |
+        nohup \
+          qemu-system-x86_64 -enable-kvm -nographic -no-reboot -m $$qemu_memory_size \
+            -append "$CMDLINE" \
+            -kernel "$KERNEL" \
+            -initrd "$INITRD" \
+            -fsdev local,id=fsdev0,path="$ROOTFS",security_model=none \
+            -device virtio-9p-pci,fsdev=fsdev0,mount_tag=guestroot \
+            -device virtio-net,netdev=net0 \
+            -netdev tap,id=net0,script=$$rootfs/.kameleon/kvm/ifup,downscript=$$rootfs/.kameleon/kvm/ifdown \
+            -monitor tcp::$$qemu_monitor_port,server,nowait \
+        1>/dev/null 2>&1 & disown
+  - on_export_clean:
+    - exec_out: echo "system_reset" | nc localhost $$qemu_monitor_port
+  - exec_out: |
+        until ssh-keyscan $$qemu_ip_guest 2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
+        do
+          sleep 1
+          echo -n "."
+        done
+        echo " ~> OK"
