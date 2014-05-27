@@ -1,0 +1,15 @@
+
+- install_recommends: false
+- dist_upgrade: true
+
+- exec_in: |
+    if [ $$install_recommends = false ]; then
+      INSTALL_RECOMMENDS="--no-install-recommends"
+    fi
+
+- upgrade_system:
+  - exec_in: apt-get -y --force-yes $INSTALL_RECOMMENDS upgrade 2>&1
+  - exec_in: |
+      if [ $$dist_upgrade = false ]; then
+          apt-get -y --force-yes $INSTALL_RECOMMENDS dist-upgrade 2>&1
+      fi
