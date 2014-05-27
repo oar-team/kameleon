@@ -7,4 +7,4 @@
   - exec_in: echo -n '$$name:$$password' | chpasswd
 
 - add_to_groups:
-  - exec_in: usermod -g $$group $$name
+  - exec_in: echo $$groups | tr ' ' '\n' | xargs -I {} usermod -g {} $$name

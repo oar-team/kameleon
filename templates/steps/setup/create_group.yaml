@@ -3,10 +3,10 @@
 - create_group:
   - exec_in: |
       # check if a group is present before adding it
-      if [ $(egrep -i "^$$group" /etc/group) ]
+      if [ $(egrep -i "^$$name" /etc/group) ]
       then
-        echo "WARNING: the group '$$group' is alredy present"
+        echo "WARNING: the group '$$name' is alredy present"
       else
-        groupadd $$group
+        groupadd $$name
       fi
 
