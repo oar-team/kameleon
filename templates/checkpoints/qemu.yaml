@@ -1,0 +1,23 @@
+create: |
+    if nc -w 0 -z localhost $$qemu_monitor_port 2>/dev/null
+    then
+      echo "savevm @microstep_id" | nc localhost $$qemu_monitor_port
+    fi
+
+apply: |
+    echo "@microstep_id" > vm_state_to_load.txt
+
+clear: |
+    if [ -f "$${temp_disk}" ] ; then
+      _checkpoints=$(qemu-img snapshot -l $${temp_disk} | tail -n +3 | awk '{print $2}')
+      _checkpoints=($_checkpoints)
+      for checkpoint in "${_checkpoints[@]}"; do
+        echo "Removing checkpoints $checkpoint"
+        qemu-img snapshot -d $checkpoint $${temp_disk}
+    done
+    fi
+
+list: |
+    if [ -f "$${temp_disk}" ] ; then
+        qemu-img snapshot -l $${temp_disk} | tail -n +3 | awk '{print $2}'
+    fi

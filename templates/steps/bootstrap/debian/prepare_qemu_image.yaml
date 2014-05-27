@@ -1,0 +1,154 @@
+- insecure_ssh_key: $$kameleon_cwd/insecure_ssh_key
+
+- create_initial_image:
+  - check_cmd_out: qemu-img
+  - exec_out: |
+      if [ ! -e "$$image_disk" ] ; then
+        qemu-img create -f qcow2 -o preallocation=metadata $$image_disk $$image_size
+      fi
+
+- attach_nbd_device:
+  - check_cmd_out: qemu-nbd
+  - exec_out: echo Looking for nbd device...
+  - exec_out: |
+      lsmod | grep nbd >/dev/null \
+      || modprobe nbd max_part=63 \
+      || fail failed to load nbd module into kernel
+  - exec_out: |
+      for i in /dev/nbd*
+      do
+        echo "Trying to connect $$image_disk to nbd device $i"
+        qemu-nbd -c $i $$image_disk --cache=writeback && export DISK=$i && break || true
+      done
+      test ! "$DISK" == "" ||  fail no nbd device available
+  - exec_out: echo "$DISK" > .nbd_disk_path
+  - exec_out: echo "Connected $$image_disk to $DISK"
+  - on_clean:
+    - exec_out: echo "sync" ; sync
+    - exec_out: test ! -f .nbd_disk_path || qemu-nbd -d $(cat .nbd_disk_path)
+    - exec_out: rm -f .nbd_disk_path
+
+- partition_disk:
+  - check_cmd_out: parted
+  - exec_out: |
+      echo "Partitioning disk..."
+      parted ${DISK} mklabel msdos
+      parted ${DISK} mkpart primary 0% 100%
+      parted ${DISK} set 1 boot on
+  - exec_out: |
+      echo Creating root partition...
+      mkfs.$$filesystem_type -q ${DISK}p1 || fail cannot create / ext4
+
+- mount_rootfs:
+  - exec_out: mkdir -p $$rootfs
+  - exec_out:  "echo Mounting root partition... ;  mount ${DISK}p1 $$rootfs || fail cannot mount /"
+  - on_clean:
+    - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
+
+- copy_rootfs:
+  - exec_out: tar -xf $$rootfs_archive -C $$rootfs
+  - exec_out: echo "sync..." ; sync
+
+- create_fstab:
+  - write_out:
+    - $$rootfs/etc/fstab
+    - |
+      # /etc/fstab: static file system information.
+      #
+      # Use 'blkid' to print the universally unique identifier for a
+      # device; this may be used with UUID= as a more robust way to name devices
+      # that works even if disks are added and removed. See fstab(5).
+      #
+      # <file system> <mount point>   <type>  <options>       <dump>  <pass>
+      UUID=`blkid -s UUID -o value ${DISK}p1` /               $$filesystem_type    errors=remount-ro  0       1
+
+- mount_chroot:
+  - check_cmd_out: chroot
+  - exec_out: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -t proc /proc  $$rootfs/proc
+  - exec_out: mount -t sysfs /sys  $$rootfs/sys
+  - exec_out: test -f $$rootfs/etc/mtab || cat /proc/mounts > $$rootfs/etc/mtab
+
+- umount_chroot:
+  - on_clean:
+    - exec_out: echo try umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
+    - exec_out: echo try umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
+    - exec_out: echo try umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true
+    - exec_out: echo try umount $$rootfs/dev... ; mountpoint -q $$rootfs/dev && umount -f -l $$rootfs/dev  || true
+
+- configure_sshd:
+  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
+  - exec_out: cat $$insecure_ssh_key
+  - exec_out: chroot $$rootfs mkdir -p /root/.ssh
+  - exec_out: |
+        cat $${insecure_ssh_key}.pub | tee -a $$rootfs/root/.ssh/authorized_keys
+  - write_out:
+    - $$ssh_config_file
+    - |
+      Host $$kameleon_recipe_name
+      HostName 127.0.0.1
+      Port $${qemu_ssh_port}
+      User root
+      IdentityFile $$insecure_ssh_key
+      UserKnownHostsFile /dev/null
+      StrictHostKeyChecking no
+      PasswordAuthentication no
+      IdentitiesOnly yes
+      LogLevel FATAL
+      ForwardAgent yes
+      ControlPath $(pwd)/master-%l-%r@%h:%p
+      ControlMaster auto
+      ControlPersist yes
+      Compression yes
+      Protocol 2
+
+- install_bootloader:
+  - rescue:
+    - exec_out: LC_ALL=POSIX chroot $$rootfs bash -c "command -V extlinux 2> /dev/null"
+    - breakpoint: "extlinux is missing"
+  - exec_out: LC_ALL=POSIX chroot $$rootfs extlinux --install /boot/extlinux 2>&1
+  - exec_out: |
+      MBR_PATH=
+      PATHS=("$$rootfs/usr/share/syslinux/mbr.bin"
+             "$$rootfs/usr/lib/bios/syslinux/mbr.bin"
+             "$$rootfs/usr/lib/syslinux/bios/mbr.bin"
+             "$$rootfs/usr/lib/extlinux/mbr.bin"
+             "$$rootfs/usr/lib/syslinux/mbr.bin")
+      for element in "${PATHS[@]}"
+      do
+        if [ -f "$element" ]; then
+          MBR_PATH="$element"
+          break
+        fi
+      done
+      if [ "$MBR_PATH" == "" ]; then
+        fail "unable to locate the extlinux mbr"
+      else
+        dd if="$MBR_PATH" of="$DISK" bs=440  2>&1
+      fi
+  - exec_out: echo " sync..." ; sync
+  - write_out:
+    - $$rootfs/boot/extlinux/extlinux.conf
+    - |
+      default linux
+      timeout 1
+      
+      label linux
+      kernel ../`basename $$rootfs/boot/vmlinuz*`
+      append initrd=../`basename $$rootfs/boot/init*` root=UUID=`blkid -s UUID -o value ${DISK}p1` ro
+  - exec_out: echo " sync..." ; sync
+  - on_export_clean:
+    - exec_out: |
+        dir=$$rootfs/var/lib/os-prober/mount
+        test ! -d "$dir" || (umount -f -l "$dir" && rmdir "$dir")
+
+- network_interfaces:
+  - write_out:
+    - $$rootfs/etc/network/interfaces
+    - |
+      auto lo
+      iface lo inet loopback
+      
+      auto eth0
+      iface eth0 inet dhcp
