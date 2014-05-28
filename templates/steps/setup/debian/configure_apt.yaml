@@ -55,12 +55,6 @@
       fi
   - exec_in: perl -pi -e "s/main$/main $REPO_CONTRIB $REPO_NONFREE/" /etc/apt/sources.list
 
-- disable_temporarily_dpkg_fsync:  ## to make build faster
-  - on_checkpoint: redo
-  - exec_in: echo force-unsafe-io > /etc/dpkg/dpkg.cfg.d/02apt-speedup
-  - on_export_init:
-    - exec_in: rm -f /etc/dpkg/dpkg.cfg.d/02apt-speedup
-
 - update_repositories:
   - exec_in: apt-get -y --force-yes update
   - exec_in: apt-get -y --force-yes install localepurge
