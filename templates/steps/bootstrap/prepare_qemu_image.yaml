@@ -44,7 +44,9 @@
     - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
 
 - copy_rootfs:
-  - exec_out: tar -xf $$rootfs_archive -C $$rootfs
+  - check_cmd_out: rsync
+  - exec_out: echo "Copying rootfs to $$rootfs..."
+  - exec_out: rsync -aAX --exclude '/.kameleon_timestamp' $$rootfs_partial/* $$rootfs
   - exec_out: echo "sync..." ; sync
 
 - create_fstab:
