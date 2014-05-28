@@ -25,10 +25,9 @@ global:
   ## QEMU options
   qemu_enable_kvm: true
   qemu_cpu: 2
-  qemu_memory_size: 1024
+  qemu_memory_size: 512
   qemu_monitor_port: 10023
   qemu_ssh_port: 55423
-  qemu_spice_port: 5930
 
   ## Disk options
   temp_disk: "base_$${kameleon_recipe_name}_temp.qcow2"
@@ -102,9 +101,9 @@ setup:
   - create_group:
     - name: admin
   - create_user:
-    - name: resident
+    - name: $$user_name
     - groups: sudo admin
-    - password: resident
+    - password: $$user_name
 
 #== Export the generated appliance in the format of your choice
 export:

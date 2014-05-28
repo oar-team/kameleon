@@ -3,9 +3,7 @@
 - create_initial_image:
   - check_cmd_out: qemu-img
   - exec_out: |
-      if [ ! -e "$$image_disk" ] ; then
-        qemu-img create -f qcow2 -o preallocation=metadata $$image_disk $$image_size
-      fi
+      qemu-img create -f qcow2 -o preallocation=metadata $$image_disk $$image_size
 
 - attach_nbd_device:
   - check_cmd_out: qemu-nbd
@@ -18,7 +16,7 @@
       for i in /dev/nbd*
       do
         echo "Trying to connect $$image_disk to nbd device $i"
-        qemu-nbd -c $i $$image_disk --cache=writeback && export DISK=$i && break || true
+        qemu-nbd -c $i $$image_disk -n && export DISK=$i && break || true
       done
       test ! "$DISK" == "" ||  fail no nbd device available
   - exec_out: echo "$DISK" > .nbd_disk_path
@@ -142,13 +140,3 @@
     - exec_out: |
         dir=$$rootfs/var/lib/os-prober/mount
         test ! -d "$dir" || (umount -f -l "$dir" && rmdir "$dir")
-
-- network_interfaces:
-  - write_out:
-    - $$rootfs/etc/network/interfaces
-    - |
-      auto lo
-      iface lo inet loopback
-      
-      auto eth0
-      iface eth0 inet dhcp

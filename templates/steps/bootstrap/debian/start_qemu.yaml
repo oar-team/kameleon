@@ -1,12 +1,3 @@
-- load_vmstate:
-  - on_checkpoint: redo
-  - exec_out: |
-      if [ -f "vm_state_to_load.txt" ]
-      then
-          LOADVM="-loadvm $(cat vm_state_to_load.txt)"
-          rm vm_state_to_load.txt
-      fi
-
 - start_qemu:
   - on_checkpoint: redo
   - check_cmd_out: qemu-system-x86_64
@@ -16,21 +7,25 @@
         ENABLE_KVM="-enable-kvm"
       fi
   - exec_out: |
-          nohup qemu-system-x86_64  \
-            $ENABLE_KVM -no-reboot \
-            -drive file="$$image_disk",cache=none,media=disk,if=virtio,id=drive0 \
-            -smp $${qemu_cpu} \
-            -m $$qemu_memory_size \
-            -rtc base=localtime \
-            -net nic,model=virtio -net user \
-            -redir tcp:$${qemu_ssh_port}::22 \
-            -monitor tcp::$$qemu_monitor_port,server,nowait \
-            -chardev socket,path=/tmp/qga.sock,server,nowait,id=qga0 \
-            -device virtio-serial \
-            -device virtserialport,chardev=qga0,name=org.qemu.guest_agent.0 \
-            -vnc :1 \
-          1>qemu.log 2>&1 & disown
-  - exec_out: falset
+        nohup qemu-system-x86_64  \
+          $ENABLE_KVM -no-reboot \
+          -drive file="$$image_disk",cache=unsafe,media=disk,if=virtio,id=drive0 \
+          -smp $${qemu_cpu} \
+          -m $$qemu_memory_size \
+          -rtc base=localtime \
+          -net nic,model=virtio -net user \
+          -redir tcp:$${qemu_ssh_port}::22 \
+          -monitor tcp::$$qemu_monitor_port,server,nowait \
+          -vnc :1 \
+        1>qemu.log 2>&1 & disown
+  - exec_out: |
+        if [ -f "vm_state_to_load.txt" ]
+        then
+            SAVED_STATE="$(cat vm_state_to_load.txt)"
+            echo "Restoring a qemu guest from a saved state $SAVED_STATE"
+            echo "loadvm $SAVED_STATE" | nc localhost $$qemu_monitor_port 1>qemu.log 2>&1
+            rm vm_state_to_load.txt
+        fi
   - on_export_clean:
     - exec_out: |
           if nc -w 0 -z localhost $$qemu_monitor_port 2>/dev/null
