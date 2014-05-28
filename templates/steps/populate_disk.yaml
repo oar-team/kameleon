@@ -15,18 +15,20 @@
 
 - mount_mountdir:
   - on_checkpoint: redo
-  - exec_out: mkdir -p $$mountdir
-  - exec_out:  "echo Mounting root partition... ;  mount $${device}p1 $$mountdir || fail cannot mount /"
+  - exec_out: mkdir -p $$rootfs
+  - exec_out:  "echo Mounting root partition... ;  mount $${device}p1 $$rootfs || fail cannot mount /"
   - on_export_clean:
-    - exec_out: "echo try umount $$mountdir... ; mountpoint -q $$mountdir && umount -f -l $$mountdir || true"
+    - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
 
 - copy_rootfs:
-  - exec_out: tar -xf $$rootfs_archive -C $$mountdir
+  - check_cmd_out: rsync
+  - exec_out: echo "Copying rootfs to $$rootfs..."
+  - exec_out: rsync -aAX --exclude '/.kameleon_timestamp' $$rootfs_cache/* $$rootfs
   - exec_out: echo "sync..." ; sync
 
 - create_fstab:
   - write_out:
-    - $$mountdir/etc/fstab
+    - $$rootfs/etc/fstab
     - |
       # /etc/fstab: static file system information.
       #
