@@ -52,5 +52,3 @@
     - exec_out: echo "sync" ; sync
     - exec_out: qemu-nbd -d $$device
     - exec_out: "pgrep qemu-nbd | xargs -I {} kill -9 {} || true"
-
-

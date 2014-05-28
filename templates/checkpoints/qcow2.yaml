@@ -1,38 +1,46 @@
 create: |
-    if [ -e "$$container" ] ; then
-      parent_of_@microstep_id="$(readlink $$container)"
+    if nc -w 0 -z localhost $$qemu_monitor_port 2>/dev/null
+    then
+      parent_of_@microstep_id="$(readlink $$temp_disk)"
       mkdir -p checkpoints
       pushd checkpoints
-      rm -f @microstep_id_$${container}
-      qemu-img create -f qcow2 "@microstep_id_$${container}" \
+      rm -f @microstep_id_$${temp_disk}
+      qemu-img create -f qcow2 "@microstep_id_$${temp_disk}" \
                       -o backing_file=$(basename "$parent_of_@microstep_id")
       popd
-      ln -sf checkpoints/@microstep_id_$$container $$container
+      ln -sf checkpoints/@microstep_id_$$temp_disk $$temp_disk
 
       lsmod | grep nbd >/dev/null || modprobe nbd max_part=63
 
       echo "sync" ; sync
+      echo "stop" | nc localhost $$qemu_monitor_port
       qemu-nbd -d $$nbd_device
-      qemu-nbd -c $$nbd_device "$(readlink $$container)"
+      qemu-nbd -c $$nbd_device "$(readlink $$temp_disk)"
+      echo "cont" | nc localhost $$qemu_monitor_port
     fi
 
 apply: |
     # apply command use the backing file that represent the real state to restore
-    previous_id=$(qemu-img info "checkpoints/@microstep_id_$${container}" \
+    previous_id=$(qemu-img info "checkpoints/@microstep_id_$${temp_disk}" \
                   | grep backing \
-                  | sed -e 's/.*checkpoints\/\(.*\)_$${container}\(.*\)/\1/p' \
+                  | sed -e 's/.*checkpoints\/\(.*\)_$${temp_disk}\(.*\)/\1/p' \
                   | uniq)
-    
-    ln -sf "checkpoints/${previous_id}_$${container}" "$$container"
+    PARENT="${previous_id}_$${temp_disk}"
+    pushd checkpoints
+    qemu-img create -f qcow2 "@microstep_id_$${temp_disk}" \
+                    -o backing_file=$PARENT
+    popd
+    ln -sf "checkpoints/@microstep_id_$${temp_disk}" "$$temp_disk"
+
 
 clear: |
     if [ -d "checkpoints" ] ; then
       ls checkpoints/ | \
         xargs -I {} bash -c "echo Removing checkpoints/{} ; rm checkpoints/{}"
-      rm -f $$container
+      rm -f $$temp_disk
     fi
 
 list: |
     if [ -d "checkpoints" ] ; then
-      ls checkpoints/ | sed -e 's/\(.*\)_$${container}/\1/p' | uniq
+      ls checkpoints/ | sed -e 's/\(.*\)_$${temp_disk}/\1/p' | uniq
     fi

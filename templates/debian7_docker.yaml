@@ -20,7 +20,7 @@ global:
   ## User varibales : used by the recipe
   cachedir: /var/cache/kameleon
   user_name: kameleon
-  arch: amd64
+  arch: x86_64
 
   distrib: debian
   release: wheezy

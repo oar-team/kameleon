@@ -60,10 +60,14 @@ global:
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - debootstrap:
+    - include: >
+        ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
+        net-tools iproute acpid openssh-server pciutils extlinux
+        linux-image-$$arch
     - release: $$release
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
-    - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
+    - rootfs_cache: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - prepare_qemu_image:
     - image_size: 10G
     - image_disk: $$temp_disk
