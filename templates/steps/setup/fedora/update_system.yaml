@@ -1,0 +1,10 @@
+- update_system:
+  - exec_in: yum update yum -y
+  - exec_in: yum groupupdate 'Minimal Install' -y
+  - exec_in: yum clean all
+  - exec_in: yum update -y
+  - exec_in: yum --releasever=$$release distro-sync
+
+- clean:
+  - on_setup_clean:
+    - exec_in: yum clean all

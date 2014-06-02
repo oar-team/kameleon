@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Fedora 20 base system appliance
+# DESCRIPTION: Fedora 20 base image with XFCE Desktop
 #
 # TEMPLATE: <%= @name %>
 #
@@ -79,12 +79,11 @@ bootstrap:
 # WARNING: this part should be independante from the out context (whenever
 # possible...)
 setup:
-  # Install
+setup:
   - update_system
   - install_software:
     - packages: >
         ntp zip unzip rsync sudo less vim bash-completion wget kernel kernel-devel
-  # Configuration
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
     - lang: en_US.UTF-8
@@ -97,6 +96,8 @@ setup:
     - name: $$user_name
     - groups: wheel
     - password: $$user_password
+  - install_software:
+    - packages: @x-window-system @xfce
 
 # == Export the generated appliance in the format of your choice
 export:
