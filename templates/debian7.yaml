@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Build a debian wheezy appliance using chroot and qemu-nbd.
+# DESCRIPTION: Build a debian wheezy appliance using qemu hypervisor.
 #
 # TEMPLATE: <%= @name %>
 #
@@ -18,8 +18,12 @@ checkpoint: qemu.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
-  cachedir: /var/cache/kameleon
   user_name: kameleon
+  user_password: $$user_name
+
+  # Distribution
+  distrib: debian
+  release: wheezy
   arch: amd64
 
   ## QEMU options
@@ -28,13 +32,17 @@ global:
   qemu_memory_size: 512
   qemu_monitor_port: 10023
   qemu_ssh_port: 55423
+  qemu_arch: x86_64
 
   ## Disk options
-  temp_disk: "base_$${kameleon_recipe_name}_temp.qcow2"
+  nbd_device: /dev/nbd1
+  image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
+  image_size: 10G
+  filesystem_type: ext4
 
-  # Distribution
-  distrib: debian
-  release: wheezy
+  # rootfs options
+  rootfs: $$kameleon_cwd/rootfs
+  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
 
   ## System variables. Required by kameleon engine
   # Include specific steps
@@ -59,7 +67,7 @@ global:
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - debootstrap:
-    - include: >
+    - include_pkg: >
         ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
         net-tools iproute acpid openssh-server pciutils extlinux
         linux-image-$$arch
@@ -67,16 +75,10 @@ bootstrap:
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
     - enable_cache: true
-    - rootfs_partial: $$cachedir/$$distrib/$$release/$$arch/rootfs
-  - prepare_qemu_image:
-    - image_size: 10G
-    - image_disk: $$temp_disk
-    - rootfs: $$kameleon_cwd/rootfs
-    - filesystem_type: ext4
-    - rootfs_partial: $$cachedir/$$distrib/$$release/$$arch/rootfs
-  - start_qemu:
-    - image_disk: $$temp_disk
-
+  - initialize_disk_qemu
+  - prepare_qemu
+  - install_bootloader
+  - start_qemu
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the out context (whenever
@@ -100,7 +102,7 @@ setup:
     - lang: en_US.UTF-8
     - timezone: Europe/Paris
   - configure_keyboard:
-    - layout: "fr,us"
+    - layout: "us,fr,de"
   - configure_network:
     - hostname: kameleon-$$distrib
   - create_group:
@@ -108,14 +110,15 @@ setup:
   - create_user:
     - name: $$user_name
     - groups: sudo admin
-    - password: $$user_name
+    - password: $$user_password
 
 #== Export the generated appliance in the format of your choice
 export:
   - save_appliance:
-    - filename: "$${kameleon_recipe_name}"
+    - input: $$image_disk
+    - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2
-    - save_as_qed
+    # - save_as_qed
     # - save_as_tgz
     # - save_as_raw
     # - save_as_vmdk
