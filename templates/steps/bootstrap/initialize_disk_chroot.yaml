@@ -61,7 +61,13 @@
 - copy_rootfs:
   - check_cmd_out: rsync
   - exec_out: echo "Copying rootfs to $$rootfs..."
-  - exec_out: rsync -aAX --exclude '/.kameleon_timestamp' $$rootfs_download_path/* $$rootfs
+  - exec_out: |
+      rsync -aAX --delete --one-file-system\
+        --exclude '/.kameleon_timestamp' \
+        --exclude '/dev/*' \
+        --exclude '/proc/*' \
+        --exclude '/sys/*' \
+        $$rootfs_download_path/* $$rootfs
   - exec_out: echo "sync..." ; sync
 
 - create_fstab:
