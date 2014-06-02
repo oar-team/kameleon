@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Build a debian wheezy appliance using chroot and qemu-nbd.
+# DESCRIPTION: [deprecated] Build a debian wheezy appliance using chroot and qemu-nbd.
 #
 # TEMPLATE: <%= @name %>
 #
@@ -106,7 +106,7 @@ setup:
 export:
   - save_appliance:
     - input: $(readlink $$image_disk)
-    - output: "$${kameleon_recipe_name}"
+    - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2
     # - save_as_qed
     # - save_as_tgz
