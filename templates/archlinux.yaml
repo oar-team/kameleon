@@ -87,7 +87,7 @@ setup:
   - configure_system:
     - locales: fr_FR en_US
     - lang: fr_FR.UTF-8
-    - timezone: Europe/Paris
+    - timezone: UTC
   - configure_keyboard:
     # set to french keyboard use 'localectl list-keymaps' to see available list
     - layout: fr

@@ -90,7 +90,7 @@ setup:
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
     - lang: en_US.UTF-8
-    - timezone: Europe/Paris
+    - timezone: UTC
   - configure_keyboard:
     - layout: "us,fr,de"
   - configure_network:

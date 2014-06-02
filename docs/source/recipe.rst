@@ -93,7 +93,7 @@ This is an example of a recipe:
       - system_config:
         - locales: fr_FR en_US
         - lang: fr_FR.UTF-8
-        - timezone: Europe/Paris
+        - timezone: UTC
       - keyboard_config:
         - layout: "fr,us"
       - network_config:
