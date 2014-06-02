@@ -44,7 +44,8 @@
             | cat > /root/.ssh/authorized_keys
         rm -f /root/.ssh/kameleon_insecure_public_key
     - exec_in: echo "Shutting down qemu virtual machine..."
-    - exec_in: shutdown -h now
+    - exec_in: |
+        sleep 2 && shutdown -h now &
     - exec_out: |
         while nc -w 0 -z localhost $$qemu_monitor_port
         do
