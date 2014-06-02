@@ -44,12 +44,8 @@ module Kameleon
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml error"
       end
-      unless yaml_recipe.key? "global"
-        fail RecipeError, "Recipe misses 'global' section"
-      end
-
-      #Load Global variables
-      @global.merge!(yaml_recipe.fetch("global"))
+      # Load Global variables
+      @global.merge!(yaml_recipe.fetch("global", {}))
       # Resolve dynamically-defined variables !!
       resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
       @global.merge! YAML.load(resolved_global)
