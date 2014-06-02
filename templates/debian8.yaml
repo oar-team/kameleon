@@ -73,7 +73,7 @@ bootstrap:
         linux-image-$$arch
     - release: $$release
     - arch: $$arch
-    - repository: http://ftp.fr.debian.org/debian/
+    - repository: http://ftp.debian.org/debian/
     - enable_cache: true
   - initialize_disk_qemu
   - prepare_qemu

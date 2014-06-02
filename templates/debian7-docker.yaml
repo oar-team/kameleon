@@ -55,7 +55,7 @@ bootstrap:
   - debootstrap:
     - release: $$release
     - arch: $$arch
-    - repository: http://ftp.fr.debian.org/debian/
+    - repository: http://ftp.debian.org/debian/
     - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
   - prepare_docker:
     - image: $$docker_image
