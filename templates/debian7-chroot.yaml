@@ -18,8 +18,12 @@ checkpoint: qcow2.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
-  cachedir: /var/cache/kameleon
   user_name: kameleon
+  user_password: $$user_name
+
+  # Distribution
+  distrib: debian
+  release: wheezy
   arch: amd64
 
   ## Disk options
@@ -27,15 +31,12 @@ global:
   image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
   image_size: 10G
   filesystem_type: ext4
-  # Chroot options
-  rootfs: $$kameleon_cwd/rootfs
 
-  # Distribution
-  distrib: debian
-  release: wheezy
+  # rootfs options
+  rootfs: $$kameleon_cwd/rootfs
+  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
 
   ## System variables. Required by kameleon engine
-
   # Include specific steps
   include_steps:
     - $$distrib/$$release
@@ -65,10 +66,7 @@ bootstrap:
     - arch: $$arch
     - repository: http://ftp.fr.debian.org/debian/
     - enable_cache: true
-    - rootfs_partial: $$cachedir/$$distrib/$$release/$$arch/rootfs
-  - create_disk
-  - initialize_disk:
-    - rootfs_partial: $$cachedir/$$distrib/$$release/$$arch/rootfs
+  - initialize_disk_chroot
   - start_chroot
   - install_bootloader
 
@@ -102,7 +100,7 @@ setup:
   - create_user:
     - name: $$user_name
     - groups: sudo admin
-    - password: $$user_name
+    - password: $$user_password
 
 #== Export the generated appliance in the format of your choice
 export:
