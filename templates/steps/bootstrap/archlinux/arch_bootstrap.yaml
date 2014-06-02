@@ -5,11 +5,14 @@
 
 # You can choose any group from https://www.archlinux.org/groups/
 # It's recommended to use 'base' (default) or 'base-devel' (with dev tools)
+
 - pkg_group: base
+
+- enable_cache: true
 
 - import_script:
   - exec_out: |
-      cat > arch-bootstrap.sh <<'EOF'
+      cat > $$kameleon_cwd/arch-bootstrap.sh <<'EOF'
       #!/bin/bash
       #
       # arch-bootstrap: Bootstrap a base Arch Linux system using any GNU distribution.
@@ -176,11 +179,17 @@
       main "$@"
       EOF
 
-- call_arch-boostrap:
-  - exec_out: chmod +x ./arch-bootstrap.sh
-  - exec_out: ./arch-bootstrap.sh -a $$arch -r $$mirror $$rootfs_cache
+- call_arch_boostrap:
+  - exec_out: |
+        if [ $$enable_cache = true ]; then
+            [[ ! -f "$$rootfs_download_path/.kameleon_timestamp"  ]] || CACHE_AVAILABLE=1
+        fi
+        [[ -n $CACHE_AVAILABLE  ]] || \
+          bash $$kameleon_cwd/arch-bootstrap.sh -a $$arch -r $$mirror $$rootfs_download_path \
+            && date +%s > $$rootfs_download_path/.kameleon_timestamp
   - on_clean:
-    - exec_out: umount $$rootfs_cache/{proc,dev} || true
+    - umount_out: $$rootfs_download_path/proc
+    - umount_out: $$rootfs_download_path/dev
 
 - configure_pacman:
   - on_setup_init:
