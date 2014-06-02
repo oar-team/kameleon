@@ -16,9 +16,9 @@ module Kameleon
       @context_name = context_name
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
-      @bashrc_file = "/tmp/kameleon_#{@context_name}_bash_rc"
-      @bash_history_file = "/tmp/kameleon_#{@context_name}_bash_history"
-      @bash_env_file = "/tmp/kameleon_#{@context_name}_bash_env"
+      @bashrc_file = "kameleon_#{@context_name}_bash_rc"
+      @bash_history_file = "kameleon_#{@context_name}_bash_history"
+      @bash_env_file = "kameleon_#{@context_name}_bash_env"
       change_dir_cmd = ""
       if @shell_workdir
         unless @shell_workdir.eql? "/"
