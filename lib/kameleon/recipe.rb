@@ -71,7 +71,7 @@ module Kameleon
           yaml_section = yaml_recipe.fetch(section.name)
           next unless yaml_section.kind_of? Array
           yaml_section.each do |raw_macrostep|
-
+            embedded_step = false
             # Get macrostep name and arguments if available
             if raw_macrostep.kind_of? String
               name = raw_macrostep
@@ -83,7 +83,22 @@ module Kameleon
               fail RecipeError, "Malformed yaml recipe in section: "\
                                 "#{section.name}"
             end
-
+            # Detect if step is embedded
+            if not args.nil?
+              args.each do |arg|
+                if arg.kind_of? Hash
+                  if arg.flatten[1].kind_of? Array
+                    embedded_step = true
+                  end
+                end
+              end
+            end
+            if embedded_step
+              @logger.notice("Loading embedded macrostep #{name}")
+              macrostep = load_macrostep(nil, name, args)
+              section.macrosteps.push(macrostep)
+              next
+            end
             # Load macrostep yaml
             loaded = false
             dir_to_search.each do |dir|
@@ -156,14 +171,18 @@ module Kameleon
     end
 
     def load_macrostep(step_path, name, args)
-      macrostep_yaml = YAML.load_file(step_path)
+      if step_path.nil?
+        macrostep_yaml = args
+      else
+        macrostep_yaml = YAML.load_file(step_path)
+        # Basic macrostep syntax check
+        if not macrostep_yaml.kind_of? Array
+          fail RecipeError, "The macrostep #{step_path} is not valid "
+                            "(should be a list of microsteps)"
+        end
+      end
       local_variables = {}
       loaded_microsteps = []
-      # Basic macrostep syntax check
-      if not macrostep_yaml.kind_of? Array
-        fail RecipeError, "The macrostep #{step_path} is not valid "
-                           "(should be a list of microsteps)"
-      end
       # Load default local variables
       macrostep_yaml.each do |yaml_microstep|
         key = yaml_microstep.keys[0]
@@ -175,33 +194,35 @@ module Kameleon
           local_variables[key] = @global.fetch(key, value)
         end
       end
-      selected_microsteps = []
-      if args
-        args.each do |entry|
-          if entry.kind_of? Hash
-            # resolve variable before using it
-            entry.each do |key, value|
-              local_variables[key] = value
+      unless step_path.nil?
+        selected_microsteps = []
+        if args
+          args.each do |entry|
+            if entry.kind_of? Hash
+              # resolve variable before using it
+              entry.each do |key, value|
+                local_variables[key] = value
+              end
+            elsif entry.kind_of? String
+              selected_microsteps.push entry
             end
-          elsif entry.kind_of? String
-            selected_microsteps.push entry
           end
         end
-      end
-      unless selected_microsteps.empty?
-        # Some steps are selected so remove the others
-        # WARN: Allow the user to define this list not in the original order
-        strip_microsteps = []
-        selected_microsteps.each do |microstep_name|
-          macrostep = find_microstep(microstep_name, loaded_microsteps)
-          if macrostep.nil?
-            fail RecipeError, "Can't find microstep '#{microstep_name}' "\
-                              "in macrostep file '#{step_path}'"
-          else
-            strip_microsteps.push(macrostep)
+        unless selected_microsteps.empty?
+          # Some steps are selected so remove the others
+          # WARN: Allow the user to define this list not in the original order
+          strip_microsteps = []
+          selected_microsteps.each do |microstep_name|
+            macrostep = find_microstep(microstep_name, loaded_microsteps)
+            if macrostep.nil?
+              fail RecipeError, "Can't find microstep '#{microstep_name}' "\
+                                "in macrostep file '#{step_path}'"
+            else
+              strip_microsteps.push(macrostep)
+            end
           end
+          loaded_microsteps = strip_microsteps
         end
-        loaded_microsteps = strip_microsteps
       end
       return Macrostep.new(name, loaded_microsteps, local_variables, step_path)
     end
