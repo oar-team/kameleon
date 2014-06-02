@@ -204,6 +204,12 @@
         ln -sf \
           '/usr/lib/systemd/system/dhcpcd.service' \
           '/etc/systemd/system/multi-user.target.wants/dhcpcd.service'
+
+- add_nobody_user:  ## To allow sshd to run correctly
+  - exec_out: echo "nobody:x:99:99:nobody:/:/bin/false" >> $$rootfs_download_path/etc/passwd
+  - exec_out: echo "nobody:x:99:" >> $$rootfs_download_path/etc/group
+  - exec_out: echo "nobody:x:14871::::::" >> $$rootfs_download_path/etc/shadow
+
 - configure_pacman:
   - on_setup_init:
     # init pacman keyring
