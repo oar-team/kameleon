@@ -22,6 +22,8 @@
   - exec_out: |
         cat $${insecure_ssh_key}.pub | tee -a $$rootfs/root/.ssh/authorized_keys
         cat $${insecure_ssh_key}.pub > $$rootfs/root/.ssh/kameleon_insecure_public_key
+        chmod 600 $$rootfs/root/.ssh/authorized_keys
+        chmod 755 $$rootfs/root/.ssh
 
 - create_ssh_config:
   - write_out:
