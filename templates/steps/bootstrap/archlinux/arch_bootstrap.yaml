@@ -39,7 +39,7 @@
       PACMAN_PACKAGES=(
         acl archlinux-keyring attr bzip2 curl expat glibc gpgme libarchive
         libassuan libgpg-error libssh2 lzo2 openssl pacman pacman-mirrorlist xz
-        zlib krb5 e2fsprogs keyutils
+        zlib krb5 e2fsprogs keyutils openssh
       )
       BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
       EXTRA_PACKAGES=(
@@ -191,6 +191,19 @@
     - umount_out: $$rootfs_download_path/proc
     - umount_out: $$rootfs_download_path/dev
 
+- enable_sshd_service:
+  - exec_out: |
+      chroot $$rootfs_download_path \
+        ln -sf \
+          '/usr/lib/systemd/system/sshd.service' \
+          '/etc/systemd/system/multi-user.target.wants/sshd.service'
+
+- enable_dhcp_service:
+  - exec_out: |
+      chroot $$rootfs_download_path \
+        ln -sf \
+          '/usr/lib/systemd/system/dhcpcd.service' \
+          '/etc/systemd/system/multi-user.target.wants/dhcpcd.service'
 - configure_pacman:
   - on_setup_init:
     # init pacman keyring
