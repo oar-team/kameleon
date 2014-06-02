@@ -2,9 +2,10 @@
 - update_system:
   - exec_in: yum update -y
 - clean:
-  - on_export_init:
+  - on_setup_clean:
     - exec_in: yum clean all
 - install_packages:
   - exec_in: yum install -y $$packages 2>&1
 - install_groupackages:
   - exec_in: yum groupinstall -y $$group_packages 2>&1
+  - exec_in: false
