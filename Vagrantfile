@@ -25,6 +25,4 @@ Vagrant.configure("2") do |config|
     cd /home/vagrant/kameleon && bundle install
   EOF
 
-
-
 end
