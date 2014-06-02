@@ -35,7 +35,7 @@
       kernel ../`basename $$rootfs/boot/vmlinuz*`
       append initrd=../`basename $$rootfs/boot/init*` root=UUID=`blkid -s UUID -o value $${nbd_device}p1` ro
   - exec_out: echo " sync..." ; sync
-  - on_export_clean:
+  - on_bootstrap_clean:
     - exec_out: |
         dir=$$rootfs/var/lib/os-prober/mount
         test ! -d "$dir" || (umount -f -l "$dir" && rmdir "$dir")

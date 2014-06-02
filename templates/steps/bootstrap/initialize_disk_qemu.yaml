@@ -6,6 +6,7 @@
 - create_initial_image:
   - check_cmd_out: qemu-img
   - exec_out: |
+      rm -f $$image_disk
       qemu-img create -f qcow2 -o preallocation=metadata $$image_disk $$image_size
 
 - load_nbd_module:
