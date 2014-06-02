@@ -1,59 +1,58 @@
-# # Save Chroot Appliance
+# Save Appliance
+
 - save_as_tgz:
-  - in2out:
-    - /etc/fstab
-    - ./fstab.bak
-  - on_clean:
-    - exec_out: rm -f ./fstab.bak
-  - write_in:
-    - /etc/fstab
+  - check_cmd_out: qemu-nbd
+  - exec_out: echo "Exporting appliance to tar.gz..."
+  - exec_out: qemu-nbd -c $$nbd_device $$input -n || fail nbd device $$nbd_device is unavailable
+  - exec_out: mkdir -p $$rootfs
+  - exec_out: mount $${nbd_device}p1 $$rootfs || fail cannot mount /
+  - exec_out: cp $$rootfs/etc/fstab $$kameleon_cwd/fstab.orig
+  - write_out:
+    - $$rootfs/etc/fstab
     - |
       # UNCONFIGURED FSTAB FOR BASE SYSTEM
-  - pipe:
-    - exec_in: |
-        tar -zcf - --numeric-owner \
-        --exclude=tmp/* \
-        --exclude=dev/* \
-        --exclude=proc/* \
-        --exclude=sys/* \
-        --exclude=run/* \
-        --exclude=mnt/* \
-        --exclude=media/* \
-        --exclude=lost+found/* \
-        -C / .
-    - exec_out: cat > ./$$filename.tar.gz
-  - out2in:
-    - ./fstab.bak
-    - /etc/fstab
   - exec_out: |
-      echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
+      tar -zcf $$output.tar.gz --numeric-owner \
+      --exclude=tmp/* \
+      --exclude=dev/* \
+      --exclude=proc/* \
+      --exclude=sys/* \
+      --exclude=run/* \
+      --exclude=mnt/* \
+      --exclude=media/* \
+      --exclude=lost+found/* \
+      -C $$rootfs .
+  - exec_out: cat $$kameleon_cwd/fstab.orig > $$rootfs/etc/fstab
+  - exec_out: sync
+  - exec_out: echo "Saved tar.gz appliance to $$output.tar.gz"
+  - on_export_clean:
+    - exec_out: sync
+    - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
+    - exec_out: qemu-nbd -d $$nbd_device
+    - exec_out: pgrep qemu-nbd | xargs -I {} kill -9 {} || true
 
 - save_as_raw:
-  - exec_out: |
-      qemu-img convert -O raw $$temp_disk $$filename.raw
-  - exec_out: echo "Saved raw appliance to $(pwd)/$$filename.raw"
+  - exec_out: qemu-img convert -O raw $$input $$output.raw
+  - exec_out: echo "Saved raw appliance to $$output.raw"
 
 - save_as_qcow2:
-  - exec_out: |
-      qemu-img convert -c -O qcow2 $$temp_disk $$filename.qcow2
-  - exec_out: echo "Saved qcow2 appliance to $(pwd)/$$filename.qcow2"
+  - exec_out: qemu-img convert -c -O qcow2 $$input $$output.qcow2
+  - exec_out: echo "Saved qcow2 appliance to $$output.qcow2"
 
 - save_as_qed:
-  - exec_out: |
-      qemu-img convert -O qed $$temp_disk $$filename.qed
-  - exec_out: echo "Saved qed appliance to $(pwd)/$$filename.qed"
+  - exec_out: qemu-img convert -O qed $$input $$output.qed
+  - exec_out: echo "Saved qed appliance to $$output.qed"
 
 - save_as_vmdk:
-  - exec_out: |
-      qemu-img convert -O vmdk $$temp_disk $$filename.vmdk
-  - exec_out: echo "Saved vmdk appliance to $(pwd)/$$filename.vmdk"
+  - exec_out: qemu-img convert -O vmdk $$input $$output.vmdk
+  - exec_out: echo "Saved vmdk appliance to $$output.vmdk"
 
 - save_as_vdi:
-  - exec_out: qemu-img convert -O vdi $$temp_disk $$filename.vdi
+  - exec_out: qemu-img convert -O vdi $$input $$output.vdi
   - rescue:
     - exec_out: |
         echo "Compact the vdi disk"
-        VBoxManage modifyhd $$filename.vdi --compact 2>&1
+        VBoxManage modifyhd $$output.vdi --compact 2>&1
     - exec_out: |
         echo "Cannot compact the vdi disk : VBoxManage is missing."
-  - exec_out: echo "Saved vdi appliance to $(pwd)/$$filename.vdi"
+  - exec_out: echo "Saved vdi appliance to $$output.vdi"
