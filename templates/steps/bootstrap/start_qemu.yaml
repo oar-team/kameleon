@@ -54,6 +54,16 @@
         done
         echo " ~> OK"
 
+- force_shutdown_qemu_vm:
+  - on_checkpoint: redo
+  - on_export_clean:
+    - exec_out: |
+        if nc -w 0 -z localhost $$qemu_monitor_port 2>/dev/null
+        then
+          echo "Shutting down qemu virtual machine..."
+          echo "system_reset" | nc localhost $$qemu_monitor_port 1>/dev/null 2>&1
+        fi
+
 - enable_checkpoint:
   - on_checkpoint: redo
   - on_setup_init:
@@ -61,5 +71,5 @@
 
 - disable_checkpoint:
   - on_checkpoint: redo
-  - on_export_init:
+  - on_setup_clean:
     - exec_out: rm -f $$kameleon_cwd/checkpoint_enabled
