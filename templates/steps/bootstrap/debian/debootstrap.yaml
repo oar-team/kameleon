@@ -3,17 +3,17 @@
 
 - debootstrap:
   - check_cmd_out: debootstrap
-  - exec_out: mkdir -p $$rootfs_partial
+  - exec_out: mkdir -p $$rootfs_download_path
   - exec_out: |
         if [ $$enable_cache = true ]; then
-            [[ ! -f "$$rootfs_partial/.kameleon_timestamp"  ]] || CACHE_AVAILABLE=1
+            [[ ! -f "$$rootfs_download_path/.kameleon_timestamp"  ]] || CACHE_AVAILABLE=1
         fi
         [[ -n $CACHE_AVAILABLE  ]] || \
-          debootstrap --no-check-gpg --arch=$$arch --include="$$include" $$release $$rootfs_partial $$repository \
-          && date +%s > $$rootfs_partial/.kameleon_timestamp
-  - exec_out: cat /etc/resolv.conf > $$rootfs_partial/etc/resolv.conf
+          debootstrap --no-check-gpg --arch=$$arch --include="$$include_pkg" $$release $$rootfs_download_path $$repository \
+          && date +%s > $$rootfs_download_path/.kameleon_timestamp
+  - exec_out: cat /etc/resolv.conf > $$rootfs_download_path/etc/resolv.conf
   - write_out:
-    - $$rootfs_partial/etc/network/interfaces
+    - $$rootfs_download_path/etc/network/interfaces
     - |
       auto lo
       iface lo inet loopback

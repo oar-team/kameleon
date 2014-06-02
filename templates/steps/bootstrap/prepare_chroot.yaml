@@ -1,45 +1,67 @@
-- insecure_ssh_key: $$kameleon_cwd/insecure_ssh_key
+# create the appliance disk and initialize the checkpoint mechanism with Qemu
+# Network Block Device (NBD)
 
 - create_initial_image:
   - check_cmd_out: qemu-img
+  - exec_out: mkdir -p checkpoints
   - exec_out: |
-      qemu-img create -f qcow2 -o preallocation=metadata $$image_disk $$image_size
+      if [ $$consider_checkpoint = true ]; then
+        if [ ! -e "$$image_disk" ] ; then
+          qemu-img create -f qcow2 checkpoints/base_$$image_disk $$image_size
+          # keep a link to the last checkpoint disk
+          ln -sf checkpoints/base_$$image_disk $$image_disk
+        fi
+      else
+        qemu-img create -f qcow2 $$image_disk $$image_size
+      fi
+
+- load_nbd_module:
+  - on_checkpoint: redo
+  - on_bootstrap_init:
+    - exec_out: |
+        lsmod | grep nbd >/dev/null \
+        || modprobe nbd max_part=63 \
+        || fail failed to load nbd module into kernel
 
 - attach_nbd_device:
+  # this microstep must be skipped because it is already done by the
+  # checkpoint restore function
+  - on_checkpoint: redo
   - check_cmd_out: qemu-nbd
-  - exec_out: echo Looking for nbd device...
+  - exec_out: echo Connecting $$image_disk to nbd device $$nbd_device
+  - exec_out: echo "sync" ; sync
+  - exec_out: qemu-nbd -d $$nbd_device
   - exec_out: |
-      lsmod | grep nbd >/dev/null \
-      || modprobe nbd max_part=63 \
-      || fail failed to load nbd module into kernel
-  - exec_out: |
-      for i in /dev/nbd*
-      do
-        echo "Trying to connect $$image_disk to nbd device $i"
-        qemu-nbd -c $i $$image_disk -n && export DISK=$i && break || true
-      done
-      test ! "$DISK" == "" ||  fail no nbd device available
-  - exec_out: echo "$DISK" > .nbd_disk_path
-  - exec_out: echo "Connected $$image_disk to $DISK"
-  - on_clean:
+      if [ $$consider_checkpoint = true ]; then
+        REAL_PATH="$(readlink $$image_disk)"
+      else
+        REAL_PATH="$$image_disk"
+      fi
+      qemu-nbd -c $$nbd_device $REAL_PATH -n || fail nbd device $$nbd_device is unavailable
+
+- detach_nbd_device:
+  # this miscrostep must be done again ensure that the nbd device is
+  # detached
+  - on_checkpoint: redo
+  - on_export_clean:
     - exec_out: echo "sync" ; sync
-    - exec_out: test ! -f .nbd_disk_path || qemu-nbd -d $(cat .nbd_disk_path)
-    - exec_out: rm -f .nbd_disk_path
+    - exec_out: qemu-nbd -d $$nbd_device
+    - exec_out: "pgrep qemu-nbd | xargs -I {} kill -9 {} || true"
 
 - partition_disk:
   - check_cmd_out: parted
   - exec_out: |
       echo "Partitioning disk..."
-      parted ${DISK} mklabel msdos
-      parted ${DISK} mkpart primary 0% 100%
-      parted ${DISK} set 1 boot on
+      parted $${nbd_device} mklabel msdos
+      parted $${nbd_device} mkpart primary 0% 100%
+      parted $${nbd_device} set 1 boot on
   - exec_out: |
       echo Creating root partition...
-      mkfs.$$filesystem_type -q ${DISK}p1 || fail cannot create / ext4
+      mkfs.$$filesystem_type -q $${nbd_device}p1 || fail cannot create / ext4
 
 - mount_rootfs:
   - exec_out: mkdir -p $$rootfs
-  - exec_out:  "echo Mounting root partition... ;  mount ${DISK}p1 $$rootfs || fail cannot mount /"
+  - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p1 $$rootfs || fail cannot mount /"
   - on_clean:
     - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
 
@@ -60,7 +82,7 @@
       # that works even if disks are added and removed. See fstab(5).
       #
       # <file system> <mount point>   <type>  <options>       <dump>  <pass>
-      UUID=`blkid -s UUID -o value ${DISK}p1` /               $$filesystem_type    errors=remount-ro  0       1
+      UUID=`blkid -s UUID -o value $${nbd_device}p1` /               $$filesystem_type    errors=remount-ro  0       1
 
 - mount_chroot:
   - check_cmd_out: chroot
@@ -102,43 +124,3 @@
       ControlPersist yes
       Compression yes
       Protocol 2
-
-- install_bootloader:
-  - rescue:
-    - exec_out: LC_ALL=POSIX chroot $$rootfs bash -c "command -V extlinux 2> /dev/null"
-    - breakpoint: "extlinux is missing"
-  - exec_out: LC_ALL=POSIX chroot $$rootfs extlinux --install /boot/extlinux 2>&1
-  - exec_out: |
-      MBR_PATH=
-      PATHS=("$$rootfs/usr/share/syslinux/mbr.bin"
-             "$$rootfs/usr/lib/bios/syslinux/mbr.bin"
-             "$$rootfs/usr/lib/syslinux/bios/mbr.bin"
-             "$$rootfs/usr/lib/extlinux/mbr.bin"
-             "$$rootfs/usr/lib/syslinux/mbr.bin")
-      for element in "${PATHS[@]}"
-      do
-        if [ -f "$element" ]; then
-          MBR_PATH="$element"
-          break
-        fi
-      done
-      if [ "$MBR_PATH" == "" ]; then
-        fail "unable to locate the extlinux mbr"
-      else
-        dd if="$MBR_PATH" of="$DISK" bs=440  2>&1
-      fi
-  - exec_out: echo " sync..." ; sync
-  - write_out:
-    - $$rootfs/boot/extlinux/extlinux.conf
-    - |
-      default linux
-      timeout 1
-      
-      label linux
-      kernel ../`basename $$rootfs/boot/vmlinuz*`
-      append initrd=../`basename $$rootfs/boot/init*` root=UUID=`blkid -s UUID -o value ${DISK}p1` ro
-  - exec_out: echo " sync..." ; sync
-  - on_export_clean:
-    - exec_out: |
-        dir=$$rootfs/var/lib/os-prober/mount
-        test ! -d "$dir" || (umount -f -l "$dir" && rmdir "$dir")

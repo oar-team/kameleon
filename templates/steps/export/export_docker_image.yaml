@@ -1,4 +1,0 @@
-
-- export_targz:
-  - exec_out: echo "Exporting the rootfs..."
-  - exec_out: docker export $(cat MAIN_CONTAINER_ID) > $$rootfs_archive

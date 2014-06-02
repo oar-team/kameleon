@@ -58,7 +58,7 @@
 - update_repositories:
   - exec_in: apt-get -y --force-yes update
   - exec_in: apt-get -y --force-yes install localepurge
-  - on_export_init:
+  - on_setup_clean:
     - exec_in: apt-get -y --force-yes autoclean
     - exec_in: apt-get -y --force-yes clean
     - exec_in: apt-get -y --force-yes autoremove
