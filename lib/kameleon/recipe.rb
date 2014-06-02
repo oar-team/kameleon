@@ -17,7 +17,6 @@ module Kameleon
         "setup" => Section.new("setup"),
         "export" => Section.new("export"),
       }
-      @required_global = %w(out_context in_context)
       kameleon_id = SecureRandom.uuid
       @global = {
         "kameleon_recipe_name" => @name,
@@ -25,6 +24,9 @@ module Kameleon
         "kameleon_uuid" => kameleon_id,
         "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
+        "in_context" => {"cmd"=> "/bin/bash"},
+        "out_context" => {"cmd"=> "/bin/bash",
+                         "workdir"=> File.join(Kameleon.env.build_path, @name)}
       }
       @aliases = {}
       @checkpoint = nil
@@ -276,12 +278,6 @@ module Kameleon
         end
       end
       @logger.notice("Starting recipe consistency check")
-      missings = []
-      @required_global.each do |key|
-        missings.push key unless @global.key? key
-      end
-      fail RecipeError, "Required parameters missing in global section :" \
-                        " #{missings.join ' '}" unless missings.empty?
       # check context args
       required_args = %w(cmd)
       missings = []
@@ -428,7 +424,6 @@ module Kameleon
         "path" => @path.to_s,
         "files" => @files.map {|p| p.to_s },
         "global" => @global,
-        "required_global" => @required_global,
         "aliases" => @aliases,
       }
       recipe_hash["checkpoint"] = @checkpoint unless @checkpoint.nil?
