@@ -1,4 +1,5 @@
 create: |
+    if [ -f "$$kameleon_cwd/checkpoint_enabled" ] ; then
     if [ -e "$$image_disk" ] ; then
       parent_of_@microstep_id="$(readlink $$image_disk)"
       pushd $$kameleon_cwd/checkpoints
@@ -14,6 +15,7 @@ create: |
       qemu-nbd -d $$nbd_device
       qemu-nbd -c $$nbd_device "$(readlink $$image_disk)"
     fi
+    fi
 
 apply: |
     # apply command use the backing file that represent the real state to restore
@@ -21,7 +23,6 @@ apply: |
                   | grep backing \
                   | sed -e 's/.*checkpoints\/\(.*\)_checkpoint.qcow2\(.*\)/\1/p' \
                   | uniq)
-    
     ln -sf "$$kameleon_cwd/checkpoints/${previous_id}_checkpoint.qcow2" "$$image_disk"
 
 clear: |
