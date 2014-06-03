@@ -14,7 +14,7 @@ module Kameleon
     def format(event)
       buff = sprintf(@@basicformat, @max_level_length, event.name)
       buff << (event.tracer.nil? ? "" : "(#{event.tracer[0]})") + ": "
-      unless Log4r::LNAMES[event.level].eql? "PROGRESS"
+      unless Log4r::LNAMES[event.level].include? "PROGRESS"
         @on_progress = false
         buff << format_object(event.data) + "\n"
       else
@@ -36,7 +36,7 @@ module Kameleon
     end
 
     def format(logevent)
-      if Log4r::LNAMES[logevent.level].eql? "PROGRESS"
+      unless Log4r::LNAMES[event.level].include? "PROGRESS"
         # Formats the data as is with no newline, to allow progress bars to be logged.
         sprintf("%s", logevent.data.to_s)
       else

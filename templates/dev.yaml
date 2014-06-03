@@ -1,0 +1,18 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# RECIPE: <%= recipe_name %>
+#
+# DESCRIPTION: Build a debian wheezy appliance using qemu hypervisor.
+#
+# TEMPLATE: <%= @name %>
+#
+#==============================================================================
+
+---
+setup:
+  # Install
+  - custom_step:
+    - download:
+      - exec_in: "wget 2>&1 http://download.quicker.fr/indexfiles/downloads/BruteforceSaveData_4.5.1.zip"

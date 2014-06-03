@@ -10,7 +10,7 @@ module Kameleon
     attr_reader :polipo_env, :cache_dir,:polipo_port
     attr_writer :activated, :cwd, :polipo_path, :name
     def initialize()
-      @logger = Log4r::Logger.new("kameleon::[Persistent cache]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       ## we must configure Polipo to be execute for the in and out context
       ## we have to start polipo in the out context for debootstrap step
 

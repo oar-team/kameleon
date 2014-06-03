@@ -14,6 +14,7 @@ module Kameleon
       @local_workdir = local_workdir
       @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir)
       @logger.debug("Initialize new ctx (#{name})")
+      @log_on_progress = false
 
       instance_variables.each do |v|
         @logger.debug("  #{v} = #{instance_variable_get(v)}")
@@ -25,9 +26,29 @@ module Kameleon
       execute("echo The '#{name}_context' has been initialized", :log_level => "info")
     end
 
+    def do_log(out, log_level)
+      if @log_on_progress
+        log_progress(log_level, out)
+        @log_on_progress = false if out.match(/\n$/)
+      else
+        if out.match(/\n$/)
+          out.split( /\r?\n/ ).each {|m| log(log_level, m) }
+        else
+          log_progress(log_level, out)
+          @log_on_progress = true
+        end
+      end
+    end
+
     def log(log_level, msg)
       @logger.info msg if log_level == "info"
       @logger.error msg if log_level == "error"
+      @logger.debug msg if log_level == "debug"
+    end
+
+    def log_progress(log_level, msg)
+      @logger.progress_info msg if log_level == "info"
+      @logger.progress_error msg if log_level == "error"
       @logger.debug msg if log_level == "debug"
     end
 
@@ -36,8 +57,8 @@ module Kameleon
       cmd_with_prefix.split( /\r?\n/ ).each {|m| @logger.debug "+ #{m}" }
       log_level = kwargs.fetch(:log_level, "info")
       exit_status = @shell.execute(cmd_with_prefix, kwargs) do |out, err|
-        out.split( /\r?\n/ ).each {|m| log(log_level, m) } unless out.nil?
-        err.split( /\r?\n/ ).each {|m| log("error", m) } unless err.nil?
+        do_log(out, log_level) unless out.nil?
+        do_log(err, "error") unless err.nil?
       end
       @logger.debug("Exit status : #{exit_status}")
       fail ExecError unless exit_status.eql? 0

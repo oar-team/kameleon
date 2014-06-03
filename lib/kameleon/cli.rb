@@ -16,7 +16,7 @@ module Kameleon
                           ' Default : ./'
     no_commands do
       def logger
-        @logger ||= Log4r::Logger.new("kameleon::[cli]")
+        @logger ||= Log4r::Logger.new("kameleon::[kameleon]")
       end
     end
 
@@ -177,10 +177,12 @@ module Kameleon
         console_output = Log4r::ColorOutputter.new 'console', {
           :colors => { :debug  => :light_black,
                        :info   => :green,
+                       :progress_info => :green,
                        :notice => :light_blue,
-                       :progress => :light_blue,
+                       :progress_notice => :light_blue,
                        :warn   => :yellow,
                        :error  => :red,
+                       :progress_error => :red,
                        :fatal  => :red,
                      },
           :formatter => format,

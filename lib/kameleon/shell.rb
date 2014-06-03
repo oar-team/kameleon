@@ -11,7 +11,7 @@ module Kameleon
     attr :exit_status, :process
 
     def initialize(context_name, cmd, shell_workdir, local_workdir, kwargs = {})
-      @logger = Log4r::Logger.new("kameleon::[shell]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @cmd = cmd.chomp
       @context_name = context_name
       @local_workdir = local_workdir

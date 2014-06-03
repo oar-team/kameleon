@@ -51,7 +51,7 @@ module Kameleon
     end
 
     def logger
-      @logger ||= Log4r::Logger.new("kameleon::[global]")
+      @logger ||= Log4r::Logger.new("kameleon::[kameleon]")
     end
 
     def env

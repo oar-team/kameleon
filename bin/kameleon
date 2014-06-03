@@ -7,6 +7,11 @@ Signal.trap("INT") { exit 1 }
 $stdout.sync = true
 $stderr.sync = true
 
+require 'log4r-color'
+require 'log4r-color/configurator'
+
+# This is how we specify our levels
+Log4r::Configurator.custom_levels "DEBUG", "INFO", "PROGRESS_INFO", "NOTICE", "PROGRESS_NOTICE", "WARN", "ERROR", "PROGRESS_ERROR", "FATAL"
 require 'kameleon'
 
 require 'kameleon/cli'

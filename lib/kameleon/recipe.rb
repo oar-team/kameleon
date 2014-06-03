@@ -8,7 +8,7 @@ module Kameleon
                   :checkpoint, :checkpoint_path, :metainfo
 
     def initialize(path)
-      @logger = Log4r::Logger.new("kameleon::[recipe]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
       @recipe_content = File.open(@path, 'r') { |f| f.read }

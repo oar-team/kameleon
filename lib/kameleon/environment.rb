@@ -13,7 +13,7 @@ module Kameleon
 
 
     def initialize(options = {})
-      @logger = Log4r::Logger.new("kameleon::[env]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = File.expand_path(options[:workspace])

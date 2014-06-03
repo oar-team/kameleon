@@ -9,7 +9,7 @@ module Kameleon
 
     def initialize(recipe, options)
       @options = options
-      @logger = Log4r::Logger.new("kameleon::[engine]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @recipe = recipe
       @cleaned_sections = []
       @cwd = @recipe.global["kameleon_cwd"]
@@ -39,7 +39,6 @@ module Kameleon
         @cache.name = @recipe.name
         #saving_steps_files
       end
-
 
       @in_context = nil
       begin
@@ -237,7 +236,7 @@ module Kameleon
       responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
       while true
         msg.split( /\r?\n/ ).each {|m| @logger.notice "#{m}" }
-        @logger.progress "answer ? [" + responses.keys().join("/") + "]: "
+        @logger.progress_notice "answer ? [" + responses.keys().join("/") + "]: "
         answer = $stdin.gets
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!
