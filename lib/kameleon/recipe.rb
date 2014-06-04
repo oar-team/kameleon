@@ -135,7 +135,10 @@ module Kameleon
         if aliases.kind_of? Hash
           @aliases = aliases
         elsif aliases.kind_of? String
-          path = Pathname.new(File.join(File.dirname(@path), "aliases", aliases))
+          path = Pathname.new(File.join(File.dirname(@path),
+                                        "steps",
+                                        "aliases",
+                                        aliases))
           if File.file?(path)
             @logger.notice("Loading aliases #{path}")
             @aliases = YAML.load_file(path)
@@ -155,6 +158,7 @@ module Kameleon
           @checkpoint["path"] = @path
         elsif checkpoint.kind_of? String
           path = Pathname.new(File.join(File.dirname(@path),
+                              "steps",
                               "checkpoints",
                               checkpoint))
           if File.file?(path)
