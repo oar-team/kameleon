@@ -21,8 +21,7 @@ aliases: defaults.yaml
 global:
   ## User varibales : used by the recipe
   user_name: kameleon
-  arch: amd64
-  dns: 208.67.222.222
+  user_password: $$user_name
 
   distrib: debian
   release: wheezy
@@ -33,51 +32,68 @@ global:
     - $$distrib/$$release
     - $$distrib
 
+  # Frontend options
+  g5k_user: sharrache
+  g5k_site: grenoble
+
+  # Kenv
+  kenv: "wheezy-x64-base"
+
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
   # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-  g5k_frontend: "grenoble.g5k"
+  out_cwd: ~/kameleon_workdir/$$kameleon_recipe_name
   out_context:
-    cmd:  LC_ALL=POSIX ssh $$g5k_frontend -t /bin/bash
-    workdir: /
+    cmd: >
+      ssh -A -t $$g5k_user@access.grid5000.fr
+      'ssh -A -t $$g5k_site "mkdir -p $$out_cwd && cd $$out_cwd && bash"'
 
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
-  default_env: "USER=root HOME=/root LC_ALL=POSIX"
-  ssh_options: -o StrictHostKeyChecking=no -o ForwardAgent=yes -o UserKnownHostsFile=/dev/null -o ConnectTimeout=2
-  ssh_port: 2222
+  in_cwd: ~/kameleon_workdir/$$kameleon_recipe_name
+  ssh_config_file: $$kameleon_cwd/ssh_config
   in_context:
-    cmd: LC_ALL=POSIX ssh $$ssh_options root@localhost -p $$ssh_port -t /bin/bash
-    workdir: /
+    cmd: >
+      ssh -F $$ssh_config_file $$kameleon_recipe_name
+        'mkdir -p $$out_cwd && cd $$out_cwd && bash'
 
 #== Bootstrap the new system and create the 'in_context'
 #== This will consist in a G5k Deployment
 bootstrap:
   - g5k_reserv:
-    - g5k_user: "g5k_username"
-    - kenv: "wheezy-x64-base"
-    - walltime: "2:00:00"
+    - g5k_user: $$g5k_user
+    - kenv: $$kenv
+    - walltime: "0:30:00"
+
 #== Install and configuration steps
 # WARNING: this part should be independante from the out context (whenever
 # possible...)
 setup:
   # Install
-  - software_install:
+  - configure_apt:
+    - enable_contrib_repo: true
+    - enable_nonfree_repo: true
+    - install_recommends: false
+  - upgrade_system:
+    - dist_upgrade: true
+  - install_software:
     - packages: >
-        debian-keyring zip unzip rsync sudo less vim bash-completion
-  - config_kernel:
-    - arch: $$arch
+        debian-keyring ntp zip unzip rsync sudo less vim bash-completion
   # Configuration
-  - system_config:
-    - locales: en_US
+  - configure_system:
+    - locales: POSIX C en_US fr_FR de_DE
     - lang: en_US.UTF-8
     - timezone: UTC
-  - keyboard_config:
-    - layout: "us"
+  - configure_keyboard:
+    - layout: "us,fr,de"
+  - configure_network:
+    - hostname: kameleon-$$distrib
+  - create_group:
+    - name: admin
   - create_user:
     - name: $$user_name
-    - group: admin
-    - password: $$user_name
+    - groups: sudo admin
+    - password: $$user_password
 
 #== Export the generated appliance in the format of your choice
 export:

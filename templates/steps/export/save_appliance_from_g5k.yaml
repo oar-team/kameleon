@@ -2,18 +2,11 @@
 
 - save_as_g5k:
   - exec_out: echo "Using tgz g5k to Export the machine"
-  - exec_out: sleep 2
-  - exec_in: tgz-g5k /tmp/$$filename.tar.gz
-  - in2out:
-    - /tmp/$$filename.tar.gz
-    - $$filename.tar.gz
-  - exec_out: |
-              echo "Saved tar.gz appliance to $(pwd)/$$filename.tar.gz"
-  - exec_out: |
-              echo "Getting the appropiate post install"
-              export postinstall=`kaenv3 -p $$kenv | grep archive`
+  - exec_out: ssh -F $$out_cwd/ssh_config $$kameleon_recipe_name tgz-g5k > $$filename.tar.gz 2>/dev/null
+  - exec_out: echo "Saved tar.gz appliance to $$filename.tar.gz"
+  - exec_out: echo "Getting the appropiate post install"
   - pipe:
-    - exec_out: echo $postinstall
+    - exec_out: kaenv3 -p $$kenv | grep archive
     - exec_in: cat > /tmp/postinstall
 
   - write_in:
