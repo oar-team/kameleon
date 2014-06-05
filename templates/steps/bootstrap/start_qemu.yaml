@@ -27,11 +27,11 @@
           -vnc :1 $LOADVM \
         1>qemu.log 2>&1 & disown
   - exec_out: |
-        echo -n "Waiting for SSH to become available..."
+        echo -n "Waiting for SSH to become available"
         until ssh-keyscan -4 -p $$qemu_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
         do
-          sleep 2
           echo -n "."
+          sleep 1
         done
         echo " ~> OK"
 
@@ -43,13 +43,13 @@
         grep -f /root/.ssh/kameleon_insecure_public_key -v /root/.ssh/authorized_keys \
             | cat > /root/.ssh/authorized_keys
         rm -f /root/.ssh/kameleon_insecure_public_key
-    - exec_in: echo "Shutting down qemu virtual machine..."
+    - exec_out: echo -n "Shutting down qemu virtual machine"
     - exec_in: |
         sleep 2 && shutdown -h now &
     - exec_out: |
         while nc -w 0 -z localhost $$qemu_monitor_port
         do
-          sleep 2
+          sleep 1
           echo -n "."
         done
         echo " ~> OK"
