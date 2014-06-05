@@ -32,6 +32,7 @@ module Kameleon
       @checkpoint = nil
       @files = []
       @logger.debug("Initialize new recipe (#{path})")
+      @base_recipe_names = [@name + ".yaml"]
       load!
     end
 
@@ -44,6 +45,10 @@ module Kameleon
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml error"
       end
+      # Load entended recipe variables
+      yaml_recipe = load_base_recipe(yaml_recipe)
+      yaml_recipe.delete("extend")
+
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
       # Resolve dynamically-defined variables !!
@@ -127,6 +132,34 @@ module Kameleon
         "recipe" => Utils.extract_meta_var("recipe", @recipe_content),
         "template" => Utils.extract_meta_var("template", @recipe_content),
       }
+    end
+
+    def load_base_recipe(yaml_recipe)
+      base_recipe_name = yaml_recipe.fetch("extend", "")
+      return yaml_recipe if base_recipe_name.empty?
+
+      base_recipe_name << ".yaml" unless base_recipe_name.end_with? ".yaml"
+      return yaml_recipe if @base_recipe_names.include? base_recipe_name
+
+      base_recipe_path = File.join(File.dirname(@path), base_recipe_name)
+      base_recipe_path << ".yaml" unless base_recipe_path.end_with? ".yaml"
+      fail RecipeError, "Could not find this following recipe : #{@recipe_path}" \
+         unless File.file? @path
+      base_yaml_recipe = YAML.load File.open base_recipe_path
+      unless yaml_recipe.kind_of? Hash
+        fail RecipeError, "Invalid yaml error"
+      end
+      yaml_recipe.keys.each do |key|
+        if ["aliases", "checkpoint"].include? key
+          base_yaml_recipe[key] = yaml_recipe[key]
+        elsif ["export", "bootstrap", "setup"].include? key
+          base_yaml_recipe[key] = base_yaml_recipe.fetch(key, []) + yaml_recipe[key]
+        elsif ["global"].include? key
+          base_yaml_recipe[key] = base_yaml_recipe.fetch(key, {}).merge(yaml_recipe[key])
+        end
+      end
+      @base_recipe_names.push(base_recipe_name)
+      return load_base_recipe(base_yaml_recipe)
     end
 
     def load_aliases(yaml_recipe)
