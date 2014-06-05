@@ -463,6 +463,44 @@ module Kameleon
   end
 
   class RecipeTemplate < Recipe
+    def get_answer(msg)
+      while true
+        @logger.progress_notice msg
+        answer = $stdin.gets.downcase
+        raise AbortError, "Execution aborted..." if answer.nil?
+        answer.chomp!
+        if ["y", "n" , "", "a"].include?(answer)
+          if answer.eql? "y"
+            return true
+          elsif answer.eql? "a"
+            raise AbortError, "Aborted..."
+          end
+          return false
+        end
+      end
+    end
+
+    def safe_copy_file(src, dst)
+      if File.exists? dst
+        diff = Diffy::Diff.new(src.to_s, dst.to_s, :source => "files").to_s
+        unless diff.chomp.empty?
+          @logger.notice("File #{} --> Already exists")
+          puts Diffy::Diff.new(src.to_s, dst.to_s,
+                               :source => "files",
+                               :context => 1,
+                               :include_diff_info => true).to_s
+          msg = "overwrite #{dst} ? [y]es/[N]o/[a]bort : "
+          if get_answer(msg)
+            FileUtils.copy_file(src, dst)
+          end
+        end
+      else
+        FileUtils.mkdir_p File.dirname(dst)
+        FileUtils.copy_file(src, dst)
+      end
+    end
+
+
     def copy_template(dest_path, recipe_name, force)
       Dir::mktmpdir do |tmp_dir|
         recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
@@ -472,17 +510,18 @@ module Kameleon
           result = tpl.result(binding)
           file.write(result)
         end
-
+        ## copying recipe
+        recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
+        safe_copy_file(recipe_path, Pathname.new(recipe_dst))
+        ## copying steps
         @files.each do |path|
           relative_path = path.relative_path_from(Kameleon.env.templates_path)
-          dst = File.join(tmp_dir, File.dirname(relative_path))
-          FileUtils.mkdir_p dst
-          FileUtils.cp(path, dst)
-          @logger.notice("Copying step '#{File.join(Kameleon.env.workspace, relative_path)}'")
+          dst = File.join(Kameleon.env.workspace, relative_path)
+          safe_copy_file(path, dst)
         end
-        # Create recipe dir if not exists
-        FileUtils.mkdir_p Kameleon.env.workspace
-        FileUtils.cp_r(Dir[tmp_dir + '/*'], Kameleon.env.workspace)
+        # # Create recipe dir if not exists
+        # FileUtils.mkdir_p Kameleon.env.workspace
+        # FileUtils.cp_r(Dir[tmp_dir + '/*'], Kameleon.env.workspace, :preserve => true)
       end
     end
   end

@@ -10,6 +10,7 @@ require 'log4r-color'
 require 'log4r-color/configurator'
 require 'pathname'
 require 'table_print'
+require 'diffy'
 
 module Kameleon
   # add a PROGRESS and NOTICE level

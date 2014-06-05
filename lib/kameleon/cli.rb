@@ -25,18 +25,15 @@ module Kameleon
                   :desc => "overwrite the recipe"
     desc "new [RECIPE_NAME]", "Creates a new recipe"
     def new(recipe_name)
-      logger.notice("Cloning template '#{options[:template]}'")
+      logger.notice("Cloning template '#{options[:template]}'...")
       templates_path = Kameleon.env.templates_path
       recipes_path = Kameleon.env.workspace
-
       template_path = File.join(templates_path, options[:template]) + '.yaml'
       template_recipe = RecipeTemplate.new(template_path)
       template_recipe.copy_template(recipes_path,
                                     recipe_name,
                                     options[:force])
-      recipe_path = File.join(recipes_path, recipe_name + ".yaml")
-      logger.notice("New recipe \"#{recipe_name}\" "\
-                    "as been created in #{recipe_path}")
+      logger.notice("done")
     end
 
     desc "templates", "Lists all defined templates"
@@ -154,6 +151,7 @@ module Kameleon
       if !$stdout.tty? or !env_options["color"]
         console_output = Log4r::StdoutOutputter.new('console',
                                                     :formatter => format)
+        Diffy::Diff.default_format = :text
       else
         console_output = Log4r::ColorOutputter.new 'console', {
           :colors => { :debug  => :light_black,
@@ -168,6 +166,7 @@ module Kameleon
                      },
           :formatter => format,
         }
+        Diffy::Diff.default_format = :color
       end
       logger = Log4r::Logger.new('kameleon')
       logger.outputters << console_output

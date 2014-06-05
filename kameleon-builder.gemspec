@@ -28,11 +28,12 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version     = RUBYONEX ? '>= 1.9.3' : '>= 2.0.0'
 
-  s.add_dependency 'childprocess', '~> 0.3'
+  s.add_dependency 'childprocess', '~> 0.5'
   s.add_dependency 'thor', '~> 0.15'
   s.add_dependency 'table_print', '~> 1.5'
   s.add_dependency 'log4r-color', '~> 1.2'
   s.add_dependency 'syck', '~> 1.0.0' unless RUBYONEX
+  s.add_dependency 'diffy', '~> 3.0.4'
 
   s.add_development_dependency 'pry', '~> 0.9'
   s.add_development_dependency 'pry-debugger', '~> 0.2'
