@@ -37,7 +37,7 @@ module Kameleon
 
     def load!
       # Find recipe path
-      @logger.notice("Loading #{@path}")
+      @logger.debug("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load File.open @path
@@ -94,7 +94,7 @@ module Kameleon
               end
             end
             if embedded_step
-              @logger.notice("Loading embedded macrostep #{name}")
+              @logger.debug("Loading embedded macrostep #{name}")
               macrostep = load_macrostep(nil, name, args)
               section.macrosteps.push(macrostep)
               next
@@ -104,7 +104,7 @@ module Kameleon
             dir_to_search.each do |dir|
               macrostep_path = Pathname.new(File.join(dir, name + '.yaml'))
               if File.file?(macrostep_path)
-                @logger.notice("Loading macrostep #{macrostep_path}")
+                @logger.debug("Loading macrostep #{macrostep_path}")
                 macrostep = load_macrostep(macrostep_path, name, args)
                 section.macrosteps.push(macrostep)
                 @files.push(macrostep_path)
@@ -121,7 +121,7 @@ module Kameleon
           end
         end
       end
-      @logger.notice("Loading recipe metadata")
+      @logger.debug("Loading recipe metadata")
       @metainfo = {
         "description" => Utils.extract_meta_var("description", @recipe_content),
         "recipe" => Utils.extract_meta_var("recipe", @recipe_content),
@@ -140,7 +140,7 @@ module Kameleon
                                         "aliases",
                                         aliases))
           if File.file?(path)
-            @logger.notice("Loading aliases #{path}")
+            @logger.debug("Loading aliases #{path}")
             @aliases = YAML.load_file(path)
             @files.push(path)
           else
@@ -162,7 +162,7 @@ module Kameleon
                               "checkpoints",
                               checkpoint))
           if File.file?(path)
-            @logger.notice("Loading checkpoint configuration #{path}")
+            @logger.debug("Loading checkpoint configuration #{path}")
             @checkpoint = YAML.load_file(path)
             @checkpoint["path"] = path.to_s
             @files.push(path)
@@ -463,7 +463,6 @@ module Kameleon
   end
 
   class RecipeTemplate < Recipe
-
     def copy_template(dest_path, recipe_name, force)
       Dir::mktmpdir do |tmp_dir|
         recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
@@ -479,11 +478,11 @@ module Kameleon
           dst = File.join(tmp_dir, File.dirname(relative_path))
           FileUtils.mkdir_p dst
           FileUtils.cp(path, dst)
-          @logger.debug("Copying '#{path}' to '#{dst}'")
+          @logger.notice("Copying step '#{File.join(Kameleon.env.workspace, relative_path)}'")
         end
         # Create recipe dir if not exists
-        FileUtils.mkdir_p Kameleon.env.recipes_path
-        FileUtils.cp_r(Dir[tmp_dir + '/*'], Kameleon.env.recipes_path)
+        FileUtils.mkdir_p Kameleon.env.workspace
+        FileUtils.cp_r(Dir[tmp_dir + '/*'], Kameleon.env.workspace)
       end
     end
   end

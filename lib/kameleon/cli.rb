@@ -10,10 +10,7 @@ module Kameleon
                  :desc => "Enable colorization in output"
     class_option :debug, :type => :boolean, :default => false,
                  :desc => "Enable debug output"
-    class_option :workspace, :aliases => '-w', :type => :string,
-                 :desc => 'Change the kameleon current work directory. ' \
-                          '(The folder containing your recipes folder).' \
-                          ' Default : ./'
+
     no_commands do
       def logger
         @logger ||= Log4r::Logger.new("kameleon::[kameleon]")
@@ -30,7 +27,7 @@ module Kameleon
     def new(recipe_name)
       logger.notice("Cloning template '#{options[:template]}'")
       templates_path = Kameleon.env.templates_path
-      recipes_path = Kameleon.env.recipes_path
+      recipes_path = Kameleon.env.workspace
 
       template_path = File.join(templates_path, options[:template]) + '.yaml'
       template_recipe = RecipeTemplate.new(template_path)
@@ -70,7 +67,7 @@ module Kameleon
     map %w(-v --version) => :version
 
 
-    desc "build [RECIPE_NAME]", "Builds the appliance from the recipe"
+    desc "build [RECIPE_PATH]", "Builds the appliance from the recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
@@ -91,51 +88,38 @@ module Kameleon
                   :default => nil,
                   :desc => "Full path of the proxy binary to use for the persistent cache."
 
-    def build(recipe_name)
-      logger.notice("Starting build recipe '#{recipe_name}'")
-      start_time = Time.now.to_i
-      recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
+    def build(recipe_path)
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+      logger.notice("Starting build recipe '#{recipe_path}'")
+      start_time = Time.now.to_i
       engine.build
       total_time = Time.now.to_i - start_time
       logger.notice("")
-      logger.notice("Build recipe '#{recipe_name}' is completed !")
+      logger.notice("Build recipe '#{recipe_path}' is completed !")
       logger.notice("Build total duration : #{total_time} secs")
       logger.notice("Build directory : #{engine.cwd}")
       logger.notice("Build recipe file : #{engine.build_recipe_path}")
       logger.notice("Log file : #{Kameleon.env.log_file}")
     end
 
-    desc "checkpoints [RECIPE_NAME]", "Lists all availables checkpoints"
+    desc "checkpoints [RECIPE_PATH]", "Lists all availables checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
-    def checkpoints(recipe_name)
+    def checkpoints(recipe_path)
       Log4r::Outputter['console'].level = Log4r::ERROR unless Kameleon.env.debug
-      recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       engine.pretty_checkpoints_list
     end
 
-    desc "clear [RECIPE_NAME]", "Cleaning out context and removing all checkpoints"
+    desc "clear [RECIPE_PATH]", "Cleaning out context and removing all checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
-    def clear(recipe_name)
+    def clear(recipe_path)
       Log4r::Outputter['console'].level = Log4r::INFO
-      recipe_path = File.join(Kameleon.env.recipes_path, recipe_name) + '.yaml'
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       engine.clear
-    end
-
-    desc "completions command", "Used for shell completion", :hide => true
-    def completions(*args)
-      if %w(clear checkpoints build).include?(args[0])
-          recipes = Dir.foreach(Kameleon.env.recipes_path).map do |f|
-            File.basename(f, ".yaml") if f.include?(".yaml")
-          end
-          puts recipes.compact
-      end
     end
 
     desc "commands", "Lists all available commands", :hide => true
@@ -145,10 +129,7 @@ module Kameleon
 
     # Hack Thor to init Kameleon env soon
     def self.init(base_config)
-      options = base_config[:shell].base.options
-      workspace ||= options[:workspace] || ENV['KAMELEON_WORKSPACE'] || Dir.pwd
-      env_options = options.merge({:workspace => workspace})
-      FileUtils.mkdir_p workspace
+      env_options = base_config[:shell].base.options.clone
       # configure logger
       env_options["debug"] = true if ENV["KAMELEON_LOG"] == "debug"
       ENV["KAMELEON_LOG"] = "debug" if env_options["debug"]

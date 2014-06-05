@@ -38,6 +38,10 @@ module Kameleon
   rescue SystemExit, Interrupt => e
     Kameleon.logger.fatal("Quitting...")
     exit 1
+  rescue Errno::ENOENT => e
+    $stderr << "#{e.message}\n"
+    e.backtrace.each {|m| Kameleon.logger.debug m }
+    exit 16
   rescue Exception => e
     if ENV["KAMELEON_LOG"] != "debug"
       $stderr << "Unfortunately, a fatal error has occurred : "\
