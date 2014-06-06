@@ -126,7 +126,8 @@ module Kameleon
 
     # Hack Thor to init Kameleon env soon
     def self.init(base_config)
-      env_options = base_config[:shell].base.options.clone
+      env_options = Hash.new
+      env_options.merge! base_config[:shell].base.options.clone
       # configure logger
       env_options["debug"] = true if ENV["KAMELEON_LOG"] == "debug"
       ENV["KAMELEON_LOG"] = "debug" if env_options["debug"]
