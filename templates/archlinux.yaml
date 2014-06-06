@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Build an Archlinux appliance using chroot and qemu-nbd.
+# DESCRIPTION: Build an Archlinux base system system.
 #
 # TEMPLATE: <%= @name %>
 #
@@ -81,16 +81,15 @@ bootstrap:
 setup:
   # Install
   - install_software:
-    - packages: >
-        ntp zip unzip rsync sudo vim bash-completion openssh
+    - packages: ntp zip unzip rsync sudo vim bash-completion
   # Configuration
   - configure_system:
-    - locales: fr_FR en_US
-    - lang: fr_FR.UTF-8
+    - locales: POSIX C en_US fr_FR de_DE
+    - lang: en_US.UTF-8
     - timezone: UTC
   - configure_keyboard:
     # set to french keyboard use 'localectl list-keymaps' to see available list
-    - layout: fr
+    - layout: en
   - configure_network:
     - hostname: kameleon-$$distrib
   - create_user:

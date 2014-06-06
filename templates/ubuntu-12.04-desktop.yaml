@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) base system.
+# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) Desktop edition.
 #
 # TEMPLATE: <%= @name %>
 #
@@ -13,11 +13,6 @@
 ---
 extend: ubuntu-12.04
 
-global:
-  # Distribution
-  distrib: ubuntu
-  release: trusty
-  arch: amd64
-
 setup:
-  # Customize steps here
+  - install_software:
+    - packages: ubuntu-desktop

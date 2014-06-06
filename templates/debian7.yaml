@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Build a debian wheezy appliance using qemu hypervisor.
+# DESCRIPTION: Debian 7 (Wheezy) base system
 #
 # TEMPLATE: <%= @name %>
 #

@@ -4,20 +4,19 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) base system.
+# DESCRIPTION: Archlinux GNOME Desktop edition.
 #
 # TEMPLATE: <%= @name %>
 #
 #==============================================================================
 
 ---
-extend: ubuntu-12.04
-
-global:
-  # Distribution
-  distrib: ubuntu
-  release: trusty
-  arch: amd64
+extend: archlinux
 
 setup:
-  # Customize steps here
+  - install_yaourt
+  - install_gnome:
+    - keyboard_layout: en
+    - extra_packages: >
+        firefox-i18n-en-us flashplugin libreoffice libreoffice-en-US telepathy
+        hunspell-en faenza-icon-theme file-roller

@@ -4,7 +4,7 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) Gnome edition.
+# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) base system.
 #
 # TEMPLATE: <%= @name %>
 #
@@ -23,7 +23,7 @@ global:
 
   # Distribution
   distrib: ubuntu
-  release: trusty
+  release: precise
   arch: amd64
 
   ## QEMU options
@@ -44,11 +44,17 @@ global:
   rootfs: $$kameleon_cwd/rootfs
   rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
 
+  # Apt options
+  apt_repository: http://archive.ubuntu.com/ubuntu/
+  apt_enable_restricted: true
+  apt_install_recommends: false
+
   ## System variables. Required by kameleon engine
   # Include specific steps
   include_steps:
     - $$distrib/$$release
     - $$distrib
+    - debian
 
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
@@ -72,7 +78,7 @@ bootstrap:
         bzip2 linux-image-generic
     - release: $$release
     - arch: $$arch
-    - repository: http://archive.ubuntu.com/ubuntu/
+    - repository: $$apt_repository
     - enable_cache: true
   - initialize_disk_qemu
   - prepare_qemu
@@ -85,9 +91,9 @@ bootstrap:
 setup:
   # Install
   - configure_apt:
-    - enable_contrib_repo: true
-    - enable_nonfree_repo: true
-    - install_recommends: true
+    - repository: $$apt_repository
+    - enable_restricted: $$apt_enable_restricted
+    - install_recommends: $$apt_install_recommends
   - upgrade_system:
     - dist_upgrade: true
   - install_software:
@@ -111,8 +117,6 @@ setup:
     - name: $$user_name
     - groups: sudo admin
     - password: $$user_password
-  - install_software:
-    - packages: gnome-shell ubuntu-gnome-desktop
 
 #== Export the generated appliance in the format of your choice
 export:
@@ -125,3 +129,4 @@ export:
     # - save_as_raw
     # - save_as_vmdk
     # - save_as_vdi
+

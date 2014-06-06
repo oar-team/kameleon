@@ -4,20 +4,15 @@
 #
 # RECIPE: <%= recipe_name %>
 #
-# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) base system.
+# DESCRIPTION: Fedora 20 GNOME Desktop edition
 #
 # TEMPLATE: <%= @name %>
 #
 #==============================================================================
 
 ---
-extend: ubuntu-12.04
-
-global:
-  # Distribution
-  distrib: ubuntu
-  release: trusty
-  arch: amd64
-
+extend: fedora20
 setup:
-  # Customize steps here
+setup:
+  - install_software:
+    - packages: @x-window-system @gnome-desktop
