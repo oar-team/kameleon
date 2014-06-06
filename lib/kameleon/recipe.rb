@@ -496,6 +496,7 @@ module Kameleon
         "name" => @name,
         "path" => @path.to_s,
         "files" => @files.map {|p| p.to_s },
+        "base_recipes_files" => @base_recipes_files.map {|p| p.to_s },
         "global" => @global,
         "aliases" => @aliases,
       }
@@ -533,7 +534,7 @@ module Kameleon
       end
     end
 
-    def safe_copy_file(src, dst)
+    def safe_copy_file(src, dst, force)
       if File.exists? dst
         diff = Diffy::Diff.new(dst.to_s, src.to_s, :source => "files").to_s
         unless diff.chomp.empty?
@@ -543,7 +544,7 @@ module Kameleon
                                :context => 1,
                                :include_diff_info => true).to_s
           msg = "overwrite #{dst} ? [y]es/[N]o/[a]bort : "
-          if get_answer(msg)
+          if force || get_answer(msg)
             FileUtils.copy_file(src, dst)
           end
         end
@@ -553,20 +554,28 @@ module Kameleon
       end
     end
 
-    def copy_template(dest_path, recipe_name, force)
+    def copy_extended_recipe(recipe_name, force)
       Dir::mktmpdir do |tmp_dir|
         recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
-        FileUtils.cp(@path, recipe_path)
         ## copying recipe
-        recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
-        safe_copy_file(recipe_path, Pathname.new(recipe_dst))
-        ## copying steps
-        files2copy = @base_recipes_files - [@path] + @files
-        files2copy.each do |path|
-          relative_path = path.relative_path_from(Kameleon.env.templates_path)
-          dst = File.join(Kameleon.env.workspace, relative_path)
-          safe_copy_file(path, dst)
+        File.open(recipe_path, 'w+') do |file|
+          extend_erb_tpl = File.join(Kameleon.env.templates_path, "extend.erb")
+          tpl = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
+          result = tpl.result(binding)
+          file.write(result)
         end
+        recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
+        safe_copy_file(recipe_path, Pathname.new(recipe_dst), force)
+      end
+    end
+
+    def copy_template(force)
+      ## copying steps
+      files2copy = @base_recipes_files + @files
+      files2copy.each do |path|
+        relative_path = path.relative_path_from(Kameleon.env.templates_path)
+        dst = File.join(Kameleon.env.workspace, relative_path)
+        safe_copy_file(path, dst, force)
       end
     end
   end

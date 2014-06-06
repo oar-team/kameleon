@@ -17,23 +17,48 @@ module Kameleon
       end
     end
 
-    method_option :template, :aliases => "-t",
-                  :desc => "Starting from a template", :required => true,
-                  :enum => Kameleon.templates_names
+    method_option :force,:type => :boolean,
+                  :default => false, :aliases => "-f",
+                  :desc => "overwrite all existing files"
+    desc "import [TEMPLATE_NAME]", "Imports the given template"
+    def import(template_name)
+      logger.notice("Importing template '#{template_name}'...")
+      templates_path = Kameleon.env.templates_path
+      template_path = File.join(templates_path, template_name) + '.yaml'
+      begin
+        template_recipe = RecipeTemplate.new(template_path)
+        template_recipe.copy_template(options[:force])
+      rescue
+        raise TemplateNotFound, "Template '#{template_name}' not found\n" \
+                                "Type `kameleon templates` for listing " \
+                                "all availables templates"
+      else
+        logger.notice("done")
+      end
+    end
+
     method_option :force,:type => :boolean,
                   :default => false, :aliases => "-f",
                   :desc => "overwrite the recipe"
-    desc "new [RECIPE_NAME]", "Creates a new recipe"
-    def new(recipe_name)
-      logger.notice("Cloning template '#{options[:template]}'...")
+    desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
+    def new(recipe_name, template_name)
+      if recipe_name == template_name
+        fail RecipeError, "Recipe name should be different from template name"
+      end
+      logger.notice("Cloning template '#{template_name}'...")
       templates_path = Kameleon.env.templates_path
-      recipes_path = Kameleon.env.workspace
-      template_path = File.join(templates_path, options[:template]) + '.yaml'
-      template_recipe = RecipeTemplate.new(template_path)
-      template_recipe.copy_template(recipes_path,
-                                    recipe_name,
-                                    options[:force])
-      logger.notice("done")
+      template_path = File.join(templates_path, template_name) + '.yaml'
+      begin
+        template_recipe = RecipeTemplate.new(template_path)
+        template_recipe.copy_template(options[:force])
+        template_recipe.copy_extended_recipe(recipe_name, options[:force])
+      rescue
+        raise TemplateNotFound, "Template '#{template_name}' not found\n" \
+                                "Type `kameleon templates` for listing " \
+                                "all availables templates"
+      else
+        logger.notice("done")
+      end
     end
 
     desc "templates", "Lists all defined templates"
@@ -144,9 +169,11 @@ module Kameleon
       begin
         level = Log4r.const_get(level_name.upcase)
       rescue NameError
-        fail KameleonError, "Invalid KAMELEON_LOG level is set: #{level_name}.\n" \
-                            "Please use one of the standard log levels: debug," \
-                            " info, warn, or error"
+        level = Log4r.const_get("INFO")
+        $stderr << "Invalid KAMELEON_LOG level is set: #{level_name}.\n" \
+                   "Please use one of the standard log levels: debug," \
+                   " info, warn, or error\n"
+        raise KameleonError
       end
       format = ConsoleFormatter.new
       # format = Log4r::PatternFormatter.new(:pattern => '%11c: %M')

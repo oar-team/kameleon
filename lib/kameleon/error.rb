@@ -1,7 +1,7 @@
 require 'thor/error'
 
 module Kameleon
-  class KameleonError < ::StandardError
+  class Error < ::StandardError
     attr_accessor :object
 
     def initialize(message=nil, object=nil)
@@ -14,17 +14,19 @@ module Kameleon
     end
   end
 
-  class ExecError < KameleonError; status_code(2) ; end
-  class InternalError < KameleonError; status_code(3) ; end
-  class ContextError < KameleonError; status_code(4) ; end
-  class ShellError < KameleonError; status_code(5) ; end
-  class RecipeError < KameleonError; status_code(6) ; end
-  class BuildError < KameleonError; status_code(7) ; end
-  class AbortError < KameleonError; status_code(8) ; end
+  class KameleonError < Error; status_code(1) ; end
+  class ExecError < Error; status_code(2) ; end
+  class InternalError < Error; status_code(3) ; end
+  class ContextError < Error; status_code(4) ; end
+  class ShellError < Error; status_code(5) ; end
+  class RecipeError < Error; status_code(6) ; end
+  class BuildError < Error; status_code(7) ; end
+  class AbortError < Error; status_code(8) ; end
+  class TemplateNotFound < Error; status_code(9) ; end
 
   def self.with_friendly_errors
     yield
-  rescue Kameleon::KameleonError => e
+  rescue Kameleon::Error => e
     e.message.split( /\r?\n/ ).each {|m| Kameleon.logger.fatal m }
     exit e.status_code
   rescue Thor::UndefinedTaskError => e
