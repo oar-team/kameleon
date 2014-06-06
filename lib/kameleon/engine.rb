@@ -249,7 +249,7 @@ module Kameleon
             else
               @in_context.start_shell
             end
-            @logger.notice("Getting back to Kameleon ...")
+            @logger.notice("Getting back to Kameleon...")
           elsif answer.eql? "a"
             raise AbortError, "Execution aborted..."
           elsif answer.eql? "c"

@@ -171,10 +171,16 @@ module Kameleon
       end
       logger = Log4r::Logger.new('kameleon')
       logger.outputters << console_output
+      format_file = FileFormatter.new
       logger.level = level
-      logger = nil
       Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
       Kameleon.env = Kameleon::Environment.new(env_options)
+      filelog = Log4r::FileOutputter.new('logfile',
+                                         :trunc=>false,
+                                         :filename => Kameleon.env.log_file.to_s,
+                                         :formatter => format_file)
+      logger.outputters << filelog
+      logger = nil
     end
 
     def self.start(given_args=ARGV, config={})
