@@ -125,7 +125,6 @@ module Kameleon
 
         macrostep.sequence do |microstep|
           @logger.notice("Step #{ microstep.order } : #{ microstep.slug }")
-          @logger.notice(" ---> #{ microstep.identifier }")
           if @enable_checkpoint
             if microstep.on_checkpoint == "skip"
               @logger.notice(" ---> Skipped")
