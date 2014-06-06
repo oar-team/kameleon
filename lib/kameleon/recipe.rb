@@ -515,10 +515,10 @@ module Kameleon
 
     def safe_copy_file(src, dst)
       if File.exists? dst
-        diff = Diffy::Diff.new(src.to_s, dst.to_s, :source => "files").to_s
+        diff = Diffy::Diff.new(dst.to_s, src.to_s, :source => "files").to_s
         unless diff.chomp.empty?
           @logger.notice("File #{} --> Already exists")
-          puts Diffy::Diff.new(src.to_s, dst.to_s,
+          puts Diffy::Diff.new(dst.to_s, src.to_s,
                                :source => "files",
                                :context => 1,
                                :include_diff_info => true).to_s
