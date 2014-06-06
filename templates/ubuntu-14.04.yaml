@@ -15,5 +15,11 @@ global:
   release: trusty
   arch: amd64
 
+bootstrap:
+  - @base
+
 setup:
-  # Customize steps here
+  - @base
+
+export:
+  - @base

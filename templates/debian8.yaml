@@ -15,5 +15,11 @@ global:
   release: jessie
   arch: amd64
 
+bootstrap:
+  - @base
+
 setup:
-  # Customize steps
+  - @base
+
+export:
+  - @base

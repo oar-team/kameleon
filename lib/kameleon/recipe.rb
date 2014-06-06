@@ -139,6 +139,7 @@ module Kameleon
       ## check that the recipe has not already been loaded
       base_recipe_name << ".yaml" unless base_recipe_name.end_with? ".yaml"
       base_recipe_path = File.join(File.dirname(@path), base_recipe_name)
+
       ## check that the recipe has not already been loaded
       return yaml_recipe if @base_recipes_files.include? base_recipe_path
 
@@ -149,6 +150,11 @@ module Kameleon
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml error"
       end
+      base_yaml_recipe.keys.each do |key|
+        if ["export", "bootstrap", "setup"].include? key
+          base_yaml_recipe.delete(key) unless yaml_recipe.keys.include? key
+        end
+      end
       yaml_recipe.keys.each do |key|
         if ["aliases", "checkpoint"].include? key
           base_yaml_recipe[key] = yaml_recipe[key]
@@ -157,7 +163,12 @@ module Kameleon
           base_section = [] if base_section.nil?
           recipe_section = yaml_recipe[key]
           recipe_section = [] if recipe_section.nil?
-          base_yaml_recipe[key] = base_section + recipe_section
+          index_base_steps = recipe_section.index("@base")
+          unless index_base_steps.nil?
+            recipe_section[index_base_steps] = base_section
+            recipe_section.flatten!
+          end
+          base_yaml_recipe[key] = recipe_section
         elsif ["global"].include? key
           base_section = base_yaml_recipe.fetch(key, {})
           base_section = {} if base_section.nil?
@@ -504,6 +515,7 @@ module Kameleon
   end
 
   class RecipeTemplate < Recipe
+
     def get_answer(msg)
       while true
         @logger.progress_notice msg
@@ -541,7 +553,6 @@ module Kameleon
       end
     end
 
-
     def copy_template(dest_path, recipe_name, force)
       Dir::mktmpdir do |tmp_dir|
         recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
@@ -556,9 +567,6 @@ module Kameleon
           dst = File.join(Kameleon.env.workspace, relative_path)
           safe_copy_file(path, dst)
         end
-        # # Create recipe dir if not exists
-        # FileUtils.mkdir_p Kameleon.env.workspace
-        # FileUtils.cp_r(Dir[tmp_dir + '/*'], Kameleon.env.workspace, :preserve => true)
       end
     end
   end

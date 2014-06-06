@@ -2,26 +2,24 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) Desktop edition.
+# DESCRIPTION: Debian 8 (Jessie) base system
 #
 #==============================================================================
 
 ---
-extend: ubuntu-14.04
+extend: debian8
 
 global:
-  # Distribution
-  distrib: ubuntu
-  release: trusty
-  arch: amd64
+  # Apt options
+  apt_install_recommends: true
 
 bootstrap:
   - @base
 
 setup:
   - @base
-  - install_software:
-    - packages: ubuntu-desktop
+  - install_gnome:
+    - extra_packages: gedit gnome-documents
 
 export:
   - @base

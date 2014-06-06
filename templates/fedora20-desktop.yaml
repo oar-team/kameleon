@@ -8,7 +8,14 @@
 
 ---
 extend: fedora20
+
+bootstrap:
+  - @base
+
 setup:
-setup:
+  - @base
   - install_software:
     - packages: @x-window-system @gnome-desktop
+
+export:
+  - @base

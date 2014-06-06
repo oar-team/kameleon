@@ -9,6 +9,17 @@
 ---
 extend: ubuntu-12.04
 
+global:
+  # Apt options
+  apt_install_recommends: true
+
+bootstrap:
+  - @base
+
 setup:
+  - @base
   - install_software:
     - packages: ubuntu-desktop
+
+export:
+  - @base

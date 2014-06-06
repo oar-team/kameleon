@@ -9,10 +9,17 @@
 ---
 extend: archlinux
 
+bootstrap:
+  - @base
+
 setup:
+  - @base
   - install_yaourt
   - install_gnome:
     - keyboard_layout: en
     - extra_packages: >
         firefox-i18n-en-us flashplugin libreoffice libreoffice-en-US telepathy
         hunspell-en faenza-icon-theme file-roller
+
+export:
+  - @base
