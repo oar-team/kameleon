@@ -53,6 +53,7 @@ module Kameleon
           raise e if Kameleon.env.debug
         end
       end
+      templates_hash = templates_hash.sort_by{ |k| k["name"] }
       tp templates_hash, {"name" => {:width => 30}}, { "description" => {:width => 60}}
     end
 
