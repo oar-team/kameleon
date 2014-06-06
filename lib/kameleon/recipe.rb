@@ -32,7 +32,7 @@ module Kameleon
       @checkpoint = nil
       @files = []
       @logger.debug("Initialize new recipe (#{path})")
-      @base_recipe_names = [@name + ".yaml"]
+      @base_recipes_files = [@path]
       load!
     end
 
@@ -138,10 +138,12 @@ module Kameleon
       base_recipe_name = yaml_recipe.fetch("extend", "")
       return yaml_recipe if base_recipe_name.empty?
 
+      ## check that the recipe has not already been loaded
       base_recipe_name << ".yaml" unless base_recipe_name.end_with? ".yaml"
-      return yaml_recipe if @base_recipe_names.include? base_recipe_name
-
       base_recipe_path = File.join(File.dirname(@path), base_recipe_name)
+      ## check that the recipe has not already been loaded
+      return yaml_recipe if @base_recipes_files.include? base_recipe_path
+
       base_recipe_path << ".yaml" unless base_recipe_path.end_with? ".yaml"
       fail RecipeError, "Could not find this following recipe : #{@recipe_path}" \
          unless File.file? @path
@@ -153,12 +155,20 @@ module Kameleon
         if ["aliases", "checkpoint"].include? key
           base_yaml_recipe[key] = yaml_recipe[key]
         elsif ["export", "bootstrap", "setup"].include? key
-          base_yaml_recipe[key] = base_yaml_recipe.fetch(key, []) + yaml_recipe[key]
+          base_section = base_yaml_recipe.fetch(key, [])
+          base_section = [] if base_section.nil?
+          recipe_section = yaml_recipe[key]
+          recipe_section = [] if recipe_section.nil?
+          base_yaml_recipe[key] = base_section + recipe_section
         elsif ["global"].include? key
-          base_yaml_recipe[key] = base_yaml_recipe.fetch(key, {}).merge(yaml_recipe[key])
+          base_section = base_yaml_recipe.fetch(key, {})
+          base_section = {} if base_section.nil?
+          recipe_section = yaml_recipe[key]
+          recipe_section = {} if recipe_section.nil?
+          base_yaml_recipe[key] = base_section.merge(recipe_section)
         end
       end
-      @base_recipe_names.push(base_recipe_name)
+      @base_recipes_files.push(Pathname.new(base_recipe_path))
       return load_base_recipe(base_yaml_recipe)
     end
 
@@ -538,16 +548,12 @@ module Kameleon
       Dir::mktmpdir do |tmp_dir|
         recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
         FileUtils.cp(@path, recipe_path)
-        File.open(recipe_path, 'w+') do |file|
-          tpl = ERB.new(@recipe_content)
-          result = tpl.result(binding)
-          file.write(result)
-        end
         ## copying recipe
         recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
         safe_copy_file(recipe_path, Pathname.new(recipe_dst))
         ## copying steps
-        @files.each do |path|
+        files2copy = @base_recipes_files - [@path] + @files
+        files2copy.each do |path|
           relative_path = path.relative_path_from(Kameleon.env.templates_path)
           dst = File.join(Kameleon.env.workspace, relative_path)
           safe_copy_file(path, dst)
