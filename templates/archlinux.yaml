@@ -2,11 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# RECIPE: <%= recipe_name %>
-#
 # DESCRIPTION: Build an Archlinux base system system.
-#
-# TEMPLATE: <%= @name %>
 #
 #==============================================================================
 

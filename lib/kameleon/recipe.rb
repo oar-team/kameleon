@@ -128,9 +128,7 @@ module Kameleon
       end
       @logger.debug("Loading recipe metadata")
       @metainfo = {
-        "description" => Utils.extract_meta_var("description", @recipe_content),
-        "recipe" => Utils.extract_meta_var("recipe", @recipe_content),
-        "template" => Utils.extract_meta_var("template", @recipe_content),
+        "description" => Utils.extract_meta_var("description", @recipe_content)
       }
     end
 

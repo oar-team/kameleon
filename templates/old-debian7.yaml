@@ -2,11 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# RECIPE: <%= recipe_name %>
-#
 # DESCRIPTION: [deprecated] Build a debian wheezy appliance using chroot and qemu-nbd.
-#
-# TEMPLATE: <%= @name %>
 #
 #==============================================================================
 
