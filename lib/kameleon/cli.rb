@@ -94,6 +94,9 @@ module Kameleon
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
+    method_option :clean, :type => :boolean ,
+                  :default => false,
+                  :desc => "Run the command `kameleon clean` first"
     method_option :from_checkpoint, :type => :string ,
                   :default => nil,
                   :desc => "Using specific checkpoint to build the image. " \
@@ -112,6 +115,7 @@ module Kameleon
                   :desc => "Full path of the proxy binary to use for the persistent cache."
 
     def build(recipe_path)
+      clean(recipe_path) if options[:clean]
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       logger.notice("Starting build recipe '#{recipe_path}'")
       start_time = Time.now.to_i
