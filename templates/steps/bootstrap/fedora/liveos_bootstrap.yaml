@@ -6,7 +6,8 @@
     bash grep coreutils findutils sed cpio cyrus-sasl file-libs gawk xz
 
 - mirrorlist_server: mirrors.kernel.org
-- mirrorlist_url_rsync: $$mirrorlist_server::fedora/releases/$${release}/Fedora/$$arch/os
+- mirror_distrib_path: fedora/releases/$${release}/Fedora/$$arch/os
+- mirrorlist_url_rsync: $$mirrorlist_server::$$mirror_distrib_path
 
 - download_live_os:
   - check_cmd_out: rsync
@@ -72,13 +73,13 @@
 - download_pxeboot_initrd:
   - exec_out: |
       wget -c -O $$rootfs_download_path/boot/initrd.img \
-        http://$$mirrorlist_server/fedora/releases/$${release}/Fedora/$$arch/os/images/pxeboot/initrd.img \
+        http://$$mirrorlist_server/$$mirror_distrib_path/images/pxeboot/initrd.img \
            2>&1 | tail -f
 
 - download_pxeboot_vmlinuz:
   - exec_out: |
       wget -c -O $$rootfs_download_path/boot/vmlinuz \
-        http://$$mirrorlist_server/fedora/releases/$${release}/Fedora/$$arch/os/images/pxeboot/vmlinuz \
+        http://$$mirrorlist_server/$$mirror_distrib_path/images/pxeboot/vmlinuz \
           2>&1 | tail -f
 
 - enable_sshd_service:

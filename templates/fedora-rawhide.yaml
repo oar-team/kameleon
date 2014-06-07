@@ -2,24 +2,29 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Debian 8 (Jessie) base system
+# DESCRIPTION: Fedora Rawhide base system
 #
 #==============================================================================
 
 ---
-extend: debian8
+extend: fedora20
 
 global:
-  # Apt options
-  apt_install_recommends: true
+  # Distribution
+  distrib: fedora
+  release: rawhide
+  arch: x86_64
 
 bootstrap:
-  - @base
+  - liveos_bootstrap:
+    - mirror_distrib_path: fedora/development/$${release}/$$arch/os
+  - initialize_disk_qemu
+  - prepare_qemu
+  - install_bootloader
+  - start_qemu
 
 setup:
   - @base
-  - install_gnome:
-    - extra_packages: gedit gnome-documents
 
 export:
   - @base

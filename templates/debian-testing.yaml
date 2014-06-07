@@ -2,7 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Debian 8 (Jessie) base system
+# DESCRIPTION: Debian Testing base system
 #
 #==============================================================================
 
@@ -12,7 +12,7 @@ extend: debian7
 global:
   # Distribution
   distrib: debian
-  release: jessie
+  release: testing
   arch: amd64
 
 bootstrap:
