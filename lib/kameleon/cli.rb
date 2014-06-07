@@ -10,6 +10,7 @@ module Kameleon
                  :desc => "Enable colorization in output"
     class_option :debug, :type => :boolean, :default => false,
                  :desc => "Enable debug output"
+    map %w(-h --help) => :help
 
     no_commands do
       def logger
@@ -22,16 +23,16 @@ module Kameleon
                   :desc => "overwrite all existing files"
     desc "import [TEMPLATE_NAME]", "Imports the given template"
     def import(template_name)
-      logger.notice("Importing template '#{template_name}'...")
       templates_path = Kameleon.env.templates_path
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
         template_recipe = RecipeTemplate.new(template_path)
+        logger.notice("Importing template '#{template_name}'...")
         template_recipe.copy_template(options[:force])
       rescue
-        raise TemplateNotFound, "Template '#{template_name}' not found\n" \
-                                "Type `kameleon templates` for listing " \
-                                "all availables templates"
+        raise TemplateNotFound, "Template '#{template_name}' not found. " \
+                                "To see all templates, run the command "\
+                                "`kameleon templates`"
       else
         logger.notice("done")
       end
@@ -45,17 +46,17 @@ module Kameleon
       if recipe_name == template_name
         fail RecipeError, "Recipe name should be different from template name"
       end
-      logger.notice("Cloning template '#{template_name}'...")
       templates_path = Kameleon.env.templates_path
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
         template_recipe = RecipeTemplate.new(template_path)
+        logger.notice("Cloning template '#{template_name}'...")
         template_recipe.copy_template(options[:force])
         template_recipe.copy_extended_recipe(recipe_name, options[:force])
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found\n" \
-                                "Type `kameleon templates` for listing " \
-                                "all availables templates"
+                                "To see all templates, run the command "\
+                                "`kameleon templates`"
       else
         logger.notice("done")
       end
@@ -88,7 +89,6 @@ module Kameleon
       puts "Kameleon version #{Kameleon::VERSION}"
     end
     map %w(-v --version) => :version
-
 
     desc "build [RECIPE_PATH]", "Builds the appliance from the recipe"
     method_option :build_path, :type => :string ,
