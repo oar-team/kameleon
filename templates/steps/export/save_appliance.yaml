@@ -36,7 +36,7 @@
   - exec_out: echo "Saved raw appliance to $$output.raw"
 
 - save_as_qcow2:
-  - exec_out: qemu-img convert -c -O qcow2 $$input $$output.qcow2
+  - exec_out: qemu-img convert -O qcow2 $$input $$output.qcow2
   - exec_out: echo "Saved qcow2 appliance to $$output.qcow2"
 
 - save_as_qed:
