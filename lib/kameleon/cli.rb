@@ -20,7 +20,7 @@ module Kameleon
 
     method_option :force,:type => :boolean,
                   :default => false, :aliases => "-f",
-                  :desc => "overwrite all existing files"
+                  :desc => "Overwrite all existing files"
     desc "import [TEMPLATE_NAME]", "Imports the given template"
     def import(template_name)
       templates_path = Kameleon.env.templates_path
@@ -40,7 +40,7 @@ module Kameleon
 
     method_option :force,:type => :boolean,
                   :default => false, :aliases => "-f",
-                  :desc => "overwrite the recipe"
+                  :desc => "Overwrite all existing files"
     desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
     def new(recipe_name, template_name)
       if recipe_name == template_name
@@ -90,7 +90,7 @@ module Kameleon
     end
     map %w(-v --version) => :version
 
-    desc "build [RECIPE_PATH]", "Builds the appliance from the recipe"
+    desc "build [RECIPE_PATH]", "Builds the appliance from the given recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
@@ -101,12 +101,12 @@ module Kameleon
                   :default => nil,
                   :desc => "Using specific checkpoint to build the image. " \
                            "Default value is the last checkpoint."
-    method_option :no_checkpoint, :type => :boolean ,
-                  :default => false,
+    method_option :checkpoint, :type => :boolean ,
+                  :default => true,
                   :desc => "Do not use checkpoints"
     method_option :cache, :type => :boolean,
                   :default => false,
-                  :desc => "generate a persistent cache for the appliance."
+                  :desc => "Generate a persistent cache for the appliance."
     method_option :from_cache, :type => :string ,
                   :default => nil,
                   :desc => "Using a persistent cache tar file to build the image."
@@ -139,15 +139,16 @@ module Kameleon
       engine.pretty_checkpoints_list
     end
 
-    desc "clear [RECIPE_PATH]", "Cleaning out context and removing all checkpoints"
+    desc "clean [RECIPE_PATH]", "Cleaning 'out' and 'local' contexts and removing all checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
-    def clear(recipe_path)
+    def clean(recipe_path)
       Log4r::Outputter['console'].level = Log4r::INFO
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       engine.clear
     end
+    map %w(clear) => :clean
 
     desc "commands", "Lists all available commands", :hide => true
     def commands
@@ -202,9 +203,9 @@ module Kameleon
         Diffy::Diff.default_format = :color
       end
       logger = Log4r::Logger.new('kameleon')
+      logger.level = level
       logger.outputters << console_output
       format_file = FileFormatter.new
-      logger.level = level
       Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
       Kameleon.env = Kameleon::Environment.new(env_options)
       filelog = Log4r::FileOutputter.new('logfile',
