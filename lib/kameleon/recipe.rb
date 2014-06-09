@@ -187,17 +187,20 @@ module Kameleon
         if aliases.kind_of? Hash
           @aliases = aliases
         elsif aliases.kind_of? String
-          path = Pathname.new(File.join(File.dirname(@path),
-                                        "steps",
-                                        "aliases",
-                                        aliases))
-          if File.file?(path)
-            @logger.debug("Loading aliases #{path}")
-            @aliases = YAML.load_file(path)
-            @files.push(path)
-          else
-            fail RecipeError, "Aliases file '#{path}' does not exists"
+          dir_search = [
+            File.join(File.dirname(@path), "steps", "aliases"),
+            File.join(File.dirname(@path), "aliases")
+          ]
+          dir_search.each do |dir_path|
+            path = Pathname.new(File.join(dir_path, aliases))
+            if File.file?(path)
+              @logger.debug("Loading aliases #{path}")
+              @aliases = YAML.load_file(path)
+              @files.push(path)
+              return path
+            end
           end
+          fail RecipeError, "Aliases file '#{path}' does not exists"
         end
       end
     end
@@ -209,19 +212,22 @@ module Kameleon
           @checkpoint = checkpoint
           @checkpoint["path"] = @path
         elsif checkpoint.kind_of? String
-          path = Pathname.new(File.join(File.dirname(@path),
-                              "steps",
-                              "checkpoints",
-                              checkpoint))
-          if File.file?(path)
-            @logger.debug("Loading checkpoint configuration #{path}")
-            @checkpoint = YAML.load_file(path)
-            @checkpoint["path"] = path.to_s
-            @files.push(path)
-          else
-            fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
-                              "does not exists"
+          dir_search = [
+            File.join(File.dirname(@path), "steps", "checkpoints"),
+            File.join(File.dirname(@path), "checkpoints")
+          ]
+          dir_search.each do |dir_path|
+            path = Pathname.new(File.join(dir_path, checkpoint))
+            if File.file?(path)
+              @logger.debug("Loading checkpoint configuration #{path}")
+              @checkpoint = YAML.load_file(path)
+              @checkpoint["path"] = path.to_s
+              @files.push(path)
+              return path
+            end
           end
+          fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
+                            "does not exists"
         end
       end
     end
