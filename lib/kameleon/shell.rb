@@ -8,7 +8,7 @@ module Kameleon
     READ_CHUNK_SIZE = 1048576
     EXIT_TIMEOUT = 60
 
-    attr :exit_status, :process
+    attr :exit_status, :process, :shell_cmd
 
     def initialize(context_name, cmd, shell_workdir, local_workdir, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[kameleon]")
@@ -19,17 +19,14 @@ module Kameleon
       @bashrc_file = "kameleon_#{@context_name}_bash_rc"
       @bash_history_file = "kameleon_#{@context_name}_bash_history"
       @bash_env_file = "kameleon_#{@context_name}_bash_env"
-      change_dir_cmd = ""
-      if @shell_workdir
-        unless @shell_workdir.eql? "/"
-          change_dir_cmd = "mkdir -p #{@shell_workdir} &&"
-        end
-        change_dir_cmd = "#{change_dir_cmd} cd #{@shell_workdir} && "
-      end
       @default_bashrc_file = File.join(Kameleon.source_root,
                                        "contrib",
                                        "kameleon_bashrc.sh")
-
+      if @shell_workdir
+        @bashrc_file = File.join(@shell_workdir, @bashrc_file)
+        @bash_history_file = File.join(@shell_workdir, @bash_history_file)
+        @bash_env_file = File.join(@shell_workdir, @bash_env_file)
+      end
 
       ## Changing the default bashrc if the cache is activated
       @cache = Kameleon::Persistent_cache.instance
@@ -44,9 +41,8 @@ module Kameleon
         @default_bashrc_file = new_kameleon_bashrc
       end
 
-      bash_cmd = "bash --rcfile #{@bashrc_file}"
       @shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
-                   "#{@cmd} -c '#{change_dir_cmd}#{bash_cmd}'"
+                   "#{@cmd} --rcfile #{@bashrc_file}"
       @logger.debug("Initialize shell (#{self})")
       # Injecting all variables of the options and assign the variables
       instance_variables.each do |v|
@@ -68,7 +64,7 @@ module Kameleon
     end
 
     def exited?
-      return started? && @process.exited?
+      @process.exited?
     end
 
     def restart
@@ -103,9 +99,18 @@ module Kameleon
         bashrc_content = tpl.result(binding)
       end
       bashrc = Shellwords.escape(bashrc_content)
+      if @shell_workdir
+        unless @shell_workdir.eql? "/"
+          change_dir_cmd = "mkdir -p #{@shell_workdir} &&"
+        end
+        change_dir_cmd = "#{change_dir_cmd} cd #{@shell_workdir}"
+        change_dir_cmd = Shellwords.escape(change_dir_cmd)
+      end
       shell_cmd = "mkdir -p $(dirname #{@bashrc_file})\n"
       shell_cmd << "echo #{bashrc} > #{@bashrc_file}\n"
+      shell_cmd << "echo #{bashrc} > #{@bashrc_file}\n"
       shell_cmd << "source #{@bashrc_file}\n"
+      shell_cmd << "echo #{change_dir_cmd} >> #{@bashrc_file}\n"
       shell_cmd
     end
 
@@ -192,6 +197,7 @@ module Kameleon
 
     def fork_and_wait
       command = ["bash", "-c", @shell_cmd]
+      @logger.debug("Starting shell process: #{ command.inspect}")
       @logger.notice("Starting process: #{@cmd.inspect}")
       system(*command)
     end

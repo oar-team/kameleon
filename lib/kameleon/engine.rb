@@ -331,6 +331,11 @@ module Kameleon
           do_steps(section)
         end
         clean
+      rescue AbortError => e
+        @logger.error("Aborted...")
+        @logger.warn("Waiting for cleanup before exiting...")
+        clean
+        raise e
       rescue SystemExit, Interrupt => e
         @logger.error("Interrupted...")
         @out_context.reopen

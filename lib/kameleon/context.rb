@@ -50,11 +50,7 @@ module Kameleon
     end
 
     def execute(cmd, kwargs = {})
-      unless @shell.started?
-        # Start the shell process
-        @shell.start
-        execute("echo The '#{name}_context' has been initialized", :log_level => "info")
-      end
+      lazyload_shell
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       cmd_with_prefix.split( /\r?\n/ ).each {|m| @logger.debug "+ #{m}" }
       log_level = kwargs.fetch(:log_level, "info")
@@ -64,9 +60,9 @@ module Kameleon
       end
       @logger.debug("Exit status : #{exit_status}")
       fail ExecError unless exit_status.eql? 0
-    rescue ShellError => e
-      @logger.error(e.message)
-      fail ExecError
+    rescue ShellError, Errno::EPIPE  => e
+      @logger.debug("Shell cmd failed to launch: #{@shell.shell_cmd}")
+      raise ShellError, e.message + ". Check the cmd argument of the '#{@name}_context'."
     end
 
     def pipe(cmd, other_cmd, other_ctx)
@@ -82,14 +78,23 @@ module Kameleon
       other_ctx.execute(other_cmd_with_pipe)
     end
 
+    def lazyload_shell()
+      unless @shell.started?
+        # Start the shell process
+        @shell.start
+        execute("echo The '#{name}_context' has been initialized", :log_level => "info")
+      end
+    end
+
     def start_shell
       #TODO: Load env and history
+      lazyload_shell
       @logger.info("Starting interactive shell")
       @shell.fork_and_wait
     end
 
     def closed?
-      @shell.exited?
+      return !@shell.started? || @shell.exited?
     end
 
     def close!
