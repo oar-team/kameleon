@@ -21,9 +21,6 @@ module Kameleon
       end
 
       @cache = Kameleon::Persistent_cache.instance
-      # Start the shell process
-      @shell.start
-      execute("echo The '#{name}_context' has been initialized", :log_level => "info")
     end
 
     def do_log(out, log_level)
@@ -53,6 +50,11 @@ module Kameleon
     end
 
     def execute(cmd, kwargs = {})
+      unless @shell.started?
+        # Start the shell process
+        @shell.start
+        execute("echo The '#{name}_context' has been initialized", :log_level => "info")
+      end
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       cmd_with_prefix.split( /\r?\n/ ).each {|m| @logger.debug "+ #{m}" }
       log_level = kwargs.fetch(:log_level, "info")
@@ -69,11 +71,11 @@ module Kameleon
 
     def pipe(cmd, other_cmd, other_ctx)
       tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
-      @logger.info("Running piped commands")
-      @logger.info("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
+      @logger.debug("Running piped commands")
+      @logger.debug("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
       execute(cmd, :stdout => tmp)
       tmp.close
-      @logger.info("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
+      @logger.debug("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
       dest_pipe_path = "./pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
       other_ctx.send_file(tmp.path, dest_pipe_path)
       other_cmd_with_pipe = "cat #{dest_pipe_path} | #{other_cmd} && rm #{dest_pipe_path}"

@@ -55,7 +55,12 @@ module Kameleon
                                  @recipe.global["out_context"]["workdir"],
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd)
-
+      @logger.notice("Building internal context [in]")
+      @in_context = Context.new("in",
+                                @recipe.global["in_context"]["cmd"],
+                                @recipe.global["in_context"]["workdir"],
+                                @recipe.global["in_context"]["exec_prefix"],
+                                @cwd)
       if @options[:from_cache] then
         begin
           @cache.unpack(@options[:from_cache])
@@ -170,41 +175,32 @@ module Kameleon
     end
 
     def exec_cmd(cmd, kwargs = {})
-      def skip_alert(cmd)
-        @logger.warn("Skipping cmd '#{cmd.string_cmd}'. The in_context is" \
-                     " not ready yet")
-      end
       case cmd.key
       when "breakpoint"
         breakpoint(cmd.value)
       when "exec_in"
         skip_alert(cmd) if @in_context.nil?
-        @in_context.execute(cmd.value, kwargs) unless @in_context.nil?
+        @in_context.execute(cmd.value, kwargs)
       when "exec_out"
         @out_context.execute(cmd.value, kwargs)
       when "exec_local"
         @local_context.execute(cmd.value, kwargs)
       when "pipe"
         first_cmd, second_cmd = cmd.value
-        if ((first_cmd.key == "exec_in" || second_cmd.key == "exec_in")\
-             && @in_context.nil?)
-          skip_alert(cmd)
-        else
-          expected_cmds = ["exec_in", "exec_out", "exec_local"]
-          [first_cmd.key, second_cmd.key].each do |key|
-            unless expected_cmds.include?(key)
-              @logger.error("Invalid pipe arguments. Expected "\
-                            "#{expected_cmds} commands")
-              fail ExecError
-            end
+        expected_cmds = ["exec_in", "exec_out", "exec_local"]
+        [first_cmd.key, second_cmd.key].each do |key|
+          unless expected_cmds.include?(key)
+            @logger.error("Invalid pipe arguments. Expected "\
+                          "#{expected_cmds} commands")
+            fail ExecError
           end
-          map = {"exec_in" => @in_context,
-                 "exec_out" => @out_context,
-                 "exec_local" => @local_context,}
-          first_context = map[first_cmd.key]
-          second_context = map[second_cmd.key]
-          first_context.pipe(first_cmd.value, second_cmd.value, second_context)
         end
+        map = {"exec_in" => @in_context,
+               "exec_out" => @out_context,
+               "exec_local" => @local_context,}
+        first_context = map[first_cmd.key]
+        second_context = map[second_cmd.key]
+        first_context.pipe(first_cmd.value, second_cmd.value, second_context)
       when "rescue"
         first_cmd, second_cmd = cmd.value
         begin
@@ -225,14 +221,14 @@ module Kameleon
       msg << "Press [r] to retry\n" if enable_retry
       msg << "Press [c] to continue with execution"
       msg << "\nPress [a] to abort execution"
-      msg << "\nPress [l] to switch to local_context shell" unless @local_context.nil?
-      msg << "\nPress [o] to switch to out_context shell" unless @out_context.nil?
-      msg << "\nPress [i] to switch to in_context shell" unless @in_context.nil?
+      msg << "\nPress [l] to switch to local_context shell"
+      msg << "\nPress [o] to switch to out_context shell"
+      msg << "\nPress [i] to switch to in_context shell"
       responses = {"c" => "continue", "a" => "abort"}
       responses["r"] = "retry" if enable_retry
-      responses.merge!({"l" => "launch local_context"}) unless @out_context.nil?
-      responses.merge!({"o" => "launch out_context"}) unless @out_context.nil?
-      responses.merge!({"i" => "launch in_context"}) unless @in_context.nil?
+      responses.merge!({"l" => "launch local_context"})
+      responses.merge!({"o" => "launch out_context"})
+      responses.merge!({"i" => "launch in_context"})
       while true
         msg.split( /\r?\n/ ).each {|m| @logger.notice "#{m}" }
         @logger.progress_notice "answer ? [" + responses.keys().join("/") + "]: "
@@ -254,8 +250,9 @@ module Kameleon
             raise AbortError, "Execution aborted..."
           elsif answer.eql? "c"
             ## resetting the exit status
-            @in_context.execute("true") unless @in_context.nil?
-            @out_context.execute("true") unless @out_context.nil?
+            @in_context.execute("true")
+            @out_context.execute("true")
+            @local_context.execute("true")
             return true
           elsif answer.eql? "r"
             @logger.notice("Retrying the previous command...")
@@ -271,17 +268,22 @@ module Kameleon
       return breakpoint(message, :enable_retry => true)
     end
 
-    def finish_clean()
+    def clean()
       @recipe.sections.values.each do |section|
         next if @cleaned_sections.include?(section.name)
-        begin
-          @logger.notice("Cleaning #{section.name} section")
-          section.clean_macrostep.sequence do |microstep|
-            microstep.commands.each do |cmd|
-              begin
-                exec_cmd(cmd)
-              rescue
-                @logger.warn("An error occurred while executing : #{cmd.value}")
+        map = {"exec_in" => @in_context,
+               "exec_out" => @out_context,
+               "exec_local" => @local_context}
+        @logger.notice("Cleaning #{section.name} section")
+        section.clean_macrostep.sequence do |microstep|
+          microstep.commands.each do |cmd|
+            if map.keys.include? cmd.key
+              unless map[cmd.key].closed?
+                begin
+                  exec_cmd(cmd)
+                rescue
+                  @logger.warn("An error occurred while executing : #{cmd.value}")
+                end
               end
             end
           end
@@ -291,20 +293,7 @@ module Kameleon
     end
 
     def clear
-      @recipe.sections.values.each do |section|
-        @logger.notice("Cleaning #{section.name} section")
-        section.clean_macrostep.sequence do |microstep|
-          microstep.commands.each do |cmd|
-            if (cmd.key == "exec_out" || cmd.key == "exec_local")
-              begin
-                exec_cmd(cmd)
-              rescue
-                @logger.warn("An error occurred while executing : #{cmd.value}")
-              end
-            end
-          end
-        end
-      end
+      clean
       unless @recipe.checkpoint.nil?
         @logger.notice("Removing all old checkpoints")
         cmd = @recipe.checkpoint["clear"]
@@ -338,24 +327,22 @@ module Kameleon
       end
       dump_build_recipe
       begin
-        do_steps("bootstrap")
-        @logger.notice("Building internal context [in]")
-        @in_context = Context.new("in",
-                                  @recipe.global["in_context"]["cmd"],
-                                  @recipe.global["in_context"]["workdir"],
-                                  @recipe.global["in_context"]["exec_prefix"],
-                                  @cwd)
-        do_steps("setup")
-        do_steps("export")
-      rescue Exception => e
+        ["bootstrap", "setup", "export"].each do |section|
+          do_steps(section)
+        end
+        clean
+      rescue SystemExit, Interrupt => e
+        @logger.error("Interrupted...")
+        @out_context.reopen
+        @in_context.reopen
+        @local_context.reopen
         @logger.warn("Waiting for cleanup before exiting...")
-        @out_context.reopen if !@out_context.nil?
-        @in_context.reopen if !@in_context.nil?
-        @local_context.reopen if !@local_context.nil?
-        finish_clean
-        @out_context.close! unless @out_context.nil?
-        @in_context.close! unless @in_context.nil?
-        @local_context.close! unless @local_context.nil?
+        clean
+        raise e
+      rescue Exception => e
+        @out_context.close!
+        @in_context.close!
+        @local_context.close!
         raise e
       end
     end

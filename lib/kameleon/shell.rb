@@ -60,11 +60,15 @@ module Kameleon
     end
 
     def stop
-      @process.stop
+      @process.stop(0) unless @process.nil?
+    end
+
+    def started?
+      return !@process.nil?
     end
 
     def exited?
-      @process.exited?
+      return started? && @process.exited?
     end
 
     def restart
@@ -88,6 +92,11 @@ module Kameleon
     end
 
     def init_shell_cmd
+      ## log shell error message
+      error = read_io(@stderr)
+      init_stdout = read_io(@stdout)
+      @logger.error(error) unless error.empty?
+      @logger.info(init_stdout) unless init_stdout.empty?
       bashrc_content = ""
       if File.file?(@default_bashrc_file)
         tpl = ERB.new(File.read(@default_bashrc_file))
@@ -231,6 +240,7 @@ module Kameleon
     def fork(io)
       command = ["bash", "-c", @shell_cmd]
       @logger.notice("Starting process: #{@cmd.inspect}")
+      @logger.debug("Starting shell process: #{ command.inspect}")
       ChildProcess.posix_spawn = true
       process = ChildProcess.build(*command)
       # Create the pipes so we can read the output in real time as
