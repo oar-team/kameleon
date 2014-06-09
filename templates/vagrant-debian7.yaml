@@ -1,0 +1,31 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: A standard Debian 7 vagrant base box
+#
+#==============================================================================
+
+---
+extend: debian7
+
+global:
+  ## User varibales : used by the recipe
+  user_name: vagrant
+  user_password: $$user_name
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+  - install_software:
+    - packages: curl linux-headers-$(uname -r) build-essential dkms ca-certificates
+  - setup_vagrant_box
+
+export:
+  - save_vagrant_box:
+    - os_type: Debian_64
+    - memory: "512"
+    - input: $$image_disk
+    - output: $$kameleon_cwd/$$kameleon_recipe_name
