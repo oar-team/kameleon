@@ -1,3 +1,25 @@
+- create_local_ssh_config_base:
+  - write_local:
+    - $$ssh_config_file
+    - |
+      Host *
+        UserKnownHostsFile /dev/null
+        StrictHostKeyChecking no
+        ConnectTimeout 2
+        LogLevel FATAL
+        ForwardAgent yes
+        Protocol 2
+        ControlPath /tmp/$${kameleon_short_uuid}%r@%h:%p
+        ControlMaster auto
+        ControlPersist yes
+        Compression yes
+      Host g5kaccess
+        User $$g5k_user
+        Hostname access.grid5000.fr
+      Host $$g5k_site
+        User $$g5k_user
+        ProxyCommand ssh -F $$ssh_config_file g5kaccess "nc -q 1 $$g5k_site %p"
+
 - deploy_image:
   - exec_out: echo "Deploying image $$kenv with kadeploy"
   - exec_out: sleep 1
@@ -39,27 +61,10 @@
         ForwardAgent yes
         Protocol 2
 
-- create_local_ssh_config:
-  - write_local:
+- append_ssh_node_config:
+  - append_local:
     - $$ssh_config_file
     - |
-      Host *
-        UserKnownHostsFile /dev/null
-        StrictHostKeyChecking no
-        ConnectTimeout 2
-        LogLevel FATAL
-        ForwardAgent yes
-        ControlPath /tmp/$${kameleon_short_uuid}%r@%h:%p
-        ControlMaster auto
-        ControlPersist yes
-        Compression yes
-        Protocol 2
-      Host g5kaccess
-        User $$g5k_user
-        Hostname access.grid5000.fr
-      Host $$g5k_site
-        User $$g5k_user
-        ProxyCommand ssh -F $$ssh_config_file g5kaccess "nc -q 1 $$g5k_site %p"
       Host $$kameleon_recipe_name
         User root
-        ProxyCommand ssh -F $$ssh_config_file $$g5k_site "nc -q 1 `cat $$kameleon_cwd/g5k_machine` %p"
+        ProxyCommand ssh -F $$ssh_config_file $$g5k_site "nc -q 1 `cat $$kameleon_cwd/g5k_machine | awk '{print $NF}'` %p"

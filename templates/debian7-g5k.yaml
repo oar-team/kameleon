@@ -35,23 +35,21 @@ global:
   # Kenv
   kenv: "wheezy-x64-base"
 
+  ssh_config_file: $$kameleon_cwd/ssh_config
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
   # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-  out_cwd: ~/kameleon_workdir/$$kameleon_recipe_name
+  out_cwd: /home/$$g5k_user/kameleon_workdir/$$kameleon_recipe_name
   out_context:
-    cmd: >
-      ssh -A -t $$g5k_user@access.grid5000.fr
-      'ssh -A -t $$g5k_site "mkdir -p $$out_cwd && cd $$out_cwd && bash"'
+    cmd: ssh -A -t -F $$ssh_config_file $$g5k_site /bin/bash
+    workdir: $$out_cwd
 
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
-  in_cwd: ~/kameleon_workdir/$$kameleon_recipe_name
-  ssh_config_file: $$kameleon_cwd/ssh_config
+  in_cwd: /root/kameleon_workdir/$$kameleon_recipe_name
   in_context:
-    cmd: >
-      ssh -F $$ssh_config_file $$kameleon_recipe_name
-        'mkdir -p $$out_cwd && cd $$out_cwd && bash'
+    cmd: ssh -A -t -F $$ssh_config_file $$kameleon_recipe_name /bin/bash
+    workdir: $$in_cwd
 
 #== Bootstrap the new system and create the 'in_context'
 #== This will consist in a G5k Deployment

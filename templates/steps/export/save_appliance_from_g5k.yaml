@@ -2,15 +2,20 @@
 
 - save_as_g5k:
   - exec_out: echo "Using tgz g5k to Export the machine"
-  - exec_out: ssh -F $$out_cwd/ssh_config $$kameleon_recipe_name tgz-g5k > $$filename.tar.gz 2>/dev/null
-  - exec_out: echo "Saved tar.gz appliance to $$filename.tar.gz"
+  - exec_in: tgz-g5k $$filename.tar.gz
+  - exec_out: |
+      rsync -avz -e "ssh -F $$out_cwd/ssh_config" \
+        $$kameleon_recipe_name:/root/$$filename.tar.gz \
+        $$out_cwd/$$filename.tar.gz
+  - exec_out: echo "Saved tar.gz appliance to $$out_cwd/$$filename.tar.gz"
+  - exec_in: rm -f $$in_cwd/$$filename.tar.gz
   - exec_out: echo "Getting the appropiate post install"
   - pipe:
     - exec_out: kaenv3 -p $$kenv | grep archive
     - exec_in: cat > /tmp/postinstall
 
   - write_in:
-    - $${kameleon_recipe_name}_img.yaml
+    - $$in_cwd/$${kameleon_recipe_name}_img.yaml
     - |
       #
       # Kameleon generated based on kadeploy description file
@@ -38,5 +43,5 @@
 
       filesystem: $$filesystem
   - in2out:
-    - $${kameleon_recipe_name}_img.yaml
-    - $${kameleon_recipe_name}_img.yaml
+    - $$in_cwd/$${kameleon_recipe_name}_img.yaml
+    - $$out_cwd/$${kameleon_recipe_name}_img.yaml
