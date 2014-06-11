@@ -555,7 +555,9 @@ module Kameleon
           end
         end
       else
-        FileUtils.mkdir_p File.dirname(dst)
+        unless File.dirname(dst).eql? "/"
+          FileUtils.mkdir_p File.dirname(dst)
+        end
         FileUtils.copy_file(src, dst)
       end
     end
