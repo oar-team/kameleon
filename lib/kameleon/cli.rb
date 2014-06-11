@@ -155,6 +155,11 @@ module Kameleon
       puts CLI.all_commands.keys - ["commands", "completions"]
     end
 
+    desc "source_root", "Prints the kameleon directory path", :hide => true
+    def source_root
+      puts Kameleon.source_root
+    end
+
     # Hack Thor to init Kameleon env soon
     def self.init(base_config)
       env_options = Hash.new
