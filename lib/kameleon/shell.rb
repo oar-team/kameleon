@@ -196,10 +196,8 @@ module Kameleon
     end
 
     def fork_and_wait
-      command = ["bash", "-c", @shell_cmd]
-      @logger.debug("Starting shell process: #{ command.inspect}")
-      @logger.notice("Starting process: #{@cmd.inspect}")
-      system(*command)
+      process, _, _ = fork("inherit")
+      process.wait()
     end
 
     protected
