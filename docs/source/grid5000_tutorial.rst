@@ -84,14 +84,14 @@ The Kameleon hierarchy encourages the reuse (shareability) of code and modularit
 The minimal building block are the commands exec_ which wraps shell commands adding
 a simple error handling and interactivenes in case of a problem.
 These commands are executed in a given context. Which could be: local, in, out.
-That are going to be defined later. They can be used as follows::
+They can be used as follows::
 
      setup:
-     - first_step:
-       - hello_microstep:
-         - exec_local: echo "Hello world"
-	 - exec_in: echo "Hello world"
-	 - exec_out: echo "Hello world"
+       - first_step:
+         - hello_microstep:
+           - exec_local: echo "Hello world"
+	   - exec_in: echo "Hello world"
+	   - exec_out: echo "Hello world"
      # The end
 
 
@@ -108,3 +108,342 @@ That are going to be defined later. They can be used as follows::
 * IN context: It makes reference to inside the newly
   created appliance. It can be mapped to a chroot,
   virtual machine, physical machine, Linux container, etc.
+
+In the last example all the contexts are executed on the user's machine.
+Which is the default behavior that can be customized and we will see it later on this tutorial.
+Most of the time users are going to use the *In context* in order to customize a given a appliance.
+
+We can add variable as well::
+
+     setup:
+       - first_step:
+         - message: "Hello world"
+         - hello_microstep:
+           - exec_local: echo "Variable value $$message"
+
+
+Let's apply the syntax to real example in the next section.
+
+Building a simple Debian based appliance
+========================================
+
+Kameleon already provides tested recipes for building different software appliances based
+on different Linux flavors. We can take a look at the provided templates by typing::
+
+     $ kameleon templates
+
+Which will output::
+
+    The following templates are available in /home/cristian/Repositories/kameleon_v2/templates:
+    NAME                 | DESCRIPTION
+    ---------------------|-------------------------------------------------------------
+    archlinux            | Build an Archlinux base system system.
+    archlinux-desktop    | Archlinux GNOME Desktop edition.
+    debian-testing       | Debian Testing base system
+    debian7              | Debian 7 (Wheezy) base system
+    debian7-desktop      | Debian 7 (Wheezy) GNOME Desktop edition.
+    debian7-oar-dev      | Debian 7 dev appliance with OAR-2.5 (node/server/frontend).
+    fedora-rawhide       | Fedora Rawhide base system
+    fedora20             | Fedora 20 base system
+    fedora20-desktop     | Fedora 20 GNOME Desktop edition
+    old-debian7          | [deprecated] Build a debian wheezy appliance using chroot...
+    ubuntu-12.04         | Ubuntu 12.04 LTS (Precise Pangolin) base system.
+    ubuntu-12.04-desktop | Ubuntu 12.04 LTS (Precise Pangolin) Desktop edition.
+    ubuntu-14.04         | Ubuntu 14.04 LTS (Trusty Tahr) base system.
+    ubuntu-14.04-desktop | Ubuntu 14.04 LTS (Trusty Tahr) Desktop edition.
+    vagrant-debian7      | A standard Debian 7 vagrant base box
+
+
+Let's import the template debian7::
+
+    $ kameleon import debian7
+
+This will generate the following files in the current directory::
+
+    ├── debian7.yaml
+    ├── kameleon.log
+    └── steps
+        ├── aliases
+        |   └── defaults.yaml
+	├── bootstrap
+	│   ├── debian
+	│   │   └── debootstrap.yaml
+	│   ├── initialize_disk_qemu.yaml
+	│   ├── install_bootloader.yaml
+	│   ├── prepare_qemu.yaml
+	│   └── start_qemu.yaml
+	├── checkpoints
+	│   └── qemu.yaml
+	├── export
+	│   └── save_appliance.yaml
+	└── setup
+	    ├── create_group.yaml
+	    ├── create_user.yaml
+	    └── debian
+	        ├── configure_apt.yaml
+		├── configure_kernel.yaml
+		├── configure_keyboard.yaml
+		├── configure_network.yaml
+		├── configure_system.yaml
+		├── install_software.yaml
+		└── upgrade_system.yaml
+
+     8 directories, 19 files
+
+Here we can observe that a directory has been generated.
+This directory contains all the steps needed to build the final software appliance.
+These steps are organized by sections. There is a directory checkpoints that is going
+to be explained later on.
+
+Here we can notice that all the process of building is based on steps files written with Kameleon syntax.
+Separating the steps in different files gives a high degree of reusability.
+
+The recipe looks like this::
+
+     # Loads some helpful aliases
+     aliases: defaults.yaml
+     # Enables qemu checkpoint
+     checkpoint: qemu.yaml
+     #== Global variables use by Kameleon engine and the steps
+     global:
+     ## User varibales : used by the recipe
+     user_name: kameleon
+     user_password: $$user_name
+
+     # Distribution
+     distrib: debian
+     release: wheezy
+     arch: amd64
+
+     ## QEMU options
+     qemu_enable_kvm: true
+     qemu_cpu: 2
+     qemu_memory_size: 512
+     qemu_monitor_port: 10023
+     qemu_ssh_port: 55423
+     qemu_arch: x86_64
+
+     ## Disk options
+     nbd_device: /dev/nbd1
+     image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
+     image_size: 10G
+     filesystem_type: ext4
+
+     # rootfs options
+     rootfs: $$kameleon_cwd/rootfs
+     rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
+
+     ## System variables. Required by kameleon engine
+     # Include specific steps
+     include_steps:
+       - $$distrib/$$release
+       - $$distrib
+
+     # Apt options
+     apt_repository: http://ftp.debian.org/debian/
+     apt_enable_contrib: true
+     apt_enable_nonfree: true
+     apt_install_recommends: false
+
+     # Shell session from where we launch exec_out commands. There is often a
+     # local bash session, but it can be a remote shell on other machines or on
+     # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
+     out_context:
+       cmd: bash
+       workdir: $$kameleon_cwd
+
+     # Shell session that allows us to connect to the building machine in order to
+     # configure it and setup additional programs
+     ssh_config_file: $$kameleon_cwd/ssh_config
+     in_context:
+       cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
+       workdir: /
+
+     #== Bootstrap the new system and create the 'in_context'
+     bootstrap:
+       - debootstrap:
+         - include_pkg: >
+           ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
+           net-tools iproute acpid openssh-server pciutils extlinux
+           linux-image-$$arch
+         - release: $$release
+	 - arch: $$arch
+         - repository: $$apt_repository
+         - enable_cache: true
+       - initialize_disk_qemu
+       - prepare_qemu
+       - install_bootloader
+       - start_qemu
+
+     #== Install and configuration steps
+     # WARNING: this part should be independante from the out context (whenever
+     # possible...)
+     setup:
+     # Install
+       - configure_apt:
+         - repository: $$apt_repository
+         - enable_contrib_repo: $$apt_enable_contrib
+         - enable_nonfree_repo: $$apt_enable_nonfree
+         - install_recommends: $$apt_install_recommends
+       - upgrade_system:
+         - dist_upgrade: true
+       - install_software:
+         - packages: >
+           debian-keyring ntp zip unzip rsync sudo less vim bash-completion
+       - configure_kernel:
+         - arch: $$arch
+       # Configuration
+       - configure_system:
+         - locales: POSIX C en_US fr_FR de_DE
+         - lang: en_US.UTF-8
+         - timezone: UTC
+       - configure_keyboard:
+         - layout: "us,fr,de"
+       - configure_network:
+         - hostname: kameleon-$$distrib
+       - create_group:
+         - name: admin
+       - create_user:
+         - name: $$user_name
+         - groups: sudo admin
+         - password: $$user_password
+
+     #== Export the generated appliance in the format of your choice
+     export:
+       - save_appliance:
+         - input: $$image_disk
+         - output: $$kameleon_cwd/$$kameleon_recipe_name
+         - save_as_qcow2
+	 # - save_as_qed
+         # - save_as_tgz
+         # - save_as_raw
+         # - save_as_vmdk
+         # - save_as_vdi
+
+The previous recipe build a debian wheezy using qemu.
+It looks verbose but normally you as user you wont see it.
+You will use it as a template in a way that will be explained later.
+The recipe specify all the steps, configurations values that are going to be used
+to build the appliance. Kameleon recipes gives many details to you, few things are hidden.
+Which is good for reproducibility purposes and when reporting bugs.
+
+If we have all the dependencies required as qemu, qemu-tools and debootstrap we can start to build the appliance
+doing the following::
+
+     $ kamelon build debian7.yaml
+
+The process will start and in about few minutes
+a directory called builds will be generated in the current directory,
+you will have a qemu virtual disk with a base debian wheezy installed in it.
+That you can try out by executing::
+
+     $ sudo qemu-system-x86_64 -enable-kvm builds/debian7/debian7.qcow2
+
+
+
+Customizing a software appliance
+================================
+
+Now, lets customize a given template in order to create a software appliance that have OpenMPI, Taktuk and build tools necessary to compile source code.
+Kameleon allows us to extend a given template. We will use this for adding the necessary software. Type the following::
+
+     $ kameleon new debian_customized debian7
+
+This will create the file debian_customized.yaml which contents are::
+
+     ---
+     extend: debian7
+
+     global:
+     # You can see the base template `debian7.yaml` to know the
+     # variables that you can override
+
+     bootstrap:
+       - @base
+
+     setup:
+       - @base
+
+     export:
+       - @base
+
+We try to build this recipe, it will generate the exact same image as before.
+But the idea here is to change it in order to install the desired software.
+Therefore, we will modify the setup section like this::
+
+     extend: debian7
+
+     global:
+     # You can see the base template `debian7.yaml` to know the
+     # variables that you can override
+
+     bootstrap:
+       - @base
+
+     setup:
+       - @base
+       - install_software:
+         - packages: >
+            g++ make taktuk openssh-server openmpi-bin openmpi-common openmpi-dev
+
+     export:
+       - @base
+
+
+For building execute::
+
+     $ kameleon build debian_customized.yaml
+
+Then, you can follow the same steps as before to try it out and verify that the software was installed.
+Now, let's make things a little more complicated. We will now to compile and install TAU in our system.
+So, for that let's create a step file that look like this::
+
+
+     - get_tau:
+       - exec_in: |
+           cd /tmp/
+           wget  -q http://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.22.2.tar.gz
+           wget -q http://www.cs.uoregon.edu/research/tau/pdt_releases/pdt-3.19.tar.gz
+     - extracting:
+       - exec_in: |
+           cd /tmp/
+           tar -xzf pdt-3.19.tar.gz
+           cd /tmp/pdtoolkit-3.19
+           ./configure -prefix=/usr/local/pdt-install
+           make clean install
+       - exec_in: |
+           cd /tmp/
+           tar -xzf tau-2.22.2.tar.gz
+           cd /tmp/tau-2.22.2
+           ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/local/openmpi-install/include -mpilib=/usr/local/openmpi-install/lib
+           make install
+
+     #End of the step
+
+You have to put it under the directory *steps/setup/* and you can call it tau_install and
+in order to use it in your recipe, modify it as follows::
+
+     extend: debian7
+
+     global:
+     # You can see the base template `debian7.yaml` to know the
+     # variables that you can override
+
+     bootstrap:
+       - @base
+
+     setup:
+       - @base
+       - install_software:
+         - packages: >
+            g++ make taktuk openssh-server openmpi-bin openmpi-common openmpi-dev
+       - tau_install
+     export:
+       - @base
+
+
+And rebuild the image again, you will see that it wont start from the beginning but
+it will take advantage of the checkpoint system and it will start from the last
+successfull executed step.
+
+When building there is an error. let's debug it with the interactive shell provided by Kameleon.
