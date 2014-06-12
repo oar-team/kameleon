@@ -25,8 +25,7 @@ module Kameleon
         "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
         "in_context" => {"cmd"=> "/bin/bash"},
-        "out_context" => {"cmd"=> "/bin/bash",
-                         "workdir"=> File.join(Kameleon.env.build_path, @name)}
+        "out_context" => {"cmd"=> "/bin/bash"}
       }
       @aliases = {}
       @checkpoint = nil
