@@ -43,6 +43,7 @@ User Documentation
     persistent_cache.rst
     aliases.rst
     faq.rst
+    grid5000_tutorial.rst
 
 Indices and tables
 ==================
@@ -50,4 +51,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
