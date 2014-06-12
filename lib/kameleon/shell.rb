@@ -109,8 +109,11 @@ module Kameleon
       shell_cmd = "mkdir -p $(dirname #{@bashrc_file})\n"
       shell_cmd << "echo #{bashrc} > #{@bashrc_file}\n"
       shell_cmd << "echo #{bashrc} > #{@bashrc_file}\n"
+      unless change_dir_cmd.nil?
+        shell_cmd << "echo #{change_dir_cmd} >> #{@bashrc_file}\n"
+      end
       shell_cmd << "source #{@bashrc_file}\n"
-      shell_cmd << "echo #{change_dir_cmd} >> #{@bashrc_file}\n"
+      shell_cmd << "export KAMELEON_WORKDIR=$PWD\n"
       shell_cmd
     end
 
