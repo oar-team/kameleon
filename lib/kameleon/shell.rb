@@ -74,6 +74,7 @@ module Kameleon
 
     def send_file(source_path, remote_dest_path, chunk_size=READ_CHUNK_SIZE)
       copy_process, = fork("pipe")
+      copy_process.io.stdin << init_shell_cmd
       copy_process.io.stdin << "cat > #{remote_dest_path}\n"
       copy_process.io.stdin.flush
       open(source_path, "rb") do |f|
