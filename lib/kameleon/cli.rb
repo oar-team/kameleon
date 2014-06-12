@@ -27,13 +27,13 @@ module Kameleon
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
         template_recipe = RecipeTemplate.new(template_path)
-        logger.notice("Importing template '#{template_name}'...")
-        template_recipe.copy_template(options[:force])
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
                                 "`kameleon templates`"
       else
+        logger.notice("Importing template '#{template_name}'...")
+        template_recipe.copy_template(options[:force])
         logger.notice("done")
       end
     end
@@ -50,14 +50,15 @@ module Kameleon
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
         template_recipe = RecipeTemplate.new(template_path)
-        logger.notice("Cloning template '#{template_name}'...")
-        template_recipe.copy_template(options[:force])
-        template_recipe.copy_extended_recipe(recipe_name, options[:force])
       rescue
-        raise TemplateNotFound, "Template '#{template_name}' not found\n" \
+        raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
                                 "`kameleon templates`"
       else
+        logger.notice("Cloning template '#{template_name}'...")
+        template_recipe.copy_template(options[:force])
+        logger.notice("Creating extended recipe from template '#{template_name}'...")
+        template_recipe.copy_extended_recipe(recipe_name, options[:force])
         logger.notice("done")
       end
     end

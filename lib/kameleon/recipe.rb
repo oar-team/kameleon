@@ -529,7 +529,7 @@ module Kameleon
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!
         if ["y", "n" , "", "a"].include?(answer)
-          if answer.eql? "y"
+          if ["y", ""].include? answer
             return true
           elsif answer.eql? "a"
             raise AbortError, "Aborted..."
@@ -543,20 +543,24 @@ module Kameleon
       if File.exists? dst
         diff = Diffy::Diff.new(dst.to_s, src.to_s, :source => "files").to_s
         unless diff.chomp.empty?
-          @logger.notice("File #{} --> Already exists")
+          @logger.notice("conflict #{dst}")
+          @logger.notice("Differences between the old and the new :")
           puts Diffy::Diff.new(dst.to_s, src.to_s,
                                :source => "files",
                                :context => 1,
                                :include_diff_info => true).to_s
-          msg = "overwrite #{dst} ? [y]es/[N]o/[a]bort : "
+          msg = "Overwrite #{dst}? [Y]es/[n]o/[a]bort : "
           if force || get_answer(msg)
             FileUtils.copy_file(src, dst)
           end
+        else
+          @logger.notice("identical #{dst}")
         end
       else
         unless File.dirname(dst).eql? "/"
           FileUtils.mkdir_p File.dirname(dst)
         end
+        @logger.notice("create #{dst}")
         FileUtils.copy_file(src, dst)
       end
     end
