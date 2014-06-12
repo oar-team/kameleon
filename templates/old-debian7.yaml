@@ -49,7 +49,7 @@ global:
   # configure it and setup additional programs
   in_context:
     cmd: USER=root HOME=/root LC_ALL=POSIX chroot $$kameleon_cwd/rootfs bash
-    workdir: /
+    workdir: /root/kameleon_workdir
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
