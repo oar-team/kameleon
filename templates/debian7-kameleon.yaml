@@ -24,7 +24,7 @@ setup:
     - packages: qemu-system debootstrap qemu-utils
   - install_kameleon:
     - deb_install:
-      - exec_in: curl http://kameleon.imag.fr/pkg/kameleon_2.1.0+20140612204940-1_amd64.deb > kameleon_2.1.0_amd64.deb
+      - exec_in: wget http://kameleon.imag.fr/pkg/kameleon_2.1.0+20140612204940-1_amd64.deb -O kameleon_2.1.0_amd64.deb
       - exec_in: dpkg -i kameleon_2.1.0_amd64.deb
       - exec_in: rm -f kameleon_2.1.0_amd64.deb
   - prepare_export:
