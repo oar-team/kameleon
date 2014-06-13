@@ -7,7 +7,9 @@ Context
 To understand how Kameleon works you have to get the *context* notion. A context
 is an execution environnement with its variables (like $PATH, $TERM,...), its
 tools (debootstrap, yum, ...) and all its specifics (filesystem, local/remote,
-...). It also manage the connections to your context and make it easy and reliable. 
+...).
+
+It also manage the connections to your context and make it easy and reliable.
 When you build an appliance you deal with 3 contexts:
 
 - The *local* context which is the Kameleon execution environnement
