@@ -250,9 +250,9 @@ module Kameleon
             raise AbortError, "Execution aborted..."
           elsif answer.eql? "c"
             ## resetting the exit status
-            @in_context.execute("true")
-            @out_context.execute("true")
-            @local_context.execute("true")
+            @in_context.execute("true") unless @in_context.closed?
+            @out_context.execute("true") unless @out_context.closed?
+            @local_context.execute("true") unless @local_context.closed?
             return true
           elsif answer.eql? "r"
             @logger.notice("Retrying the previous command...")

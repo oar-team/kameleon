@@ -8,7 +8,7 @@
   - exec_out: mkdir -p $$kameleon_cwd/checkpoints
   - exec_out: |
       if [ ! -e "$$image_disk" ] ; then
-        qemu-img create -f qcow2 -o preallocation=metadata $$kameleon_cwd/checkpoints/base.qcow2 $$image_size
+        qemu-img create -f qcow2 $$kameleon_cwd/checkpoints/base.qcow2 $$image_size
         # keep a link to the last checkpoint disk
         ln -sf $$kameleon_cwd/checkpoints/base.qcow2 $$image_disk
       fi
