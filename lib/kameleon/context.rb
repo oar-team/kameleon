@@ -91,6 +91,8 @@ module Kameleon
       lazyload_shell
       @logger.info("Starting interactive shell")
       @shell.fork_and_wait
+    rescue ShellError => e
+      e.message.split( /\r?\n/ ).each {|m| @logger.error m }
     end
 
     def closed?
