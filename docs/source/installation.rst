@@ -1,6 +1,14 @@
+.. _`installation`:
+
 ------------
 Installation
 ------------
+
+The easiest way to install and test Kameleon if you
+are using a Debian based linux distribution is by using the deb package available at `kameleon_deb`_.
+
+.. _kameleon_deb: http://kameleon.imag.fr/pkg/kameleon_2.1.0+20140612204940-1_amd64.deb
+
 .. note::
     On debian based distribution be sure to install the ``ruby-dev`` package first
 

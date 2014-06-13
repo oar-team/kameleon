@@ -5,7 +5,7 @@
   - exec_in: tgz-g5k $$filename.tar.gz
   - exec_out: |
       rsync -avz -e "ssh -F $$out_cwd/ssh_config" \
-        $$kameleon_recipe_name:/root/$$filename.tar.gz \
+        $$kameleon_recipe_name:$$in_cwd/$$filename.tar.gz \
         $$out_cwd/$$filename.tar.gz
   - exec_out: echo "Saved tar.gz appliance to $$out_cwd/$$filename.tar.gz"
   - exec_in: rm -f $$in_cwd/$$filename.tar.gz

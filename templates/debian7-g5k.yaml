@@ -29,8 +29,8 @@ global:
     - $$distrib
 
   # Frontend options
-  g5k_user: $$my_gk5_username  # CHANGE ME
-  g5k_site: $$my_gk5_site  # CHANGE ME
+  g5k_user: $$my_g5k_username  # CHANGE ME
+  g5k_site: $$my_g5k_site  # CHANGE ME
 
   # Kenv
   kenv: "wheezy-x64-base"

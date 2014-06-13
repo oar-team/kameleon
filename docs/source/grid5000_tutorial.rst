@@ -2,19 +2,20 @@
 Grid'5000 Tutorial
 ==================
 
-This tutorial will introduce Kameleon a tool to build software appliances that can be
-deployed on different infrastructures such as: virtualization, cloud computing, baremetal, etc.
+This tutorial will introduce Kameleon, a tool to build software appliances that can be
+deployed on using different technologies such as: virtualization, cloud computing, baremetal, etc.
+It targets an important activity in Grid'5000 which is the customization of the experimental environments.
 
 ---------------
 Kameleon basics
 ---------------
 
-First of all, let's see all the syntax flavors that Kameleon have to offer.
+First of all, let's see all the syntax flavors that Kameleon has to offer.
 From this point, we assume that kameleon have been installed and it's already working
-in your system, otherwise will refer to[1].
-Kameleon can be seen as a shell sequencier which will boost your shell scripts.
+in your system, otherwise go to :ref:`installation` to see the installation procedure.
+Kameleon can be seen as a shell sequencer which will boost your shell scripts.
 It is based on the execution of shell scripts but it provides some syntax sugar that makes
-the work with shell scripts less painfull.
+the work with shell scripts less painful.
 
 We will start with the basics
 
@@ -22,7 +23,7 @@ Kameleon Hello world
 ~~~~~~~~~~~~~~~~~~~~
 
 Everything we want to build have to be specified by a recipe. Kameleon will read this recipe
-and it will execute the appropiate actions. Let's create a hello world recipe for kameleon.
+and it will execute the appropriate actions. Let's create a hello world recipe using Kameleon.
 Open a text editor and write the following::
 
      setup:
@@ -31,10 +32,10 @@ Open a text editor and write the following::
          - exec_local: echo "Hello world"
      # The end
 
-save the privious file as a YAML file. For instance hello_world.yaml.
+Save the previous file as a YAML file. For instance, hello_world.yaml.
 
 .. note::
-    Be sure of respecting the YAML syntax `yaml`_.
+    Be sure of respecting the YAML syntax and identation `yaml`_.
 
 .. _yaml: http://www.yaml.org/
 
@@ -66,7 +67,7 @@ You will have some output that looks like this::
       [kameleon]: Log file : /home/cristian/Repositories/exptools/setup_complex_exp/tests/new_version/kameleon.log
 
 With this simple example, we have already introduced most of the Kameleon concepts and syntax.
-First, how recipes are structured. Which could be done using: sections, steps, microsteps.
+First, how recipes are structured using a hierarchy composed of: sections, steps, microsteps.
 
 * Sections: The sections correspond to the minimal actions that have to be performed in order to have a software
   stack that can be run almost anywhere. This brings to Kameleon a high degree of customizability, reuse of
@@ -77,11 +78,11 @@ First, how recipes are structured. Which could be done using: sections, steps, m
   Steps can be declared in independent files that improves the degree of reusability.
 
 * Microsteps: procedures composed of shell commands. The goal of dividing steps into microsteps is the
-  possibility of activating certain actions within a step.
+  possibility of activating certain actions within a step and performing a better checkpoint.
 
 The Kameleon hierarchy encourages the reuse (shareability) of code and modularity of procedures.
 
-The minimal building block are the commands exec_ which wraps shell commands adding
+The minimal building block are the commands *exec_* which wraps shell commands adding
 a simple error handling and interactivenes in case of a problem.
 These commands are executed in a given context. Which could be: local, in, out.
 They can be used as follows::
@@ -398,27 +399,25 @@ Then, you can follow the same steps as before to try it out and verify that the 
 Now, let's make things a little more complicated. We will now to compile and install TAU in our system.
 So, for that let's create a step file that look like this::
 
-
      - get_tau:
-       - exec_in: |
-           cd /tmp/
-           wget  -q http://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.22.2.tar.gz
-           wget -q http://www.cs.uoregon.edu/research/tau/pdt_releases/pdt-3.19.tar.gz
-     - extracting:
-       - exec_in: |
-           cd /tmp/
-           tar -xzf pdt-3.19.tar.gz
-           cd /tmp/pdtoolkit-3.19
-           ./configure -prefix=/usr/local/pdt-install
-           make clean install
-       - exec_in: |
-           cd /tmp/
-           tar -xzf tau-2.22.2.tar.gz
-           cd /tmp/tau-2.22.2
-           ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/local/openmpi-install/include -mpilib=/usr/local/openmpi-install/lib
-           make install
+       - exec_in: cd /tmp/
+       - exec_in: wget  -q http://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.22.2.tar.gz
+       - exec_in: wget -q http://www.cs.uoregon.edu/research/tau/pdt_releases/pdt-3.19.tar.gz
 
-     #End of the step
+     - pdt_install:
+       - exec_in: cd /tmp/
+       - exec_in: tar -xzf pdt-3.19.tar.gz
+       - exec_in: cd /tmp/pdtoolkit-3.19
+       - exec_in: ./configure -prefix=/usr/local/pdt-install
+       - exec_in: make clean install
+
+     - tau_install:
+       - exec_in: cd /tmp/
+       - exec_in: tar -xzf tau-2.22.2.tar.gz
+       - exec_in: cd /tmp/tau-2.22.2
+       - exec_in: ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/local/openmpi-install/include -mpilib=/usr/local/openmpi-install/lib
+       - exec_in: make install
+
 
 You have to put it under the directory *steps/setup/* and you can call it tau_install and
 in order to use it in your recipe, modify it as follows::
@@ -446,4 +445,103 @@ And rebuild the image again, you will see that it wont start from the beginning 
 it will take advantage of the checkpoint system and it will start from the last
 successfull executed step.
 
-When building there is an error. let's debug it with the interactive shell provided by Kameleon.
+When building there is the following error::
+
+
+     [kameleon]: Step 46 : setup/tau_install/tau_install
+     [kameleon]:  ---> Running step
+        [in_ctx]: Unset ParaProf's cubeclasspath...
+	[in_ctx]: Unset Perfdmf cubeclasspath...
+	[in_ctx]: Error: Cannot access MPI include directory /usr/local/openmpi-install/include
+     [kameleon]: Error occured when executing the following command :
+     [kameleon]:
+     [kameleon]: > exec_in: ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/local/openmpi-install/include -mpilib=/usr/local/openmpi-install/lib
+     [kameleon]: Press [r] to retry
+     [kameleon]: Press [c] to continue with execution
+     [kameleon]: Press [a] to abort execution
+     [kameleon]: Press [l] to switch to local_context shell
+     [kameleon]: Press [o] to switch to out_context shell
+     [kameleon]: Press [i] to switch to in_context shell
+     [kameleon]: answer ? [c/a/r/l/o/i]:
+
+We can observe that the problem is related with the configure script that cannot access the MPI path.
+It can be debugged by using the interactive shell provided by Kameleon.
+The interactive shell allows us to log into a given context.
+For this case we see that the error happened in the in context, so let's type i in order to enter to this context::
+
+  [kameleon]: User choice : [i] launch in_context
+     [in_ctx]: Starting interactive shell
+  [kameleon]: Starting process: "LC_ALL=POSIX ssh -F /tmp/kameleon/debian_customized/ssh_config debian_customized -t /bin/bash"
+  (in_context) root@cristiancomputer: / #
+
+The commands executed by Kameleon remain in the bash history.
+Therefore, I can be rexecuted manually.
+For this case, we only need to change the path for the OpenMPI libraries.
+As we have installed it using the packages they are avaiable under the directories:
+*/usr/include/openmpi/*, */usr/lib/openmpi/* respectively.
+If we try with the following parameters::
+
+    # ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/include/openmpi/ -mpilib=/usr/lib/openmpi/
+
+It will finish without any problem. We have found the bug, therefore we can just logout by typing *exit* and
+then *abort* for stopping the execution and update the step file with the previous line.
+If you carry out the building again you will see that now everything goes smoothly.
+Again Kameleon will use the checkpoint system to avoid starting from scratch.
+
+
+Creating a Grid'5000 environment.
+=================================
+
+Now, let's use the extend and export functionalities for creating a Grid'5000 environment.
+With this step we will see how code can be re-used with Kameleon.
+Therefore, we can extend the recipe created before::
+
+     ---
+     extend: debian_customized
+
+     global:
+         # You can see the base template `debian7.yaml` to know the
+         # variables that you can override
+
+     bootstrap:
+       - @base
+
+     setup:
+       - @base
+
+     export:
+       - save_appliance:
+         - input: $$image_disk
+         - output: $$kameleon_cwd/$$kameleon_recipe_name
+         - save_as_tgz
+
+       - g5k_custom:
+         - kadeploy_file:
+           - write_local:
+             - $$kameleon_cwd/$$kameleon_recipe_name.yaml
+             - |
+               #
+               # Kameleon generated based on kadeploy description file
+               #
+               ---
+               name: $$kameleon_recipe_name
+
+               version: 1
+
+               os: linux
+
+               image:
+                 file: $$kameleon_recipe_name.tar.gz
+                 kind: tar
+                 compression: gzip
+
+               postinstalls:
+                 - archive: server:///grid5000/postinstalls/debian-x64-base-2.5-post.tgz
+                   compression: gzip
+                   script: traitement.ash /rambin
+
+               boot:
+                 kernel: /vmlinuz
+                 initrd: /initrd.img
+
+               filesystem: $$filesystem_type
