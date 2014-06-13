@@ -96,7 +96,7 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp zip unzip rsync sudo less vim bash-completion
+        debian-keyring ntp rsync sudo less vim bash-completion
   - configure_kernel:
     - arch: $$arch
   # Configuration
