@@ -12,6 +12,8 @@ extend: debian7
 global:
   # Apt options
   apt_install_recommends: true
+  # Add memory for desktop
+  qemu_memory_size: 2048
 
 bootstrap:
   - @base
