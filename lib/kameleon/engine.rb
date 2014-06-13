@@ -32,13 +32,16 @@ module Kameleon
 
       if @options[:cache] || @options[:from_cache] then
         @cache = Kameleon::Persistent_cache.instance
-        @cache.activated = true
         @cache.cwd = @cwd
         @cache.polipo_path = @options[:proxy_path]
-        @cache.check_polipo_binary
         @cache.name = @recipe.name
+        @cache.mode = @options[:cache] ? :build : :from
+        @cache.cache_path = @options[:from_cache]
+        @cache.recipe_files = @recipe.files # I'm passing the Pathname objects
+        @cache.recipe_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
         #saving_steps_files
       end
+
 
       @in_context = nil
       begin
@@ -61,13 +64,8 @@ module Kameleon
                                 @recipe.global["in_context"]["workdir"],
                                 @recipe.global["in_context"]["exec_prefix"],
                                 @cwd)
-      if @options[:from_cache] then
-        begin
-          @cache.unpack(@options[:from_cache])
-        rescue
-          raise BuildError, "Failed to untar the persistent cache file"
-        end
-      end
+      @cache.start if @cache
+
     end
 
     def saving_steps_files
@@ -157,10 +155,8 @@ module Kameleon
       end
       @cleaned_sections.push(section.name)
 
-      if @cache then
-        @cache.stop_web_proxy
-        @cache.pack unless @options[:from_cache]
-      end
+
+      @cache.stop if @cache
 
     end
 
@@ -200,6 +196,7 @@ module Kameleon
                "exec_local" => @local_context,}
         first_context = map[first_cmd.key]
         second_context = map[second_cmd.key]
+        @cache.cache_cmd_id(cmd.identifier) if @cache
         first_context.pipe(first_cmd.value, second_cmd.value, second_context)
       when "rescue"
         first_cmd, second_cmd = cmd.value
