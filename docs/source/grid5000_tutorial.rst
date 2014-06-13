@@ -3,7 +3,7 @@ Grid'5000 Tutorial
 ==================
 
 This tutorial will introduce Kameleon, a tool to build software appliances that can be
-deployed on different infrastructures such as: virtualization, cloud computing, baremetal, etc.
+deployed on using different technologies such as: virtualization, cloud computing, baremetal, etc.
 It targets an important activity in Grid'5000 which is the customization of the experimental environments.
 
 ---------------
@@ -12,10 +12,10 @@ Kameleon basics
 
 First of all, let's see all the syntax flavors that Kameleon has to offer.
 From this point, we assume that kameleon have been installed and it's already working
-in your system, otherwise will refer to[1].
-Kameleon can be seen as a shell sequencier which will boost your shell scripts.
+in your system, otherwise go to :ref:`installation` to see the installation procedure.
+Kameleon can be seen as a shell sequencer which will boost your shell scripts.
 It is based on the execution of shell scripts but it provides some syntax sugar that makes
-the work with shell scripts less painfull.
+the work with shell scripts less painful.
 
 We will start with the basics
 
@@ -23,7 +23,7 @@ Kameleon Hello world
 ~~~~~~~~~~~~~~~~~~~~
 
 Everything we want to build have to be specified by a recipe. Kameleon will read this recipe
-and it will execute the appropiate actions. Let's create a hello world recipe for kameleon.
+and it will execute the appropriate actions. Let's create a hello world recipe using Kameleon.
 Open a text editor and write the following::
 
      setup:
@@ -32,10 +32,10 @@ Open a text editor and write the following::
          - exec_local: echo "Hello world"
      # The end
 
-save the privious file as a YAML file. For instance hello_world.yaml.
+Save the previous file as a YAML file. For instance, hello_world.yaml.
 
 .. note::
-    Be sure of respecting the YAML syntax `yaml`_.
+    Be sure of respecting the YAML syntax and identation `yaml`_.
 
 .. _yaml: http://www.yaml.org/
 
@@ -67,7 +67,7 @@ You will have some output that looks like this::
       [kameleon]: Log file : /home/cristian/Repositories/exptools/setup_complex_exp/tests/new_version/kameleon.log
 
 With this simple example, we have already introduced most of the Kameleon concepts and syntax.
-First, how recipes are structured. Which could be done using: sections, steps, microsteps.
+First, how recipes are structured using a hierarchy composed of: sections, steps, microsteps.
 
 * Sections: The sections correspond to the minimal actions that have to be performed in order to have a software
   stack that can be run almost anywhere. This brings to Kameleon a high degree of customizability, reuse of
@@ -78,11 +78,11 @@ First, how recipes are structured. Which could be done using: sections, steps, m
   Steps can be declared in independent files that improves the degree of reusability.
 
 * Microsteps: procedures composed of shell commands. The goal of dividing steps into microsteps is the
-  possibility of activating certain actions within a step.
+  possibility of activating certain actions within a step and performing a better checkpoint.
 
 The Kameleon hierarchy encourages the reuse (shareability) of code and modularity of procedures.
 
-The minimal building block are the commands exec_ which wraps shell commands adding
+The minimal building block are the commands *exec_* which wraps shell commands adding
 a simple error handling and interactivenes in case of a problem.
 These commands are executed in a given context. Which could be: local, in, out.
 They can be used as follows::
