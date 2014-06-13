@@ -25,7 +25,6 @@ module Kameleon
                             :idleTime => "5",
                             :chunkHighMark => "425165824",
                             :proxyPort => @polipo_port,
-                            #:proxyOffline => "true"
                             :relaxTransparency =>"true"
                             }
 
@@ -61,7 +60,7 @@ module Kameleon
 
       if @polipo_path.nil? then
         @logger.error("Polipo binary not found, make sure it is in your current PATH")
-        @logger.error("or use the option --proxy_path")
+        @logger.error("or use the option --proxy-path")
         raise BuildError, "Failed to use persistent cache"
       end
     end
@@ -77,7 +76,7 @@ module Kameleon
     end
 
     def create_cache_directory(step_name)
-      @logger.notice("Creating  cache directory #{step_name} for Polipo")
+      @logger.notice("Creating cache directory #{step_name} for Polipo")
       directory_name = @cache_dir + "/#{step_name}"
       FileUtils.mkdir_p directory_name
       directory_name
@@ -87,7 +86,7 @@ module Kameleon
       ## This function assumes that the cache directory has already been created by the engine
       ## Stopping first the previous proxy
       ## have to check if polipo is running
-      @logger.notice("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
+      @logger.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
       @polipo_process.stop unless @polipo_process.nil?
       command = ["#{@polipo_path}/polipo"]
       @polipo_cmd_options[:diskCacheRoot] = directory
