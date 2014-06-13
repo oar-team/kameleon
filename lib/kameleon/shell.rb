@@ -30,16 +30,6 @@ module Kameleon
 
       ## Changing the default bashrc if the cache is activated
       @cache = Kameleon::Persistent_cache.instance
-      if @cache.activated? then
-        new_kameleon_bashrc = Tempfile.new('kameleon_bashrc').path
-        FileUtils.cp @default_bashrc_file, new_kameleon_bashrc
-        tpl = ERB.new(File.read(@cache.polipo_env))
-        polipo_env_content = tpl.result(binding)
-        File.open(new_kameleon_bashrc,'a') do |f|
-          f.puts(polipo_env_content)
-        end
-        @default_bashrc_file = new_kameleon_bashrc
-      end
 
       @shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
                    "#{@cmd} --rcfile #{@bashrc_file}"
@@ -98,6 +88,10 @@ module Kameleon
       if File.file?(@default_bashrc_file)
         tpl = ERB.new(File.read(@default_bashrc_file))
         bashrc_content = tpl.result(binding)
+        if @cache.activated? then
+          tpl = ERB.new(File.read(@cache.polipo_env))
+          bashrc_content << "\n" + ERB.new(File.read(@cache.polipo_env)).result(binding)
+        end
       end
       bashrc = Shellwords.escape(bashrc_content)
       if @shell_workdir
