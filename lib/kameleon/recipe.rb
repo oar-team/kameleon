@@ -14,7 +14,7 @@ module Kameleon
     attr_accessor :checkpoint_path
     attr_accessor :metainfo
 
-    def initialize(path)
+    def initialize(path, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @path = Pathname.new(path)
       @name = (@path.basename ".yaml").to_s
@@ -39,10 +39,10 @@ module Kameleon
       @files = []
       @logger.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
-      load!
+      load! kwargs
     end
 
-    def load!
+    def load!(kwargs = {})
       # Find recipe path
       @logger.debug("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
@@ -58,9 +58,8 @@ module Kameleon
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, :strict => false)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, kwargs)
       @global.merge! YAML.load(resolved_global)
-
       # Loads aliases
       load_aliases(yaml_recipe)
       # Loads checkpoint configuration
