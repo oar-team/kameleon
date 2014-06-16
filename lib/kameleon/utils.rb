@@ -14,11 +14,11 @@ module Kameleon
         if initial_variables.has_key? strip_var
           value = initial_variables[strip_var]
         else
-          if !strict
+          if strict
             fail RecipeError, "#{yaml_path}: variable #{var} not found in local or global" \
           end
         end
-        return $` + resolve_vars(value.to_s + $', yaml_path, initial_variables)
+        return $` + resolve_vars(value.to_s + $', yaml_path, initial_variables, kwargs)
       end
     end
 
