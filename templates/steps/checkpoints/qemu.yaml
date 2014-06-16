@@ -1,6 +1,6 @@
 create: |
     if [ -f "$$kameleon_cwd/checkpoint_enabled" ] ; then
-      if nc -w 0 -z localhost $$qemu_monitor_port 2>/dev/null
+      if nc -w 1 -z localhost $$qemu_monitor_port 2>/dev/null
       then
         echo "savevm @microstep_id" | nc localhost $$qemu_monitor_port
       fi

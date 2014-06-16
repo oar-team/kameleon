@@ -47,7 +47,7 @@
     - exec_in: |
         sleep 2 && shutdown -h now &
     - exec_out: |
-        while nc -w 0 -z localhost $$qemu_monitor_port
+        while nc -w 1 -z localhost $$qemu_monitor_port
         do
           sleep 1
           echo -n "."
@@ -58,7 +58,7 @@
   - on_checkpoint: redo
   - on_export_clean:
     - exec_out: |
-        if nc -w 0 -z localhost $$qemu_monitor_port 2>/dev/null
+        if nc -w 1 -z localhost $$qemu_monitor_port 2>/dev/null
         then
           echo "Shutting down qemu virtual machine..."
           echo "system_reset" | nc localhost $$qemu_monitor_port 1>/dev/null 2>&1
