@@ -22,13 +22,13 @@ generated binary using the option ``--proxy_path``. To use, you just have to
 add the option ``--cache`` as an argument of the build command.
 For example::
 
-  kameleon build debian_test -b /tmp/kameleon/ --cache
+  kameleon build my_recipe.yaml -b /tmp/kameleon/ --cache
 
 This will create a tar file in the build directory ``/tmp/kameleon`` called
-``debian_test-cache.tar``.  In order to use this generated cache file in
+``my_recipe-cache.tar``.  In order to use this generated cache file in
 another build, we have just to use the options ``--from_cache`` as follows::
 
-   kameleon build debian_test -b /tmp/kameleon/ --from_cache /tmp/debian_test-cache.tar
+   kameleon build my_recipe.yaml -b /tmp/kameleon/ --from_cache /tmp/my_recipe-cache.tar
 
 
 .. [1] http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/

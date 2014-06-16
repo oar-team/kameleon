@@ -7,7 +7,7 @@ Checkpoint
 Kameleon provide a modular Checkpoint mechanism. Indeed, Kameleon give you the
 possibility to implement your own checkpoint mechanism, using for example the
 snapshot feature of your underneath filesystem. To do so, you have to fill in a
-YAML file, located in the ``checkpoints`` folder of your workspace, in which
+YAML file, located in the ``steps/checkpoints`` folder of your workspace, in which
 you have to define 4 commands:
 
 create
