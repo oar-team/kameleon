@@ -58,7 +58,7 @@ module Kameleon
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, :strict => false)
       @global.merge! YAML.load(resolved_global)
 
       # Loads aliases
@@ -98,7 +98,7 @@ module Kameleon
             if not args.nil?
               args.each do |arg|
                 if arg.kind_of? Hash
-                  if arg.flatten[1].kind_of? Array
+                  if arg[arg.keys[0]].kind_of? Array
                     embedded_step = true
                   end
                 end
@@ -305,6 +305,10 @@ module Kameleon
     end
 
     def resolve!
+      # Resolve dynamically-defined variables !!
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      @global.merge! YAML.load(resolved_global)
+
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
