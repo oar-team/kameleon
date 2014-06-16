@@ -81,10 +81,13 @@ module Kameleon
 
     def lazyload_shell()
       unless @shell.started?
+        @shell.restart
         # Start the shell process
-        @shell.start
         execute("echo The '#{name}_context' has been initialized", :log_level => "info")
       end
+    rescue
+      @shell.stop
+      raise
     end
 
     def start_shell

@@ -48,7 +48,10 @@ module Kameleon
     end
 
     def stop
-      @process.stop(0) unless @process.nil?
+      unless @process.nil?
+        @process.stop(0)
+        @process = nil
+      end
     end
 
     def started?
@@ -56,7 +59,7 @@ module Kameleon
     end
 
     def exited?
-      @process.exited?
+      return !@process.nil? && @process.exited?
     end
 
     def restart
