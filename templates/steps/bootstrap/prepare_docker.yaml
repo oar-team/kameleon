@@ -1,13 +1,4 @@
-
-- check_docker:
-  - on_bootstrap_init:
-    - exec_out: DOCKER=${DOCKER:-docker}
-    - rescue:
-      - exec_out: command -V $DOCKER
-      - breakpoint: >
-          error: Docker executable no found. Make sure Docker
-          is installed and/or use the DOCKER variable to set Docker
-          executable.
+- insecure_ssh_key: $$kameleon_cwd/insecure_ssh_key
 
 - clean_containers:
   - on_checkpoint: redo
@@ -19,31 +10,42 @@
     - exec_out: cat CONTAINERS_TO_CLEAN | xargs -I {} docker rm {}
     - exec_out: rm -f CONTAINERS_TO_CLEAN
 
-- import_rootfs:
-  - exec_out: |
-      docker images | grep -q $$image \
-      || (echo "Importing $$image to docker..." && cat "$$rootfs_archive"\
-          | docker import - $$image \
-          | xargs -I {} docker tag {} $$image:base)
-  - exec_out: docker tag $$image:base $$image:latest
 
-- configure_sshd:
-  - on_checkpoint: redo
-  - exec_out: echo -e  'y\n' | ssh-keygen -q -t rsa -f $$insecure_ssh_key -N ''
+- configure_ssh_access:
+  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
   - exec_out: cat $$insecure_ssh_key
+  - exec_out: chroot $$rootfs_download_path mkdir -p /root/.ssh
   - exec_out: |
-      CID="kameleon_container_$[($RANDOM % ($[50000 - 50] + 1)) + 50]"
-      cat $${insecure_ssh_key}.pub | \
-        docker run -i -a stdin --dns $$dns --name $CID $$image:latest \
-          /bin/bash -c "mkdir -p /root/.ssh ; \
-                        tee -a /root/.ssh/authorized_keys"
-  - on_export_init:
-    - exec_in: rm -rf /root/.ssh
-  - exec_out: echo "$CID" >> CONTAINERS_TO_CLEAN
-  - exec_out: |
-      docker images | grep $$image \
-                    | grep sshd \
-                    | awk '{print $3}' \
-                    | xargs -I {} docker rmi {}
-  - exec_out: docker commit $CID $$image:sshd > /dev/null
-  - exec_out: docker tag $$image:sshd $$image:latest
+        cat $${insecure_ssh_key}.pub > $$rootfs_download_path/root/.ssh/authorized_keys
+        cat $${insecure_ssh_key}.pub > $$rootfs_download_path/root/.ssh/kameleon_insecure_public_key
+        chmod 600 $$rootfs_download_path/root/.ssh/authorized_keys
+        chmod 755 $$rootfs_download_path/root/.ssh
+  - on_clean:
+    - exec_out: rm -rf $$rootfs_download_path/root/.ssh
+
+- import_to_docker:
+  - check_cmd_out: docker
+  - exec_out: echo "Importing $$docker_image to docker..."
+  - exec_out: tar -C $$rootfs_download_path -c . | $DOCKER import - $$docker_image:base
+
+- create_ssh_config:
+  - write_out:
+    - $$ssh_config_file
+    - |
+      Host $$kameleon_recipe_name
+      HostName 127.0.0.1
+      User root
+      IdentityFile $$insecure_ssh_key
+      UserKnownHostsFile /dev/null
+      StrictHostKeyChecking no
+      PasswordAuthentication no
+      IdentitiesOnly yes
+      LogLevel FATAL
+      ForwardAgent yes
+      ControlPath /tmp/$${kameleon_short_uuid}%r@%h:%p
+      ControlMaster auto
+      ControlPersist yes
+      Compression yes
+      Protocol 2
+  - on_export_clean:
+    - exec_out: rm -f /tmp/$${kameleon_short_uuid}*

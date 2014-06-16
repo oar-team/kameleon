@@ -1,12 +1,16 @@
 - start_sshd:
   - on_checkpoint: redo
   - exec_out: |
-      CID=$(docker run -d -p 127.0.0.1::22 -i --dns $$dns -h $$hostname --privileged "$$image:latest" \
-            /bin/bash -c "service ssh restart ; tail -f /dev/null")
+      CID=$(docker run -d -p 127.0.0.1::22 -i \
+              --dns $$docker_dns \
+              -h $$docker_hostname \
+              --privileged "$$docker_image:base" \
+              /bin/bash -c "service ssh restart ; tail -f /dev/null")
   - exec_out: echo "$CID" >> CONTAINERS_TO_CLEAN
   - exec_out: echo $CID > MAIN_CONTAINER_ID
   - on_export_clean:
     - exec_out: rm -f MAIN_CONTAINER_ID
   - exec_out: echo $(docker port $CID 22) | cut -d':' -f2 > MAIN_CONTAINER_PORT
+  - exec_out: echo "Port $(cat MAIN_CONTAINER_PORT)" >> $$ssh_config_file
   - on_export_clean:
     - exec_out: rm -f MAIN_CONTAINER_PORT
