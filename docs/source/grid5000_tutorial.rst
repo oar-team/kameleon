@@ -2,28 +2,27 @@
 Grid'5000 Tutorial
 ==================
 
-This tutorial will introduce Kameleon, a tool to build software appliances that can be
-deployed on using different technologies such as: virtualization, cloud computing, baremetal, etc.
+This tutorial will introduce Kameleon, a tool to build software appliances.
+With Kameleon it is possible to generate appliances that can be deployed on different virtualization hypervisors or on baremetal.
 It targets an important activity in Grid'5000 which is the customization of the experimental environments.
 
 ---------------
 Kameleon basics
 ---------------
 
-First of all, let's see all the syntax flavors that Kameleon has to offer.
-From this point, we assume that kameleon have been installed and it's already working
-in your system, otherwise go to :ref:`installation` to see the installation procedure.
+First of all, let's see all the syntax flavors that *Kameleon* has to offer.
+From this point, we assume that *Kameleon* have been installed and it's already working
+in your system, otherwise go to :ref:`installation` section.
 Kameleon can be seen as a shell sequencer which will boost your shell scripts.
 It is based on the execution of shell scripts but it provides some syntax sugar that makes
 the work with shell scripts less painful.
-
-We will start with the basics
+Let's start with the basics
 
 Kameleon Hello world
 ~~~~~~~~~~~~~~~~~~~~
 
-Everything we want to build have to be specified by a recipe. Kameleon will read this recipe
-and it will execute the appropriate actions. Let's create a hello world recipe using Kameleon.
+Everything we want to build have to be specified by a recipe. Kameleon reads this recipe
+and executes the appropriate actions. Let's create a hello world recipe using Kameleon.
 Open a text editor and write the following::
 
      setup:
@@ -35,7 +34,7 @@ Open a text editor and write the following::
 Save the previous file as a YAML file. For instance, hello_world.yaml.
 
 .. note::
-    Be sure of respecting the YAML syntax and identation `yaml`_.
+    Be sure of respecting the YAML syntax and indentation `yaml`_.
 
 .. _yaml: http://www.yaml.org/
 
@@ -69,19 +68,19 @@ You will have some output that looks like this::
 With this simple example, we have already introduced most of the Kameleon concepts and syntax.
 First, how recipes are structured using a hierarchy composed of: sections, steps, microsteps.
 
-* Sections: The sections correspond to the minimal actions that have to be performed in order to have a software
+* Sections: correspond to the minimal actions that have to be performed in order to have a software
   stack that can be run almost anywhere. This brings to Kameleon a high degree of customizability, reuse of
-  code and users have total control in when and where the
+  code and users have total control over when and where the
   sections have to take place. This minimal actions are: bootstrap, setup and export.
 
-* Steps: It refers to a specific action to be done inside a section.
+* Steps: It refers to a specific action to be done inside a section
+  (e.g., software installation, network configuration, configure kernel).
   Steps can be declared in independent files that improves the degree of reusability.
 
 * Microsteps: procedures composed of shell commands. The goal of dividing steps into microsteps is the
   possibility of activating certain actions within a step and performing a better checkpoint.
 
-The Kameleon hierarchy encourages the reuse (shareability) of code and modularity of procedures.
-
+Kameleon hierarchy encourages the reuse (shareability) of code and modularity of procedures.
 The minimal building block are the commands *exec_* which wraps shell commands adding
 a simple error handling and interactivenes in case of a problem.
 These commands are executed in a given context. Which could be: local, in, out.
@@ -99,22 +98,21 @@ They can be used as follows::
 * Local context: It represents the Kameleon execution environment. Normally is the user’s machine.
 
 * OUT context: It is where the appliance will be bootstraped. Some procedures have to be carried out in
-  order create the place where the software appliance is built (In context).
-  This can be: the same user’s machine using chroot.
+  order to create the place where the software appliance is built (In context).
+  One example is: the same user’s machine using chroot.
   Thus, in this context is where the setup of the chroot takes place.
-  Establishing the proper environmental variables in order to have a clean environment.
-  Other examples are: setting up a virtual machine, access to an infrastructure in order to get an instance and be able to deploy, setting
+  Other examples are: setting up a virtual machine, accessing an infrastructure in order to get a reservation and be able to deploy, setting
   a Docker container, etc.
 
-* IN context: It makes reference to inside the newly
+* IN context: It refers to inside the newly
   created appliance. It can be mapped to a chroot,
   virtual machine, physical machine, Linux container, etc.
 
 In the last example all the contexts are executed on the user's machine.
-Which is the default behavior that can be customized and we will see it later on this tutorial.
-Most of the time users are going to use the *In context* in order to customize a given a appliance.
+Which is the default behavior that can be customized (it will be shown later on this tutorial).
+Most of the time, users take advantage of the *In context* in order to customize a given a appliance.
 
-We can add variable as well::
+We can add variables as well::
 
      setup:
        - first_step:
@@ -123,10 +121,11 @@ We can add variable as well::
            - exec_local: echo "Variable value $$message"
 
 
-Let's apply the syntax to real example in the next section.
+Let's apply the syntax to a real example in the next section.
 
+----------------------------------------
 Building a simple Debian based appliance
-========================================
+----------------------------------------
 
 Kameleon already provides tested recipes for building different software appliances based
 on different Linux flavors. We can take a look at the provided templates by typing::
@@ -199,127 +198,10 @@ to be explained later on.
 Here we can notice that all the process of building is based on steps files written with Kameleon syntax.
 Separating the steps in different files gives a high degree of reusability.
 
-The recipe looks like this::
+The recipe looks like this:
 
-     # Loads some helpful aliases
-     aliases: defaults.yaml
-     # Enables qemu checkpoint
-     checkpoint: qemu.yaml
-     #== Global variables use by Kameleon engine and the steps
-     global:
-     ## User varibales : used by the recipe
-     user_name: kameleon
-     user_password: $$user_name
-
-     # Distribution
-     distrib: debian
-     release: wheezy
-     arch: amd64
-
-     ## QEMU options
-     qemu_enable_kvm: true
-     qemu_cpu: 2
-     qemu_memory_size: 512
-     qemu_monitor_port: 10023
-     qemu_ssh_port: 55423
-     qemu_arch: x86_64
-
-     ## Disk options
-     nbd_device: /dev/nbd1
-     image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
-     image_size: 10G
-     filesystem_type: ext4
-
-     # rootfs options
-     rootfs: $$kameleon_cwd/rootfs
-     rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
-
-     ## System variables. Required by kameleon engine
-     # Include specific steps
-     include_steps:
-       - $$distrib/$$release
-       - $$distrib
-
-     # Apt options
-     apt_repository: http://ftp.debian.org/debian/
-     apt_enable_contrib: true
-     apt_enable_nonfree: true
-     apt_install_recommends: false
-
-     # Shell session from where we launch exec_out commands. There is often a
-     # local bash session, but it can be a remote shell on other machines or on
-     # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-     out_context:
-       cmd: bash
-       workdir: $$kameleon_cwd
-
-     # Shell session that allows us to connect to the building machine in order to
-     # configure it and setup additional programs
-     ssh_config_file: $$kameleon_cwd/ssh_config
-     in_context:
-       cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
-       workdir: /
-
-     #== Bootstrap the new system and create the 'in_context'
-     bootstrap:
-       - debootstrap:
-         - include_pkg: >
-           ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
-           net-tools iproute acpid openssh-server pciutils extlinux
-           linux-image-$$arch
-         - release: $$release
-	 - arch: $$arch
-         - repository: $$apt_repository
-         - enable_cache: true
-       - initialize_disk_qemu
-       - prepare_qemu
-       - install_bootloader
-       - start_qemu
-
-     #== Install and configuration steps
-     # WARNING: this part should be independante from the out context (whenever
-     # possible...)
-     setup:
-     # Install
-       - configure_apt:
-         - repository: $$apt_repository
-         - enable_contrib_repo: $$apt_enable_contrib
-         - enable_nonfree_repo: $$apt_enable_nonfree
-         - install_recommends: $$apt_install_recommends
-       - upgrade_system:
-         - dist_upgrade: true
-       - install_software:
-         - packages: >
-           debian-keyring ntp zip unzip rsync sudo less vim bash-completion
-       - configure_kernel:
-         - arch: $$arch
-       # Configuration
-       - configure_system:
-         - locales: POSIX C en_US fr_FR de_DE
-         - lang: en_US.UTF-8
-         - timezone: UTC
-       - configure_keyboard:
-         - layout: "us,fr,de"
-       - configure_network:
-         - hostname: kameleon-$$distrib
-       - create_group:
-         - name: admin
-       - create_user:
-         - name: $$user_name
-         - groups: sudo admin
-         - password: $$user_password
-
-     #== Export the generated appliance in the format of your choice
-     export:
-       - save_appliance:
-         - input: $$image_disk
-         - output: $$kameleon_cwd/$$kameleon_recipe_name
-         - save_as_qcow2
-	 # - save_as_qed
-         # - save_as_tgz
-         # - save_as_raw
-         # - save_as_vmdk
-         # - save_as_vdi
+.. literalinclude:: debian7.yaml
+   :lines: 69-125
 
 The previous recipe build a debian wheezy using qemu.
 It looks verbose but normally you as user you wont see it.
@@ -345,7 +227,7 @@ That you can try out by executing::
 Customizing a software appliance
 ================================
 
-Now, lets customize a given template in order to create a software appliance that have OpenMPI, Taktuk and build tools necessary to compile source code.
+Now, lets customize a given template in order to create a software appliance that have OpenMPI, Taktuk and tools necessary to compile source code.
 Kameleon allows us to extend a given template. We will use this for adding the necessary software. Type the following::
 
      $ kameleon new debian_customized debian7
@@ -368,7 +250,7 @@ This will create the file debian_customized.yaml which contents are::
      export:
        - @base
 
-We try to build this recipe, it will generate the exact same image as before.
+If we try to build this recipe, it will generate the exact same image as before.
 But the idea here is to change it in order to install the desired software.
 Therefore, we will modify the setup section like this::
 
@@ -396,8 +278,8 @@ For building execute::
      $ kameleon build debian_customized.yaml
 
 Then, you can follow the same steps as before to try it out and verify that the software was installed.
-Now, let's make things a little more complicated. We will now to compile and install TAU in our system.
-So, for that let's create a step file that look like this::
+Now, let's make things a little more complicated. We will now compile and install TAU in our system.
+So, for that let's create a step file that will look like this::
 
      - get_tau:
        - exec_in: cd /tmp/
@@ -419,8 +301,8 @@ So, for that let's create a step file that look like this::
        - exec_in: make install
 
 
-You have to put it under the directory *steps/setup/* and you can call it tau_install and
-in order to use it in your recipe, modify it as follows::
+You have to put it under the directory *steps/setup/* and you can call it tau_install.
+In order to use it in your recipe, modify it as follows::
 
      extend: debian7
 
@@ -441,8 +323,8 @@ in order to use it in your recipe, modify it as follows::
        - @base
 
 
-And rebuild the image again, you will see that it wont start from the beginning but
-it will take advantage of the checkpoint system and it will start from the last
+And rebuild the image again, you will see that it wont start from the beginning.
+It will take advantage of the checkpoint system and it will start from the last
 successfull executed step.
 
 When building there is the following error::
@@ -475,7 +357,7 @@ For this case we see that the error happened in the in context, so let's type i 
   (in_context) root@cristiancomputer: / #
 
 The commands executed by Kameleon remain in the bash history.
-Therefore, I can be rexecuted manually.
+Therefore, It can be rexecuted manually.
 For this case, we only need to change the path for the OpenMPI libraries.
 As we have installed it using the packages they are avaiable under the directories:
 */usr/include/openmpi/*, */usr/lib/openmpi/* respectively.
@@ -488,9 +370,9 @@ then *abort* for stopping the execution and update the step file with the previo
 If you carry out the building again you will see that now everything goes smoothly.
 Again Kameleon will use the checkpoint system to avoid starting from scratch.
 
-
+---------------------------------
 Creating a Grid'5000 environment.
-=================================
+---------------------------------
 
 Now, let's use the extend and export functionalities for creating a Grid'5000 environment.
 With this step we will see how code can be re-used with Kameleon.
@@ -545,3 +427,87 @@ Therefore, we can extend the recipe created before::
                  initrd: /initrd.img
 
                filesystem: $$filesystem_type
+
+This recipe will generate in the build directory a tar.gz image and a configuration file for Kadeploy.
+For example::
+
+     $ ls builds
+     total 8831536
+     -rw-r--r-- 1 root root 18767806464 juin  15 23:04 base_debian_g5k.qcow2
+     -rw-r--r-- 1 root root   206403737 juin  15 23:04 debian_g5k.tar.gz
+     -rw-r--r-- 1 root root         379 juin  15 23:04 debian_g5k.yaml
+     -rw-r--r-- 1 root root         426 juin  15 23:03 fstab.orig
+     -rw------- 1 root root         672 juin  15 23:01 insecure_ssh_key
+
+Therefore if we log in a Grid'5000 site for instance (Grenoble) we can submit a deploy job and
+deploy the image using kadeploy::
+
+
+  user@fgrenoble:~$ oarsub -I t deploy
+  [ADMISSION RULE] Set default walltime to 3600.
+  [ADMISSION RULE] Modify resource description with type constraints
+  Generate a job key...
+  OAR_JOB_ID=1663465
+  Interactive mode : waiting...
+  Starting...
+
+  Connect to OAR job 1663465 via the node fgrenoble.grenoble.grid5000.fr
+
+  user@fgrenoble:~$ kadeploy -a debian_g5k.yaml -f $OAR_NODEFILE
+
+
+With luck the image will be deployed on baremetal after some few minutes.
+
+
+Playing with Kameleon contexts
+------------------------------
+
+The environment that has just been deployed is a basic debian.
+It doesn't have the modules required for infiniband and
+other configuration that site administrators do for a specific hardware
+or politics of the site.
+In this case would be good to be able to use the environments already
+provided by Grid'5000. This can be done by using Kameleon contexts.
+The idea is to re-utilize the same recipe we have written before.
+
+Kameleon already provides a recipe for interacting with Grid'5000 where
+the configuration of the context is as follows:
+
+* Local context: it is the user's machine.
+
+* Context out: it is the site frontend.
+  It is used for submitting a job and deploying
+  a given Grid'5000 environment.
+
+* Context in: will be inside the deployed node.
+
+
+First, we import the G5k recipe::
+
+  $ kameleon import debian7-g5k
+
+And we can just make a copy of our previous recipe (debian customized) and
+we call it for instance debian_customized_g5k.yaml.
+This recipe will look like this:
+
+.. literalinclude:: debian_customized_g5k.yaml
+
+
+But there will be a problem with the installation of TAU. Because
+we download the tarball directly from its web site which is an
+operation not allowed in Grid'5000. Just certain sites are accessible
+using a web proxy.
+To solve this we have to modify the step *tau_install* like this:
+
+.. literalinclude:: tau_install_g5k.yaml
+
+Here, we change the context for performing the operation of download.
+For now on, it will be the local context that is going to download the
+tarballs. Then we have to put them into the *in contex* for
+this operation we use a pipe. Pipes are a means for communicating
+contexts. We use a pipe between our local context and the in contex.
+
+With those changes we will be able to build a G5k environment with
+our already tested configuration. The recipe saves
+the environment on the Kameleon workdir on the frontend.
+Thus the environment is accessible to be deployed the number of times needed.

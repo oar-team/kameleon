@@ -1,0 +1,24 @@
+- get_tau:
+  - exec_local: cd /tmp/
+  - exec_local: wget  -q http://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.22.2.tar.gz
+  - exec_local: wget -q http://www.cs.uoregon.edu/research/tau/pdt_releases/pdt-3.19.tar.gz
+  - local2in:
+      - /tmp/tau-2.22.2.tar.gz
+      - /tmp/tau-2.22.2.tar.gz
+  - local2in:
+      - /tmp/pdt-3.19.tar.gz
+      - /tmp/pdt-3.19.tar.gz
+- pdt_install:
+  - exec_in: cd /tmp/
+  - exec_in: tar -xzf pdt-3.19.tar.gz
+  - exec_in: cd /tmp/pdtoolkit-3.19
+  - exec_in: ./configure -prefix=/usr/local/pdt-install
+  - exec_in: make clean install
+
+- tau_install:
+  - exec_in: cd /tmp/
+  - exec_in: tar -xzf tau-2.22.2.tar.gz
+  - exec_in: cd /tmp/tau-2.22.2
+#  - exec_in: ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/local/openmpi-install/include -mpilib=/usr/local/openmpi-install/lib
+  - exec_in: ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/include/openmpi/ -mpilib=/usr/lib/openmpi/
+  - exec_in: make install
