@@ -9,9 +9,6 @@ are using a Debian based linux distribution is by using the deb package availabl
 
 .. _kameleon_deb: http://kameleon.imag.fr/pkg/kameleon_2.1.0+20140612204940-1_amd64.deb
 
-.. note::
-    On debian based distribution be sure to install the ``ruby-dev`` package first
-
 To install the latest release from `RubyGems`_:
 
 .. _RubyGems: https://rubygems.org/gems/kameleon-builder

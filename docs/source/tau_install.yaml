@@ -1,15 +1,9 @@
 - tau_version: "2.22.2"
 - pdt_version: "3.19"
 - get_tau:
-  - exec_local: cd /tmp/
-  - exec_local: wget  -q http://www.cs.uoregon.edu/research/tau/tau_releases/tau-$$tau_version.tar.gz
-  - exec_local: wget -q http://www.cs.uoregon.edu/research/tau/pdt_releases/pdt-$$pdt_version.tar.gz
-  - local2in:
-      - /tmp/tau-$$tau_version.tar.gz
-      - /tmp/tau-$$tau_version.tar.gz
-  - local2in:
-      - /tmp/pdt-$$pdt_version.tar.gz
-      - /tmp/pdt-$$pdt_version.tar.gz
+  - exec_in: cd /tmp/
+  - exec_in: wget  -q http://www.cs.uoregon.edu/research/tau/tau_releases/tau-$$tau_version.tar.gz
+  - exec_in: wget -q http://www.cs.uoregon.edu/research/tau/pdt_releases/pdt-$$pdt_version.tar.gz
 - pdt_install:
   - exec_in: cd /tmp/
   - exec_in: tar -xzf pdt-$$pdt_version.tar.gz

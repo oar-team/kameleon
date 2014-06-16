@@ -64,7 +64,7 @@ global:
   ssh_config_file: $$kameleon_cwd/ssh_config
   in_context:
     cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
-    workdir: /
+    workdir: /root/kameleon_workdir
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
@@ -96,7 +96,7 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp zip unzip rsync sudo less vim bash-completion
+        debian-keyring ntp rsync sudo less vim bash-completion
   - configure_kernel:
     - arch: $$arch
   # Configuration

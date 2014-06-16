@@ -2,7 +2,7 @@
 Recipe
 ------
 
-Kameleon compute YAML files, named  *recipes*, that describes how you will
+Kameleon reads YAML files, named  *recipes*, that describes how you will
 build your appliance. These files are stored in the root of your :ref:`workspace`.
 A recipe is a hierarchical structure of `Section`_, `Step`_, `Microstep`_ and
 :ref:`commands`. Here is an overview of this structure:
@@ -22,108 +22,22 @@ A recipe is a hierarchical structure of `Section`_, `Step`_, `Microstep`_ and
 The recipe also contains set of `Global variables`_ declaration and some
 imports like :ref:`aliases` and :ref:`checkpoint`.
 
-This is an example of a recipe:
+Here is an example of a recipe:
 
-.. code-block:: yaml
-
-    ---
-    # Loads some helpful aliases
-    aliases: defaults.yaml
-    # Enables qcow2 checkpoint
-    checkpoint: qcow2.yaml
-    #== Global variables use by Kameleon engine and the steps
-    global:
-      ## User varibales : used by the recipe
-      cachedir: /var/cache/kameleon
-      rootfs: $$kameleon_cwd/rootfs
-      user_name: kameleon
-      arch: amd64
-
-      nbd_device: /dev/nbd10
-      container: "$${kameleon_recipe_name}_temp.qcow2"
-
-      distrib: debian
-      release: wheezy
-
-      ## System variables. Required by kameleon engine
-      # Include specific steps
-      include_steps: [$$distrib/$$release, $$distrib]
-
-      # Shell session from where we launch exec_out commands. There is often a
-      # local bash session, but it can be a remote shell on other machines or on
-      # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-      out_context:
-        cmd: bash
-        workdir: $$kameleon_cwd
-
-      # Shell session that allows us to connect to the building machine in order to
-      # configure it and setup additional programs
-      default_env: "USER=root HOME=/root LC_ALL=POSIX"
-      in_context:
-        cmd: $$default_env chroot $$rootfs bash
-        workdir: /
-
-    #== Bootstrap the new system and create the 'in_context'
-    bootstrap:
-      - debootstrap:
-        - release: $$release
-        - arch: $$arch
-        - repository: http://ftp.fr.debian.org/debian/
-        - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
-      - prepare_appliance_with_nbd:
-        - mountdir: $$rootfs
-        - image_size: 2G
-        - filesystem_type: ext4
-        - rootfs_archive: $$cachedir/$$distrib/$$release/$$arch/debootstrap.tar.gz
-      - start_chroot:
-        - rootfs: $$rootfs
-
-
-    #== Install and configuration steps
-    # WARNING: this part should be independante from the build context (whenever
-    # possible...)
-    setup:
-      # Install
-      - software_install:
-        - packages: >
-            debian-keyring ntp zip unzip rsync sudo less vim bash-completion
-      - kernel_install:
-        - arch: $$arch
-      # Configuration
-      - system_config:
-        - locales: fr_FR en_US
-        - lang: fr_FR.UTF-8
-        - timezone: UTC
-      - keyboard_config:
-        - layout: "fr,us"
-      - network_config:
-        - hostname: kameleon-$$distrib
-      - create_user:
-        - name: $$user_name
-        - group: admin
-        - password: $$user_name
-
-    #== Export the generated appliance in the format of your choice
-    export:
-      - save_appliance_from_nbd:
-        - filename: "$${kameleon_recipe_name}"
-        - save_as_qcow2
-        # - save_as_tgz
-        # - save_as_raw
-        # - save_as_vmdk
-        # - save_as_vdi
+.. literalinclude:: debian7.yaml
+   :language: yaml
 
 Section
 -------
 
-Each section is a list of steps. Currently, there is 3 sections:
+Each section is a group of steps. Currently, there are 3 sections:
 
 bootstrap
     This section contains the bootstrap of the new system and create the *in*
     context (see :ref:`context`).
 
 setup
-    This one is dedicated to the install and configuration steps.
+    It is dedicated to install and configuration steps.
 
 export
     Export the generated appliance in the format of your choice.

@@ -202,6 +202,7 @@ The recipe looks like this:
 
 .. literalinclude:: debian7.yaml
    :lines: 69-125
+   :language: yaml
 
 The previous recipe build a debian wheezy using qemu.
 It looks verbose but normally you as user you wont see it.
@@ -279,27 +280,11 @@ For building execute::
 
 Then, you can follow the same steps as before to try it out and verify that the software was installed.
 Now, let's make things a little more complicated. We will now compile and install TAU in our system.
-So, for that let's create a step file that will look like this::
+So, for that let's create a step file that will look like this:
 
-     - get_tau:
-       - exec_in: cd /tmp/
-       - exec_in: wget  -q http://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.22.2.tar.gz
-       - exec_in: wget -q http://www.cs.uoregon.edu/research/tau/pdt_releases/pdt-3.19.tar.gz
 
-     - pdt_install:
-       - exec_in: cd /tmp/
-       - exec_in: tar -xzf pdt-3.19.tar.gz
-       - exec_in: cd /tmp/pdtoolkit-3.19
-       - exec_in: ./configure -prefix=/usr/local/pdt-install
-       - exec_in: make clean install
-
-     - tau_install:
-       - exec_in: cd /tmp/
-       - exec_in: tar -xzf tau-2.22.2.tar.gz
-       - exec_in: cd /tmp/tau-2.22.2
-       - exec_in: ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/local/openmpi-install/include -mpilib=/usr/local/openmpi-install/lib
-       - exec_in: make install
-
+.. literalinclude:: tau_install.yaml
+   :language: yaml
 
 You have to put it under the directory *steps/setup/* and you can call it tau_install.
 In order to use it in your recipe, modify it as follows::
@@ -471,7 +456,7 @@ provided by Grid'5000. This can be done by using Kameleon contexts.
 The idea is to re-utilize the same recipe we have written before.
 
 Kameleon already provides a recipe for interacting with Grid'5000 where
-the configuration of the context is as follows:
+the configuration of the contexts is as follows:
 
 * Local context: it is the user's machine.
 
@@ -491,7 +476,7 @@ we call it for instance debian_customized_g5k.yaml.
 This recipe will look like this:
 
 .. literalinclude:: debian_customized_g5k.yaml
-
+   :language: yaml
 
 But there will be a problem with the installation of TAU. Because
 we download the tarball directly from its web site which is an
@@ -500,6 +485,7 @@ using a web proxy.
 To solve this we have to modify the step *tau_install* like this:
 
 .. literalinclude:: tau_install_g5k.yaml
+   :language: yaml
 
 Here, we change the context for performing the operation of download.
 For now on, it will be the local context that is going to download the
@@ -511,3 +497,28 @@ With those changes we will be able to build a G5k environment with
 our already tested configuration. The recipe saves
 the environment on the Kameleon workdir on the frontend.
 Thus the environment is accessible to be deployed the number of times needed.
+
+-------------
+Atlas example
+-------------
+
+Here, a more complicated example, where we install the benchmark HPL which
+is used to benchmark and rank supercomputers for the TOP500 list:
+
+.. literalinclude:: atlas_debian_g5k.yaml
+   :language: yaml
+
+We have to add to the *steps/setup* directory the following files *install_atlas.yaml* and *install_hpl.yaml* for installing atlas and hpl respectively,
+Atlas:
+
+.. literalinclude:: install_atlas.yaml
+   :language: yaml
+
+HPL:
+
+.. literalinclude:: install_hpl.yaml
+   :language: yaml
+
+
+.. note::
+   The building of this appliance could take around half an hour.
