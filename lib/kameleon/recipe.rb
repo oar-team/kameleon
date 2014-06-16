@@ -4,8 +4,15 @@ require 'kameleon/step'
 module Kameleon
 
   class Recipe
-    attr_accessor :path, :name, :global, :sections, :aliases, :aliases_path, \
-                  :checkpoint, :checkpoint_path, :metainfo
+    attr_accessor :path
+    attr_accessor :name
+    attr_accessor :global
+    attr_accessor :sections
+    attr_accessor :aliases
+    attr_accessor :aliases_path
+    attr_accessor :checkpoint
+    attr_accessor :checkpoint_path
+    attr_accessor :metainfo
 
     def initialize(path)
       @logger = Log4r::Logger.new("kameleon::[kameleon]")

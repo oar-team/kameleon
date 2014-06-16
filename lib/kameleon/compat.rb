@@ -38,3 +38,24 @@ if RUBY_VERSION < "1.9.3"
     end
   end
 end
+
+
+class Object
+  ##
+  #   @person ? @person.name :nil
+  # vs
+  #   @person.try(:name)
+  def try(method)
+    send method if respond_to? method
+  end
+end
+
+class Hash
+  def self.try_convert(obj)
+    obj.try(:to_hash)
+  end
+
+  def flatten
+    to_a.flatten!
+  end
+end

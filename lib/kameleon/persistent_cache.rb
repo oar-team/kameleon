@@ -7,8 +7,14 @@ module Kameleon
   class Persistent_cache
 
     include Singleton
-    attr_reader :polipo_env, :cache_dir,:polipo_port
-    attr_writer :activated, :cwd, :polipo_path, :name
+    attr_reader :polipo_env
+    attr_reader :cache_dir
+    attr_reader :polipo_port
+    attr_writer :activated
+    attr_reader :cwd
+    attr_reader :polipo_path
+    attr_reader :name
+
     def initialize()
       @logger = Log4r::Logger.new("kameleon::[kameleon]")
       ## we must configure Polipo to be execute for the in and out context

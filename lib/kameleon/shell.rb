@@ -8,7 +8,9 @@ module Kameleon
     READ_CHUNK_SIZE = 1048576
     EXIT_TIMEOUT = 60
 
-    attr :exit_status, :process, :shell_cmd
+    attr :exit_status
+    attr :process
+    attr :shell_cmd
 
     def initialize(context_name, cmd, shell_workdir, local_workdir, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[kameleon]")

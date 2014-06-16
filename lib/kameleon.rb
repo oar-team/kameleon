@@ -19,8 +19,12 @@ module Kameleon
                                     :FATAL)
 
   class << self
-    attr_writer :logger, :env, :source_root, :templates_path, :templates_names,
-                :templates_files
+    attr_writer :logger
+    attr_writer :env
+    attr_writer :source_root
+    attr_writer :templates_path
+    attr_writer :templates_names
+    attr_writer :templates_files
 
     # The source root is the path to the root directory of the kameleon gem.
     def source_root

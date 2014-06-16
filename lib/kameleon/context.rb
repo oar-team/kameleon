@@ -3,7 +3,8 @@ require 'kameleon/shell'
 module Kameleon
   class Context
 
-    attr_accessor :shell, :name
+    attr_accessor :shell
+    attr_accessor :name
 
     def initialize(name, cmd, workdir, exec_prefix, local_workdir)
       @name = name.downcase

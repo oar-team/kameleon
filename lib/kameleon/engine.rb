@@ -5,7 +5,10 @@ require 'kameleon/persistent_cache'
 module Kameleon
 
   class Engine
-    attr_accessor :recipe, :cwd, :build_recipe_path, :pretty_list_checkpoints
+    attr_accessor :recipe
+    attr_accessor :cwd
+    attr_accessor :build_recipe_path
+    attr_accessor :pretty_list_checkpoints
 
     def initialize(recipe, options)
       @options = options

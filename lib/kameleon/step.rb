@@ -1,7 +1,8 @@
 module Kameleon
 
   class Command
-    attr_accessor :string_cmd, :microstep_name
+    attr_accessor :string_cmd
+    attr_accessor :microstep_name
 
     def initialize(yaml_cmd, microstep_name)
       @string_cmd = YAML.dump(yaml_cmd).gsub("---", "").strip
@@ -72,8 +73,13 @@ module Kameleon
   end
 
   class Microstep
-    attr_accessor :commands, :name, :identifier, :slug, :in_cache,
-                  :on_checkpoint, :order
+    attr_accessor :commands
+    attr_accessor :name
+    attr_accessor :identifier
+    attr_accessor :slug
+    attr_accessor :in_cache
+    attr_accessor :on_checkpoint
+    attr_accessor :order
 
     def initialize(string_or_hash)
       @identifier = nil
@@ -128,8 +134,12 @@ module Kameleon
   end
 
   class Macrostep
-    attr_accessor :name, :clean_microsteps, :init_microsteps, :microsteps,
-                  :path, :variables
+    attr_accessor :name
+    attr_accessor :clean_microsteps
+    attr_accessor :init_microsteps
+    attr_accessor :microsteps
+    attr_accessor :path
+    attr_accessor :variables
 
     def initialize(name, microsteps, variables, path)
       @name = name
@@ -180,7 +190,10 @@ module Kameleon
   end
 
   class Section
-    attr_accessor :name, :clean_macrostep, :init_macrostep, :macrosteps
+    attr_accessor :name
+    attr_accessor :clean_macrostep
+    attr_accessor :init_macrostep
+    attr_accessor :macrosteps
 
     def initialize(name)
       @name = name
