@@ -224,9 +224,9 @@ That you can try out by executing::
      $ sudo qemu-system-x86_64 -enable-kvm builds/debian7/debian7.qcow2
 
 
-
+--------------------------------
 Customizing a software appliance
-================================
+--------------------------------
 
 Now, lets customize a given template in order to create a software appliance that have OpenMPI, Taktuk and tools necessary to compile source code.
 Kameleon allows us to extend a given template. We will use this for adding the necessary software. Type the following::
@@ -356,7 +356,7 @@ If you carry out the building again you will see that now everything goes smooth
 Again Kameleon will use the checkpoint system to avoid starting from scratch.
 
 ---------------------------------
-Creating a Grid'5000 environment.
+Creating a Grid'5000 environment
 ---------------------------------
 
 Now, let's use the extend and export functionalities for creating a Grid'5000 environment.
@@ -444,6 +444,7 @@ deploy the image using kadeploy::
 With luck the image will be deployed on baremetal after some few minutes.
 
 
+------------------------------
 Playing with Kameleon contexts
 ------------------------------
 

@@ -45,4 +45,3 @@ with `omnibus project`_.
 
 
 .. _`2.1.2-omnibus-1_amd64.deb`: http://kameleon.imag.fr/pkg/kameleon_2.1.2-omnibus-1_amd64.deb
-.. _`2.1.2-omnibus-1.x86_64.rpm`: http://kameleon.imag.fr/pkg/kameleon_2.1.2-omnibus-1.x86_64.rpm
