@@ -16,7 +16,7 @@ module Kameleon
 
     def initialize(path, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[kameleon]")
-      @path = Pathname.new(path)
+      @path = Pathname.new(File.expand_path(path))
       @name = (@path.basename ".yaml").to_s
       @recipe_content = File.open(@path, 'r') { |f| f.read }
       @sections = {
