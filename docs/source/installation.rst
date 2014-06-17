@@ -34,14 +34,14 @@ with `omnibus project`_.
 .. _`omnibus project`: https://github.com/opscode/omnibus-ruby
 
 +-------------------------------+------------------------+-------------------------------+----------------------------------+
-|            Platform           |        Download        |              MD5              |                                  |
+|            Platform                                    |             Download          |               MD5                |
 +-------------------------------+------------------------+-------------------------------+----------------------------------+
-| .. image:: _static/debian.png | **Debian 7 64bit**     | `2.1.2-omnibus-1_amd64.deb`_  | ee019958da40903fe691890c55a76d64 |
+| .. image:: _static/debian.png | **Debian 7 64bit**     | `2.1.2-omnibus`_              | ee019958da40903fe691890c55a76d64 |
 |   :align: center              |                        |                               |                                  |
 +-------------------------------+------------------------+-------------------------------+----------------------------------+
-| .. image:: _static/ubuntu.png | **Ubuntu 12.04 64bit** | `2.1.2-omnibus-1_amd64.deb`_  | ee019958da40903fe691890c55a76d64 |
+| .. image:: _static/ubuntu.png | **Ubuntu 12.04 64bit** | `2.1.2-omnibus`_              | ee019958da40903fe691890c55a76d64 |
 |   :align: center              |                        |                               |                                  |
 +-------------------------------+------------------------+-------------------------------+----------------------------------+
 
 
-.. _`2.1.2-omnibus-1_amd64.deb`: http://kameleon.imag.fr/pkg/kameleon_2.1.2-omnibus-1_amd64.deb
+.. _`2.1.2-omnibus`: http://kameleon.imag.fr/pkg/kameleon_2.1.2-omnibus-1_amd64.deb
