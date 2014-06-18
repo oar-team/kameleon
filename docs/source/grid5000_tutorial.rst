@@ -6,7 +6,7 @@ This tutorial will introduce Kameleon, a tool to build software appliances.
 With Kameleon it is possible to generate appliances that can be deployed on different virtualization hypervisors or on baremetal.
 It targets an important activity in Grid'5000 which is the customization of the experimental environments.
 
----------------
+
 Kameleon basics
 ---------------
 
@@ -23,7 +23,9 @@ Kameleon Hello world
 
 Everything we want to build have to be specified by a recipe. Kameleon reads this recipe
 and executes the appropriate actions. Let's create a hello world recipe using Kameleon.
-Open a text editor and write the following::
+Open a text editor and write the following:
+
+.. code-block:: yaml
 
      setup:
      - first_step:
@@ -84,7 +86,9 @@ Kameleon hierarchy encourages the reuse (shareability) of code and modularity of
 The minimal building block are the commands *exec_* which wraps shell commands adding
 a simple error handling and interactivenes in case of a problem.
 These commands are executed in a given context. Which could be: local, in, out.
-They can be used as follows::
+They can be used as follows:
+
+ .. code-block:: yaml
 
      setup:
        - first_step:
@@ -112,7 +116,9 @@ In the last example all the contexts are executed on the user's machine.
 Which is the default behavior that can be customized (it will be shown later on this tutorial).
 Most of the time, users take advantage of the *In context* in order to customize a given a appliance.
 
-We can add variables as well::
+We can add variables as well:
+
+ .. code-block:: yaml
 
      setup:
        - first_step:
@@ -123,7 +129,7 @@ We can add variables as well::
 
 Let's apply the syntax to a real example in the next section.
 
-----------------------------------------
+
 Building a simple Debian based appliance
 ----------------------------------------
 
@@ -224,9 +230,17 @@ That you can try out by executing::
      $ sudo qemu-system-x86_64 -enable-kvm builds/debian7/debian7.qcow2
 
 
+.. note::
+   The previous recipe uses qemu to build the appliance,
+   if you are using Kameleon from a virtual machine this probably wont work due to kvm.
+   The recipe has to be changed in order to disable the kvm module.
+   In this case you can opt for using the template *old-debian7* which uses a
+   chroot environment to build the appliance. Those alternative methods however can take longer.
+
+
 
 Customizing a software appliance
-================================
+--------------------------------
 
 Now, lets customize a given template in order to create a software appliance that have OpenMPI, Taktuk and tools necessary to compile source code.
 Kameleon allows us to extend a given template. We will use this for adding the necessary software. Type the following::
@@ -287,7 +301,9 @@ So, for that let's create a step file that will look like this:
    :language: yaml
 
 You have to put it under the directory *steps/setup/* and you can call it tau_install.
-In order to use it in your recipe, modify it as follows::
+In order to use it in your recipe, modify it as follows:
+
+ .. code-block:: yaml
 
      extend: debian7
 
@@ -355,13 +371,15 @@ then *abort* for stopping the execution and update the step file with the previo
 If you carry out the building again you will see that now everything goes smoothly.
 Again Kameleon will use the checkpoint system to avoid starting from scratch.
 
----------------------------------
+
 Creating a Grid'5000 environment.
 ---------------------------------
 
 Now, let's use the extend and export functionalities for creating a Grid'5000 environment.
 With this step we will see how code can be re-used with Kameleon.
-Therefore, we can extend the recipe created before::
+Therefore, we can extend the recipe created before:
+
+ .. code-block:: yaml
 
      ---
      extend: debian_customized
@@ -472,11 +490,13 @@ First, we import the G5k recipe::
   $ kameleon import debian7-g5k
 
 And we can just make a copy of our previous recipe (debian customized) and
-we call it for instance debian_customized_g5k.yaml.
+we name it for instance debian_customized_g5k.yaml.
 This recipe will look like this:
 
 .. literalinclude:: debian_customized_g5k.yaml
    :language: yaml
+
+.. note:: Dont forget to put your Grid'5000 user name and site.
 
 But there will be a problem with the installation of TAU. Because
 we download the tarball directly from its web site which is an
@@ -489,18 +509,17 @@ To solve this we have to modify the step *tau_install* like this:
 
 Here, we change the context for performing the operation of download.
 For now on, it will be the local context that is going to download the
-tarballs. Then we have to put them into the *in contex* for
-this operation we use a pipe. Pipes are a means for communicating
-contexts. We use a pipe between our local context and the in contex.
+tarballs. Then, we have to put them into the *in contex*, and to do so we use a pipe.
+Pipes are a means to communicate contexts. We use a pipe between our local context and the in contex.
 
 With those changes we will be able to build a G5k environment with
 our already tested configuration. The recipe saves
 the environment on the Kameleon workdir on the frontend.
 Thus the environment is accessible to be deployed the number of times needed.
 
--------------
-Atlas example
--------------
+
+Atlas example on Grid'5000
+--------------------------
 
 Here, a more complicated example, where we install the benchmark HPL which
 is used to benchmark and rank supercomputers for the TOP500 list:
@@ -508,8 +527,13 @@ is used to benchmark and rank supercomputers for the TOP500 list:
 .. literalinclude:: atlas_debian_g5k.yaml
    :language: yaml
 
-We have to add to the *steps/setup* directory the following files *install_atlas.yaml* and *install_hpl.yaml* for installing atlas and hpl respectively,
-Atlas:
+We have to add to the *steps/setup* directory the following files *install_atlas.yaml* and *install_hpl.yaml* for installing atlas and hpl respectively.
+Also, the `hpl makefile`_ has to be download and the path be specified on the recipe.
+
+.. _hpl makefile: http://kameleon.imag.fr/appliance/ATLAS/Make.Linux
+
+
+ATLAS:
 
 .. literalinclude:: install_atlas.yaml
    :language: yaml
