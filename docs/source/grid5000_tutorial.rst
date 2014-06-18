@@ -6,6 +6,13 @@ This tutorial will introduce Kameleon, a tool to build software appliances.
 With Kameleon it is possible to generate appliances that can be deployed on different virtualization hypervisors or on baremetal.
 It targets an important activity in Grid'5000 which is the customization of the experimental environments.
 
+The tutorial will focous on the three following activities:
+
+* Create and customize a software appliance locally using a virtualization technology.
+* Export the previous created environment as a G5k environment.
+* Carry out the same customization with a G5k reference environment.
+
+All these activities encourages the use of code.
 
 Kameleon basics
 ---------------
@@ -16,7 +23,9 @@ in your system, otherwise go to :ref:`installation` section.
 Kameleon can be seen as a shell sequencer which will boost your shell scripts.
 It is based on the execution of shell scripts but it provides some syntax sugar that makes
 the work with shell scripts less painful.
+
 Let's start with the basics
+
 
 Kameleon Hello world
 ~~~~~~~~~~~~~~~~~~~~
@@ -85,7 +94,7 @@ First, how recipes are structured using a hierarchy composed of: sections, steps
 Kameleon hierarchy encourages the reuse (shareability) of code and modularity of procedures.
 The minimal building block are the commands *exec_* which wraps shell commands adding
 a simple error handling and interactivenes in case of a problem.
-These commands are executed in a given context. Which could be: local, in, out.
+These commands are executed in a given :ref:`context`. Which could be: local, in, out.
 They can be used as follows:
 
  .. code-block:: yaml
@@ -99,18 +108,21 @@ They can be used as follows:
      # The end
 
 
-* Local context: It represents the Kameleon execution environment. Normally is the user’s machine.
+Local context
+     It represents the Kameleon execution environment. Normally is the user’s machine.
 
-* OUT context: It is where the appliance will be bootstraped. Some procedures have to be carried out in
-  order to create the place where the software appliance is built (In context).
-  One example is: the same user’s machine using chroot.
-  Thus, in this context is where the setup of the chroot takes place.
-  Other examples are: setting up a virtual machine, accessing an infrastructure in order to get a reservation and be able to deploy, setting
-  a Docker container, etc.
+Out context
+     It is where the appliance will be bootstraped. Some procedures have to be carried out in
+     order to create the place where the software appliance is built (In context).
+     One example is: the same user’s machine using chroot.
+     Thus, in this context is where the setup of the chroot takes place.
+     Other examples are: setting up a virtual machine, accessing an infrastructure in order to get a reservation and be able to deploy, setting
+     a Docker container, etc.
 
-* IN context: It refers to inside the newly
-  created appliance. It can be mapped to a chroot,
-  virtual machine, physical machine, Linux container, etc.
+In context
+     It refers to inside the newly
+     created appliance. It can be mapped to a chroot,
+     virtual machine, physical machine, Linux container, etc.
 
 In the last example all the contexts are executed on the user's machine.
 Which is the default behavior that can be customized (it will be shown later on this tutorial).
@@ -230,13 +242,13 @@ That you can try out by executing::
      $ sudo qemu-system-x86_64 -enable-kvm builds/debian7/debian7.qcow2
 
 
+
 .. note::
    The previous recipe uses qemu to build the appliance,
    if you are using Kameleon from a virtual machine this probably wont work due to kvm.
    The recipe has to be changed in order to disable the kvm module.
-   In this case you can opt for using the template *old-debian7* which uses a
+   In this case you can opt for using the template *debian7-chroot* which uses a
    chroot environment to build the appliance. Those alternative methods however can take longer.
-
 
 
 Customizing a software appliance
@@ -364,7 +376,7 @@ As we have installed it using the packages they are avaiable under the directori
 */usr/include/openmpi/*, */usr/lib/openmpi/* respectively.
 If we try with the following parameters::
 
-    # ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/include/openmpi/ -mpilib=/usr/lib/openmpi/
+    ./configure -prefix=/usr/local/tau-install -pdt=/usr/local/pdt-install/ -mpiinc=/usr/include/openmpi/ -mpilib=/usr/lib/openmpi/
 
 It will finish without any problem. We have found the bug, therefore we can just logout by typing *exit* and
 then *abort* for stopping the execution and update the step file with the previous line.
@@ -442,7 +454,12 @@ For example::
      -rw-r--r-- 1 root root         426 juin  15 23:03 fstab.orig
      -rw------- 1 root root         672 juin  15 23:01 insecure_ssh_key
 
-Therefore if we log in a Grid'5000 site for instance (Grenoble) we can submit a deploy job and
+We have to copy them in a Grid'5000 site for instance (Grenoble) by doing::
+
+     $ scp debian_g5k.tar.gz debian_g5k.yaml grenoble.g5k:~/
+
+
+Therefore if we log in the respective site and then we can submit a deploy job and
 deploy the image using kadeploy::
 
 
@@ -460,6 +477,7 @@ deploy the image using kadeploy::
 
 
 With luck the image will be deployed on baremetal after some few minutes.
+
 
 
 Playing with Kameleon contexts

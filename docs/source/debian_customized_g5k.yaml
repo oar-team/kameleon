@@ -5,7 +5,7 @@ extend: debian7-g5k
 global:
     # You can see the base template `debian7.yaml` to know the
     # variables that you can override
-    g5k_user: cruizsanabria  # CHANGE ME
+    g5k_user: user  # CHANGE ME
     g5k_site: grenoble  # CHANGE ME
 
 bootstrap:

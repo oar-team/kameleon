@@ -1,6 +1,16 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.1.3
+-------------
+
+ - [core] Loading dependent gems based on the users ruby version
+ - [core] Getting back compatibility with ruby 1.8.7
+ - [core] Don't fail if context is not ready
+ - [core] Minor bug fixes
+ - [template] Set a small timeout with netcat
+ - [template] Added new debian 7 appliance with kameleon.
+
 version 2.1.0
 -------------
 
