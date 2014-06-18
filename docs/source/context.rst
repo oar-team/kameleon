@@ -20,7 +20,7 @@ These context are setup using the two globals variables: ``out_context``
 and ``in_context``. They both takes 3 arguments:
 
 cmd
-    The command to initialize the context
+    The command used to access the context.
 workdir (optional)
     The working directory to tell to Kameleon where to execute the command
 exec_prefix (optional)
@@ -32,13 +32,13 @@ in a bash shell with this configuration:
 .. code-block:: yaml
 
     out_context:
-        cmd: bash
+        cmd: /bin/bash
         workdir: $$kameleon_cwd
 
     in_context:
-        cmd: chroot $$rootfs bash
-        workdir: /
-
+        cmd: ssh my_user@localhost -p 2222 /bin/bash
+        workdir: /root/kameleon_workdir
+        exec_prefix: sudo
 
 Your *local* context is this shell where you launch Kameleon on your laptop,
 the *out* is a child bash of this context, and the *in* is inside the new
