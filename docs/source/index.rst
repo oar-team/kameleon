@@ -41,6 +41,7 @@ User Documentation
     workspace.rst
     checkpoint.rst
     persistent_cache.rst
+    inheritance.rst
     aliases.rst
     faq.rst
     grid5000_tutorial.rst

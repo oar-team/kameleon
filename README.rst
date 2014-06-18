@@ -11,23 +11,36 @@ you can probably do a lot more than that.
 Installation
 ------------
 
+Gem package
+-----------
+
 To install the latest release from `RubyGems`_:
 
 .. _RubyGems: https://rubygems.org/gems/kameleon-builder
 
 ::
 
-    gem install kameleon-builder --pre
+    gem install kameleon-builder
 
-Or from source:
+Or from source::
 
-::
-
-    git clone https://github.com/oar-team/kameleon.git
-    cd kameleon
+    git clone https://github.com/oar-team/kameleon.git && cd kameleon
     gem build kameleon-builder.gemspec
-    gem install kameleon-builder-<version>.gem
+    gem install kameleon-builder-*.gem
 
+On debian based distribution be sure to install the ``ruby-dev`` package first
+
+
+Dist packages
+-------------
+
+These packages contain Kameleon and all its dependencies (Ruby, polipo and all
+gems with their native extensions already compiled). These packages are made
+with `omnibus project`_.
+
+.. _`omnibus project`: https://github.com/opscode/omnibus-ruby
+
+Please download the package in the following `page <http://kameleon.imag.fr/installation.html#dist-packages>`_
 
 -----
 Usage
@@ -44,19 +57,19 @@ Just type
 ::
 
     Commands:
-      kameleon build [RECIPE_NAME]                        # Builds the appliance from the recipe
-      kameleon checkpoints [RECIPE_NAME]                  # Lists all availables checkpoints
-      kameleon clear [RECIPE_NAME]                        # Cleaning out context and removing all checkpoints
-      kameleon help [COMMAND]                             # Describe available commands or one specific command
-      kameleon new [RECIPE_NAME] -t, --template=TEMPLATE  # Creates a new recipe
-      kameleon templates                                  # Lists all defined templates
-      kameleon version                                    # Prints the Kameleon's version information
+      kameleon build [RECIPE_PATH]                # Builds the appliance from the given recipe
+      kameleon checkpoints [RECIPE_PATH]          # Lists all availables checkpoints
+      kameleon clean [RECIPE_PATH]                # Cleaning 'out' and 'local' contexts and removing all checkpoints
+      kameleon help [COMMAND]                     # Describe available commands or one specific command
+      kameleon import [TEMPLATE_NAME]             # Imports the given template
+      kameleon new [RECIPE_NAME] [TEMPLATE_NAME]  # Creates a new recipe
+      kameleon templates                          # Lists all defined templates
+      kameleon version                            # Prints the Kameleon's version information
 
     Options:
-          [--no-color]             # Disable colorization in output
-          [--debug]                # Enable debug output
-      -w, [--workspace=WORKSPACE]  # Change the kameleon current work directory. (The folder containing your
-                                   # recipes folder). Default : ./
+      [--color], [--no-color]  # Enable colorization in output
+                               # Default: true
+      [--debug], [--no-debug]  # Enable debug output
 
 First, you should select a template. To see the available templates use:
 
@@ -64,13 +77,11 @@ First, you should select a template. To see the available templates use:
 
     kameleon templates
 
-Then, create a new recipe from the template you've just choose. This will
-create a `recipes` folder in the current directory. (use `-w` option to set a
-different workspace).
+Then, create a new recipe from the template you've just choose.
 
 ::
 
-    kameleon new my_test_recipe -t template_name
+    kameleon new my_test_recipe template_name
 
 Then build your new recipe with the build command:
 
@@ -78,17 +89,16 @@ Then build your new recipe with the build command:
 
     kameleon build my_test_recipe
 
-A `builds` directory was created and contains your new image!
+A ``builds`` directory will be created and will contain your new image!
 
 To go further, it is highly recommended you start with the `Getting Started`_ guide.
 
 
-.. _Getting Started: http://kameleon.readthedocs.org/en/latest/getting_started.html
+.. _Getting Started: http://kameleon.imag.fr/getting_started.html
 
 ------------
 Contributing
 ------------
-
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)

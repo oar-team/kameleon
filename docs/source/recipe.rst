@@ -148,8 +148,8 @@ Global variables
 ~~~~~~~~~~~~~~~~~
 
 Global variables are defined in the ``global`` dictionary of the recipe.
-Kameleon use some global variable to enable the appliance build. See :ref:`context`
-and `Steps path`_ for more details
+Kameleon use some global variable to enable the appliance build. See
+:ref:`context` and `Steps path`_ for more details
 
 
 Step local variables
