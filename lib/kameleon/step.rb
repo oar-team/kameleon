@@ -1,12 +1,10 @@
 module Kameleon
 
   class Command
-<<<<<<< HEAD
-    attr_accessor :string_cmd, :microstep_name, :identifier
-=======
+
     attr_accessor :string_cmd
     attr_accessor :microstep_name
->>>>>>> master
+    attr_accessor :identifier
 
     def initialize(yaml_cmd, microstep_name)
       @string_cmd = YAML.dump(yaml_cmd).gsub("---", "").strip
@@ -226,7 +224,7 @@ module Kameleon
             "identifier" => microstep.identifier.to_s,
             "cmds" => microstep.to_array
           }
-         
+
           section_array.push({ microstep.slug => hash })
         end
       end

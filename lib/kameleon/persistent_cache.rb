@@ -11,7 +11,7 @@ module Kameleon
     attr_reader :polipo_port
     attr_writer :activated
     attr_reader :cwd
-    attr_reader :polipo_path
+    attr_writer :polipo_path
     attr_reader :name
     attr_writer :cache_path
     attr_accessor :mode, :name, :recipe_files # have to check those.
