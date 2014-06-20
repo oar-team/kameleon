@@ -66,15 +66,20 @@ module Kameleon
       load_checkpoint_config(yaml_recipe)
 
       #Find and load steps
-      steps_dir = File.join(File.dirname(@path), 'steps')
+      steps_dirs = [
+        File.join(File.dirname(@path), 'steps'),
+        File.expand_path(File.join(File.dirname(@path), '..', 'steps')),
+      ]
       @global['include_steps'] ||= []
-      @global['include_steps'] = [global['include_steps']].push ''
+      @global['include_steps'].push ''
       @global['include_steps'].flatten!
       @global['include_steps'].compact!
       @sections.values.each do |section|
         dir_to_search = @global['include_steps'].map do |path|
-          [File.join(steps_dir, section.name, path),
-            File.join(steps_dir, path)]
+          steps_dirs.map do |steps_dir|
+            [File.join(steps_dir, section.name, path),
+              File.join(steps_dir, path)]
+          end
         end
         dir_to_search.flatten!
         if yaml_recipe.key? section.name
@@ -194,6 +199,7 @@ module Kameleon
         elsif aliases.kind_of? String
           dir_search = [
             File.join(File.dirname(@path), "steps", "aliases"),
+            File.join(File.dirname(@path), "..", "steps", "aliases"),
             File.join(File.dirname(@path), "aliases")
           ]
           dir_search.each do |dir_path|
@@ -219,6 +225,7 @@ module Kameleon
         elsif checkpoint.kind_of? String
           dir_search = [
             File.join(File.dirname(@path), "steps", "checkpoints"),
+            File.join(File.dirname(@path), "..", "steps", "checkpoints"),
             File.join(File.dirname(@path), "checkpoints")
           ]
           dir_search.each do |dir_path|

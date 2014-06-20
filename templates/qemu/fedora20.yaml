@@ -45,7 +45,6 @@ global:
   include_steps:
     - $$distrib/$$release
     - $$distrib
-    - ""
     - "archlinux"
 
   # Shell session from where we launch exec_out commands. There is often a

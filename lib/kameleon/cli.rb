@@ -69,11 +69,15 @@ module Kameleon
       puts "The following templates are available in " \
                  "#{ Kameleon.templates_path }:"
       templates_hash = []
-      Kameleon.templates_files.each do |f|
+      templates_path = File.join(Kameleon.env.templates_path, "/")
+      all_yaml_files = Dir["#{templates_path}**/*.yaml"]
+      steps_files = Dir["#{templates_path}steps/**/*.yaml"]
+      templates_files = all_yaml_files - steps_files
+      templates_files.each do |f|
         begin
         recipe = RecipeTemplate.new(f, :strict => false)
         templates_hash.push({
-          "name" => recipe.name,
+          "name" => f.gsub(templates_path, "").chomp(".yaml"),
           "description" => recipe.metainfo['description'],
         })
         rescue => e
