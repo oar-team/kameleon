@@ -1,0 +1,47 @@
+- insecure_ssh_key: $$kameleon_cwd/insecure_ssh_key
+
+- mount_chroot:
+  - check_cmd_out: chroot
+  - exec_out: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -t proc /proc  $$rootfs/proc
+  - exec_out: mount -t sysfs /sys  $$rootfs/sys
+  - exec_out: test -f $$rootfs/etc/mtab || cat /proc/mounts > $$rootfs/etc/mtab
+
+- umount_chroot:
+  - on_bootstrap_clean:
+    - exec_out: echo try umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
+    - exec_out: echo try umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
+    - exec_out: echo try umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true
+    - exec_out: echo try umount $$rootfs/dev... ; mountpoint -q $$rootfs/dev && umount -f -l $$rootfs/dev  || true
+
+- configure_ssh_access:
+  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
+  - exec_out: cat $$insecure_ssh_key
+  - exec_out: chroot $$rootfs mkdir -p /root/.ssh
+  - exec_out: |
+        cat $${insecure_ssh_key}.pub | tee -a $$rootfs/root/.ssh/authorized_keys
+        cat $${insecure_ssh_key}.pub > $$rootfs/root/.ssh/kameleon_insecure_public_key
+        chmod 600 $$rootfs/root/.ssh/authorized_keys
+        chmod 755 $$rootfs/root/.ssh
+
+- create_ssh_config:
+  - write_out:
+    - $$ssh_config_file
+    - |
+      Host $$kameleon_recipe_name
+      HostName 127.0.0.1
+      Port $${qemu_ssh_port}
+      User root
+      IdentityFile $$insecure_ssh_key
+      UserKnownHostsFile /dev/null
+      StrictHostKeyChecking no
+      PasswordAuthentication no
+      IdentitiesOnly yes
+      LogLevel FATAL
+      ForwardAgent yes
+      ControlPath /tmp/$${kameleon_short_uuid}%r@%h:%p
+      ControlMaster auto
+      ControlPersist yes
+      Compression yes
+      Protocol 2

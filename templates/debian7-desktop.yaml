@@ -1,0 +1,25 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian 7 (Wheezy) GNOME Desktop edition.
+#
+#==============================================================================
+
+---
+extend: debian7
+
+global:
+  # Apt options
+  apt_install_recommends: true
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+  - install_gnome:
+    - extra_packages: gedit gnome-documents
+
+export:
+  - @base

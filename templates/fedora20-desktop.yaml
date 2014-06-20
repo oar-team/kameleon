@@ -1,0 +1,21 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Fedora 20 GNOME Desktop edition
+#
+#==============================================================================
+
+---
+extend: fedora20
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+  - install_software:
+    - packages: @x-window-system @gnome-desktop
+
+export:
+  - @base

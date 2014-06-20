@@ -14,7 +14,7 @@ module Kameleon
     def format(event)
       buff = sprintf(@@basicformat, @max_level_length, event.name)
       buff << (event.tracer.nil? ? "" : "(#{event.tracer[0]})") + ": "
-      unless Log4r::LNAMES[event.level].eql? "PROGRESS"
+      unless Log4r::LNAMES[event.level].include? "PROGRESS"
         @on_progress = false
         buff << format_object(event.data) + "\n"
       else
@@ -30,13 +30,14 @@ module Kameleon
 
   # Custom Log4r formatter for files
   class FileFormatter < Log4r::BasicFormatter
-
+    @@basicformat = "%*s"
     def initialize(hash={})
       super(hash)
+      @max_level_length = 11
     end
 
     def format(logevent)
-      if Log4r::LNAMES[logevent.level].eql? "PROGRESS"
+      if Log4r::LNAMES[logevent.level].include? "PROGRESS"
         # Formats the data as is with no newline, to allow progress bars to be logged.
         sprintf("%s", logevent.data.to_s)
       else
@@ -46,7 +47,9 @@ module Kameleon
           # Prevent two newlines in the log file
           logevent.data.chop! if logevent.data =~ /\n$/
         end
-        sprintf("[%8s %s] %s\n", Log4r::LNAMES[logevent.level], Time.now.strftime("%m/%d/%Y %I:%M:%S %p"), format_object(logevent.data))
+        tracer = sprintf(@@basicformat, @max_level_length, logevent.name)
+        tracer << (logevent.tracer.nil? ? "" : "(#{logevent.tracer[0]})") + ": "
+        sprintf("%s %s\n", tracer, format_object(logevent.data))
       end
     end
   end

@@ -1,0 +1,18 @@
+# Dev Tools install
+# This step is installing all the tools a developer might needs
+
+- basic_dev_tools:
+  - exec_in: pacman -Sy --noconfirm base-devel wget git meld
+
+- libvirt_with_qemu:
+  # WARNING: if you have some problems with libvirt/qemu rights you can fix it
+  # mannualy. See https://wiki.archlinux.org/index.php/libvirt#Configuration
+  - exec_in: pacman -Sy --noconfirm qemu libvirt dnsmasq dmidecode virt-manager
+  - exec_in: echo "Enable libvirt deamon"
+  - exec_in: ln -s '/usr/lib/systemd/system/libvirtd.service' '/etc/systemd/system/multi-user.target.wants/libvirtd.service'
+  # The default libvirt network is conflicting with the host libvirt network so
+  # change the defaults
+- exec_in: sed -i "s/192.168.122/192.168.123/g" /etc/libvirt/qemu/networks/default.xml
+
+- docker_lxc:
+  - exec_in: pacman -Sy --noconfirm docker lxc

@@ -34,14 +34,17 @@ User Documentation
 
     installation.rst
     getting_started.rst
+    use_cases.rst
     recipe.rst
     context.rst
     commands.rst
     workspace.rst
     checkpoint.rst
     persistent_cache.rst
+    inheritance.rst
     aliases.rst
     faq.rst
+    grid5000_tutorial.rst
 
 Indices and tables
 ==================
@@ -49,4 +52,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

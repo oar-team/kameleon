@@ -1,0 +1,126 @@
+# create the appliance disk and initialize the checkpoint mechanism with Qemu
+# Network Block Device (NBD)
+
+- create_initial_image:
+  - check_cmd_out: qemu-img
+  - exec_out: mkdir -p checkpoints
+  - exec_out: |
+      if [ $$consider_checkpoint = true ]; then
+        if [ ! -e "$$image_disk" ] ; then
+          qemu-img create -f qcow2 checkpoints/base_$$image_disk $$image_size
+          # keep a link to the last checkpoint disk
+          ln -sf checkpoints/base_$$image_disk $$image_disk
+        fi
+      else
+        qemu-img create -f qcow2 $$image_disk $$image_size
+      fi
+
+- load_nbd_module:
+  - on_checkpoint: redo
+  - on_bootstrap_init:
+    - exec_out: |
+        lsmod | grep nbd >/dev/null \
+        || modprobe nbd max_part=63 \
+        || fail failed to load nbd module into kernel
+
+- attach_nbd_device:
+  # this microstep must be skipped because it is already done by the
+  # checkpoint restore function
+  - on_checkpoint: redo
+  - check_cmd_out: qemu-nbd
+  - exec_out: echo Connecting $$image_disk to nbd device $$nbd_device
+  - exec_out: echo "sync" ; sync
+  - exec_out: qemu-nbd -d $$nbd_device
+  - exec_out: |
+      if [ $$consider_checkpoint = true ]; then
+        REAL_PATH="$(readlink $$image_disk)"
+      else
+        REAL_PATH="$$image_disk"
+      fi
+      qemu-nbd -c $$nbd_device $REAL_PATH -n || fail nbd device $$nbd_device is unavailable
+
+- detach_nbd_device:
+  # this miscrostep must be done again ensure that the nbd device is
+  # detached
+  - on_checkpoint: redo
+  - on_export_clean:
+    - exec_out: echo "sync" ; sync
+    - exec_out: qemu-nbd -d $$nbd_device
+    - exec_out: "pgrep qemu-nbd | xargs -I {} kill -9 {} || true"
+
+- partition_disk:
+  - check_cmd_out: parted
+  - exec_out: |
+      echo "Partitioning disk..."
+      parted $${nbd_device} mklabel msdos
+      parted $${nbd_device} mkpart primary 0% 100%
+      parted $${nbd_device} set 1 boot on
+  - exec_out: |
+      echo Creating root partition...
+      mkfs.$$filesystem_type -q $${nbd_device}p1 || fail cannot create / ext4
+
+- mount_rootfs:
+  - exec_out: mkdir -p $$rootfs
+  - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p1 $$rootfs || fail cannot mount /"
+  - on_clean:
+    - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
+
+- copy_rootfs:
+  - check_cmd_out: rsync
+  - exec_out: echo "Copying rootfs to $$rootfs..."
+  - exec_out: rsync -aAX --exclude '/.kameleon_timestamp' $$rootfs_partial/* $$rootfs
+  - exec_out: echo "sync..." ; sync
+
+- create_fstab:
+  - write_out:
+    - $$rootfs/etc/fstab
+    - |
+      # /etc/fstab: static file system information.
+      #
+      # Use 'blkid' to print the universally unique identifier for a
+      # device; this may be used with UUID= as a more robust way to name devices
+      # that works even if disks are added and removed. See fstab(5).
+      #
+      # <file system> <mount point>   <type>  <options>       <dump>  <pass>
+      UUID=`blkid -s UUID -o value $${nbd_device}p1` /               $$filesystem_type    errors=remount-ro  0       1
+
+- mount_chroot:
+  - check_cmd_out: chroot
+  - exec_out: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -t proc /proc  $$rootfs/proc
+  - exec_out: mount -t sysfs /sys  $$rootfs/sys
+  - exec_out: test -f $$rootfs/etc/mtab || cat /proc/mounts > $$rootfs/etc/mtab
+
+- umount_chroot:
+  - on_clean:
+    - exec_out: echo try umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
+    - exec_out: echo try umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
+    - exec_out: echo try umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true
+    - exec_out: echo try umount $$rootfs/dev... ; mountpoint -q $$rootfs/dev && umount -f -l $$rootfs/dev  || true
+
+- configure_sshd:
+  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
+  - exec_out: cat $$insecure_ssh_key
+  - exec_out: chroot $$rootfs mkdir -p /root/.ssh
+  - exec_out: |
+        cat $${insecure_ssh_key}.pub | tee -a $$rootfs/root/.ssh/authorized_keys
+  - write_out:
+    - $$ssh_config_file
+    - |
+      Host $$kameleon_recipe_name
+      HostName 127.0.0.1
+      Port $${qemu_ssh_port}
+      User root
+      IdentityFile $$insecure_ssh_key
+      UserKnownHostsFile /dev/null
+      StrictHostKeyChecking no
+      PasswordAuthentication no
+      IdentitiesOnly yes
+      LogLevel FATAL
+      ForwardAgent yes
+      ControlPath $(pwd)/master-%l-%r@%h:%p
+      ControlMaster auto
+      ControlPersist yes
+      Compression yes
+      Protocol 2

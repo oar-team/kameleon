@@ -1,0 +1,27 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) Desktop edition.
+#
+#==============================================================================
+
+---
+extend: ubuntu-14.04
+
+global:
+  # Distribution
+  distrib: ubuntu
+  release: trusty
+  arch: amd64
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+  - install_software:
+    - packages: ubuntu-desktop
+
+export:
+  - @base

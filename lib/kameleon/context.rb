@@ -3,7 +3,8 @@ require 'kameleon/shell'
 module Kameleon
   class Context
 
-    attr_accessor :shell, :name
+    attr_accessor :shell
+    attr_accessor :name
 
     def initialize(name, cmd, workdir, exec_prefix, local_workdir)
       @name = name.downcase
@@ -14,15 +15,27 @@ module Kameleon
       @local_workdir = local_workdir
       @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir)
       @logger.debug("Initialize new ctx (#{name})")
+      @log_on_progress = false
 
       instance_variables.each do |v|
         @logger.debug("  #{v} = #{instance_variable_get(v)}")
       end
 
       @cache = Kameleon::Persistent_cache.instance
-      # Start the shell process
-      @shell.start
-      execute("echo The '#{name}_context' has been initialized", :log_level => "info")
+    end
+
+    def do_log(out, log_level)
+      if @log_on_progress
+        log_progress(log_level, out)
+        @log_on_progress = false if out.match(/\n$/)
+      else
+        if out.match(/\n$/)
+          out.split( /\r?\n/ ).each {|m| log(log_level, m) }
+        else
+          log_progress(log_level, out)
+          @log_on_progress = true
+        end
+      end
     end
 
     def log(log_level, msg)
@@ -31,54 +44,75 @@ module Kameleon
       @logger.debug msg if log_level == "debug"
     end
 
+    def log_progress(log_level, msg)
+      @logger.progress_info msg if log_level == "info"
+      @logger.progress_error msg if log_level == "error"
+      @logger.debug msg if log_level == "debug"
+    end
+
     def execute(cmd, kwargs = {})
+      lazyload_shell
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       cmd_with_prefix.split( /\r?\n/ ).each {|m| @logger.debug "+ #{m}" }
       log_level = kwargs.fetch(:log_level, "info")
       exit_status = @shell.execute(cmd_with_prefix, kwargs) do |out, err|
-        out.split( /\r?\n/ ).each {|m| log(log_level, m) } unless out.nil?
-        err.split( /\r?\n/ ).each {|m| log("error", m) } unless err.nil?
+        do_log(out, log_level) unless out.nil?
+        do_log(err, "error") unless err.nil?
       end
       @logger.debug("Exit status : #{exit_status}")
       fail ExecError unless exit_status.eql? 0
-    rescue ShellError => e
-      @logger.error(e.message)
-      fail ExecError
+    rescue ShellError, Errno::EPIPE  => e
+      @logger.debug("Shell cmd failed to launch: #{@shell.shell_cmd}")
+      raise ShellError, e.message + ". Check the cmd argument of the '#{@name}_context'."
     end
 
     def pipe(cmd, other_cmd, other_ctx)
 
-      if @cache.mode == :from then 
+      if @cache.mode == :from then
         @logger.info("Redirecting pipe into cache")
         tmp = @cache.get_cache_cmd(cmd)
       else
 
         tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
-        @logger.info("Running piped commands")
-        @logger.info("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
+        @logger.debug("Running piped commands")
+        @logger.debug("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
         execute(cmd, :stdout => tmp)
         tmp.close
       end
       ## Saving one side of the pipe into the cache
       if @cache.mode == :build then
-        @cache.cache_cmd(cmd,tmp.path)  
+        @cache.cache_cmd(cmd,tmp.path)
       end
 
-      @logger.info("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
-      dest_pipe_path = "/pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
+      @logger.debug("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
+      dest_pipe_path = "${KAMELEON_WORKDIR}/pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
       other_ctx.send_file(tmp.path, dest_pipe_path)
       other_cmd_with_pipe = "cat #{dest_pipe_path} | #{other_cmd} && rm #{dest_pipe_path}"
       other_ctx.execute(other_cmd_with_pipe)
     end
 
+    def lazyload_shell()
+      unless @shell.started?
+        @shell.restart
+        # Start the shell process
+        execute("echo The '#{name}_context' has been initialized", :log_level => "info")
+      end
+    rescue
+      @shell.stop
+      raise
+    end
+
     def start_shell
       #TODO: Load env and history
+      lazyload_shell
       @logger.info("Starting interactive shell")
       @shell.fork_and_wait
+    rescue ShellError => e
+      e.message.split( /\r?\n/ ).each {|m| @logger.error m }
     end
 
     def closed?
-      @shell.exited?
+      return !@shell.started? || @shell.exited?
     end
 
     def close!

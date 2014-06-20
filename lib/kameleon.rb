@@ -1,5 +1,3 @@
-require 'securerandom'
-require 'yaml'
 require 'fileutils'
 require 'optparse'
 require 'erb'
@@ -12,19 +10,21 @@ require 'log4r-color'
 require 'log4r-color/configurator'
 require 'pathname'
 require 'table_print'
+require 'diffy'
 
 module Kameleon
-  # to force yaml to dump ASCII-8Bit strings as strings
-  YAML::ENGINE.yamler='syck'
-
   # add a PROGRESS and NOTICE level
   Log4r::Configurator.custom_levels(:DEBUG, :INFO, :NOTICE,
                                     :PROGRESS, :WARN, :ERROR,
                                     :FATAL)
 
   class << self
-    attr_writer :logger, :env, :source_root, :templates_path, :templates_names,
-                :templates_files
+    attr_writer :logger
+    attr_writer :env
+    attr_writer :source_root
+    attr_writer :templates_path
+    attr_writer :templates_names
+    attr_writer :templates_files
 
     # The source root is the path to the root directory of the kameleon gem.
     def source_root
@@ -56,7 +56,7 @@ module Kameleon
     end
 
     def logger
-      @logger ||= Log4r::Logger.new("kameleon::[global]")
+      @logger ||= Log4r::Logger.new("kameleon::[kameleon]")
     end
 
     def env
@@ -67,6 +67,7 @@ module Kameleon
 end
 
 # Load the things which must be loaded before anything else
+require 'kameleon/compat'
 require 'kameleon/utils'
 require 'kameleon/error'
 require 'kameleon/cli'

@@ -1,0 +1,38 @@
+create: |
+    if [ -f "$$kameleon_cwd/checkpoint_enabled" ] ; then
+    if [ -e "$$image_disk" ] ; then
+      parent_of_@microstep_id="$(readlink $$image_disk)"
+      pushd $$kameleon_cwd/checkpoints
+      rm -f @microstep_id_checkpoint.qcow2
+      qemu-img create -f qcow2 "@microstep_id_checkpoint.qcow2" \
+                      -o backing_file=$(basename "$parent_of_@microstep_id")
+      popd
+      ln -sf $$kameleon_cwd/checkpoints/@microstep_id_checkpoint.qcow2 $$image_disk
+
+      lsmod | grep nbd >/dev/null || modprobe nbd max_part=63
+
+      echo "sync" ; sync
+      qemu-nbd -d $$nbd_device
+      qemu-nbd -c $$nbd_device "$(readlink $$image_disk)"
+    fi
+    fi
+
+apply: |
+    # apply command use the backing file that represent the real state to restore
+    previous_id=$(qemu-img info "checkpoints/@microstep_id_checkpoint.qcow2" \
+                  | grep backing \
+                  | sed -e 's/.*checkpoints\/\(.*\)_checkpoint.qcow2\(.*\)/\1/p' \
+                  | uniq)
+    ln -sf "$$kameleon_cwd/checkpoints/${previous_id}_checkpoint.qcow2" "$$image_disk"
+
+clear: |
+    if [ -d "$$kameleon_cwd/checkpoints" ] ; then
+      ls $$kameleon_cwd/checkpoints/ | \
+        xargs -I {} bash -c "echo Removing $$kameleon_cwd/checkpoints/{} ; rm $$kameleon_cwd/checkpoints/{}"
+      rm -f $$image_disk
+    fi
+
+list: |
+    if [ -d "$$kameleon_cwd/checkpoints" ] ; then
+      ls $$kameleon_cwd/checkpoints/ | sed -e 's/\(.*\)_checkpoint.qcow2/\1/p' | uniq
+    fi

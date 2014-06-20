@@ -1,4 +1,0 @@
-
-- update_initramfs:
-  - exec_in: INITRAMFS=$(basename /boot/vmlinuz-* | tr 'vmlinuz' 'initramfs')
-  - exec_in: dracut -f "/boot/$INITRAMFS.img"

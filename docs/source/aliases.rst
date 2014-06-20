@@ -5,8 +5,8 @@ Aliases
 -------
 
 The aliases can be used anywhere instead of a Kameleon command. Some aliases
-are provided with the templates in the ``aliases/defaults.yaml`` files within
-your workspace. You can add your own aliases in this file.
+are provided with the templates in the ``steps/aliases/defaults.yaml`` files
+within your workspace. You can add your own aliases in this file.
 
 An alias is define by its name as a key and a list of commands as a value. You
 can call an alias with any number of arguments given in a list.

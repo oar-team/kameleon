@@ -24,12 +24,21 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ["lib"]
 
-  s.add_dependency 'childprocess', '~> 0.3'
+  s.add_dependency 'childprocess', '~> 0.5'
   s.add_dependency 'thor', '~> 0.15'
   s.add_dependency 'table_print', '~> 1.5'
   s.add_dependency 'log4r-color', '~> 1.2'
+  s.add_dependency 'diffy', '~> 3.0'
+  # Syck is also a dependency for Ruby 2 environments.
+  # It is installed at install-time if necessary,
+  # via ext/mkrf_conf.rb
 
+  s.add_development_dependency 'pry', '~> 0.9'
+  s.add_development_dependency 'pry-debugger', '~> 0.2'
   s.add_development_dependency 'rake', '~> 10.1'
   s.add_development_dependency 'minitest', '~> 4.7'
   s.add_development_dependency 'coveralls', '~> 0.7'
+
+  # To allow installing the Syck gem when Ruby version is >2.0.0
+  s.extensions = ["ext/mkrf_conf.rb"]
 end

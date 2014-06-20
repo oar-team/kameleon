@@ -1,0 +1,97 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian 7 (Wheezy) image using G5k.
+#
+#==============================================================================
+
+# This recipe assumes that you have already set up a ssh proxy connection for Grid'5000
+# as explain in: https://www.grid5000.fr/mediawiki/index.php/SSH_quick_configuration
+# In order for this recipe to work, please change the g5k username by yours.
+---
+# Loads some helpful aliases
+aliases: defaults.yaml
+# By default checkpoint is disable
+#== Global variables use by Kameleon engine and the steps
+global:
+  ## User varibales : used by the recipe
+  user_name: kameleon
+  user_password: $$user_name
+
+  distrib: debian
+  release: wheezy
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps:
+    - $$distrib/$$release
+    - $$distrib
+
+  # Frontend options
+  g5k_user: $$my_g5k_username  # CHANGE ME
+  g5k_site: $$my_g5k_site  # CHANGE ME
+
+  # Kenv
+  kenv: "wheezy-x64-base"
+
+  ssh_config_file: $$kameleon_cwd/ssh_config
+  # Shell session from where we launch exec_out commands. There is often a
+  # local bash session, but it can be a remote shell on other machines or on
+  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
+  out_cwd: /home/$$g5k_user/kameleon_workdir/$$kameleon_recipe_name
+  out_context:
+    cmd: ssh -A -t -F $$ssh_config_file $$g5k_site /bin/bash
+    workdir: $$out_cwd
+
+  # Shell session that allows us to connect to the building machine in order to
+  # configure it and setup additional programs
+  in_cwd: /root/kameleon_workdir/$$kameleon_recipe_name
+  in_context:
+    cmd: ssh -A -t -F $$ssh_config_file $$kameleon_recipe_name /bin/bash
+    workdir: $$in_cwd
+
+#== Bootstrap the new system and create the 'in_context'
+#== This will consist in a G5k Deployment
+bootstrap:
+  - g5k_reserv:
+    - g5k_user: $$g5k_user
+    - kenv: $$kenv
+    - walltime: "0:30:00"
+
+#== Install and configuration steps
+# WARNING: this part should be independante from the out context (whenever
+# possible...)
+setup:
+  # Install
+  - configure_apt:
+    - enable_contrib_repo: true
+    - enable_nonfree_repo: true
+    - install_recommends: false
+  - upgrade_system:
+    - dist_upgrade: true
+  - install_software:
+    - packages: >
+        debian-keyring ntp zip unzip rsync sudo less vim bash-completion
+  # Configuration
+  - configure_system:
+    - locales: POSIX C en_US fr_FR de_DE
+    - lang: en_US.UTF-8
+    - timezone: UTC
+  - configure_keyboard:
+    - layout: "us,fr,de"
+  - configure_network:
+    - hostname: kameleon-$$distrib
+  - create_group:
+    - name: admin
+  - create_user:
+    - name: $$user_name
+    - groups: sudo admin
+    - password: $$user_password
+
+#== Export the generated appliance in the format of your choice
+export:
+  - save_appliance_from_g5k:
+    - filename: "$${kameleon_recipe_name}"
+    - filesystem: "ext4"
+    # - save_as_g5k

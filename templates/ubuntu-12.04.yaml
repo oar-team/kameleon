@@ -1,0 +1,128 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) base system.
+#
+#==============================================================================
+
+---
+# Loads some helpful aliases
+aliases: defaults.yaml
+# Enables qemu checkpoint
+checkpoint: qemu.yaml
+#== Global variables use by Kameleon engine and the steps
+global:
+  ## User varibales : used by the recipe
+  user_name: kameleon
+  user_password: $$user_name
+
+  # Distribution
+  distrib: ubuntu
+  release: precise
+  arch: amd64
+
+  ## QEMU options
+  qemu_enable_kvm: true
+  qemu_cpu: 2
+  qemu_memory_size: 512
+  qemu_monitor_port: 10023
+  qemu_ssh_port: 55423
+  qemu_arch: x86_64
+
+  ## Disk options
+  nbd_device: /dev/nbd1
+  image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
+  image_size: 10G
+  filesystem_type: ext4
+
+  # rootfs options
+  rootfs: $$kameleon_cwd/rootfs
+  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
+
+  # Apt options
+  apt_repository: http://archive.ubuntu.com/ubuntu/
+  apt_enable_restricted: true
+  apt_install_recommends: false
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps:
+    - $$distrib/$$release
+    - $$distrib
+    - debian
+
+  # Shell session from where we launch exec_out commands. There is often a
+  # local bash session, but it can be a remote shell on other machines or on
+  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
+  out_context:
+    cmd: bash
+    workdir: $$kameleon_cwd
+
+  # Shell session that allows us to connect to the building machine in order to
+  # configure it and setup additional programs
+  ssh_config_file: $$kameleon_cwd/ssh_config
+  in_context:
+    cmd: ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
+    workdir: /root/kameleon_workdir
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - debootstrap:
+    - include_pkg: >
+        acpi-support kbd udev linux-image-virtual locales openssh-server
+        bzip2 linux-image-generic
+    - release: $$release
+    - arch: $$arch
+    - repository: $$apt_repository
+    - enable_cache: true
+  - initialize_disk_qemu
+  - prepare_qemu
+  - install_bootloader
+  - start_qemu
+
+#== Install and configuration steps
+# WARNING: this part should be independante from the out context (whenever
+# possible...)
+setup:
+  # Install
+  - configure_apt:
+    - repository: $$apt_repository
+    - enable_restricted: $$apt_enable_restricted
+    - install_recommends: $$apt_install_recommends
+  - upgrade_system:
+    - dist_upgrade: true
+  - install_software:
+    - packages: >
+        apt-transport-https ca-certificates rsync sudo less bash-completion
+        curl nano vim psmisc language-pack-en
+  - configure_kernel:
+    - arch: $$arch
+  # Configuration
+  - configure_system:
+    - locales: POSIX C en_US fr_FR de_DE
+    - lang: en_US.UTF-8
+    - timezone: UTC
+  - configure_keyboard:
+    - layout: "us,fr,de"
+  - configure_network:
+    - hostname: kameleon-$$distrib
+  - create_group:
+    - name: admin
+  - create_user:
+    - name: $$user_name
+    - groups: sudo admin
+    - password: $$user_password
+
+#== Export the generated appliance in the format of your choice
+export:
+  - save_appliance:
+    - input: $$image_disk
+    - output: $$kameleon_cwd/$$kameleon_recipe_name
+    - save_as_qcow2
+    # - save_as_qed
+    # - save_as_tgz
+    # - save_as_raw
+    # - save_as_vmdk
+    # - save_as_vdi
+

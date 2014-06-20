@@ -1,0 +1,30 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Fedora Rawhide base system
+#
+#==============================================================================
+
+---
+extend: fedora20
+
+global:
+  # Distribution
+  distrib: fedora
+  release: rawhide
+  arch: x86_64
+
+bootstrap:
+  - liveos_bootstrap:
+    - mirror_distrib_path: fedora/development/$${release}/$$arch/os
+  - initialize_disk_qemu
+  - prepare_qemu
+  - install_bootloader
+  - start_qemu
+
+setup:
+  - @base
+
+export:
+  - @base

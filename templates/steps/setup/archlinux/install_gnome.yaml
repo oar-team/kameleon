@@ -1,0 +1,27 @@
+# Desktop installation on Archlinux
+#
+# Install and setup a fully working Gnome configuration
+- extra_packages: ""
+
+- install_packages:
+  - exec_in: pacman -Sy --noconfirm gnome xorg xorg-fonts-type1 $$extra_packages
+
+- enable_services:
+  - exec_in: systemctl enable gdm.service
+  # disable dhcpcd to avoid conflic with NetworkManager
+  - exec_in: systemctl disable dhcpcd.service
+  - exec_in: systemctl enable NetworkManager
+
+- X11_config:
+  # keyboard config
+  - write_in:
+    - /etc/X11/xorg.conf.d/10-keyboard.conf
+    - |
+      Section "InputClass"
+              Identifier "system-keyboard"
+              MatchIsKeyboard "on"
+              Option "XkbLayout" "$$keyboard_layout"
+              Option "XkbModel" "pc104"
+      EndSection
+  # font config
+  - exec_in:  ln -s /etc/fonts/conf.avail/70-no-bitmaps.conf /etc/fonts/conf.d/

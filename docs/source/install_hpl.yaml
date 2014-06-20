@@ -1,0 +1,24 @@
+
+- download_tarball:
+    - exec_local: |
+               cd /tmp/
+               wget -q $$repository/hpl-$$version.tar.gz
+    - local2in:
+        - /tmp/hpl-$$version.tar.gz
+        - /root/hpl-$$version.tar.gz
+
+
+- install:
+    - exec_in: cd /root/
+    - exec_in: |
+               tar -xvf hpl-$$version.tar.gz
+               mv hpl-$$version hpl
+
+    - local2in:
+        - $$hpl_makefile
+        - /root/hpl/Make.Linux
+
+    - exec_in: |
+               rm /usr/lib/libf2c.so
+               ln -s /usr/lib/libf2c.a /usr/lib/libf2c.so
+               make -C /root/hpl/ arch=Linux

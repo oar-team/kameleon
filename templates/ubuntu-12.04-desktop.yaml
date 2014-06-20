@@ -1,0 +1,25 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) Desktop edition.
+#
+#==============================================================================
+
+---
+extend: ubuntu-12.04
+
+global:
+  # Apt options
+  apt_install_recommends: true
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+  - install_software:
+    - packages: ubuntu-desktop
+
+export:
+  - @base

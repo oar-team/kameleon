@@ -1,0 +1,25 @@
+
+- download_tarball:
+    - exec_local: |
+               cd /tmp/
+               wget -q $$repository/$$version/atlas$$version.tar.bz2/download -O atlas$$version.tar.bz2
+    - local2in:
+        - /tmp/atlas$$version.tar.bz2
+        - /root/atlas$$version.tar.bz2
+
+- deactivating_cpu_throttling:
+    - exec_in: cpufreq-selector -g performance
+
+- install:
+    - exec_in: cd /root/
+    - exec_in: bash -c "bunzip2 -c atlas$$version.tar.bz2 | tar xfm - "
+    - exec_in: |
+               mv ATLAS ATLAS$$version                          # get unique dir name
+               mkdir ATLAS$$version/Linux_test                         # create BLDdir
+               cd ATLAS$$version/Linux_test/
+               ../configure -b 64 -D c -DPentiumCPS=2400
+               make build
+               make check
+               make ptcheck ## this is for parallel tests
+               make time ## this is interactive
+               make install

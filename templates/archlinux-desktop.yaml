@@ -2,126 +2,24 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# RECIPE: archlinux-desktop
-#
-# VERSION: 1.0
-#
-# DESCRIPTION: Build an Archlinux Gnome Desktop appliance using chroot and
-# qemu-nbd.
-#
-# WARNING: this is just an extension to the archlinux template.
-#
-# TEMPLATE: archlinux
+# DESCRIPTION: Archlinux GNOME Desktop edition.
 #
 #==============================================================================
 
 ---
-# Loads some helpful aliases
-aliases: defaults.yaml
-# Enables qcow2 checkpoint
-checkpoint: qcow2.yaml
-#== Global variables use by Kameleon engine and the steps
-global:
-  ## User varibales : used by the recipe
-  rootfs: $$kameleon_cwd/rootfs
-  rootfs_cache: /var/cache/kameleon/arch
-  arch: x86_64
-  dns: 208.67.222.222
-  user_name: kameleon
+extend: archlinux
 
-  nbd_device: /dev/nbd4
-  container: "$${kameleon_recipe_name}_temp.qcow2"
-
-  distrib: archlinux
-
-  ## System variables. Required by kameleon engine
-  # Include specific steps
-  include_steps:
-    - $$distrib
-
-  # Shell session from where we launch exec_out commands. There is often a
-  # local bash session, but it can be a remote shell on other machines or on
-  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-  out_context:
-    cmd: bash
-    workdir: $$kameleon_cwd
-
-  # Shell session that allows us to connect to the building machine in order to
-  # configure it and setup additional programs
-  default_env: "USER=root HOME=/root LC_ALL=POSIX"
-  in_context:
-    cmd: $$default_env chroot $$rootfs bash
-    workdir: /
-
-
-  ## BEGIN added for this recipe
-  lang: fr
-  ## END added for this recipe
- 
-#== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - arch-bootstrap:
-    - mirror: http://mir.archlinux.fr/
-    # You can choose any group from https://www.archlinux.org/groups/
-    # It's recommended to use 'base' (default) or 'base-devel' (with dev tools)
-    - pkg_group: base
-  - create_disk_nbd:
-    - image_size: 5G
-    - filename: $$container
-    - device: $$nbd_device
-  - populate_disk:
-    - filename: $$container
-    - device: $$nbd_device
-    - mountdir: $$rootfs
-    - filesystem_type: ext4
-  - start_chroot
-  - install_bootloader:
-    - mountdir: $$rootfs
-    - device: $$nbd_device
+  - @base
 
-#== Install and configuration steps
-# WARNING: this part should be independante from the out context (whenever
-# possible...)
 setup:
-  # Install
-  - software_install:
-    - packages: >
-        ntp zip unzip rsync sudo vim bash-completion openssh
-  # Configuration
-  - system_config:
-    - locales: fr_FR en_US
-    - lang: fr_FR.UTF-8
-    - timezone: Europe/Paris
-  - keyboard_config:
-    # set to french keyboard use 'localectl list-keymaps' to see available list
-    - layout: fr
-  - network_config:
-    - hostname: kameleon-$$distrib
-  - create_user:
-    - name: $$user_name
-    - group: admin
-    - password: $$user_name
-  ## BEGIN added for this recipe
-  - yaourt_install
-  - ruby_config
-  - software_install:
-    # reinstall glibc because of ruby native extensions problem
-    - packages: base-devel wget git meld glibc
-  - desktop_install:
-    # This should be a 2-letter country id
-    - keyboard_layout: $$lang,us
+  - @base
+  - install_yaourt
+  - install_gnome:
+    - keyboard_layout: en
     - extra_packages: >
-        firefox-i18n-$$lang telepathy hunspell-$$lang faenza-icon-theme
-  ## END added for this recipe
+        firefox-i18n-en-us flashplugin libreoffice libreoffice-en-US telepathy
+        hunspell-en faenza-icon-theme file-roller
 
-#== Export the generated appliance in the format of your choice
 export:
-  - save_appliance_from_nbd:
-    - mountdir: $$rootfs
-    - filename: "$${kameleon_recipe_name}"
-    - save_as_qcow2
-    #- save_as_qed
-    # - save_as_tgz
-    # - save_as_raw
-    # - save_as_vmdk
-    # - save_as_vdi
+  - @base

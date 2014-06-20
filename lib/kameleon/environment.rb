@@ -6,23 +6,21 @@ module Kameleon
 
     attr_accessor :workspace
     attr_accessor :templates_path
-    attr_accessor :recipes_path
     attr_accessor :build_path
     attr_accessor :log_file
     attr_accessor :debug
 
 
     def initialize(options = {})
-      @logger = Log4r::Logger.new("kameleon::[env]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
-      workspace = File.expand_path(options[:workspace])
-      build_path = File.expand_path(options[:build_path] || File.join(workspace, "builds"))
+      workspace = File.expand_path(Dir.pwd)
+      build_path = File.expand_path(options[:build_path] || File.join(workspace, "build"))
       defaults = {
         :workspace => Pathname.new(workspace),
         :templates_path => Kameleon.templates_path,
         :templates_names => Kameleon.templates_names,
-        :recipes_path => Pathname.new(File.join(workspace, "recipes")),
         :build_path => Pathname.new(build_path),
         :log_file => Pathname.new(File.join(workspace, "kameleon.log"))
       }

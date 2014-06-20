@@ -4,12 +4,20 @@ require 'kameleon/step'
 module Kameleon
 
   class Recipe
-    attr_accessor :path, :name, :global, :sections, :aliases, :aliases_path, \
-      :checkpoint, :checkpoint_path, :metainfo, :files
+    attr_accessor :path
+    attr_accessor :name
+    attr_accessor :global
+    attr_accessor :sections
+    attr_accessor :aliases
+    attr_accessor :aliases_path
+    attr_accessor :checkpoint
+    attr_accessor :checkpoint_path
+    attr_accessor :metainfo
 
-    def initialize(path)
-      @logger = Log4r::Logger.new("kameleon::[recipe]")
-      @path = Pathname.new(path)
+
+    def initialize(path, kwargs = {})
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
+      @path = Pathname.new(File.expand_path(path))
       @name = (@path.basename ".yaml").to_s
       @recipe_content = File.open(@path, 'r') { |f| f.read }
       @sections = {
@@ -17,7 +25,6 @@ module Kameleon
         "setup" => Section.new("setup"),
         "export" => Section.new("export"),
       }
-      @required_global = %w(out_context in_context)
       kameleon_id = SecureRandom.uuid
       @global = {
         "kameleon_recipe_name" => @name,
@@ -25,33 +32,35 @@ module Kameleon
         "kameleon_uuid" => kameleon_id,
         "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
+        "in_context" => {"cmd"=> "/bin/bash"},
+        "out_context" => {"cmd"=> "/bin/bash"}
       }
       @aliases = {}
       @checkpoint = nil
       @files = []
       @logger.debug("Initialize new recipe (#{path})")
-      load!
+      @base_recipes_files = [@path]
+      load! kwargs
     end
 
-    def load!
+    def load!(kwargs = {})
       # Find recipe path
-      @logger.notice("Loading #{@path}")
+      @logger.debug("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load File.open @path
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml error"
       end
-      unless yaml_recipe.key? "global"
-        fail RecipeError, "Recipe misses 'global' section"
-      end
+      # Load entended recipe variables
+      yaml_recipe = load_base_recipe(yaml_recipe)
+      yaml_recipe.delete("extend")
 
-      #Load Global variables
-      @global.merge!(yaml_recipe.fetch("global"))
+      # Load Global variables
+      @global.merge!(yaml_recipe.fetch("global", {}))
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, kwargs)
       @global.merge! YAML.load(resolved_global)
-
       # Loads aliases
       load_aliases(yaml_recipe)
       # Loads checkpoint configuration
@@ -73,7 +82,7 @@ module Kameleon
           yaml_section = yaml_recipe.fetch(section.name)
           next unless yaml_section.kind_of? Array
           yaml_section.each do |raw_macrostep|
-
+            embedded_step = false
             # Get macrostep name and arguments if available
             if raw_macrostep.kind_of? String
               name = raw_macrostep
@@ -85,13 +94,28 @@ module Kameleon
               fail RecipeError, "Malformed yaml recipe in section: "\
                                 "#{section.name}"
             end
-
+            # Detect if step is embedded
+            if not args.nil?
+              args.each do |arg|
+                if arg.kind_of? Hash
+                  if arg[arg.keys[0]].kind_of? Array
+                    embedded_step = true
+                  end
+                end
+              end
+            end
+            if embedded_step
+              @logger.debug("Loading embedded macrostep #{name}")
+              macrostep = load_macrostep(nil, name, args)
+              section.macrosteps.push(macrostep)
+              next
+            end
             # Load macrostep yaml
             loaded = false
             dir_to_search.each do |dir|
               macrostep_path = Pathname.new(File.join(dir, name + '.yaml'))
               if File.file?(macrostep_path)
-                @logger.notice("Loading macrostep #{macrostep_path}")
+                @logger.debug("Loading macrostep #{macrostep_path}")
                 macrostep = load_macrostep(macrostep_path, name, args)
                 section.macrosteps.push(macrostep)
                 @files.push(macrostep_path)
@@ -108,12 +132,59 @@ module Kameleon
           end
         end
       end
-      @logger.notice("Loading recipe metadata")
+      @logger.debug("Loading recipe metadata")
       @metainfo = {
-        "description" => Utils.extract_meta_var("description", @recipe_content),
-        "recipe" => Utils.extract_meta_var("recipe", @recipe_content),
-        "template" => Utils.extract_meta_var("template", @recipe_content),
+        "description" => Utils.extract_meta_var("description", @recipe_content)
       }
+    end
+
+    def load_base_recipe(yaml_recipe)
+      base_recipe_name = yaml_recipe.fetch("extend", "")
+      return yaml_recipe if base_recipe_name.empty?
+
+      ## check that the recipe has not already been loaded
+      base_recipe_name << ".yaml" unless base_recipe_name.end_with? ".yaml"
+      base_recipe_path = File.join(File.dirname(@path), base_recipe_name)
+
+      ## check that the recipe has not already been loaded
+      return yaml_recipe if @base_recipes_files.include? base_recipe_path
+
+      base_recipe_path << ".yaml" unless base_recipe_path.end_with? ".yaml"
+      fail RecipeError, "Could not find this following recipe : #{@recipe_path}" \
+         unless File.file? @path
+      base_yaml_recipe = YAML.load File.open base_recipe_path
+      unless yaml_recipe.kind_of? Hash
+        fail RecipeError, "Invalid yaml error"
+      end
+      base_yaml_recipe.keys.each do |key|
+        if ["export", "bootstrap", "setup"].include? key
+          base_yaml_recipe.delete(key) unless yaml_recipe.keys.include? key
+        end
+      end
+      yaml_recipe.keys.each do |key|
+        if ["aliases", "checkpoint"].include? key
+          base_yaml_recipe[key] = yaml_recipe[key]
+        elsif ["export", "bootstrap", "setup"].include? key
+          base_section = base_yaml_recipe.fetch(key, [])
+          base_section = [] if base_section.nil?
+          recipe_section = yaml_recipe[key]
+          recipe_section = [] if recipe_section.nil?
+          index_base_steps = recipe_section.index("@base")
+          unless index_base_steps.nil?
+            recipe_section[index_base_steps] = base_section
+            recipe_section.flatten!
+          end
+          base_yaml_recipe[key] = recipe_section
+        elsif ["global"].include? key
+          base_section = base_yaml_recipe.fetch(key, {})
+          base_section = {} if base_section.nil?
+          recipe_section = yaml_recipe[key]
+          recipe_section = {} if recipe_section.nil?
+          base_yaml_recipe[key] = base_section.merge(recipe_section)
+        end
+      end
+      @base_recipes_files.push(Pathname.new(base_recipe_path))
+      return load_base_recipe(base_yaml_recipe)
     end
 
     def load_aliases(yaml_recipe)
@@ -122,14 +193,20 @@ module Kameleon
         if aliases.kind_of? Hash
           @aliases = aliases
         elsif aliases.kind_of? String
-          path = Pathname.new(File.join(File.dirname(@path), "aliases", aliases))
-          if File.file?(path)
-            @logger.notice("Loading aliases #{path}")
-            @aliases = YAML.load_file(path)
-            @files.push(path)
-          else
-            fail RecipeError, "Aliases file '#{path}' does not exists"
+          dir_search = [
+            File.join(File.dirname(@path), "steps", "aliases"),
+            File.join(File.dirname(@path), "aliases")
+          ]
+          dir_search.each do |dir_path|
+            path = Pathname.new(File.join(dir_path, aliases))
+            if File.file?(path)
+              @logger.debug("Loading aliases #{path}")
+              @aliases = YAML.load_file(path)
+              @files.push(path)
+              return path
+            end
           end
+          fail RecipeError, "Aliases file '#{path}' does not exists"
         end
       end
     end
@@ -141,31 +218,39 @@ module Kameleon
           @checkpoint = checkpoint
           @checkpoint["path"] = @path
         elsif checkpoint.kind_of? String
-          path = Pathname.new(File.join(File.dirname(@path),
-                              "checkpoints",
-                              checkpoint))
-          if File.file?(path)
-            @logger.notice("Loading checkpoint configuration #{path}")
-            @checkpoint = YAML.load_file(path)
-            @checkpoint["path"] = path.to_s
-            @files.push(path)
-          else
-            fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
-                              "does not exists"
+          dir_search = [
+            File.join(File.dirname(@path), "steps", "checkpoints"),
+            File.join(File.dirname(@path), "checkpoints")
+          ]
+          dir_search.each do |dir_path|
+            path = Pathname.new(File.join(dir_path, checkpoint))
+            if File.file?(path)
+              @logger.debug("Loading checkpoint configuration #{path}")
+              @checkpoint = YAML.load_file(path)
+              @checkpoint["path"] = path.to_s
+              @files.push(path)
+              return path
+            end
           end
+          fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
+                            "does not exists"
         end
       end
     end
 
     def load_macrostep(step_path, name, args)
-      macrostep_yaml = YAML.load_file(step_path)
+      if step_path.nil?
+        macrostep_yaml = args
+      else
+        macrostep_yaml = YAML.load_file(step_path)
+        # Basic macrostep syntax check
+        if not macrostep_yaml.kind_of? Array
+          fail RecipeError, "The macrostep #{step_path} is not valid "
+                            "(should be a list of microsteps)"
+        end
+      end
       local_variables = {}
       loaded_microsteps = []
-      # Basic macrostep syntax check
-      if not macrostep_yaml.kind_of? Array
-        fail RecipeError, "The macrostep #{step_path} is not valid "
-                           "(should be a list of microsteps)"
-      end
       # Load default local variables
       macrostep_yaml.each do |yaml_microstep|
         key = yaml_microstep.keys[0]
@@ -177,33 +262,35 @@ module Kameleon
           local_variables[key] = @global.fetch(key, value)
         end
       end
-      selected_microsteps = []
-      if args
-        args.each do |entry|
-          if entry.kind_of? Hash
-            # resolve variable before using it
-            entry.each do |key, value|
-              local_variables[key] = value
+      unless step_path.nil?
+        selected_microsteps = []
+        if args
+          args.each do |entry|
+            if entry.kind_of? Hash
+              # resolve variable before using it
+              entry.each do |key, value|
+                local_variables[key] = value
+              end
+            elsif entry.kind_of? String
+              selected_microsteps.push entry
             end
-          elsif entry.kind_of? String
-            selected_microsteps.push entry
           end
         end
-      end
-      unless selected_microsteps.empty?
-        # Some steps are selected so remove the others
-        # WARN: Allow the user to define this list not in the original order
-        strip_microsteps = []
-        selected_microsteps.each do |microstep_name|
-          macrostep = find_microstep(microstep_name, loaded_microsteps)
-          if macrostep.nil?
-            fail RecipeError, "Can't find microstep '#{microstep_name}' "\
-                              "in macrostep file '#{step_path}'"
-          else
-            strip_microsteps.push(macrostep)
+        unless selected_microsteps.empty?
+          # Some steps are selected so remove the others
+          # WARN: Allow the user to define this list not in the original order
+          strip_microsteps = []
+          selected_microsteps.each do |microstep_name|
+            macrostep = find_microstep(microstep_name, loaded_microsteps)
+            if macrostep.nil?
+              fail RecipeError, "Can't find microstep '#{microstep_name}' "\
+                                "in macrostep file '#{step_path}'"
+            else
+              strip_microsteps.push(macrostep)
+            end
           end
+          loaded_microsteps = strip_microsteps
         end
-        loaded_microsteps = strip_microsteps
       end
       return Macrostep.new(name, loaded_microsteps, local_variables, step_path)
     end
@@ -218,6 +305,10 @@ module Kameleon
     end
 
     def resolve!
+      # Resolve dynamically-defined variables !!
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      @global.merge! YAML.load(resolved_global)
+
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
@@ -276,12 +367,6 @@ module Kameleon
         end
       end
       @logger.notice("Starting recipe consistency check")
-      missings = []
-      @required_global.each do |key|
-        missings.push key unless @global.key? key
-      end
-      fail RecipeError, "Required parameters missing in global section :" \
-                        " #{missings.join ' '}" unless missings.empty?
       # check context args
       required_args = %w(cmd)
       missings = []
@@ -427,8 +512,8 @@ module Kameleon
         "name" => @name,
         "path" => @path.to_s,
         "files" => @files.map {|p| p.to_s },
+        "base_recipes_files" => @base_recipes_files.map {|p| p.to_s },
         "global" => @global,
-        "required_global" => @required_global,
         "aliases" => @aliases,
       }
       recipe_hash["checkpoint"] = @checkpoint unless @checkpoint.nil?
@@ -448,26 +533,71 @@ module Kameleon
 
   class RecipeTemplate < Recipe
 
-    def copy_template(dest_path, recipe_name, force)
+    def get_answer(msg)
+      while true
+        @logger.progress_notice msg
+        answer = $stdin.gets.downcase
+        raise AbortError, "Execution aborted..." if answer.nil?
+        answer.chomp!
+        if ["y", "n" , "", "a"].include?(answer)
+          if ["y", ""].include? answer
+            return true
+          elsif answer.eql? "a"
+            raise AbortError, "Aborted..."
+          end
+          return false
+        end
+      end
+    end
+
+    def safe_copy_file(src, dst, force)
+      if File.exists? dst
+        diff = Diffy::Diff.new(dst.to_s, src.to_s, :source => "files").to_s
+        unless diff.chomp.empty?
+          @logger.notice("conflict #{dst}")
+          @logger.notice("Differences between the old and the new :")
+          puts Diffy::Diff.new(dst.to_s, src.to_s,
+                               :source => "files",
+                               :context => 1,
+                               :include_diff_info => true).to_s
+          msg = "Overwrite #{dst}? [Y]es/[n]o/[a]bort : "
+          if force || get_answer(msg)
+            FileUtils.copy_file(src, dst)
+          end
+        else
+          @logger.notice("identical #{dst}")
+        end
+      else
+        unless File.dirname(dst).eql? "/"
+          FileUtils.mkdir_p File.dirname(dst)
+        end
+        @logger.notice("create #{dst}")
+        FileUtils.copy_file(src, dst)
+      end
+    end
+
+    def copy_extended_recipe(recipe_name, force)
       Dir::mktmpdir do |tmp_dir|
         recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
-        FileUtils.cp(@path, recipe_path)
+        ## copying recipe
         File.open(recipe_path, 'w+') do |file|
-          tpl = ERB.new(@recipe_content)
+          extend_erb_tpl = File.join(Kameleon.env.templates_path, "extend.erb")
+          tpl = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
           result = tpl.result(binding)
           file.write(result)
         end
+        recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
+        safe_copy_file(recipe_path, Pathname.new(recipe_dst), force)
+      end
+    end
 
-        @files.each do |path|
-          relative_path = path.relative_path_from(Kameleon.env.templates_path)
-          dst = File.join(tmp_dir, File.dirname(relative_path))
-          FileUtils.mkdir_p dst
-          FileUtils.cp(path, dst)
-          @logger.debug("Copying '#{path}' to '#{dst}'")
-        end
-        # Create recipe dir if not exists
-        FileUtils.mkdir_p Kameleon.env.recipes_path
-        FileUtils.cp_r(Dir[tmp_dir + '/*'], Kameleon.env.recipes_path)
+    def copy_template(force)
+      ## copying steps
+      files2copy = @base_recipes_files + @files
+      files2copy.each do |path|
+        relative_path = path.relative_path_from(Kameleon.env.templates_path)
+        dst = File.join(Kameleon.env.workspace, relative_path)
+        safe_copy_file(path, dst, force)
       end
     end
   end

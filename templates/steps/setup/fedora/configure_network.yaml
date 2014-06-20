@@ -1,0 +1,30 @@
+# Network config for Archlinux
+#
+# This should work for every systemd powered system
+- mtu: "1492"
+
+- set_hostname:
+  - exec_in: echo $$hostname > /etc/hostname
+
+- enable_network:
+  - exec_in: chkconfig network on
+
+- set_host:
+  - exec_in: echo "127.0.0.1 localhost $$hostname" > /etc/hosts
+
+- set_interface:
+  - write_in:
+    - /etc/sysconfig/network-scripts/ifcfg-eth0
+    - |
+      DEVICE=eth0
+      BOOTPROTO=dhcp
+      ONBOOT=yes
+      HOSTNAME=$$hostname
+      NM_CONTROLLED=no
+      TYPE=Ethernet
+      MTU=$$mtu
+  - write_in:
+    - /etc/sysconfig/network
+    - |
+      NETWORKING=yes
+      HOSTNAME=$$hostname

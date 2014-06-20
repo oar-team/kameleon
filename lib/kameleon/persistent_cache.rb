@@ -4,12 +4,20 @@ require 'socket'
 module Kameleon
   #This ruby class will control the execution of Polipo web proxy
   class Persistent_cache
+
     include Singleton
-    attr_reader :polipo_env, :cache_dir,:polipo_port
-    attr_writer :activated, :cwd, :polipo_path, :cache_path
-    attr_accessor :mode, :name, :recipe_files
+    attr_reader :polipo_env
+    attr_reader :cache_dir
+    attr_reader :polipo_port
+    attr_writer :activated
+    attr_reader :cwd
+    attr_reader :polipo_path
+    attr_reader :name
+    attr_writer :cache_path
+    attr_accessor :mode, :name, :recipe_files # have to check those.
+
     def initialize()
-      @logger = Log4r::Logger.new("kameleon::[Persistent cache]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       ## we must configure Polipo to be execute for the in and out context
       ## we have to start polipo in the out context for debootstrap step
 
@@ -24,7 +32,6 @@ module Kameleon
                             :idleTime => "5",
                             :chunkHighMark => "425165824",
                             :proxyPort => @polipo_port,
-                            #:proxyOffline => "true"
                             :relaxTransparency =>"true"
                             }
 
@@ -66,7 +73,7 @@ module Kameleon
 
       if @polipo_path.nil? then
         @logger.error("Polipo binary not found, make sure it is in your current PATH")
-        @logger.error("or use the option --proxy_path")
+        @logger.error("or use the option --proxy-path")
         raise BuildError, "Failed to use persistent cache"
       end
     end
@@ -94,7 +101,7 @@ module Kameleon
       ## This function assumes that the cache directory has already been created by the engine
       ## Stopping first the previous proxy
       ## have to check if polipo is running
-      @logger.notice("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
+      @logger.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
       @polipo_process.stop unless @polipo_process.nil?
       command = ["#{@polipo_path}/polipo"]
       @polipo_cmd_options[:diskCacheRoot] = directory
@@ -229,8 +236,6 @@ module Kameleon
       end
       return nil
     end
-
-
 
   end
 

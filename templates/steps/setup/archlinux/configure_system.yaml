@@ -1,0 +1,20 @@
+# System configuration for Archlinux
+#
+# This will set the locals and the timezone
+
+- set_locales:
+  # uncomment the locales
+  - exec_in: |
+      test ! -f /etc/locale.gen || \
+        (echo $$locales | tr ' ' '\n' | xargs -I {} sed -i 's/^#{}/{}/' /etc/locale.gen)
+  # generate the locales
+  - exec_in: locale-gen
+  # save and apply
+  - exec_in: echo LANG=$$lang > /etc/locale.conf
+  - exec_in: export LANG=$$lang
+
+- set_timezone:
+  - exec_in: ln -s /usr/share/zoneinfo/$$timezone /etc/localtime
+
+- set_wheel_sudo:
+  - exec_in: echo "%wheel      ALL=(ALL) ALL" >> /etc/sudoers

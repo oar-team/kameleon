@@ -2,22 +2,20 @@
 - include: >
     python yum rpm initscripts passwd rsyslog vim-minimal dhclient chkconfig
     rootfiles policycoreutils fedora-release openssh-server net-tools nc
-    traceroute kernel syslinux-extlinux
-- mirrorlist_url: mirrors.kernel.org
+    traceroute kernel syslinux-extlinux systemd procps-ng console-setup
+    bash grep coreutils findutils sed cpio cyrus-sasl file-libs gawk xz
 
-- init_rootfs:
-  - exec_out: |
-      if [ ! -f "$$rootfs_archive" ]; then
-        mkdir -p $(dirname "$$rootfs_archive")
-      fi
+- mirrorlist_server: mirrors.kernel.org
+- mirror_distrib_path: fedora/releases/$${release}/Fedora/$$arch/os
+- mirrorlist_url_rsync: $$mirrorlist_server::$$mirror_distrib_path
 
 - download_live_os:
   - check_cmd_out: rsync
   - exec_out: |
-      if [ ! -f "$$rootfs_archive" ]; then
+      if [ ! -d "$$rootfs_download_path" ]; then
         if [ ! -f "./LiveOS/squashfs.img" ]; then
-          echo "Downloading LiveOS squashfs file system from mirrors.kernel.org..."
-          rsync -av $$mirrorlist_url::fedora/releases/$$release/Fedora/$$arch/os/LiveOS .
+          echo "Downloading LiveOS squashfs file system from $$mirrorlist_url_rsync ..."
+          rsync -avh --progress $$mirrorlist_url_rsync/LiveOS .
           echo "Download of squashfs image complete."
         else
           echo "Using cached LiveOS squashfs file system."
@@ -26,7 +24,7 @@
 
 - copy_ro_to_rw:
   - exec_out: |
-      if [ ! -f "$$rootfs_archive" ]; then
+      if [ ! -d "$$rootfs_download_path" ]; then
         mkdir -p squashfs readonlyfs partial
         mount -o loop ./LiveOS/squashfs.img squashfs ||  \
           fail Mount of LiveOS squashfs image failed! You mush have squashfs support available to mount image.
@@ -38,29 +36,82 @@
 
 - bootstrap_partial:
   - exec_out: |
-      if [ ! -f "$$rootfs_archive" ]; then
+      if [ ! -d "$$rootfs_download_path" ]; then
         mount -o bind /dev  partial/dev
         mount -o bind /dev/pts partial/dev/pts
         mount -t proc /proc  partial/proc
         mount -t sysfs /sys  partial/sys
         test -f partial/etc/mtab || cat /proc/mounts > partial/etc/mtab
         cp /etc/resolv.conf partial/etc/
-        rsync -av mirrors.kernel.org::fedora/releases/$${release}/Fedora/$$arch/os/Packages/r/rpm-[0-9]* \
-        mirrors.kernel.org::fedora/releases/$${release}/Fedora/$$arch/os/Packages/y/yum-[0-9]* partial
+        rsync -av $$mirrorlist_url_rsync/Packages/r/rpm-[0-9]* $$mirrorlist_url_rsync//Packages/y/yum-[0-9]* partial
         chroot partial rpm -ivh --nodeps --replacepkgs rpm-* yum-* > /dev/null
-        rsync -av mirrors.kernel.org::fedora/releases/$$release/Fedora/$$arch/os/Packages/f/fedora-release-$${release}* partial
+        rsync -av $$mirrorlist_url_rsync/Packages/f/fedora-release-$${release}* partial
         mkdir -p partial/run/install
-        chroot partial  rpm --root /run/install --nodeps -ivh fedora-release-*
-        false ;
+        chroot partial  rpm --nodeps -ivh fedora-release-*
         sed -i "s|\$basearch|$$arch|" partial/etc/yum.repos.d/*
+        chroot partial  rpm --root /run/install --nodeps -ivh fedora-release-*
+        sed -i "s|\$basearch|$$arch|" partial/run/install/etc/yum.repos.d/*
         chroot partial yum --installroot /run/install -y --nogpgcheck install $$include
       fi
+  - umount_out: partial/dev/pts
+  - umount_out: partial/dev
+  - umount_out: partial/proc
+  - umount_out: partial/sys
 
-- create_rootfs_archive:
+- create_rootfs:
   - exec_out: |
-      if [ ! -f "$$rootfs_archive" ]; then
-        tar zcf "$$rootfs_archive" -C partial/run/install --numeric-owner --one-file-system .
+      if [ ! -d "$$rootfs_download_path" ]; then
+        mkdir -p $$rootfs_download_path
+        rsync -aAX --delete --one-file-system \
+          --exclude '/.kameleon_timestamp' \
+          --exclude '/dev/*' \
+          --exclude '/proc/*' \
+          --exclude '/sys/*' \
+          partial/run/install/* $$rootfs_download_path
       fi
+
+- download_pxeboot_initrd:
+  - exec_out: |
+      wget -c -O $$rootfs_download_path/boot/initrd.img \
+        http://$$mirrorlist_server/$$mirror_distrib_path/images/pxeboot/initrd.img \
+           2>&1 | tail -f
+
+- download_pxeboot_vmlinuz:
+  - exec_out: |
+      wget -c -O $$rootfs_download_path/boot/vmlinuz \
+        http://$$mirrorlist_server/$$mirror_distrib_path/images/pxeboot/vmlinuz \
+          2>&1 | tail -f
+
+- enable_sshd_service:
+  - exec_out: |
+      chroot $$rootfs_download_path \
+        ln -sf \
+          '/usr/lib/systemd/system/sshd.service' \
+          '/etc/systemd/system/multi-user.target.wants/sshd.service'
+
+- enable_dhcp_service:
+  - exec_out: |
+      echo -n 'root:root' | chroot $$rootfs_download_path  chpasswd
+      chroot $$rootfs_download_path \
+        ln -sf \
+          '/usr/lib/systemd/system/network.service' \
+          '/etc/systemd/system/multi-user.target.wants/network.service'
+
+- enable_networking:
+  - write_out:
+    - $$rootfs_download_path/etc/sysconfig/network-scripts/ifcfg-eth0
+    - |
+      DEVICE=eth0
+      BOOTPROTO=dhcp
+      ONBOOT=yes
+      HOSTNAME=fedora-$${release}
+      NM_CONTROLLED=no
+      TYPE=Ethernet
+  - write_out:
+    - $$rootfs_download_path/etc/sysconfig/network
+    - |
+      NETWORKING=yes
+      HOSTNAME=fedora-$${release}
 
 - clean:
   - on_bootstrap_clean:
@@ -70,4 +121,3 @@
     - umount_out: partial/sys
     - umount_out: readonlyfs
     - umount_out: squashfs
-

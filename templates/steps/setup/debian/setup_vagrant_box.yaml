@@ -1,0 +1,52 @@
+- enable_passwordless_sudo:
+  - exec_in: |
+      sed -i.bkp -e \
+      's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' \
+      /etc/sudoers
+
+- set_root_password:
+  - exec_in: echo -n 'root:$$user_name' | chpasswd
+
+- install_vbox_guest_additions:
+  - exec_in: echo "VirtualBox Guest Additions..."
+  - exec_in: wget http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_4.3.8.iso
+  - exec_in: sudo mkdir /media/VBoxGuestAdditions
+  - exec_in: sudo mount -o loop,ro VBoxGuestAdditions_4.3.8.iso /media/VBoxGuestAdditions
+  - exec_in: sudo sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11
+  - exec_in: rm VBoxGuestAdditions_4.3.8.iso
+  - exec_in: sudo umount /media/VBoxGuestAdditions
+  - exec_in: sudo rmdir /media/VBoxGuestAdditions
+
+- install_puppet:
+  - exec_in: echo "Installing puppet..."
+  - exec_in: wget -q http://apt.puppetlabs.com/puppetlabs-release-stable.deb -O /tmp/puppetlabs-release-stable.deb
+  - exec_in: dpkg -i "/tmp/puppetlabs-release-stable.deb"
+  - exec_in: apt-get update
+  - exec_in: apt-get install puppet -y --force-yes
+  - exec_in: rm -f /tmp/puppetlabs-release-stable.deb
+
+- install_chef:
+  - exec_in: curl -L https://www.opscode.com/chef/install.sh -k | bash
+
+- copy_insecure_sshkey:
+  - exec_in: mkdir -p /home/$$user_name/.ssh/
+  - exec_in: chmod 0755 /home/$$user_name/.ssh/
+  - exec_in: echo -e  'y\n' | ssh-keygen -q -t dsa -f /home/$$user_name/.ssh/id_rsa -N ''
+  - write_in:
+    - /home/$$user_name/.ssh/authorized_keys
+    - |
+      ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== $$user_name insecure public key
+
+- config_ssh:
+  - exec_in: echo "UseDNS no" >> /etc/ssh/sshd_config
+  - write_in:
+    - /home/$$user_name/.ssh/config
+    - |
+      Host *
+      ForwardX11 no
+      StrictHostKeyChecking no
+      PasswordAuthentication no
+      AddressFamily inet
+  - exec_in: chmod 0600 /home/$$user_name/.ssh/config
+  - exec_in: rsync -ah /home/$$user_name/.ssh/ /root/.ssh/
+  - exec_in: chown "$$user_name:" -R /home/$$user_name

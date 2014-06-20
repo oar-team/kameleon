@@ -2,17 +2,17 @@
 
 - install_bootloader:
   - rescue:
-    - exec_out: LC_ALL=POSIX chroot $$mountdir bash -c "command -V extlinux 2> /dev/null"
+    - exec_out: LC_ALL=POSIX chroot $$rootfs bash -c "command -V extlinux 2> /dev/null"
     - breakpoint: "extlinux is missing"
-  - exec_out: cp -r $$mountdir/usr/lib/syslinux/bios/*.c32 $$mountdir/boot/syslinux/
-  - exec_out: LC_ALL=POSIX chroot $$mountdir extlinux --install /boot/syslinux 2>&1
+  - exec_out: cp -r $$rootfs/usr/lib/syslinux/bios/*.c32 $$rootfs/boot/syslinux/
+  - exec_out: LC_ALL=POSIX chroot $$rootfs extlinux --install /boot/syslinux 2>&1
   - exec_out: |
       MBR_PATH=
-      PATHS=("$$mountdir/usr/share/syslinux/mbr.bin"
-             "$$mountdir/usr/lib/bios/syslinux/mbr.bin"
-             "$$mountdir/usr/lib/syslinux/bios/mbr.bin"
-             "$$mountdir/usr/lib/extlinux/mbr.bin"
-             "$$mountdir/usr/lib/syslinux/mbr.bin")
+      PATHS=("$$rootfs/usr/share/syslinux/mbr.bin"
+             "$$rootfs/usr/lib/bios/syslinux/mbr.bin"
+             "$$rootfs/usr/lib/syslinux/bios/mbr.bin"
+             "$$rootfs/usr/lib/extlinux/mbr.bin"
+             "$$rootfs/usr/lib/syslinux/mbr.bin")
       for element in "${PATHS[@]}"
       do
         if [ -f "$element" ]; then
@@ -23,24 +23,24 @@
       if [ "$MBR_PATH" == "" ]; then
         fail "unable to locate the extlinux mbr"
       else
-        dd if="$MBR_PATH" of="$$device" bs=440  2>&1
+        dd if="$MBR_PATH" of="$$nbd_device" bs=440  2>&1
       fi
   - exec_out: echo " sync..." ; sync
   - write_out:
-    - $$mountdir/boot/syslinux/syslinux.cfg
+    - $$rootfs/boot/syslinux/syslinux.cfg
     - |
       default kameleon
       timeout 5
       
       label kameleon
-      kernel ../`basename $$mountdir/boot/vmlinuz*`
-      initrd ../`basename $$mountdir/boot/init*`
+      kernel ../`basename $$rootfs/boot/vmlinuz*`
+      initrd ../`basename $$rootfs/boot/init*`
       # the net.ifnames option is disable to get default net interface
       # names according to this page:
       # https://wiki.archlinux.org/index.php/Network_Configuration#Device_names
-      append root=UUID=`blkid -s UUID -o value $${device}p1` rw net.ifnames=0
+      append root=UUID=`blkid -s UUID -o value $${nbd_device}p1` rw net.ifnames=0
   - exec_out: echo " sync..." ; sync
-  - on_export_clean:
+  - on_bootstrap_clean:
     - exec_out: |
-        dir=$$mountdir/var/lib/os-prober/mount
+        dir=$$rootfs/var/lib/os-prober/mount
         test ! -d "$dir" || (umount -f -l "$dir" && rmdir "$dir")

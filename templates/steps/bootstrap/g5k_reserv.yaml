@@ -1,0 +1,70 @@
+- create_local_ssh_config_base:
+  - write_local:
+    - $$ssh_config_file
+    - |
+      Host *
+        UserKnownHostsFile /dev/null
+        StrictHostKeyChecking no
+        ConnectTimeout 2
+        LogLevel FATAL
+        ForwardAgent yes
+        Protocol 2
+        ControlPath /tmp/$${kameleon_short_uuid}%r@%h:%p
+        ControlMaster auto
+        ControlPersist yes
+        Compression yes
+      Host g5kaccess
+        User $$g5k_user
+        Hostname access.grid5000.fr
+      Host $$g5k_site
+        User $$g5k_user
+        ProxyCommand ssh -F $$ssh_config_file g5kaccess "nc -q 1 $$g5k_site %p"
+
+- deploy_image:
+  - exec_out: echo "Deploying image $$kenv with kadeploy"
+  - exec_out: sleep 1
+  - exec_out: echo "Submitting a job for deployment"
+    # We wait long to keep the job
+    # We submit a job only if there is no job already
+  - exec_out : |
+      oarstat | grep -q "$$kameleon_recipe_name" \
+          || oarsub -n "$$kameleon_recipe_name" -l walltime=$$walltime -t deploy "sleep 100000"
+  - exec_out : |
+      echo -n "Waiting for the reservation to be ready"
+      until $(oarstat -fu $$g5k_user | grep -q "state = Running")
+      do
+        echo -n .
+        sleep 2
+      done
+      sleep 1
+      echo " ~> OK"
+  - exec_out: echo "Getting the machine name"
+  - exec_out: export machine=`oarstat -fu $$g5k_user | grep assigned_hostnames | cut -d ' ' -f 7`
+  - exec_out: echo "Deploying environment $$kenv on $machine"
+  - exec_out: kadeploy3 -e $$kenv -m $machine -k
+  - pipe:
+      - exec_out: echo $machine
+      - exec_local: cat >$$kameleon_cwd/g5k_machine
+  - exec_out: sleep 1
+
+- create_out_ssh_config:
+  - write_out:
+    - $$out_cwd/ssh_config
+    - |
+      Host $$kameleon_recipe_name
+        User root
+        Hostname $machine
+        UserKnownHostsFile /dev/null
+        StrictHostKeyChecking no
+        ConnectTimeout 2
+        LogLevel FATAL
+        ForwardAgent yes
+        Protocol 2
+
+- append_ssh_node_config:
+  - append_local:
+    - $$ssh_config_file
+    - |
+      Host $$kameleon_recipe_name
+        User root
+        ProxyCommand ssh -F $$ssh_config_file $$g5k_site "nc -q 1 `cat $$kameleon_cwd/g5k_machine | awk '{print $NF}'` %p"

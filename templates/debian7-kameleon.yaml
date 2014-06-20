@@ -1,0 +1,43 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian 7 appliance with kameleon.
+#
+#==============================================================================
+
+---
+extend: debian7-desktop
+
+global:
+  # You can see the base template `debian7-desktop.yaml` to know the
+    # variables that you can override
+    arch: amd64
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+  - autologin
+  - install_software:
+    - packages: parted qemu-system debootstrap qemu-utils
+  - install_kameleon:
+    - deb_install:
+      - exec_in: wget http://kameleon.imag.fr/pkg/kameleon_2.1.0+20140612204940-1_amd64.deb -O kameleon_2.1.0_amd64.deb
+      - exec_in: dpkg -i kameleon_2.1.0_amd64.deb
+      - exec_in: rm -f kameleon_2.1.0_amd64.deb
+  - prepare_export:
+    - nullify_freespace:
+      - exec_in: rm -rf /tmp/* || true
+      - exec_in: rm -rf /var/tmp/* || true
+      - exec_in: |
+          echo "Nullify freespace..."
+          dd if=/dev/zero of=/bigemptyfile bs=1M 2>&1 >/dev/null || true
+          rm -f /bigemptyfile
+
+export:
+  - save_appliance:
+    - save_as_qcow2:
+      - exec_out: qemu-img convert -c -O qcow2 $$image_disk $KAMELEON_WORKDIR/$$kameleon_recipe_name.qcow2
+      - exec_out: echo "Saved qcow2 appliance to $KAMELEON_WORKDIR/$$kameleon_recipe_name.qcow2"
