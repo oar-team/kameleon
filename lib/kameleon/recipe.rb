@@ -539,6 +539,10 @@ module Kameleon
 
   class RecipeTemplate < Recipe
 
+    def relative_path()
+      @path.relative_path_from(Kameleon.env.templates_path)
+    end
+
     def get_answer(msg)
       while true
         @logger.progress_notice msg

@@ -1,0 +1,50 @@
+- save_as_vdi:
+  - exec_out: qemu-img convert -O vdi $$image_disk $$image_disk.vdi
+
+- register_vm:
+  - on_checkpoint: redo
+  - exec_out: echo "sync" ; sync
+  - exec_out: echo "Creating virtual machine"
+  - exec_out: VBoxManage createvm --name $$virtualbox_vmid --register
+  - exec_out: VBoxManage modifyvm $$virtualbox_vmid --ostype $$virtualbox_os_type
+  - exec_out: VBoxManage modifyvm $$virtualbox_vmid --memory $$virtualbox_memory_size
+  - exec_out: VBoxManage modifyvm $$virtualbox_vmid --acpi on
+  - exec_out: VBoxManage modifyvm $$virtualbox_vmid --nic1 nat
+  - exec_out: VBoxManage modifyvm $$virtualbox_vmid --nictype1 virtio
+  - exec_out: VBoxManage modifyvm $$virtualbox_vmid --natpf1 guestssh,tcp,,$$virtualbox_ssh_port,,22
+  - exec_out: VBoxManage storagectl $$virtualbox_vmid --name "IDE Controller" --add ide
+  - exec_out: |
+      VBoxManage storageattach $$virtualbox_vmid \
+        --storagectl "IDE Controller" \
+        --port 0 \
+        --device 0 \
+        --type hdd \
+        --medium $$image_disk.vdi
+  - on_export_clean:
+    - exec_out: VBoxManage unregistervm --delete $$virtualbox_vmid
+
+- start_vm:
+  - on_checkpoint: redo
+  - exec_out: echo "sync" ; sync
+  - exec_out: echo "+++ Starting virtualbox..."
+  - exec_out: VBoxManage startvm  $$virtualbox_vmid --type headless
+  - exec_out: |
+        echo -n "Waiting for SSH to become available"
+        until ssh-keyscan -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
+        do
+          echo -n "."
+          sleep 1
+        done
+        echo " ~> OK"
+
+- shutdown_vm:
+  - on_checkpoint: redo
+  - on_setup_clean:
+    - exec_in: echo "Removing insecure ssh key..."
+    - exec_in: |
+        grep -f /root/.ssh/kameleon_insecure_public_key -v /root/.ssh/authorized_keys \
+            | cat > /root/.ssh/authorized_keys
+        rm -f /root/.ssh/kameleon_insecure_public_key
+    - exec_out: echo "Shutting down virtualbox vm ($$virtualbox_vmid)"
+    - exec_out: VBoxManage controlvm $$virtualbox_vmid poweroff
+

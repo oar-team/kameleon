@@ -1,0 +1,70 @@
+# Initialize disk
+
+# this step create the appliance disk and initialize the
+# checkpoint mechanism with Qemu Network Block Device (NBD)
+
+- create_initial_image:
+  - check_cmd_out: qemu-img
+  - exec_out: |
+      rm -f $$image_disk
+      qemu-img create -f qcow2 $$image_disk $$image_size
+
+- load_nbd_module:
+  - on_checkpoint: redo
+  - on_bootstrap_init:
+    - exec_out: |
+        lsmod | grep nbd >/dev/null \
+        || modprobe nbd max_part=63 \
+        || fail failed to load nbd module into kernel
+
+- attach_nbd_device:
+  # this microstep must be skipped because it is already done by the
+  # checkpoint restore function
+  - on_checkpoint: redo
+  - check_cmd_out: qemu-nbd
+  - exec_out: echo Connecting $$image_disk to nbd device $$nbd_device
+  - exec_out: qemu-nbd -c $$nbd_device $$image_disk -n || fail nbd device $$nbd_device is unavailable
+
+- detach_nbd_device:
+  # this miscrostep must be done again ensure that the nbd device is
+  # detached
+  - on_checkpoint: redo
+  - on_bootstrap_clean:
+    - exec_out: echo "sync" ; sync
+    - exec_out: qemu-nbd -d $$nbd_device
+    - exec_out: "pgrep qemu-nbd | xargs -I {} kill -9 {} || true"
+
+- partition_disk:
+  - check_cmd_out: parted
+  - exec_out: echo "Partitioning disk..."
+  - exec_out: parted --script $$nbd_device mklabel msdos
+  - exec_out: parted --script $$nbd_device mkpart primary 0% 100%
+  - exec_out: parted --script $$nbd_device set 1 boot on
+  - exec_out: echo Creating root partition...
+  - exec_out: mkfs.$$filesystem_type -q $${nbd_device}p1 || fail cannot create / ext4
+
+- mount_mountdir:
+  - on_checkpoint: redo
+  - exec_out: mkdir -p $$rootfs
+  - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p1 $$rootfs || fail cannot mount /"
+  - on_bootstrap_clean:
+    - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
+
+- copy_rootfs:
+  - check_cmd_out: rsync
+  - exec_out: echo "Copying rootfs to $$rootfs..."
+  - exec_out: rsync -aAX --exclude '/.kameleon_timestamp' $$rootfs_download_path/* $$rootfs
+  - exec_out: echo "sync..." ; sync
+
+- create_fstab:
+  - write_out:
+    - $$rootfs/etc/fstab
+    - |
+      # /etc/fstab: static file system information.
+      #
+      # Use 'blkid' to print the universally unique identifier for a
+      # nbd_device; this may be used with UUID= as a more robust way to name nbd_devices
+      # that works even if disks are added and removed. See fstab(5).
+      #
+      # <file system> <mount point>   <type>  <options>       <dump>  <pass>
+      UUID=`blkid -s UUID -o value $${nbd_device}p1` /               $$filesystem_type    errors=remount-ro  0       1
