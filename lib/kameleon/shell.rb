@@ -18,6 +18,7 @@ module Kameleon
       @context_name = context_name
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
+      @kwargs = kwargs
       @bashrc_file = "kameleon_#{@context_name}_bash_rc"
       @bash_history_file = "kameleon_#{@context_name}_bash_history"
       @bash_env_file = "kameleon_#{@context_name}_bash_env"
@@ -93,10 +94,15 @@ module Kameleon
       if File.file?(@default_bashrc_file)
         tpl = ERB.new(File.read(@default_bashrc_file))
         bashrc_content = tpl.result(binding)
-        # if @cache.activated? then
-        #   tpl = ERB.new(File.read(@cache.polipo_env))
-        #   bashrc_content << "\n" + ERB.new(File.read(@cache.polipo_env)).result(binding)
-        # end
+        if @cache.activated? then
+          proxy_address = @kwargs.fetch(:proxy_cache)
+          if proxy_address.nil? then
+            @logger.warn("Variable 'proxy_cache' not defined for this context, persistent cache will not be generated")
+          else
+            tpl = ERB.new(File.read(@cache.polipo_env))
+            bashrc_content << "\n" + ERB.new(File.read(@cache.polipo_env)).result(binding)
+          end
+        end
       end
       bashrc = Shellwords.escape(bashrc_content)
       if @shell_workdir

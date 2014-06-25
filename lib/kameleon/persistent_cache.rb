@@ -14,7 +14,7 @@ module Kameleon
     attr_writer :polipo_path
     attr_reader :name
     attr_writer :cache_path
-    attr_accessor :mode,
+    attr_accessor :mode
     attr_accessor :name
     attr_accessor :recipe_files # have to check those.
 
@@ -249,5 +249,3 @@ module Kameleon
   end
 
 end
-
-

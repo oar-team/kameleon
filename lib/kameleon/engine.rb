@@ -41,6 +41,17 @@ module Kameleon
         @cache.cache_path = @options[:from_cache]
         @cache.recipe_files = @recipe.files # I'm passing the Pathname objects
         @cache.recipe_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
+
+        if @recipe.global["in_context"]["proxy_cache"].nil? then
+          @logger.error("Missing varible for in context 'proxy_cache' when using the option --cache")
+          exit(1)
+        end
+
+        if @recipe.global["out_context"]["proxy_cache"].nil? then
+          @logger.error("Missing varible for out context 'proxy_cache' when using the option --cache")
+          exit(1)
+        end
+
         #saving_steps_files
       end
 
@@ -52,6 +63,7 @@ module Kameleon
         raise BuildError, "Failed to create working directory #{@cwd}"
       end
 
+
       @logger.notice("Building local context [local]")
       @local_context = Context.new("local", "bash", @cwd, "", @cwd)
       @logger.notice("Building external context [out]")
@@ -59,7 +71,8 @@ module Kameleon
                                  @recipe.global["out_context"]["cmd"],
                                  @recipe.global["out_context"]["workdir"],
                                  @recipe.global["out_context"]["exec_prefix"],
-                                 @cwd)
+                                 @cwd,
+                                 :proxy_cache => @recipe.global["out_context"]["proxy_cache"])
 
 
 
@@ -68,7 +81,8 @@ module Kameleon
                                 @recipe.global["in_context"]["cmd"],
                                 @recipe.global["in_context"]["workdir"],
                                 @recipe.global["in_context"]["exec_prefix"],
-                                @cwd)
+                                @cwd,
+                                :proxy_cache => @recipe.global["in_context"]["proxy_cache"])
       @cache.start if @cache
 
     end

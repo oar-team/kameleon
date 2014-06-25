@@ -6,14 +6,14 @@ module Kameleon
     attr_accessor :shell
     attr_accessor :name
 
-    def initialize(name, cmd, workdir, exec_prefix, local_workdir)
+    def initialize(name, cmd, workdir, exec_prefix, local_workdir, kwargs = {})
       @name = name.downcase
       @logger = Log4r::Logger.new("kameleon::[#{@name}_ctx]")
       @cmd = cmd
       @workdir = workdir
       @exec_prefix = exec_prefix
       @local_workdir = local_workdir
-      @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir)
+      @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir, :proxy_cache => kwargs[:proxy_cache])
       @logger.debug("Initialize new ctx (#{name})")
       @log_on_progress = false
 
@@ -71,7 +71,6 @@ module Kameleon
         @logger.info("Redirecting pipe into cache")
         tmp = @cache.get_cache_cmd(cmd)
       else
-
         tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
         @logger.debug("Running piped commands")
         @logger.debug("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
