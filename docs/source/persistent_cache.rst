@@ -18,7 +18,26 @@ under a debian distribution you can install it using the package manager::
    sudo apt-get install polipo
 
 You can as well build it from sources and then specify the path of the
-generated binary using the option ``--proxy_path``. To use, you just have to
+generated binary using the option ``--proxy_path``.
+Before using it you have to declare the variable proxy_cache, for example
+
+.. code-block:: yaml
+
+    out_context:
+      cmd: bash
+      workdir: $$kameleon_cwd
+      proxy_cache: 127.0.0.1
+
+    # Shell session that allows us to connect to the building machine in order to
+    # configure it and setup additional programs
+    ssh_config_file: $$kameleon_cwd/ssh_config
+    in_context:
+      cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
+      workdir: /
+      proxy_cache: 10.0.2.2
+
+
+To use, you just have to
 add the option ``--cache`` as an argument of the build command.
 For example::
 

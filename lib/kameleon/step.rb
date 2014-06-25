@@ -1,12 +1,15 @@
 module Kameleon
 
   class Command
+
     attr_accessor :string_cmd
     attr_accessor :microstep_name
+    attr_accessor :identifier
 
     def initialize(yaml_cmd, microstep_name)
       @string_cmd = YAML.dump(yaml_cmd).gsub("---", "").strip
       @microstep_name = microstep_name
+      @identifier = nil
     end
 
     def resolve!
@@ -122,6 +125,11 @@ module Kameleon
       commands_str = @commands.map { |cmd| cmd.string_cmd.to_s }
       content_id = commands_str.join(' ') + salt
       @identifier = "#{ Digest::SHA1.hexdigest content_id }"[0..11]
+      @commands.each do |cmd|
+        map_id = cmd.string_cmd.to_s+@identifier
+        cmd.identifier = "#{ Digest::SHA1.hexdigest map_id }"[0..11]
+      end
+      @identifier
     end
 
     def to_array
@@ -216,6 +224,7 @@ module Kameleon
             "identifier" => microstep.identifier.to_s,
             "cmds" => microstep.to_array
           }
+
           section_array.push({ microstep.slug => hash })
         end
       end

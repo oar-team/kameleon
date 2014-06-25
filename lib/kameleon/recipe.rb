@@ -13,6 +13,8 @@ module Kameleon
     attr_accessor :checkpoint
     attr_accessor :checkpoint_path
     attr_accessor :metainfo
+    attr_accessor :files
+
 
     def initialize(path, kwargs = {})
       @logger = Log4r::Logger.new("kameleon::[kameleon]")

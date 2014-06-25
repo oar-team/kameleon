@@ -6,14 +6,14 @@ module Kameleon
     attr_accessor :shell
     attr_accessor :name
 
-    def initialize(name, cmd, workdir, exec_prefix, local_workdir)
+    def initialize(name, cmd, workdir, exec_prefix, local_workdir, kwargs = {})
       @name = name.downcase
       @logger = Log4r::Logger.new("kameleon::[#{@name}_ctx]")
       @cmd = cmd
       @workdir = workdir
       @exec_prefix = exec_prefix
       @local_workdir = local_workdir
-      @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir)
+      @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir, :proxy_cache => kwargs[:proxy_cache])
       @logger.debug("Initialize new ctx (#{name})")
       @log_on_progress = false
 
@@ -67,11 +67,21 @@ module Kameleon
     end
 
     def pipe(cmd, other_cmd, other_ctx)
-      tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
-      @logger.debug("Running piped commands")
-      @logger.debug("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
-      execute(cmd, :stdout => tmp)
-      tmp.close
+      if @cache.mode == :from then
+        @logger.info("Redirecting pipe into cache")
+        tmp = @cache.get_cache_cmd(cmd)
+      else
+        tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
+        @logger.debug("Running piped commands")
+        @logger.debug("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
+        execute(cmd, :stdout => tmp)
+        tmp.close
+      end
+      ## Saving one side of the pipe into the cache
+      if @cache.mode == :build then
+        @cache.cache_cmd(cmd,tmp.path)
+      end
+
       @logger.debug("Forwarding #{tmp.path} to STDIN of #{other_ctx.name}_ctx")
       dest_pipe_path = "${KAMELEON_WORKDIR}/pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
       other_ctx.send_file(tmp.path, dest_pipe_path)
@@ -82,7 +92,6 @@ module Kameleon
     def lazyload_shell()
       unless @shell.started?
         @shell.restart
-        # Start the shell process
         execute("echo The '#{name}_context' has been initialized", :log_level => "info")
       end
     rescue

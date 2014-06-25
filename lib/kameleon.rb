@@ -13,11 +13,6 @@ require 'table_print'
 require 'diffy'
 
 module Kameleon
-  # add a PROGRESS and NOTICE level
-  Log4r::Configurator.custom_levels(:DEBUG, :INFO, :NOTICE,
-                                    :PROGRESS, :WARN, :ERROR,
-                                    :FATAL)
-
   class << self
     attr_writer :logger
     attr_writer :env

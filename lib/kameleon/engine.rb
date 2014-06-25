@@ -1,7 +1,6 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
 require 'kameleon/persistent_cache'
-
 module Kameleon
 
   class Engine
@@ -18,10 +17,10 @@ module Kameleon
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
 
+
       build_recipe = load_build_recipe
       # restore previous build uuid
       unless build_recipe.nil?
-        # binding.pry
         %w(kameleon_uuid kameleon_short_uuid).each do |key|
           @recipe.global[key] = build_recipe["global"][key]
         end
@@ -35,11 +34,24 @@ module Kameleon
 
       if @options[:cache] || @options[:from_cache] then
         @cache = Kameleon::Persistent_cache.instance
-        @cache.activated = true
         @cache.cwd = @cwd
         @cache.polipo_path = @options[:proxy_path]
-        @cache.check_polipo_binary
         @cache.name = @recipe.name
+        @cache.mode = @options[:cache] ? :build : :from
+        @cache.cache_path = @options[:from_cache]
+        @cache.recipe_files = @recipe.files # I'm passing the Pathname objects
+        @cache.recipe_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
+
+        if @recipe.global["in_context"]["proxy_cache"].nil? then
+          @logger.error("Missing varible for in context 'proxy_cache' when using the option --cache")
+          exit(1)
+        end
+
+        if @recipe.global["out_context"]["proxy_cache"].nil? then
+          @logger.error("Missing varible for out context 'proxy_cache' when using the option --cache")
+          exit(1)
+        end
+
         #saving_steps_files
       end
 
@@ -50,6 +62,8 @@ module Kameleon
       rescue
         raise BuildError, "Failed to create working directory #{@cwd}"
       end
+
+
       @logger.notice("Building local context [local]")
       @local_context = Context.new("local", "bash", @cwd, "", @cwd)
       @logger.notice("Building external context [out]")
@@ -57,20 +71,20 @@ module Kameleon
                                  @recipe.global["out_context"]["cmd"],
                                  @recipe.global["out_context"]["workdir"],
                                  @recipe.global["out_context"]["exec_prefix"],
-                                 @cwd)
+                                 @cwd,
+                                 :proxy_cache => @recipe.global["out_context"]["proxy_cache"])
+
+
+
       @logger.notice("Building internal context [in]")
       @in_context = Context.new("in",
                                 @recipe.global["in_context"]["cmd"],
                                 @recipe.global["in_context"]["workdir"],
                                 @recipe.global["in_context"]["exec_prefix"],
-                                @cwd)
-      if @options[:from_cache] then
-        begin
-          @cache.unpack(@options[:from_cache])
-        rescue
-          raise BuildError, "Failed to untar the persistent cache file"
-        end
-      end
+                                @cwd,
+                                :proxy_cache => @recipe.global["in_context"]["proxy_cache"])
+      @cache.start if @cache
+
     end
 
     def saving_steps_files
@@ -127,7 +141,7 @@ module Kameleon
 
         if @cache then
           # the following function start a polipo web proxy and stops a previous run
-          dir_cache = @cache.create_cache_directory(macrostep.name) #unless @options[:from_cache]
+          dir_cache = @cache.create_cache_directory(macrostep.name)
           @cache.start_web_proxy_in(dir_cache)
         end
 
@@ -160,10 +174,8 @@ module Kameleon
       end
       @cleaned_sections.push(section.name)
 
-      if @cache then
-        @cache.stop_web_proxy
-        @cache.pack unless @options[:from_cache]
-      end
+
+      @cache.stop if @cache
 
     end
 
@@ -203,6 +215,7 @@ module Kameleon
                "exec_local" => @local_context,}
         first_context = map[first_cmd.key]
         second_context = map[second_cmd.key]
+        @cache.cache_cmd_id(cmd.identifier) if @cache
         first_context.pipe(first_cmd.value, second_cmd.value, second_context)
       when "rescue"
         first_cmd, second_cmd = cmd.value
@@ -333,6 +346,7 @@ module Kameleon
         ["bootstrap", "setup", "export"].each do |section|
           do_steps(section)
         end
+        @cache.stop if @cache
         clean
       rescue Exception => e
         if e.is_a?(AbortError)
@@ -350,7 +364,7 @@ module Kameleon
         @out_context.close!
         @in_context.close!
         @local_context.close!
-        raise
+        raise e
       end
     end
 

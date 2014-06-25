@@ -119,7 +119,13 @@ module Kameleon
                   :default => nil,
                   :desc => "Full path of the proxy binary to use for the persistent cache."
 
-    def build(recipe_path)
+    def build(recipe_path=nil)
+      if recipe_path== nil then
+        logger.notice("Using the cached recipe")
+        @cache = Kameleon::Persistent_cache.instance
+        @cache.cache_path = options[:from_cache]
+        recipe_path =  @cache.get_recipe
+      end
       clean(recipe_path) if options[:clean]
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       logger.notice("Starting build recipe '#{recipe_path}'")
