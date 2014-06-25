@@ -29,7 +29,7 @@ module Kameleon
       @polipo_port = find_unused_port
 
       @polipo_cmd_options = {:diskCacheRoot => "",
-                            :idleTime => "5",
+                            :idleTime => "1",
                             :chunkHighMark => "425165824",
                             :proxyPort => @polipo_port,
                             :relaxTransparency =>"true"
@@ -170,22 +170,29 @@ module Kameleon
 
         @recipe_files.each do |file|
           ## Getting the recipe path
-          recipe_path = nil
+          steps_path = nil
           file.ascend do |path|
-            if path.to_s.include?("recipe") then
-              recipe_path = path
+            if path.to_s.include?("steps") then
+              steps_path = path
             end
           end
-          recipe_dir = file.relative_path_from(recipe_path).dirname.to_s
-          FileUtils.mkdir_p @cached_recipe_dir + "/" + recipe_dir
-          FileUtils.cp file, @cached_recipe_dir + "/"+ recipe_dir
+
+          if steps_path.nil? then
+            @logger.notice("Saving recipe")
+            FileUtils.cp file, @cached_recipe_dir
+          else
+            step_dir = file.relative_path_from(steps_path).dirname.to_s
+            FileUtils.mkdir_p @cached_recipe_dir + "/steps/" + step_dir
+            FileUtils.cp file, @cached_recipe_dir + "/steps/" + step_dir
+          end
+
         end
 
-        ## Saving metadata information
-        @logger.notice("Caching recipe")
-        File.open("#{@cached_recipe_dir}/header",'w+') do |f|
-          f.puts({:name => @name}.to_yaml)
-        end
+        # ## Saving metadata information
+        # @logger.notice("Caching recipe")
+        # File.open("#{@cached_recipe_dir}/header",'w+') do |f|
+        #   f.puts({:name => @name}.to_yaml)
+        # end
 
         pack
 
@@ -206,18 +213,18 @@ module Kameleon
         @cmd_cached = YAML.load(File.read("#{@cache_dir}/cache_cmd_index"))
       end
       @activated = true
-      @cached_recipe_dir = @cache_dir + "/recipe"
+      @cached_recipe_dir = @cache_dir
       FileUtils.mkdir_p @cached_recipe_dir
     end
 
     def get_recipe()
       cached_recipe=Dir.mktmpdir("cache")
-      execute("tar","-xf #{@cache_path} -C #{cached_recipe} ./recipe")
+      puts "cache path : #{@cache_path}"
+      execute("tar","-xf #{@cache_path} -C #{cached_recipe} .")
       @logger.notice("Getting cached recipe")
       # This will look for the name of the recipe
-      recipe_header = YAML::load(File.read("#{cached_recipe}/recipe/header"))
-      @name = recipe_header[:name]
-      return "#{cached_recipe}/recipe/#{@name}.yaml"
+      recipe_file = Dir["#{cached_recipe.to_s}/*.yaml"].first
+      return recipe_file
     end
 
     def execute(cmd,args,dir=nil)

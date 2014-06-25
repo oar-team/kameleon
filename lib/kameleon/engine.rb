@@ -17,13 +17,14 @@ module Kameleon
       @cleaned_sections = []
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
-      #if @options[:recipe_from_cache] then
-        #@recipe = load_build_recipe
-      #else
-        # @recipe = recipe
-        # @cwd = @recipe.global["kameleon_cwd"]
-        # @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
-      #end
+
+      if @options[:recipe_from_cache] then
+        @recipe = load_build_recipe
+      else
+        @recipe = recipe
+        @cwd = @recipe.global["kameleon_cwd"]
+        @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
+      end
 
 
       #binding.pry
@@ -179,8 +180,6 @@ module Kameleon
         end
       end
       @cleaned_sections.push(section.name)
-
-      @cache.stop if @cache
 
     end
 
@@ -352,6 +351,7 @@ module Kameleon
         ["bootstrap", "setup", "export"].each do |section|
           do_steps(section)
         end
+        @cache.stop if @cache
         clean
       rescue Exception => e
         if e.is_a?(AbortError)

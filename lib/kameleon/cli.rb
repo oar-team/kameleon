@@ -124,9 +124,11 @@ module Kameleon
         @cache.cache_path = options[:from_cache]
         recipe_path =  @cache.get_recipe
         recipe_name = @cache.name
+        puts "recipe file :#{recipe_path}"
         #binding.pry
       else
-      clean(recipe_path) if options[:clean]
+        clean(recipe_path) if options[:clean]
+      end
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       logger.notice("Starting build recipe '#{recipe_path}'")
       start_time = Time.now.to_i
@@ -138,7 +140,6 @@ module Kameleon
       logger.notice("Build directory : #{engine.cwd}")
       logger.notice("Build recipe file : #{engine.build_recipe_path}")
       logger.notice("Log file : #{Kameleon.env.log_file}")
-      end
     end
 
     desc "checkpoints [RECIPE_PATH]", "Lists all availables checkpoints"

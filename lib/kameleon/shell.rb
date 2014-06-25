@@ -93,10 +93,10 @@ module Kameleon
       if File.file?(@default_bashrc_file)
         tpl = ERB.new(File.read(@default_bashrc_file))
         bashrc_content = tpl.result(binding)
-        if @cache.activated? then
-          tpl = ERB.new(File.read(@cache.polipo_env))
-          bashrc_content << "\n" + ERB.new(File.read(@cache.polipo_env)).result(binding)
-        end
+        # if @cache.activated? then
+        #   tpl = ERB.new(File.read(@cache.polipo_env))
+        #   bashrc_content << "\n" + ERB.new(File.read(@cache.polipo_env)).result(binding)
+        # end
       end
       bashrc = Shellwords.escape(bashrc_content)
       if @shell_workdir
