@@ -2,7 +2,6 @@ require 'kameleon/engine'
 require 'kameleon/recipe'
 require 'kameleon/utils'
 
-require 'pry'
 module Kameleon
   class CLI < Thor
 
@@ -119,16 +118,11 @@ module Kameleon
     def build(recipe_path=nil)
       if recipe_path== nil then
         logger.notice("Using the cached recipe")
-        #options.merge!({:recipe_from_cache => true})
         @cache = Kameleon::Persistent_cache.instance
         @cache.cache_path = options[:from_cache]
         recipe_path =  @cache.get_recipe
-        recipe_name = @cache.name
-        puts "recipe file :#{recipe_path}"
-        #binding.pry
-      else
-        clean(recipe_path) if options[:clean]
       end
+      clean(recipe_path) if options[:clean]
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       logger.notice("Starting build recipe '#{recipe_path}'")
       start_time = Time.now.to_i

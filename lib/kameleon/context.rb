@@ -67,7 +67,6 @@ module Kameleon
     end
 
     def pipe(cmd, other_cmd, other_ctx)
-
       if @cache.mode == :from then
         @logger.info("Redirecting pipe into cache")
         tmp = @cache.get_cache_cmd(cmd)
@@ -94,7 +93,6 @@ module Kameleon
     def lazyload_shell()
       unless @shell.started?
         @shell.restart
-        # Start the shell process
         execute("echo The '#{name}_context' has been initialized", :log_level => "info")
       end
     rescue

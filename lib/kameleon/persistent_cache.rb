@@ -14,7 +14,9 @@ module Kameleon
     attr_writer :polipo_path
     attr_reader :name
     attr_writer :cache_path
-    attr_accessor :mode, :name, :recipe_files # have to check those.
+    attr_accessor :mode,
+    attr_accessor :name
+    attr_accessor :recipe_files # have to check those.
 
     def initialize()
       @logger = Log4r::Logger.new("kameleon::[kameleon]")
@@ -247,3 +249,5 @@ module Kameleon
   end
 
 end
+
+

@@ -1,7 +1,6 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
 require 'kameleon/persistent_cache'
-require 'pry'
 module Kameleon
 
   class Engine
@@ -12,26 +11,16 @@ module Kameleon
 
     def initialize(recipe, options)
       @options = options
-      @logger = Log4r::Logger.new("kameleon::[engine]")
+      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @recipe = recipe
       @cleaned_sections = []
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
 
-      if @options[:recipe_from_cache] then
-        @recipe = load_build_recipe
-      else
-        @recipe = recipe
-        @cwd = @recipe.global["kameleon_cwd"]
-        @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
-      end
 
-
-      #binding.pry
       build_recipe = load_build_recipe
       # restore previous build uuid
       unless build_recipe.nil?
-
         %w(kameleon_uuid kameleon_short_uuid).each do |key|
           @recipe.global[key] = build_recipe["global"][key]
         end
@@ -41,9 +30,8 @@ module Kameleon
       # Check if the recipe have checkpoint entry
       @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
 
-      @recipe.resolve! #unless @options[:recipe_from_cache]
+      @recipe.resolve!
 
-      #binding.pry
       if @options[:cache] || @options[:from_cache] then
         @cache = Kameleon::Persistent_cache.instance
         @cache.cwd = @cwd
@@ -55,8 +43,6 @@ module Kameleon
         @cache.recipe_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
         #saving_steps_files
       end
-      @cache.start if @cache
-
 
       @in_context = nil
       begin
@@ -83,13 +69,7 @@ module Kameleon
                                 @recipe.global["in_context"]["workdir"],
                                 @recipe.global["in_context"]["exec_prefix"],
                                 @cwd)
-      if @options[:from_cache] then
-        begin
-          @cache.unpack(@options[:from_cache])
-        rescue
-          raise BuildError, "Failed to untar the persistent cache file"
-        end
-      end
+      @cache.start if @cache
 
     end
 
@@ -125,7 +105,6 @@ module Kameleon
       cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']},
                                   "checkpoint")
       safe_exec_cmd(cmd, :stdout => list)
-      #binding.pry
       return list.split(/\r?\n/)
     end
 
@@ -181,6 +160,9 @@ module Kameleon
       end
       @cleaned_sections.push(section.name)
 
+
+      @cache.stop if @cache
+
     end
 
     def safe_exec_cmd(cmd, kwargs = {})
@@ -214,14 +196,13 @@ module Kameleon
             fail ExecError
           end
         end
-
-          map = {"exec_in" => @in_context,
-                 "exec_out" => @out_context,
-                 "exec_local" => @local_context,}
-          first_context = map[first_cmd.key]
-          second_context = map[second_cmd.key]
-          @cache.cache_cmd_id(cmd.identifier) if @cache
-          first_context.pipe(first_cmd.value, second_cmd.value, second_context)
+        map = {"exec_in" => @in_context,
+               "exec_out" => @out_context,
+               "exec_local" => @local_context,}
+        first_context = map[first_cmd.key]
+        second_context = map[second_cmd.key]
+        @cache.cache_cmd_id(cmd.identifier) if @cache
+        first_context.pipe(first_cmd.value, second_cmd.value, second_context)
       when "rescue"
         first_cmd, second_cmd = cmd.value
         begin
@@ -369,7 +350,7 @@ module Kameleon
         @out_context.close!
         @in_context.close!
         @local_context.close!
-        raise
+        raise e
       end
     end
 
