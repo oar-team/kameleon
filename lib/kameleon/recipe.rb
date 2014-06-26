@@ -562,32 +562,6 @@ module Kameleon
       end
     end
 
-    def safe_copy_file(src, dst, force)
-      if File.exists? dst
-        diff = Diffy::Diff.new(dst.to_s, src.to_s, :source => "files").to_s
-        unless diff.chomp.empty?
-          @logger.notice("conflict #{dst}")
-          @logger.notice("Differences between the old and the new :")
-          puts Diffy::Diff.new(dst.to_s, src.to_s,
-                               :source => "files",
-                               :context => 1,
-                               :include_diff_info => true).to_s
-          msg = "Overwrite #{dst}? [Y]es/[n]o/[a]bort : "
-          if force || get_answer(msg)
-            FileUtils.copy_file(src, dst)
-          end
-        else
-          @logger.notice("identical #{dst}")
-        end
-      else
-        unless File.dirname(dst).eql? "/"
-          FileUtils.mkdir_p File.dirname(dst)
-        end
-        @logger.notice("create #{dst}")
-        FileUtils.copy_file(src, dst)
-      end
-    end
-
     def copy_extended_recipe(recipe_name, force)
       Dir::mktmpdir do |tmp_dir|
         recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
@@ -603,14 +577,22 @@ module Kameleon
       end
     end
 
-    def copy_template(force)
+    def copy_template(force, relative_dir=nil, dest_dir=nil)
       ## copying steps
       files2copy = @base_recipes_files + @files
-      files2copy.each do |path|
-        relative_path = path.relative_path_from(Kameleon.env.templates_path)
-        dst = File.join(Kameleon.env.workspace, relative_path)
-        safe_copy_file(path, dst, force)
-      end
+      Kameleon::Utils.copy_template(force,
+                                    Kameleon.env.templates_path,
+                                    Kameleon.env.workspace, files2copy,@logger)
+
+    #    relative_dir = Kameleon.env.templates_path if relative_dir.nil?
+      #   dest_dir = Kameleon.env.workspace if dest_dir.nil?
+    #   files2copy = @base_recipes_files + @files
+    #   files2copy.each do |path|
+    #     relative_path = path.relative_path_from(relative_dir)
+    #     dst = File.join(dest_dir,relative_path)
+    #     safe_copy_file(path, dst, force)
+    #   end
+    # end
     end
   end
 end

@@ -44,12 +44,13 @@ global:
   out_context:
     cmd: bash
     workdir: $$kameleon_cwd
-
+    proxy_cache: 127.0.0.1
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
   in_context:
     cmd: USER=root HOME=/root LC_ALL=POSIX chroot $$kameleon_cwd/rootfs bash
     workdir: /root/kameleon_workdir
+    proxy_cache: 127.0.0.1
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:

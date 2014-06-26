@@ -17,6 +17,7 @@ module Kameleon
     attr_accessor :mode
     attr_accessor :name
     attr_accessor :recipe_files # have to check those.
+    attr_accessor :recipe_path
 
     def initialize()
       @logger = Log4r::Logger.new("kameleon::[kameleon]")
@@ -48,7 +49,8 @@ module Kameleon
       @cache_path = ""
       @current_cmd_id = nil
       @current_step_dir = nil
-      @recipe_files = []
+      @recipe_file = nil
+      @steps_files = []
       @cached_recipe_dir = nil
     end
 
@@ -170,31 +172,16 @@ module Kameleon
           f.puts(@cmd_cached.to_yaml)
         end
 
-        @recipe_files.each do |file|
-          ## Getting the recipe path
-          steps_path = nil
-          file.ascend do |path|
-            if path.to_s.include?("steps") then
-              steps_path = path
-            end
-          end
+        # require 'pry'; binding.pry
+        recipe_dir = Pathname.new(common_prefix(@recipe_files))
+        all_files = @recipe_files.push(@recipe_path)
+        Kameleon::Utils.copy_template(true, recipe_dir, @cache_dir, all_files, @logger)
 
-          if steps_path.nil? then
-            @logger.notice("Saving recipe")
-            FileUtils.cp file, @cached_recipe_dir
-          else
-            step_dir = file.relative_path_from(steps_path).dirname.to_s
-            FileUtils.mkdir_p @cached_recipe_dir + "/steps/" + step_dir
-            FileUtils.cp file, @cached_recipe_dir + "/steps/" + step_dir
-          end
-
+        ## Saving metadata information
+        @logger.notice("Caching recipe")
+        File.open("#{@cached_recipe_dir}/header",'w+') do |f|
+          f.puts({:recipe_path => @recipe_path.to_s}.to_yaml)
         end
-
-        # ## Saving metadata information
-        # @logger.notice("Caching recipe")
-        # File.open("#{@cached_recipe_dir}/header",'w+') do |f|
-        #   f.puts({:name => @name}.to_yaml)
-        # end
 
         pack
 
@@ -224,8 +211,8 @@ module Kameleon
       puts "cache path : #{@cache_path}"
       execute("tar","-xf #{@cache_path} -C #{cached_recipe} .")
       @logger.notice("Getting cached recipe")
-      # This will look for the name of the recipe
-      recipe_file = Dir["#{cached_recipe.to_s}/*.yaml"].first
+      recipe_header = YAML::load(File.read("#{cached_recipe}/header"))
+      recipe_file = recipe_header[:recipe_path]
       return recipe_file
     end
 
@@ -244,6 +231,17 @@ module Kameleon
         return path if File.executable? exe
       end
       return nil
+    end
+
+    def common_prefix(paths)
+      return '' if paths.empty?
+      return paths.first.split('/').slice(0...-1).join('/') if paths.length <= 1
+      arr = paths.sort
+      first = arr.first.to_s.split('/')
+      last = arr.last.to_s.split('/')
+      i = 0
+      i += 1 while first[i] == last[i] && i <= first.length
+      first.slice(0, i).join('/')
     end
 
   end

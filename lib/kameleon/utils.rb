@@ -43,5 +43,43 @@ module Kameleon
     rescue
     end
 
+    def self.copy_template(force, relative_dir, dest_dir, files2copy, logger = nil)
+
+      files2copy.each do |path|
+        relative_path = path.relative_path_from(relative_dir)
+        dst = File.join(dest_dir,relative_path)
+        safe_copy_file(path, dst, force, logger)
+      end
+    end
+
+
+    def self.safe_copy_file(src, dst, force, logger = nil)
+      if File.exists? dst
+        diff = Diffy::Diff.new(dst.to_s, src.to_s, :source => "files").to_s
+        unless diff.chomp.empty?
+          logger.notice("conflict #{dst}")
+          logger.notice("Differences between the old and the new :")
+          puts Diffy::Diff.new(dst.to_s, src.to_s,
+                               :source => "files",
+                               :context => 1,
+                               :include_diff_info => true).to_s
+          msg = "Overwrite #{dst}? [Y]es/[n]o/[a]bort : "
+          if force || get_answer(msg)
+            FileUtils.copy_file(src, dst)
+          end
+        else
+          logger.notice("identical #{dst}")
+        end
+      else
+        unless File.dirname(dst).eql? "/"
+          FileUtils.mkdir_p File.dirname(dst)
+        end
+        logger.notice("create #{dst}")
+        FileUtils.copy_file(src, dst)
+      end
+    end
+
+
+
   end
 end
