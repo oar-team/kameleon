@@ -5,7 +5,7 @@
   - check_cmd_out: debootstrap
   - exec_out: mkdir -p $$rootfs_download_path
   - exec_out: |
-        if [ $$enable_cache = true ]; then
+        if [ $$enable_cache = true ] && [ $$persistent_cache != true ]; then
             [[ ! -f "$$rootfs_download_path/.kameleon_timestamp"  ]] || CACHE_AVAILABLE=1
         fi
         [[ -n $CACHE_AVAILABLE  ]] || \

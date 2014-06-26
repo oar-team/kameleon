@@ -17,6 +17,8 @@ module Kameleon
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
 
+      @recipe.global["persistent_cache"] = @options[:cache] ? "true" : "false"
+
       build_recipe = load_build_recipe
       # restore previous build uuid
       unless build_recipe.nil?
