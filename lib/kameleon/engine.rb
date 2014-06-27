@@ -11,12 +11,10 @@ module Kameleon
 
     def initialize(recipe, options)
       @options = options
-      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @recipe = recipe
       @cleaned_sections = []
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
-
 
       build_recipe = load_build_recipe
       # restore previous build uuid
@@ -43,13 +41,11 @@ module Kameleon
         @cache.recipe_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
 
         if @recipe.global["in_context"]["proxy_cache"].nil? then
-          @logger.error("Missing varible for in context 'proxy_cache' when using the option --cache")
-          exit(1)
+          raise BuildError, "Missing varible for in context 'proxy_cache' when using the option --cache"
         end
 
         if @recipe.global["out_context"]["proxy_cache"].nil? then
-          @logger.error("Missing varible for out context 'proxy_cache' when using the option --cache")
-          exit(1)
+          raise BuildError, "Missing varible for out context 'proxy_cache' when using the option --cache"
         end
 
         #saving_steps_files
@@ -57,16 +53,15 @@ module Kameleon
 
       @in_context = nil
       begin
-        @logger.notice("Creating kameleon working directory : #{@cwd}")
+        Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
         FileUtils.mkdir_p @cwd
       rescue
-        raise BuildError, "Failed to create working directory #{@cwd}"
+        raise BuildError, "Failed to create build directory #{@cwd}"
       end
 
-
-      @logger.notice("Building local context [local]")
+      Kameleon.ui.debug("Building local context [local]")
       @local_context = Context.new("local", "bash", @cwd, "", @cwd)
-      @logger.notice("Building external context [out]")
+      Kameleon.ui.debug("Building external context [out]")
       @out_context = Context.new("out",
                                  @recipe.global["out_context"]["cmd"],
                                  @recipe.global["out_context"]["workdir"],
@@ -76,7 +71,7 @@ module Kameleon
 
 
 
-      @logger.notice("Building internal context [in]")
+      Kameleon.ui.debug("Building internal context [in]")
       @in_context = Context.new("in",
                                 @recipe.global["in_context"]["cmd"],
                                 @recipe.global["in_context"]["workdir"],
@@ -89,14 +84,14 @@ module Kameleon
 
     def saving_steps_files
       @recipe.files.each do |file|
-        @logger.notice("File #{file} loaded from the recipe")
+        Kameleon.ui.info("File #{file} loaded from the recipe")
         sleep 1
       end
 
     end
 
     def create_cache_directory(step_name)
-      @logger.notice("Creating directory for cache #{step_name}")
+      Kameleon.ui.debug("Creating directory for cache #{step_name}")
       directory_name = @cache.cache_dir + "/#{step_name}"
       FileUtils.mkdir_p directory_name
       directory_name
@@ -146,26 +141,27 @@ module Kameleon
         end
 
         macrostep.sequence do |microstep|
-          @logger.notice("Step #{ microstep.order } : #{ microstep.slug }")
+          step_prefix = "Step #{ microstep.order } : "
+          Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
           if @enable_checkpoint
             if microstep.on_checkpoint == "skip"
-              @logger.notice(" ---> Skipped")
+              Kameleon.ui.info("--> Skipped")
               next
             end
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
-              @logger.notice(" ---> Using cache this time")
+              Kameleon.ui.info("--> Using cache this time")
             else
-              @logger.notice(" ---> Running step")
+              Kameleon.ui.info("--> Running the step...")
               microstep.commands.each do |cmd|
                 safe_exec_cmd(cmd)
               end
               unless microstep.on_checkpoint == "redo"
-                @logger.notice(" ---> Creating checkpoint : #{ microstep.identifier }")
+                Kameleon.ui.info("--> Creating checkpoint : #{ microstep.identifier }")
                 create_checkpoint(microstep.identifier)
               end
             end
           else
-            @logger.notice(" ---> Running step")
+            Kameleon.ui.info("--> Running the step...")
             microstep.commands.each do |cmd|
               safe_exec_cmd(cmd)
             end
@@ -205,7 +201,7 @@ module Kameleon
         expected_cmds = ["exec_in", "exec_out", "exec_local"]
         [first_cmd.key, second_cmd.key].each do |key|
           unless expected_cmds.include?(key)
-            @logger.error("Invalid pipe arguments. Expected "\
+            Kameleon.ui.error("Invalid pipe arguments. Expected "\
                           "#{expected_cmds} commands")
             fail ExecError
           end
@@ -225,13 +221,13 @@ module Kameleon
           exec_cmd(second_cmd)
         end
       else
-        @logger.warn("Unknown command : #{cmd.key}")
+        Kameleon.ui.warn("Unknown command : #{cmd.key}")
       end
     end
 
 
     def breakpoint(message, kwargs = {})
-      message.split( /\r?\n/ ).each {|m| @logger.error "#{m}" }
+      message.split( /\r?\n/ ).each {|m| Kameleon.ui.error "#{m}" }
       enable_retry = kwargs[:enable_retry]
       msg = ""
       msg << "Press [r] to retry\n" if enable_retry
@@ -246,13 +242,13 @@ module Kameleon
       responses.merge!({"o" => "launch out_context"})
       responses.merge!({"i" => "launch in_context"})
       while true
-        msg.split( /\r?\n/ ).each {|m| @logger.notice "#{m}" }
-        @logger.progress_notice "answer ? [" + responses.keys().join("/") + "]: "
-        answer = $stdin.gets
+        msg.split( /\r?\n/ ).each {|m| Kameleon.ui.info "#{m}" }
+
+        answer = Kameleon.ui.ask "answer ? [" + responses.keys().join("/") + "]: "
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!
         if responses.keys.include?(answer)
-          @logger.notice("User choice : [#{answer}] #{responses[answer]}")
+          Kameleon.ui.info("User choice : [#{answer}] #{responses[answer]}")
           if ["o", "i", "l"].include?(answer)
             if answer.eql? "l"
               @local_context.start_shell
@@ -261,7 +257,7 @@ module Kameleon
             else
               @in_context.start_shell
             end
-            @logger.notice("Getting back to Kameleon...")
+            Kameleon.ui.info("Getting back to Kameleon...")
           elsif answer.eql? "a"
             raise AbortError, "Execution aborted..."
           elsif answer.eql? "c"
@@ -271,7 +267,7 @@ module Kameleon
             @local_context.execute("true") unless @local_context.closed?
             return true
           elsif answer.eql? "r"
-            @logger.notice("Retrying the previous command...")
+            Kameleon.ui.info("Retrying the previous command...")
             return false
           end
         end
@@ -290,7 +286,7 @@ module Kameleon
         map = {"exec_in" => @in_context,
                "exec_out" => @out_context,
                "exec_local" => @local_context}
-        @logger.notice("Cleaning #{section.name} section")
+        Kameleon.ui.info("Cleaning #{section.name} section")
         section.clean_macrostep.sequence do |microstep|
           microstep.commands.each do |cmd|
             if map.keys.include? cmd.key
@@ -298,7 +294,7 @@ module Kameleon
                 begin
                   exec_cmd(cmd)
                 rescue
-                  @logger.warn("An error occurred while executing : #{cmd.value}")
+                  Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
                 end
               end
             end
@@ -311,7 +307,7 @@ module Kameleon
     def clear
       clean
       unless @recipe.checkpoint.nil?
-        @logger.notice("Removing all old checkpoints")
+        Kameleon.ui.info("Removing all old checkpoints")
         cmd = @recipe.checkpoint["clear"]
         clear_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
         safe_exec_cmd(clear_cmd, :log_level => "info")
@@ -331,7 +327,7 @@ module Kameleon
           end
         end
         unless @from_checkpoint.nil?
-          @logger.notice("Restoring last build from step : #{@from_checkpoint}")
+          Kameleon.ui.info("Restoring last build from step : #{@from_checkpoint}")
           apply_checkpoint @from_checkpoint
           @recipe.microsteps.each do |microstep|
             microstep.in_cache = true
@@ -350,16 +346,16 @@ module Kameleon
         clean
       rescue Exception => e
         if e.is_a?(AbortError)
-          @logger.error("Aborted...")
+          Kameleon.ui.error("Aborted...")
         elsif e.is_a?(SystemExit) || e.is_a?(Interrupt)
-          @logger.error("Interrupted...")
+          Kameleon.ui.error("Interrupted...")
           @out_context.reopen
           @in_context.reopen
           @local_context.reopen
         else
-          @logger.fatal("fatal error...")
+          Kameleon.ui.error("fatal error...")
         end
-        @logger.warn("Waiting for cleanup before exiting...")
+        Kameleon.ui.warn("Waiting for cleanup before exiting...")
         clean
         @out_context.close!
         @in_context.close!

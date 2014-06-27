@@ -7,15 +7,41 @@ Signal.trap("INT") { exit 1 }
 $stdout.sync = true
 $stderr.sync = true
 
-require 'log4r-color'
-require 'log4r-color/configurator'
-
-# This is how we specify our levels
-Log4r::Configurator.custom_levels "DEBUG", "INFO", "PROGRESS_INFO", "NOTICE", "PROGRESS_NOTICE", "WARN", "ERROR", "PROGRESS_ERROR", "FATAL"
+require 'thor/error'
 require 'kameleon'
 
-require 'kameleon/cli'
 # Force Thor to raise exceptions so we can exit non-zero.
 ENV["THOR_DEBUG"] = "1"
 
-Kameleon.with_friendly_errors { Kameleon::CLI.start }
+begin
+  Kameleon::CLI.start
+rescue Kameleon::Error => e
+  Kameleon.ui.error(e.message)
+  Kameleon.ui.trace(e)
+  exit e.status_code
+rescue Thor::UndefinedTaskError => e
+  Kameleon.ui.error(e.message)
+  Kameleon.ui.trace(e)
+  exit 15
+rescue Thor::Error => e
+  Kameleon.ui.error(e.message)
+  Kameleon.ui.trace(e)
+  exit 15
+rescue SystemExit, Interrupt => e
+  Kameleon.ui.error("Quitting...")
+  exit 1
+rescue Errno::ENOENT => e
+  Kameleon.ui.error(e.message)
+  Kameleon.ui.trace(e)
+  exit 16
+rescue Exception => e
+  if !ENV['KAMELEON_DEBUG']
+    msg = "Unfortunately, a fatal error has occurred : "\
+          "#{e.message}.\nUse --debug option for more details\n"
+    Kameleon.ui.error(msg)
+  else
+    Kameleon.ui.error("Error : #{e}")
+    Kameleon.ui.trace(e)
+  end
+  exit 666
+end

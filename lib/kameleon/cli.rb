@@ -4,19 +4,13 @@ require 'kameleon/utils'
 
 module Kameleon
   class CLI < Thor
-
+    include Thor::Actions
 
     class_option :color, :type => :boolean, :default => true,
                  :desc => "Enable colorization in output"
     class_option :debug, :type => :boolean, :default => false,
                  :desc => "Enable debug output"
     map %w(-h --help) => :help
-
-    no_commands do
-      def logger
-        @logger ||= Log4r::Logger.new("kameleon::[kameleon]")
-      end
-    end
 
     method_option :force,:type => :boolean,
                   :default => false, :aliases => "-f",
@@ -26,15 +20,18 @@ module Kameleon
       templates_path = Kameleon.env.templates_path
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
-        template_recipe = RecipeTemplate.new(template_path, :strict => false)
+        tpl = RecipeTemplate.new(template_path, :strict => false)
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
                                 "`kameleon templates`"
       else
-        logger.notice("Importing template '#{template_name}'...")
-        template_recipe.copy_template(options[:force])
-        logger.notice("done")
+        files2copy = tpl.base_recipes_files + tpl.files
+        files2copy.each do |path|
+          relative_path = path.relative_path_from(Kameleon.env.templates_path)
+          dst = File.join(Kameleon.env.workspace, relative_path)
+          copy_file(path, dst)
+        end
       end
     end
 
@@ -49,23 +46,36 @@ module Kameleon
       templates_path = Kameleon.env.templates_path
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
-        template_recipe = RecipeTemplate.new(template_path, :strict => false)
+        tpl = RecipeTemplate.new(template_path, :strict => false)
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
                                 "`kameleon templates`"
       else
-        logger.notice("Cloning template '#{template_name}'...")
-        template_recipe.copy_template(options[:force])
-        logger.notice("Creating extended recipe from template '#{template_name}'...")
-        template_recipe.copy_extended_recipe(recipe_name, options[:force])
-        logger.notice("done")
+        files2copy = tpl.base_recipes_files + tpl.files
+        files2copy.each do |path|
+          relative_path = path.relative_path_from(Kameleon.env.templates_path)
+          dst = File.join(Kameleon.env.workspace, relative_path)
+          copy_file(path, dst)
+        end
+        Dir::mktmpdir do |tmp_dir|
+          recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
+          ## copying recipe
+          File.open(recipe_path, 'w+') do |file|
+            extend_erb_tpl = File.join(Kameleon.env.templates_path, "extend.erb")
+            erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
+            result = erb.result(binding)
+            file.write(result)
+          end
+          recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
+          copy_file(recipe_path, Pathname.new(recipe_dst))
+        end
+        # template_recipe.copy_extended_recipe(recipe_name, options[:force])
       end
     end
 
     desc "templates", "Lists all defined templates"
     def templates
-      Log4r::Outputter['console'].level = Log4r::ERROR unless Kameleon.env.debug
       puts "The following templates are available in " \
                  "#{ Kameleon.templates_path }:"
       templates_hash = []
@@ -90,7 +100,6 @@ module Kameleon
 
     desc "version", "Prints the Kameleon's version information"
     def version
-      Log4r::Outputter['console'].level = Log4r::OFF unless Kameleon.env.debug
       puts "Kameleon version #{Kameleon::VERSION}"
     end
     map %w(-v --version) => :version
@@ -121,23 +130,21 @@ module Kameleon
 
     def build(recipe_path=nil)
       if recipe_path== nil then
-        logger.notice("Using the cached recipe")
+        Kameleon.ui.info("Using the cached recipe")
         @cache = Kameleon::Persistent_cache.instance
         @cache.cache_path = options[:from_cache]
         recipe_path =  @cache.get_recipe
       end
       clean(recipe_path) if options[:clean]
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
-      logger.notice("Starting build recipe '#{recipe_path}'")
+      Kameleon.ui.info("Starting build recipe '#{recipe_path}'")
       start_time = Time.now.to_i
       engine.build
       total_time = Time.now.to_i - start_time
-      logger.notice("")
-      logger.notice("Build recipe '#{recipe_path}' is completed !")
-      logger.notice("Build total duration : #{total_time} secs")
-      logger.notice("Build directory : #{engine.cwd}")
-      logger.notice("Build recipe file : #{engine.build_recipe_path}")
-      logger.notice("Log file : #{Kameleon.env.log_file}")
+      Kameleon.ui.info("")
+      Kameleon.ui.info("Build recipe '#{recipe_path}' is completed !")
+      Kameleon.ui.info("Build total duration : #{total_time} secs")
+      Kameleon.ui.info("Build directory : #{engine.cwd}")
     end
 
     desc "checkpoints [RECIPE_PATH]", "Lists all availables checkpoints"
@@ -145,7 +152,6 @@ module Kameleon
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
     def checkpoints(recipe_path)
-      Log4r::Outputter['console'].level = Log4r::ERROR unless Kameleon.env.debug
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       engine.pretty_checkpoints_list
     end
@@ -155,7 +161,6 @@ module Kameleon
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
     def clean(recipe_path)
-      Log4r::Outputter['console'].level = Log4r::INFO
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       engine.clear
     end
@@ -171,64 +176,28 @@ module Kameleon
       puts Kameleon.source_root
     end
 
-    # Hack Thor to init Kameleon env soon
-    def self.init(base_config)
-      env_options = Hash.new
-      env_options.merge! base_config[:shell].base.options.clone
-      # configure logger
-      env_options["debug"] = true if ENV["KAMELEON_LOG"] == "debug"
-      ENV["KAMELEON_LOG"] = "debug" if env_options["debug"]
-      if ENV["KAMELEON_LOG"] && ENV["KAMELEON_LOG"] != ""
-        level_name = ENV["KAMELEON_LOG"]
-      else
-        level_name = "info"
+    def initialize(*args)
+      super
+      self.options ||= {}
+      Kameleon.env = Kameleon::Environment.new(self.options)
+      if !$stdout.tty? or !options["color"]
+        Thor::Base.shell = Thor::Shell::Basic
       end
-      # Require Log4r and define the levels we'll be using
-      require 'log4r-color/config'
-      Log4r.define_levels(*Log4r::Log4rConfig::LogLevels)
-
-      begin
-        level = Log4r.const_get(level_name.upcase)
-      rescue NameError
-        level = Log4r.const_get("INFO")
-        $stderr << "Invalid KAMELEON_LOG level is set: #{level_name}.\n" \
-                   "Please use one of the standard log levels: debug," \
-                   " info, warn, or error\n"
-        raise KameleonError
-      end
-      format = ConsoleFormatter.new
-      # format = Log4r::PatternFormatter.new(:pattern => '%11c: %M')
-      if !$stdout.tty? or !env_options["color"]
-        console_output = Log4r::StdoutOutputter.new('console',
-                                                    :formatter => format)
-        Diffy::Diff.default_format = :text
-      else
-        console_output = Log4r::ColorOutputter.new 'console', {
-          :colors => { :debug  => :light_black,
-                       :info   => :green,
-                       :progress_info => :green,
-                       :notice => :light_blue,
-                       :progress_notice => :light_blue,
-                       :warn   => :yellow,
-                       :error  => :red,
-                       :progress_error => :red,
-                       :fatal  => :red,
-                     },
-          :formatter => format,
-        }
-        Diffy::Diff.default_format = :color
-      end
-      logger = Log4r::Logger.new('kameleon')
-      logger.level = level
-      logger.outputters << console_output
-      Kameleon.logger.debug("`kameleon` invoked: #{ARGV.inspect}")
-      Kameleon.env = Kameleon::Environment.new(env_options)
-      logger = nil
+      Kameleon.ui = Kameleon::UI::Shell.new(self.options)
+      Kameleon.ui.level = "debug" if self.options["verbose"]
     end
 
-    def self.start(given_args=ARGV, config={})
-        config[:shell] ||= Thor::Base.shell.new
-        dispatch(nil, given_args.dup, nil, config) { init(config) }
+    def self.start(*)
+      super
+    rescue Exception => e
+      Kameleon.ui = Kameleon::UI::Shell.new
+      raise e
     end
+
+    def self.source_root
+      Kameleon.source_root
+    end
+
   end
+
 end

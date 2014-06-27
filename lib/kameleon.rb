@@ -6,20 +6,19 @@ require 'tempfile'
 require 'pp'
 require 'thor'
 require 'childprocess'
-require 'log4r-color'
-require 'log4r-color/configurator'
 require 'pathname'
 require 'table_print'
 require 'diffy'
 
 module Kameleon
   class << self
-    attr_writer :logger
     attr_writer :env
+    attr_writer :ui
     attr_writer :source_root
     attr_writer :templates_path
     attr_writer :templates_names
     attr_writer :templates_files
+    attr_writer :log_on_progress
 
     # The source root is the path to the root directory of the kameleon gem.
     def source_root
@@ -50,14 +49,17 @@ module Kameleon
       @templates_names
     end
 
-    def logger
-      @logger ||= Log4r::Logger.new("kameleon::[kameleon]")
-    end
-
     def env
       @env ||= Environment.new
     end
 
+    def ui
+      @ui ||= UI::Shell.new
+    end
+
+    def log_on_progress
+      @log_on_progress ||= false
+    end
   end
 end
 
@@ -68,4 +70,4 @@ require 'kameleon/error'
 require 'kameleon/cli'
 require 'kameleon/environment'
 require 'kameleon/version'
-require 'kameleon/logger'
+require 'kameleon/ui'

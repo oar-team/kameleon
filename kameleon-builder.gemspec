@@ -20,6 +20,8 @@ Gem::Specification.new do |s|
   s.license       = "GPL-2"
 
   s.files         = `git ls-files`.split($/)
+  s.files.reject! { |file| file.start_with?("docs/") }
+  s.files.reject! { |file| file.start_with?("omnibus/") }
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ["lib"]
@@ -27,7 +29,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'childprocess', '~> 0.5'
   s.add_dependency 'thor', '~> 0.15'
   s.add_dependency 'table_print', '~> 1.5'
-  s.add_dependency 'log4r-color', '~> 1.2'
   s.add_dependency 'diffy', '~> 3.0'
   # Syck is also a dependency for Ruby 2 environments.
   # It is installed at install-time if necessary,

@@ -14,10 +14,10 @@ module Kameleon
     attr_accessor :checkpoint_path
     attr_accessor :metainfo
     attr_accessor :files
+    attr_accessor :base_recipes_files
 
 
     def initialize(path, kwargs = {})
-      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @path = Pathname.new(File.expand_path(path))
       @name = (@path.basename ".yaml").to_s
       @recipe_content = File.open(@path, 'r') { |f| f.read }
@@ -39,14 +39,14 @@ module Kameleon
       @aliases = {}
       @checkpoint = nil
       @files = []
-      @logger.debug("Initialize new recipe (#{path})")
+      Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
       load! kwargs
     end
 
     def load!(kwargs = {})
       # Find recipe path
-      @logger.debug("Loading #{@path}")
+      Kameleon.ui.debug("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load File.open @path
@@ -111,7 +111,7 @@ module Kameleon
               end
             end
             if embedded_step
-              @logger.debug("Loading embedded macrostep #{name}")
+              Kameleon.ui.debug("Loading embedded macrostep #{name}")
               macrostep = load_macrostep(nil, name, args)
               section.macrosteps.push(macrostep)
               next
@@ -121,16 +121,16 @@ module Kameleon
             dir_to_search.each do |dir|
               macrostep_path = Pathname.new(File.join(dir, name + '.yaml'))
               if File.file?(macrostep_path)
-                @logger.debug("Loading macrostep #{macrostep_path}")
+                Kameleon.ui.debug("Loading macrostep #{macrostep_path}")
                 macrostep = load_macrostep(macrostep_path, name, args)
                 section.macrosteps.push(macrostep)
                 @files.push(macrostep_path)
-                @logger.debug("Macrostep '#{name}' found in this path: " \
+                Kameleon.ui.debug("Macrostep '#{name}' found in this path: " \
                               "#{macrostep_path}")
                 loaded = true
                 break
               else
-                @logger.debug("Macrostep '#{name}' not found in this path: " \
+                Kameleon.ui.debug("Macrostep '#{name}' not found in this path: " \
                               "#{macrostep_path}")
               end
             end
@@ -138,7 +138,7 @@ module Kameleon
           end
         end
       end
-      @logger.debug("Loading recipe metadata")
+      Kameleon.ui.debug("Loading recipe metadata")
       @metainfo = {
         "description" => Utils.extract_meta_var("description", @recipe_content)
       }
@@ -207,7 +207,7 @@ module Kameleon
           dir_search.each do |dir_path|
             path = Pathname.new(File.join(dir_path, aliases))
             if File.file?(path)
-              @logger.debug("Loading aliases #{path}")
+              Kameleon.ui.debug("Loading aliases #{path}")
               @aliases = YAML.load_file(path)
               @files.push(path)
               return path
@@ -233,7 +233,7 @@ module Kameleon
           dir_search.each do |dir_path|
             path = Pathname.new(File.join(dir_path, checkpoint))
             if File.file?(path)
-              @logger.debug("Loading checkpoint configuration #{path}")
+              Kameleon.ui.debug("Loading checkpoint configuration #{path}")
               @checkpoint = YAML.load_file(path)
               @checkpoint["path"] = path.to_s
               @files.push(path)
@@ -304,7 +304,7 @@ module Kameleon
     end
 
     def find_microstep(microstep_name, loaded_microsteps)
-      @logger.debug("Looking for microstep #{microstep_name}")
+      Kameleon.ui.debug("Looking for microstep #{microstep_name}")
       loaded_microsteps.each do |microstep|
         if microstep_name.eql? microstep.name
           return microstep
@@ -320,7 +320,7 @@ module Kameleon
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
-      @logger.notice("Resolving variables")
+      Kameleon.ui.info("Resolving variables")
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
           macrostep.resolve_variables!(@global)
@@ -330,7 +330,7 @@ module Kameleon
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
           # First pass : resolve aliases
-          @logger.debug("Resolving aliases for macrostep '#{macrostep.name}'")
+          Kameleon.ui.debug("Resolving aliases for macrostep '#{macrostep.name}'")
           macrostep.microsteps.each do |microstep|
             microstep.commands.map! do |cmd|
               # resolve alias
@@ -338,7 +338,7 @@ module Kameleon
             end
           end
           # flatten for multiple-command alias + variables
-          @logger.debug("Resolving check statements for macrostep '#{macrostep.name}'")
+          Kameleon.ui.debug("Resolving check statements for macrostep '#{macrostep.name}'")
           macrostep.microsteps.each { |microstep| microstep.commands.flatten! }
           # Second pass : resolve variables + clean/init hooks
           macrostep.microsteps.each do |microstep|
@@ -346,7 +346,7 @@ module Kameleon
               resolve_hooks(cmd, macrostep, microstep)
             end
           end
-          @logger.debug("Compacting macrostep '#{macrostep.name}'")
+          Kameleon.ui.debug("Compacting macrostep '#{macrostep.name}'")
           # remove empty steps
           macrostep.microsteps.map! do |microstep|
             microstep.commands.compact!
@@ -354,7 +354,7 @@ module Kameleon
           end
           # remove nil values
           macrostep.microsteps.compact!
-          @logger.debug("Resolving commands for macrostep '#{macrostep.name}'")
+          Kameleon.ui.debug("Resolving commands for macrostep '#{macrostep.name}'")
           macrostep.microsteps.each do |microstep|
             microstep.resolve!
           end
@@ -374,7 +374,7 @@ module Kameleon
           end
         end
       end
-      @logger.notice("Starting recipe consistency check")
+      Kameleon.ui.info("Starting recipe consistency check")
       # check context args
       required_args = %w(cmd)
       missings = []
@@ -499,7 +499,7 @@ module Kameleon
     end
 
     def calculate_step_identifiers
-      @logger.notice("Calculating microstep identifiers")
+      Kameleon.ui.debug("Calculating microstep identifiers")
       base_salt = ""
       order = 0
       @sections.values.each do |section|
@@ -509,7 +509,7 @@ module Kameleon
             slug = "#{section.name}/#{macrostep.name}/#{microstep.name}"
             microstep.slug = slug
             microstep.order = (order += 1)
-            @logger.debug("  #{microstep.slug}: #{microstep.identifier}")
+            Kameleon.ui.debug("  #{microstep.slug}: #{microstep.identifier}")
           end
         end
       end
@@ -547,7 +547,7 @@ module Kameleon
 
     def get_answer(msg)
       while true
-        @logger.progress_notice msg
+        Kameleon.ui.ask msg
         answer = $stdin.gets.downcase
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!
@@ -566,8 +566,8 @@ module Kameleon
       if File.exists? dst
         diff = Diffy::Diff.new(dst.to_s, src.to_s, :source => "files").to_s
         unless diff.chomp.empty?
-          @logger.notice("conflict #{dst}")
-          @logger.notice("Differences between the old and the new :")
+          Kameleon.ui.info("conflict #{dst}")
+          Kameleon.ui.info("Differences between the old and the new :")
           puts Diffy::Diff.new(dst.to_s, src.to_s,
                                :source => "files",
                                :context => 1,
@@ -577,13 +577,13 @@ module Kameleon
             FileUtils.copy_file(src, dst)
           end
         else
-          @logger.notice("identical #{dst}")
+          Kameleon.ui.info("identical #{dst}")
         end
       else
         unless File.dirname(dst).eql? "/"
           FileUtils.mkdir_p File.dirname(dst)
         end
-        @logger.notice("create #{dst}")
+        Kameleon.ui.info("create #{dst}")
         FileUtils.copy_file(src, dst)
       end
     end

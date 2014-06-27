@@ -19,7 +19,6 @@ module Kameleon
     attr_accessor :recipe_files # have to check those.
 
     def initialize()
-      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       ## we must configure Polipo to be execute for the in and out context
       ## we have to start polipo in the out context for debootstrap step
 
@@ -74,8 +73,8 @@ module Kameleon
       @polipo_path ||= which("polipo")
 
       if @polipo_path.nil? then
-        @logger.error("Polipo binary not found, make sure it is in your current PATH")
-        @logger.error("or use the option --proxy-path")
+        Kameleon.ui.error("Polipo binary not found, make sure it is in your current PATH")
+        Kameleon.ui.error("or use the option --proxy-path")
         raise BuildError, "Failed to use persistent cache"
       end
     end
@@ -90,7 +89,7 @@ module Kameleon
     end
 
     def create_cache_directory(step_name)
-      @logger.notice("Creating  cache directory #{step_name} for Polipo")
+      Kameleon.ui.info("Creating  cache directory #{step_name} for Polipo")
       directory_name = File.join(@cache_dir,"#{step_name}")
       FileUtils.mkdir_p directory_name
       directory_name
@@ -103,7 +102,7 @@ module Kameleon
       ## This function assumes that the cache directory has already been created by the engine
       ## Stopping first the previous proxy
       ## have to check if polipo is running
-      @logger.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
+      Kameleon.ui.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
       @polipo_process.stop unless @polipo_process.nil?
       command = ["#{@polipo_path}/polipo"]
       @polipo_cmd_options[:diskCacheRoot] = directory
@@ -118,17 +117,17 @@ module Kameleon
 
     def stop_web_proxy
       @polipo_process.stop
-      @logger.notice("Stopping web proxy polipo")
+      Kameleon.ui.info("Stopping web proxy polipo")
     end
 
     def pack()
-      @logger.notice("Packing up the generated cache in #{@cwd}")
+      Kameleon.ui.info("Packing up the generated cache in #{@cwd}")
       execute("tar","-cf #{@name}-cache.tar -C cache/ .",@cwd)
       # The cache directory cannot be deleted due to the checkpoints
     end
 
     def unpack(cache_path)
-      @logger.notice("Unpacking persistent cache: #{cache_path}")
+      Kameleon.ui.info("Unpacking persistent cache: #{cache_path}")
       FileUtils.mkdir_p @cache_dir
       execute("tar","-xf #{cache_path} -C #{@cache_dir}")
     end
@@ -142,8 +141,8 @@ module Kameleon
     end
 
     def cache_cmd(cmd,file_path)
-      @logger.notice("Caching file")
-      @logger.debug("command: cp #{file_path} #{@cwd}/cache/files/")
+      Kameleon.ui.info("Caching file")
+      Kameleon.ui.debug("command: cp #{file_path} #{@cwd}/cache/files/")
       FileUtils.mkdir_p @current_step_dir + "/data/"
       FileUtils.cp file_path, @current_step_dir + "/data/"
       @cmd_cached.push({:cmd_id => @current_cmd_id,
@@ -162,8 +161,8 @@ module Kameleon
     def stop()
 
       @polipo_process.stop
-      @logger.notice("Stopping web proxy polipo")
-      @logger.notice("Finishing persistent cache with last files")
+      Kameleon.ui.info("Stopping web proxy polipo")
+      Kameleon.ui.info("Finishing persistent cache with last files")
 
       if @mode == :build then
         File.open("#{@cache_dir}/cache_cmd_index",'w+') do |f|
@@ -180,7 +179,7 @@ module Kameleon
           end
 
           if steps_path.nil? then
-            @logger.notice("Saving recipe")
+            Kameleon.ui.info("Saving recipe")
             FileUtils.cp file, @cached_recipe_dir
           else
             step_dir = file.relative_path_from(steps_path).dirname.to_s
@@ -191,7 +190,7 @@ module Kameleon
         end
 
         # ## Saving metadata information
-        # @logger.notice("Caching recipe")
+        # Kameleon.ui.info("Caching recipe")
         # File.open("#{@cached_recipe_dir}/header",'w+') do |f|
         #   f.puts({:name => @name}.to_yaml)
         # end
@@ -223,7 +222,7 @@ module Kameleon
       cached_recipe=Dir.mktmpdir("cache")
       puts "cache path : #{@cache_path}"
       execute("tar","-xf #{@cache_path} -C #{cached_recipe} .")
-      @logger.notice("Getting cached recipe")
+      Kameleon.ui.info("Getting cached recipe")
       # This will look for the name of the recipe
       recipe_file = Dir["#{cached_recipe.to_s}/*.yaml"].first
       return recipe_file
@@ -231,7 +230,7 @@ module Kameleon
 
     def execute(cmd,args,dir=nil)
       command = [cmd ] + args.split(" ")
-#      @logger.notice(" command generated: #{command}")
+#      Kameleon.ui.info(" command generated: #{command}")
       process = ChildProcess.build(*command)
       process.cwd = dir unless dir.nil?
       process.start

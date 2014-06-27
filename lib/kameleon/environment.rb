@@ -12,7 +12,6 @@ module Kameleon
 
 
     def initialize(options = {})
-      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       # symbolify commandline options
       options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
       workspace = File.expand_path(Dir.pwd)
@@ -25,11 +24,11 @@ module Kameleon
         :log_file => Pathname.new(File.join(workspace, "kameleon.log"))
       }
       options = defaults.merge(options)
-      @logger.debug("Environment initialized (#{self})")
+      Kameleon.ui.debug("Environment initialized (#{self})")
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|
         instance_variable_set("@#{key}".to_sym, options[key])
-        @logger.debug("  @#{key} : #{options[key]}")
+        Kameleon.ui.debug("  @#{key} : #{options[key]}")
       end
     end
   end

@@ -13,7 +13,6 @@ module Kameleon
     attr :shell_cmd
 
     def initialize(context_name, cmd, shell_workdir, local_workdir, kwargs = {})
-      @logger = Log4r::Logger.new("kameleon::[kameleon]")
       @cmd = cmd.chomp
       @context_name = context_name
       @local_workdir = local_workdir
@@ -36,10 +35,10 @@ module Kameleon
 
       @shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
                    "#{@cmd} --rcfile #{@bashrc_file}"
-      @logger.debug("Initialize shell (#{self})")
+      Kameleon.ui.debug("Initialize shell (#{self})")
       # Injecting all variables of the options and assign the variables
       instance_variables.each do |v|
-        @logger.debug("  #{v} = #{instance_variable_get(v)}")
+        Kameleon.ui.debug("  #{v} = #{instance_variable_get(v)}")
       end
     end
 
@@ -88,8 +87,8 @@ module Kameleon
       ## log shell error message
       error = read_io(@stderr)
       init_stdout = read_io(@stdout)
-      @logger.error(error) unless error.empty?
-      @logger.info(init_stdout) unless init_stdout.empty?
+      Kameleon.ui.error(error) unless error.empty?
+      Kameleon.ui.info(init_stdout) unless init_stdout.empty?
       bashrc_content = ""
       if File.file?(@default_bashrc_file)
         tpl = ERB.new(File.read(@default_bashrc_file))
@@ -97,7 +96,7 @@ module Kameleon
         if @cache.activated? then
           proxy_address = @kwargs.fetch(:proxy_cache)
           if proxy_address.nil? then
-            @logger.warn("Variable 'proxy_cache' not defined for this context, persistent cache will not be generated")
+            Kameleon.ui.warn("Variable 'proxy_cache' not defined for this context, persistent cache will not be generated")
           else
             tpl = ERB.new(File.read(@cache.polipo_env))
             bashrc_content << "\n" + ERB.new(File.read(@cache.polipo_env)).result(binding)
@@ -252,8 +251,8 @@ module Kameleon
 
     def fork(io)
       command = ["bash", "-c", @shell_cmd]
-      @logger.notice("Starting process: #{@cmd.inspect}")
-      @logger.debug("Starting shell process: #{ command.inspect}")
+      Kameleon.ui.info("Starting process: #{@cmd.inspect}")
+      Kameleon.ui.debug("Starting shell process: #{ command.inspect}")
       ChildProcess.posix_spawn = true
       process = ChildProcess.build(*command)
       # Create the pipes so we can read the output in real time as
