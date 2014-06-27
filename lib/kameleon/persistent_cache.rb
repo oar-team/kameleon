@@ -17,6 +17,7 @@ module Kameleon
     attr_accessor :mode
     attr_accessor :name
     attr_accessor :recipe_files # have to check those.
+    attr_accessor :recipe_path
 
     def initialize()
       ## we must configure Polipo to be execute for the in and out context
@@ -47,7 +48,8 @@ module Kameleon
       @cache_path = ""
       @current_cmd_id = nil
       @current_step_dir = nil
-      @recipe_files = []
+      @recipe_file = nil
+      @steps_files = []
       @cached_recipe_dir = nil
     end
 
@@ -159,7 +161,6 @@ module Kameleon
     end
 
     def stop()
-
       @polipo_process.stop
       Kameleon.ui.info("Stopping web proxy polipo")
       Kameleon.ui.info("Finishing persistent cache with last files")
@@ -169,40 +170,21 @@ module Kameleon
           f.puts(@cmd_cached.to_yaml)
         end
 
-        @recipe_files.each do |file|
-          ## Getting the recipe path
-          steps_path = nil
-          file.ascend do |path|
-            if path.to_s.include?("steps") then
-              steps_path = path
-            end
-          end
+        # require 'pry'; binding.pry
+        recipe_dir = Pathname.new(common_prefix(@recipe_files))
+        all_files = @recipe_files.push(@recipe_path)
+        Kameleon::Utils.copy_files(recipe_dir, @cache_dir, all_files)
 
-          if steps_path.nil? then
-            Kameleon.ui.info("Saving recipe")
-            FileUtils.cp file, @cached_recipe_dir
-          else
-            step_dir = file.relative_path_from(steps_path).dirname.to_s
-            FileUtils.mkdir_p @cached_recipe_dir + "/steps/" + step_dir
-            FileUtils.cp file, @cached_recipe_dir + "/steps/" + step_dir
-          end
-
+        ## Saving metadata information
+        Kameleon.ui.info("Caching recipe")
+        File.open("#{@cached_recipe_dir}/header",'w+') do |f|
+          f.puts({:recipe_path => @recipe_path.to_s}.to_yaml)
         end
-
-        # ## Saving metadata information
-        # Kameleon.ui.info("Caching recipe")
-        # File.open("#{@cached_recipe_dir}/header",'w+') do |f|
-        #   f.puts({:name => @name}.to_yaml)
-        # end
-
         pack
-
       end
-
     end
 
     def start()
-
       check_polipo_binary
       if @mode == :from then
         begin

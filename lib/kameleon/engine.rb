@@ -16,6 +16,8 @@ module Kameleon
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
 
+      @recipe.global["persistent_cache"] = @options[:cache] ? "true" : "false"
+
       build_recipe = load_build_recipe
       # restore previous build uuid
       unless build_recipe.nil?
@@ -38,7 +40,7 @@ module Kameleon
         @cache.mode = @options[:cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
         @cache.recipe_files = @recipe.files # I'm passing the Pathname objects
-        @cache.recipe_files.push(Pathname.new("#{@recipe.global['kameleon_recipe_dir']}/#{@recipe.name}.yaml"))
+        @cache.recipe_path = @recipe.path
 
         if @recipe.global["in_context"]["proxy_cache"].nil? then
           raise BuildError, "Missing varible for in context 'proxy_cache' when using the option --cache"
@@ -243,7 +245,6 @@ module Kameleon
       responses.merge!({"i" => "launch in_context"})
       while true
         msg.split( /\r?\n/ ).each {|m| Kameleon.ui.info "#{m}" }
-
         answer = Kameleon.ui.ask "answer ? [" + responses.keys().join("/") + "]: "
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!

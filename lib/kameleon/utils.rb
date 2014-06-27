@@ -43,5 +43,15 @@ module Kameleon
     rescue
     end
 
+    def self.copy_files(relative_dir, dest_dir, files2copy)
+      files2copy.each do |path|
+        relative_path = path.relative_path_from(relative_dir)
+        dst = File.join(dest_dir,relative_path)
+        FileUtils.mkdir_p File.dirname(dst)
+        copy_file(path, dst, force, logger)
+        FileUtils.copy_file(path, dst)
+      end
+    end
+
   end
 end
