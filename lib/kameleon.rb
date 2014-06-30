@@ -8,7 +8,6 @@ require 'thor'
 require 'childprocess'
 require 'pathname'
 require 'table_print'
-require 'diffy'
 
 module Kameleon
   class << self

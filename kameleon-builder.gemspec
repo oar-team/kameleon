@@ -29,7 +29,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'childprocess', '~> 0.5'
   s.add_dependency 'thor', '~> 0.15'
   s.add_dependency 'table_print', '~> 1.5'
-  s.add_dependency 'diffy', '~> 3.0'
   # Syck is also a dependency for Ruby 2 environments.
   # It is installed at install-time if necessary,
   # via ext/mkrf_conf.rb
