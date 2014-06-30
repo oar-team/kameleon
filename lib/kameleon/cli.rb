@@ -95,7 +95,11 @@ module Kameleon
         end
       end
       templates_hash = templates_hash.sort_by{ |k| k["name"] }
-      tp templates_hash, {"name" => {:width => 30}}, { "description" => {:width => 60}}
+      name_width = templates_hash.map { |k| k['name'].size }.max
+      desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
+      tp(templates_hash,
+        {"name" => {:width => name_width}},
+        { "description" => {:width => desc_width}})
     end
 
     desc "version", "Prints the Kameleon's version information"

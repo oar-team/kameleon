@@ -45,7 +45,7 @@ module Kameleon
     class Shell
       LEVELS = %w(silent error warn confirm info debug)
 
-      attr_writer :shell
+      attr_accessor :shell
 
       def initialize(options = {})
         @shell = Thor::Base.shell.new

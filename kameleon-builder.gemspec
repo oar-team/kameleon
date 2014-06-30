@@ -32,13 +32,6 @@ Gem::Specification.new do |s|
   # Syck is also a dependency for Ruby 2 environments.
   # It is installed at install-time if necessary,
   # via ext/mkrf_conf.rb
-
-  s.add_development_dependency 'pry', '~> 0.9'
-  s.add_development_dependency 'pry-debugger', '~> 0.2'
-  s.add_development_dependency 'rake', '~> 10.1'
-  s.add_development_dependency 'minitest', '~> 4.7'
-  s.add_development_dependency 'coveralls', '~> 0.7'
-
   # To allow installing the Syck gem when Ruby version is >2.0.0
   s.extensions = ["ext/mkrf_conf.rb"]
 end
