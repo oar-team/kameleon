@@ -15,7 +15,7 @@
             rm -f vm_state_to_load.txt
         fi
   - exec_out: |
-        nohup qemu-system-$$qemu_arch  \
+        qemu-system-$$qemu_arch  \
           $ENABLE_KVM -no-reboot \
           -drive file="$$image_disk",cache=unsafe,media=disk,if=virtio,id=drive0 \
           -smp $${qemu_cpu} \
@@ -24,8 +24,7 @@
           -net nic,model=virtio -net user \
           -redir tcp:$${qemu_ssh_port}::22 \
           -monitor tcp::$$qemu_monitor_port,server,nowait \
-          -vnc :1 $LOADVM \
-        1>qemu.log 2>&1 & disown
+          -daemonize -vnc :1 $LOADVM
   - exec_out: |
         echo -n "Waiting for SSH to become available"
         until ssh-keyscan -4 -p $$qemu_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
