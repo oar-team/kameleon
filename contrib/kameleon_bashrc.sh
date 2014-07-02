@@ -136,3 +136,52 @@ else
     alias ls='ls -G'
 fi
 fi
+
+function __download {
+    echo "Downloading: $1..."
+    if which curl >/dev/null; then
+        curl "$1" -o "$2" 2>&1
+    else
+        fail "curl is missing, trying with wget..."
+        if which wget >/dev/null; then
+            wget --progress=bar:force "$1" -O "$2" 2>&1
+        else
+            fail "wget is missing, trying with python..."
+            if which python >/dev/null; then
+                python -c "
+import sys
+import time
+if sys.version_info >= (3,):
+    import urllib.request as urllib
+else:
+    import urllib
+
+
+def reporthook(count, block_size, total_size):
+    global start_time
+    if count == 0:
+        start_time = time.time()
+        return
+    duration = time.time() - start_time
+    progress_size = float(count * block_size)
+    if duration != 0:
+        if total_size == -1:
+            total_size = block_size
+            percent = 'Unknown size, '
+        else:
+            percent = '%.0f%%, ' % float(count * block_size * 100 / total_size)
+        speed = int(progress_size / (1024 * duration))
+        sys.stdout.write('\r%s%.2f MB, %d KB/s, %d seconds passed'
+                         % (percent, progress_size / (1024 * 1024), speed, duration))
+        sys.stdout.flush()
+
+urllib.urlretrieve('$1', '$2', reporthook=reporthook)
+print('\n')
+"
+            true
+            else
+                fail "Cannot download $1"
+            fi
+        fi
+    fi
+}
