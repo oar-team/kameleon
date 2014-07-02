@@ -25,21 +25,20 @@ module Kameleon
     def do_log(out, log_level)
       prefix = "[#{@name}] "
       out.gsub!("\r", "\r#{prefix}")
-      if out.end_with?("\n")
-        out.split( /\r?\n/ ).each {|m| log(log_level, prefix + m) }
-      else
-        if out.match("\n")
-          out_lines = out[ /\A.*\n/m ]
-          out_lines.split( /\r?\n/ ).each {|m| log(log_level, prefix + m) }
-          out.slice! out_lines
-          log_progress(log_level, prefix + out)
-          Kameleon.log_on_progress = true
-        end
-        if Kameleon.log_on_progress
-          log_progress(log_level, out)
+      out.gsub!("\n", "\n#{prefix}")
+      if Kameleon.log_on_progress
+        if out.end_with?("#{prefix}")
+          Kameleon.log_on_progress = false
+          log_progress(log_level, out.chomp(prefix))
         else
-          log_progress(log_level, prefix + out)
+          log_progress(log_level, out)
+        end
+      else
+        if out.end_with?("#{prefix}")
+          log_progress(log_level, prefix + out.chomp(prefix))
+        else
           Kameleon.log_on_progress = true
+          log_progress(log_level, prefix + out)
         end
       end
     end
