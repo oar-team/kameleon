@@ -23,7 +23,7 @@ global:
   arch: amd64
 
   ## QEMU options
-  qemu_enable_kvm: true
+  qemu_enable_kvm: "$(egrep '(vmx|svm)' /proc/cpuinfo > /dev/null && echo true)"
   qemu_cpu: 2
   qemu_memory_size: 512
   qemu_monitor_port: 10023
