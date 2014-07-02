@@ -12,9 +12,6 @@ module Kameleon
                  :desc => "Enable debug output"
     map %w(-h --help) => :help
 
-    method_option :force,:type => :boolean,
-                  :default => false, :aliases => "-f",
-                  :desc => "Overwrite all existing files"
     desc "import [TEMPLATE_NAME]", "Imports the given template"
     def import(template_name)
       templates_path = Kameleon.env.templates_path
@@ -35,9 +32,6 @@ module Kameleon
       end
     end
 
-    method_option :force,:type => :boolean,
-                  :default => false, :aliases => "-f",
-                  :desc => "Overwrite all existing files"
     desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
     def new(recipe_name, template_name)
       if recipe_name == template_name
