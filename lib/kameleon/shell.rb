@@ -18,12 +18,11 @@ module Kameleon
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
       @kwargs = kwargs
-      @bashrc_file = "kameleon_#{@context_name}_bash_rc"
-      @bash_history_file = "kameleon_#{@context_name}_bash_history"
-      @bash_env_file = "kameleon_#{@context_name}_bash_env"
+      @bashrc_file = ".kameleon_#{@context_name}_bash_rc"
+      @bash_history_file = ".kameleon_#{@context_name}_bash_history"
+      @bash_env_file = ".kameleon_#{@context_name}_bash_env"
       @default_bashrc_file = File.join(Kameleon.source_root,
-                                       "contrib",
-                                       "kameleon_bashrc.sh")
+                                       "contrib", "kameleon_bashrc.sh")
       if @shell_workdir
         @bashrc_file = File.join(@shell_workdir, @bashrc_file)
         @bash_history_file = File.join(@shell_workdir, @bash_history_file)
