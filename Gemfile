@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+gem "syck", :platforms => [:ruby_20,  :ruby_21]
+
 group :development do
   gem "pry"
   gem "rake"
