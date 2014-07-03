@@ -116,7 +116,7 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
-  - save_appliance:
+  - qemu_save_appliance:
     - input: $$image_disk
     - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2

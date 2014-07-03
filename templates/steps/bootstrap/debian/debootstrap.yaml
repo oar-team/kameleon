@@ -9,7 +9,7 @@
             [[ ! -f "$$rootfs_download_path/.kameleon_timestamp"  ]] || CACHE_AVAILABLE=1
         fi
         [[ -n $CACHE_AVAILABLE  ]] || \
-          debootstrap --no-check-gpg --arch=$$arch --include="$$include_pkg" $$release $$rootfs_download_path $$repository \
+          debootstrap --variant=$$variant --no-check-gpg --arch=$$arch --include="$$include_pkg" $$release $$rootfs_download_path $$repository \
           && date +%s > $$rootfs_download_path/.kameleon_timestamp
   - exec_out: cat /etc/resolv.conf > $$rootfs_download_path/etc/resolv.conf
   - write_out:

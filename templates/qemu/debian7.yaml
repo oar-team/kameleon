@@ -10,7 +10,7 @@
 # Loads some helpful aliases
 aliases: defaults.yaml
 # Enables qemu checkpoint
-checkpoint: qemu.yaml
+# checkpoint: qemu.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
@@ -21,6 +21,7 @@ global:
   distrib: debian
   release: wheezy
   arch: amd64
+  kernel_arch: $$arch
 
   ## QEMU options
   qemu_enable_kvm: "$(egrep '(vmx|svm)' /proc/cpuinfo > /dev/null && echo true)"
@@ -29,16 +30,16 @@ global:
   qemu_monitor_port: 10023
   qemu_ssh_port: 55423
   qemu_arch: x86_64
+  qemu_image_size: 10G
+  qemu_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
 
-  ## Disk options
-  nbd_device: /dev/nbd1
-  image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
-  image_size: 10G
-  filesystem_type: ext4
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2kameleon-0.1.0-$${qemu_arch}-insecure.iso
+  insecure_ssh_key_url: http://kameleon.imag.fr/iso/keys/insecure_id_rsa
 
   # rootfs options
-  rootfs: $$kameleon_cwd/rootfs
-  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
+  rootfs: /rootfs
+  rootfs_download_path: $$rootfs
+  filesystem_type: ext4
 
   ## System variables. Required by kameleon engine
   # Include specific steps
@@ -52,35 +53,37 @@ global:
   apt_enable_nonfree: true
   apt_install_recommends: false
 
-  # Shell session from where we launch exec_out commands. There is often a
-  # local bash session, but it can be a remote shell on other machines or on
-  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-  out_context:
-    cmd: bash
-    workdir: $$kameleon_cwd
-    proxy_cache: 127.0.0.1
-  # Shell session that allows us to connect to the building machine in order to
-  # configure it and setup additional programs
   ssh_config_file: $$kameleon_cwd/ssh_config
-  in_context:
-    cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
+  out_context:
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
+
+  in_context:
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t chroot $$rootfs /bin/bash
+    workdir: /root/kameleon_workdir
+    proxy_cache: 10.0.2.2
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps:
+    - $$distrib/$$release
+    - $$distrib
+
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
+  - prepare_qemu
+  - start_qemu
+  - initialize_disk:
+    - disk_device: /dev/vda
   - debootstrap:
-    - include_pkg: >
-        ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
-        net-tools iproute acpid openssh-server pciutils extlinux
-        linux-image-$$arch
+    - include_pkg: apt-utils ca-certificates locales less
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - enable_cache: true
-  - initialize_disk_qemu
-  - prepare_qemu
-  - install_bootloader
-  - start_qemu
+    - enable_cache: false
+    - variant: minbase
+  - start_chroot
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the out context (whenever
@@ -96,9 +99,12 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp rsync sudo less vim bash-completion
+        debian-keyring ntp sudo less vim bash-completion extlinux
+        linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
+        iptables iputils-ping curl less acpid iproute pciutils psmisc
   - configure_kernel:
     - arch: $$arch
+  - install_bootloader
   # Configuration
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
@@ -117,8 +123,8 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
-  - save_appliance:
-    - input: $$image_disk
+  - qemu_save_appliance:
+    - input: $$qemu_image_disk
     - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2
     # - save_as_qed

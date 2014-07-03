@@ -11,8 +11,3 @@
 
 - update_initramfs:
   - exec_in: update-initramfs -u
-
-- reconfigure_extlinux:
-  - exec_in: apt-get -y --force-yes --install-suggests --reinstall install extlinux
-  - exec_in: extlinux --install /boot/extlinux 2>&1
-  - exec_in: extlinux-update 2>&1

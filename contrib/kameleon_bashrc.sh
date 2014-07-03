@@ -140,7 +140,7 @@ fi
 function __download {
     echo "Downloading: $1..."
     if which curl >/dev/null; then
-        curl "$1" -o "$2" 2>&1
+        curl -# "$1" -o "$2" 2>&1
     else
         fail "curl is missing, trying with wget..."
         if which wget >/dev/null; then

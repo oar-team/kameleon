@@ -21,6 +21,7 @@ global:
   distrib: debian
   release: wheezy
   arch: amd64
+  kernel_arch: $$arch
 
   ## Disk options
   nbd_device: /dev/nbd1
@@ -55,17 +56,17 @@ global:
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - debootstrap:
-    - include_pkg: >
-        ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
-        net-tools iproute acpid openssh-server pciutils extlinux
-        linux-image-$$arch
+    - include_pkg: apt-utils ca-certificates locales less
     - release: $$release
     - arch: $$arch
-    - repository: http://ftp.fr.debian.org/debian/
+    - repository: http://ftp.debian.org/debian/
     - enable_cache: true
+    - variant: minbase
   - initialize_disk_chroot
   - start_chroot
-  - install_bootloader
+  - enable_checkpoints
+  - install_bootloader:
+    - device: $$nbd_device
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the out context (whenever
@@ -80,7 +81,9 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp zip unzip rsync sudo less vim bash-completion
+        debian-keyring ntp sudo less vim bash-completion extlinux
+        linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
+        iptables iputils-ping curl less acpid iproute pciutils psmisc
   - configure_kernel:
     - arch: $$arch
   # Configuration
@@ -101,7 +104,7 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
-  - save_appliance:
+  - qemu_save_appliance:
     - input: $(readlink $$image_disk)
     - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2

@@ -35,7 +35,7 @@
   # this miscrostep must be done again ensure that the nbd device is
   # detached
   - on_checkpoint: redo
-  - on_export_clean:
+  - on_setup_clean:
     - exec_out: echo "sync" ; sync
     - exec_out: qemu-nbd -d $$nbd_device
     - exec_out: "pgrep qemu-nbd | xargs -I {} kill -9 {} || true"
@@ -55,7 +55,7 @@
   - on_checkpoint: redo
   - exec_out: mkdir -p $$rootfs
   - exec_out:  "echo Mounting root partition... ;  mount $${nbd_device}p1 $$rootfs || fail cannot mount /"
-  - on_export_clean:
+  - on_setup_clean:
     - exec_out: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
 
 - copy_rootfs:
