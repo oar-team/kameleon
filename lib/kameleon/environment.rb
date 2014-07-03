@@ -30,6 +30,7 @@ module Kameleon
         instance_variable_set("@#{key}".to_sym, options[key])
         Kameleon.ui.debug("  @#{key} : #{options[key]}")
       end
+      @debug = true if ENV['KAMELEON_DEBUG']
     end
   end
 end

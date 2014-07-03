@@ -182,7 +182,7 @@ module Kameleon
         Thor::Base.shell = Thor::Shell::Basic
       end
       Kameleon.ui = Kameleon::UI::Shell.new(self.options)
-      Kameleon.ui.level = "debug" if self.options["verbose"]
+      Kameleon.ui.level = "debug" if self.options["debug"]
     end
 
     def self.start(*)
