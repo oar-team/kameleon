@@ -1,0 +1,21 @@
+# Install extlinux bootloader
+
+- install_bootloader:
+  - write_in:
+    - /etc/default/extlinux
+    - |
+      ## /etc/default/extlinux - configuration file for extlinux-update(8)
+      EXTLINUX_UPDATE="true"
+      EXTLINUX_ALTERNATIVES="default recovery"
+      EXTLINUX_DEFAULT="l0"
+      EXTLINUX_ENTRIES="all"
+      EXTLINUX_MEMDISK="true"
+      EXTLINUX_MEMDISK_DIRECTORY="/boot"
+      EXTLINUX_MENU_LABEL="$(echo $$kameleon_recipe_name | perl -ne 'print ucfirst'), kernel"
+      EXTLINUX_OS_PROBER="true"
+      EXTLINUX_PARAMETERS="ro quiet"
+      EXTLINUX_ROOT=""
+      EXTLINUX_THEME="$$distrib"
+      EXTLINUX_TIMEOUT="20"
+  - exec_in: extlinux --install /boot/extlinux 2>&1
+  - exec_in: extlinux-update 2>&1

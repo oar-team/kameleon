@@ -1,35 +1,46 @@
 - insecure_ssh_key: $$kameleon_cwd/insecure_ssh_key
 
-- mount_chroot:
-  - check_cmd_out: chroot
-  - exec_out: mount -o bind /dev  $$rootfs/dev
-  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
-  - exec_out: mount -t proc /proc  $$rootfs/proc
-  - exec_out: mount -t sysfs /sys  $$rootfs/sys
-  - exec_out: test -f $$rootfs/etc/mtab || cat /proc/mounts > $$rootfs/etc/mtab
+- download_boot2kameleon_iso:
+  - download_file_local:
+    - $$boot2kameleon_url
+    - $$kameleon_cwd/boot2kameleon.iso
 
-- umount_chroot:
-  - on_bootstrap_clean:
-    - exec_out: echo try umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
-    - exec_out: echo try umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
-    - exec_out: echo try umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true
-    - exec_out: echo try umount $$rootfs/dev... ; mountpoint -q $$rootfs/dev && umount -f -l $$rootfs/dev  || true
+- create_vdi_disk:
+  - exec_local: VBoxManage createhd --filename $$virtualbox_image_disk --size $$virtualbox_image_size
+
+- register_vm:
+  - on_checkpoint: redo
+  - exec_local: echo "sync" ; sync
+  - exec_local: echo "Creating virtual machine"
+  - exec_local: VBoxManage createvm --name $$virtualbox_vmid --register
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --ostype $$virtualbox_os_type
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --memory $$virtualbox_memory_size
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --acpi on
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nic1 nat --nictype1 82540EM --cableconnected1 on
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --natpf1 guestssh,tcp,,$$virtualbox_ssh_port,,22
+  - exec_local: VBoxManage storagectl $$virtualbox_vmid --name "IDE Controller" --add ide
+  - exec_local: |
+      VBoxManage storageattach $$virtualbox_vmid \
+        --storagectl "IDE Controller" \
+        --port 0 \
+        --device 0 \
+        --type hdd \
+        --medium $$virtualbox_image_disk
+  - exec_local: VBoxManage storageattach $$virtualbox_vmid --storagectl "IDE Controller" --port 1 --device 0 --type dvddrive --medium $$kameleon_cwd/boot2kameleon.iso
+  - on_export_clean:
+    - exec_local: VBoxManage unregistervm --delete $$virtualbox_vmid
 
 - configure_ssh_access:
-  - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
-  - exec_out: cat $$insecure_ssh_key
-  - exec_out: chroot $$rootfs mkdir -p /root/.ssh
-  - exec_out: |
-        cat $${insecure_ssh_key}.pub | tee -a $$rootfs/root/.ssh/authorized_keys
-        cat $${insecure_ssh_key}.pub > $$rootfs/root/.ssh/kameleon_insecure_public_key
-        chmod 600 $$rootfs/root/.ssh/authorized_keys
-        chmod 755 $$rootfs/root/.ssh
+  - download_file_local:
+    - $$insecure_ssh_key_url
+    - $$insecure_ssh_key
+  - exec_local: chmod 600 $$insecure_ssh_key
 
 - create_ssh_config:
-  - write_out:
+  - write_local:
     - $$ssh_config_file
     - |
-      Host $$kameleon_recipe_name
+      Host $${kameleon_recipe_name}
       HostName 127.0.0.1
       Port $${virtualbox_ssh_port}
       User root

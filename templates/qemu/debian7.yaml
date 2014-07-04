@@ -99,11 +99,11 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp sudo less vim bash-completion extlinux
+        debian-keyring ntp sudo less vim bash-completion curl less acpid
         linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
-        iptables iputils-ping curl less acpid iproute pciutils psmisc
-  - configure_kernel:
-    - arch: $$arch
+        iptables iputils-ping iproute pciutils psmisc extlinux
+        syslinux-themes-debian
+  - configure_kernel
   - install_bootloader
   # Configuration
   - configure_system:

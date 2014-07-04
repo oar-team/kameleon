@@ -1,0 +1,5 @@
+# # Save G5k Appliance
+
+- to_ova:
+  - exec_local: rm -f $$output
+  - exec_local: VBoxManage export $$virtualbox_vmid -o $$output
