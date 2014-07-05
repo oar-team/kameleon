@@ -205,14 +205,13 @@ module Kameleon
       puts "cache path : #{@cache_path}"
       execute("tar","-xf #{@cache_path} -C #{cached_recipe} .")
       Kameleon.ui.info("Getting cached recipe")
-      # This will look for the name of the recipe
-      recipe_file = Dir["#{cached_recipe.to_s}/*.yaml"].first
+      recipe_header = YAML::load(File.read("#{cached_recipe}/header"))
+      recipe_file = recipe_header[:recipe_path]
       return recipe_file
     end
 
     def execute(cmd,args,dir=nil)
       command = [cmd ] + args.split(" ")
-#      Kameleon.ui.info(" command generated: #{command}")
       process = ChildProcess.build(*command)
       process.cwd = dir unless dir.nil?
       process.start
@@ -225,6 +224,17 @@ module Kameleon
         return path if File.executable? exe
       end
       return nil
+    end
+
+    def common_prefix(paths)
+      return '' if paths.empty?
+      return paths.first.split('/').slice(0...-1).join('/') if paths.length <= 1
+      arr = paths.sort
+      first = arr.first.to_s.split('/')
+      last = arr.last.to_s.split('/')
+      i = 0
+      i += 1 while first[i] == last[i] && i <= first.length
+      first.slice(0, i).join('/')
     end
 
   end
