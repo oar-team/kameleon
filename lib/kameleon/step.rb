@@ -71,6 +71,7 @@ module Kameleon
         @value.gsub!(arg1, arg2)
       end
       @string_cmd = YAML.dump(to_array).gsub("---", "").strip
+      return self
     end
 
   end

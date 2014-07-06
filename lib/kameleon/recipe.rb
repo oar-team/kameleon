@@ -33,8 +33,8 @@ module Kameleon
         "kameleon_uuid" => kameleon_id,
         "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
-        "in_context" => {"cmd"=> "/bin/bash"},
-        "out_context" => {"cmd"=> "/bin/bash"}
+        "in_context" => {"cmd" => "/bin/bash", "proxy_cache" => "localhost"},
+        "out_context" => {"cmd" => "/bin/bash", "proxy_cache" => "localhost"}
       }
       @aliases = {}
       @checkpoint = nil
@@ -237,11 +237,15 @@ module Kameleon
               @checkpoint = YAML.load_file(path)
               @checkpoint["path"] = path.to_s
               @files.push(path)
-              return path
             end
           end
           fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
-                            "does not exists"
+                            "does not exists" if @checkpoint.nil?
+        end
+        (@checkpoint.keys - ["path"]).each do |key|
+          @checkpoint[key].map! do |cmd|
+            Kameleon::Command.new(cmd, "checkpoint")
+          end
         end
       end
     end

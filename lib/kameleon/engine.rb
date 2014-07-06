@@ -62,7 +62,8 @@ module Kameleon
       end
 
       Kameleon.ui.debug("Building local context [local]")
-      @local_context = Context.new("local", "bash", @cwd, "", @cwd)
+      @local_context = Context.new("local", "bash", @cwd, "", @cwd,
+                                   :proxy_cache => "localhost")
       Kameleon.ui.debug("Building external context [out]")
       @out_context = Context.new("out",
                                  @recipe.global["out_context"]["cmd"],

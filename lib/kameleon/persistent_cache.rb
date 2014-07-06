@@ -170,11 +170,11 @@ module Kameleon
           f.puts(@cmd_cached.to_yaml)
         end
 
-        # require 'pry'; binding.pry
-        recipe_dir = Pathname.new(common_prefix(@recipe_files))
-        all_files = @recipe_files.push(@recipe_path)
-        Kameleon::Utils.copy_files(recipe_dir, @cache_dir, all_files)
-
+        unless @recipe_files.empty?
+          recipe_dir = Pathname.new(common_prefix(@recipe_files))
+          all_files = @recipe_files.push(@recipe_path)
+          Kameleon::Utils.copy_files(recipe_dir, @cache_dir, all_files)
+        end
         ## Saving metadata information
         Kameleon.ui.info("Caching recipe")
         File.open("#{@cached_recipe_dir}/header",'w+') do |f|
