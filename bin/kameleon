@@ -15,6 +15,8 @@ ENV["THOR_DEBUG"] = "1"
 
 begin
   Kameleon::CLI.start
+rescue Kameleon::Exit => e
+  exit e.status_code
 rescue Kameleon::Error => e
   Kameleon.ui.error(e.message)
   Kameleon.ui.trace(e)
@@ -35,13 +37,13 @@ rescue Errno::ENOENT => e
   Kameleon.ui.trace(e)
   exit 16
 rescue Exception => e
-  if !ENV['KAMELEON_DEBUG']
+  if Kameleon.env.debug
+    Kameleon.ui.error("Error : #{e}")
+    Kameleon.ui.trace(e)
+  else
     msg = "Unfortunately, a fatal error has occurred : "\
           "#{e.message}.\nUse --debug option for more details\n"
     Kameleon.ui.error(msg)
-  else
-    Kameleon.ui.error("Error : #{e}")
-    Kameleon.ui.trace(e)
   end
   exit 666
 end

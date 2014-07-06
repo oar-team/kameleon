@@ -13,6 +13,7 @@ module Kameleon
     end
   end
 
+  class Exit < Error; status_code(0) ; end
   class KameleonError < Error; status_code(1) ; end
   class ExecError < Error; status_code(2) ; end
   class InternalError < Error; status_code(3) ; end

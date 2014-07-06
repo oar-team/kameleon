@@ -114,8 +114,8 @@ module Kameleon
                   :desc => "Using specific checkpoint to build the image. " \
                            "Default value is the last checkpoint."
     method_option :checkpoint, :type => :boolean ,
-                  :default => true,
-                  :desc => "Do not use checkpoints"
+                  :default => false,
+                  :desc => "Enable checkpoint"
     method_option :cache, :type => :boolean,
                   :default => false,
                   :desc => "Generate a persistent cache for the appliance."
@@ -127,12 +127,14 @@ module Kameleon
                   :desc => "Full path of the proxy binary to use for the persistent cache."
 
     def build(recipe_path=nil)
-      if recipe_path== nil then
+      if recipe_path.nil? && !options[:from_cache].nil?
         Kameleon.ui.info("Using the cached recipe")
         @cache = Kameleon::Persistent_cache.instance
         @cache.cache_path = options[:from_cache]
         recipe_path =  @cache.get_recipe
       end
+      raise BuildError, "A recipe file or a persistent cache archive " \
+                        "is required to run this command." if recipe_path.nil?
       clean(recipe_path) if options[:clean]
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       Kameleon.ui.info("Starting build recipe '#{recipe_path}'")
@@ -140,9 +142,8 @@ module Kameleon
       engine.build
       total_time = Time.now.to_i - start_time
       Kameleon.ui.info("")
-      Kameleon.ui.info("Build recipe '#{recipe_path}' is completed !")
-      Kameleon.ui.info("Build total duration : #{total_time} secs")
-      Kameleon.ui.info("Build directory : #{engine.cwd}")
+      Kameleon.ui.info("Successfully built '#{recipe_path}'")
+      Kameleon.ui.info("Total duration : #{total_time} secs")
     end
 
     desc "checkpoints [RECIPE_PATH]", "Lists all availables checkpoints"
@@ -183,6 +184,12 @@ module Kameleon
       end
       Kameleon.ui = Kameleon::UI::Shell.new(self.options)
       Kameleon.ui.level = "debug" if self.options["debug"]
+      opts = args[1]
+      cmd_name = args[2][:current_command].name
+      if opts.include? "--help"
+        CLI.command_help(Kameleon.ui.shell, cmd_name)
+        raise Kameleon::Exit
+      end
     end
 
     def self.start(*)
