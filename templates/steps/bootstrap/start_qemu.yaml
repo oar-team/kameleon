@@ -43,5 +43,5 @@
         if nc -w 1 -z localhost $$qemu_monitor_port 2>/dev/null
         then
           echo "Shutting down qemu virtual machine..."
-          echo "system_reset" | nc localhost $$qemu_monitor_port 1>/dev/null 2>&1
+          echo "system_reset" | nc -q 1 localhost $$qemu_monitor_port 1>/dev/null 2>&1
         fi
