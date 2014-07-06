@@ -1,39 +1,41 @@
-create: |
-    if [ -f "$$kameleon_cwd/checkpoint_enabled" ] ; then
-      if nc -w 1 -z localhost $$qemu_monitor_port 2>/dev/null
-      then
-        echo "savevm @microstep_id" | nc localhost $$qemu_monitor_port
-      fi
-    fi
+enabled?:
+  - exec_local: test -f $$kameleon_cwd/checkpoint_enabled
+  - exec_local: nc -w 1 -z localhost $$qemu_monitor_port
 
-apply: |
-    [[ ! -f "$$kameleon_cwd/vm_state_to_load.txt" ]] || rm -f $$kameleon_cwd/vm_state_to_load.txt
-    if [ -f "$$qemu_image_disk" ] ; then
-      _checkpoints=$(qemu-img snapshot -l $$qemu_image_disk | tail -n +3 | awk '{print $2}')
-      _checkpoints=($_checkpoints)
-      for checkpoint in "${_checkpoints[@]}"; do
-        if [ -f "$$kameleon_cwd/vm_state_to_load.txt" ]; then
+create:
+  - exec_local: echo -e "savevm @microstep_id" | nc -q 1 localhost $$qemu_monitor_port
+
+apply:
+  - exec_local: |
+      [[ ! -f "$$kameleon_cwd/vm_state_to_load.txt" ]] || rm -f $$kameleon_cwd/vm_state_to_load.txt
+      if [ -f "$$qemu_image_disk" ] ; then
+        _checkpoints=$(qemu-img snapshot -l $$qemu_image_disk | tail -n +3 | awk '{print $2}')
+        _checkpoints=($_checkpoints)
+        for checkpoint in "${_checkpoints[@]}"; do
+          if [ -f "$$kameleon_cwd/vm_state_to_load.txt" ]; then
+            echo "Removing old checkpoint $checkpoint"
+            qemu-img snapshot -d $checkpoint $$qemu_image_disk
+          fi
+          if [[ "$checkpoint" == "@microstep_id" ]]; then
+              echo "@microstep_id" > $$kameleon_cwd/vm_state_to_load.txt
+              qemu-img snapshot -a $checkpoint $$qemu_image_disk
+          fi
+      done
+      fi
+
+clear:
+  - exec_local: |
+      if [ -f "$$qemu_image_disk" ] ; then
+        _checkpoints=$(qemu-img snapshot -l $$qemu_image_disk | tail -n +3 | awk '{print $2}')
+        _checkpoints=($_checkpoints)
+        for checkpoint in "${_checkpoints[@]}"; do
           echo "Removing old checkpoint $checkpoint"
           qemu-img snapshot -d $checkpoint $$qemu_image_disk
-        fi
-        if [[ "$checkpoint" == "@microstep_id" ]]; then
-            echo "@microstep_id" > $$kameleon_cwd/vm_state_to_load.txt
-            qemu-img snapshot -a $checkpoint $$qemu_image_disk
-        fi
-    done
-    fi
+      done
+      fi
 
-clear: |
-    if [ -f "$$qemu_image_disk" ] ; then
-      _checkpoints=$(qemu-img snapshot -l $$qemu_image_disk | tail -n +3 | awk '{print $2}')
-      _checkpoints=($_checkpoints)
-      for checkpoint in "${_checkpoints[@]}"; do
-        echo "Removing old checkpoint $checkpoint"
-        qemu-img snapshot -d $checkpoint $$qemu_image_disk
-    done
-    fi
-
-list: |
-    if [ -f "$$qemu_image_disk" ] ; then
-        qemu-img snapshot -l $$qemu_image_disk | tail -n +3 | awk '{print $2}'
-    fi
+list:
+  - exec_local: |
+      if [ -f "$$qemu_image_disk" ] ; then
+          qemu-img snapshot -l $$qemu_image_disk | tail -n +3 | awk '{print $2}'
+      fi

@@ -26,7 +26,7 @@ module Kameleon
         end
       end
 
-      @enable_checkpoint = !@options[:no_checkpoint]
+      @enable_checkpoint = @options[:checkpoint]
       # Check if the recipe have checkpoint entry
       @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
 
@@ -101,22 +101,33 @@ module Kameleon
     end
 
     def create_checkpoint(microstep_id)
-      cmd = @recipe.checkpoint["create"].gsub("@microstep_id", microstep_id)
-      create_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
-      safe_exec_cmd(create_cmd, :log_level => "debug")
+      @recipe.checkpoint["create"].each do |cmd|
+        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id),
+                      :log_level => "debug")
+      end
+    end
+
+    def checkpoint_enabled?
+      @recipe.checkpoint["enabled?"].each do |cmd|
+        exec_cmd(cmd, :log_level => "debug")
+      end
+      return true
+    rescue ExecError
+      return false
     end
 
     def apply_checkpoint(microstep_id)
-      cmd = @recipe.checkpoint["apply"].gsub("@microstep_id", microstep_id)
-      apply_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
-      safe_exec_cmd(apply_cmd, :log_level => "debug")
+      @recipe.checkpoint["apply"].each do |cmd|
+        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id),
+                      :log_level => "debug")
+      end
     end
 
     def list_all_checkpoints
       list = ""
-      cmd = Kameleon::Command.new({"exec_out" => @recipe.checkpoint['list']},
-                                  "checkpoint")
-      safe_exec_cmd(cmd, :stdout => list)
+      @recipe.checkpoint["list"].each do |cmd|
+        safe_exec_cmd(cmd, :stdout => list)
+      end
       return list.split(/\r?\n/)
     end
 
@@ -152,15 +163,17 @@ module Kameleon
               next
             end
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
-              Kameleon.ui.info("--> Using cache this time")
+              Kameleon.ui.info("--> Using checkpoint")
             else
               Kameleon.ui.info("--> Running the step...")
               microstep.commands.each do |cmd|
                 safe_exec_cmd(cmd)
               end
               unless microstep.on_checkpoint == "redo"
-                Kameleon.ui.info("--> Creating checkpoint : #{ microstep.identifier }")
-                create_checkpoint(microstep.identifier)
+                if checkpoint_enabled?
+                  Kameleon.ui.info("--> Creating checkpoint : #{ microstep.identifier }")
+                  create_checkpoint(microstep.identifier)
+                end
               end
             end
           else

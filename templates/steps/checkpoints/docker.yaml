@@ -1,14 +1,17 @@
-create: |
-    if [ -f MAIN_CONTAINER_ID ] ; then
-      docker commit $(cat MAIN_CONTAINER_ID) $$docker_image:@microstep_id
-    fi
+enabled?:
+  - exec_local: test -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
 
-apply: |
-    docker tag $$docker_image:@microstep_id $$docker_image:latest
+create:
+  - exec_local: docker commit $(cat $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) $$docker_image:@microstep_id
 
-list: |
-    docker images | grep $$docker_image | awk '{print $2}'
+apply:
+  - exec_local: docker tag $$docker_image:@microstep_id $$docker_image:latest
 
-clear: |
-    docker images | grep $$docker_image | awk '{print $3}' \
-    | xargs -I {} bash -c "docker rmi {} | cat || true"
+list:
+  - exec_local: |
+      docker images | grep $$docker_image | awk '{print $2}'
+
+clear:
+  - exec_local: |
+      docker images | grep $$docker_image | awk '{print $3}' \
+        | xargs -I {} bash -c "docker rmi {} | cat || true"

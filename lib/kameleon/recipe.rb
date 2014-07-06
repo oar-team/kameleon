@@ -398,10 +398,12 @@ module Kameleon
     end
 
     def resolve_checkpoint()
-      %w(create apply list clear).each do |key|
-        @checkpoint[key] = Utils.resolve_vars(@checkpoint[key],
+      (@checkpoint.keys - ["path"]).each do |key|
+        @checkpoint[key].each do |cmd|
+          cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd,
                                               @checkpoint["path"],
                                               @global)
+        end
       end
     end
 
