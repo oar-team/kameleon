@@ -11,6 +11,11 @@
       rm -f $$qemu_image_disk
       qemu-img create -f qcow2 $$qemu_image_disk $$qemu_image_size
 
+- delete_initial_image:
+  - on_checkpoint: skip
+  - on_export_clean:
+    - exec_local: rm -f $$qemu_image_disk
+
 - configure_ssh_access:
   - download_file_local:
     - $$insecure_ssh_key_url

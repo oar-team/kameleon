@@ -295,14 +295,19 @@ module Kameleon
                "exec_local" => @local_context}
         Kameleon.ui.info("Cleaning #{section.name} section")
         section.clean_macrostep.sequence do |microstep|
+          if @enable_checkpoint
+            if microstep.on_checkpoint == "skip"
+              next
+            end
+          end
           microstep.commands.each do |cmd|
             if map.keys.include? cmd.key
               unless map[cmd.key].closed?
-                begin
-                  exec_cmd(cmd)
-                rescue
-                  Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
-                end
+              begin
+                exec_cmd(cmd)
+              rescue
+                Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
+              end
               end
             end
           end
