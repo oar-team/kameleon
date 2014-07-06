@@ -26,12 +26,9 @@ module Kameleon
         "setup" => Section.new("setup"),
         "export" => Section.new("export"),
       }
-      kameleon_id = SecureRandom.uuid
       @global = {
         "kameleon_recipe_name" => @name,
         "kameleon_recipe_dir" => File.dirname(@path),
-        "kameleon_uuid" => kameleon_id,
-        "kameleon_short_uuid" => kameleon_id.split("-").last,
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
         "in_context" => {"cmd" => "/bin/bash", "proxy_cache" => "localhost"},
         "out_context" => {"cmd" => "/bin/bash", "proxy_cache" => "localhost"}
@@ -41,7 +38,7 @@ module Kameleon
       @files = []
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
-      load! kwargs
+      load! :strict => false
     end
 
     def load!(kwargs = {})
@@ -61,7 +58,7 @@ module Kameleon
       @global.merge!(yaml_recipe.fetch("global", {}))
       # Resolve dynamically-defined variables !!
       resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, kwargs)
-      @global.merge! YAML.load(resolved_global)
+      resolved_global = @global.merge YAML.load(resolved_global)
       # Loads aliases
       load_aliases(yaml_recipe)
       # Loads checkpoint configuration
@@ -72,12 +69,12 @@ module Kameleon
         File.join(File.dirname(@path), 'steps'),
         File.expand_path(File.join(File.dirname(@path), '..', 'steps')),
       ]
-      @global['include_steps'] ||= []
-      @global['include_steps'].push ''
-      @global['include_steps'].flatten!
-      @global['include_steps'].compact!
+      resolved_global['include_steps'] ||= []
+      resolved_global['include_steps'].push ''
+      resolved_global['include_steps'].flatten!
+      resolved_global['include_steps'].compact!
       @sections.values.each do |section|
-        dir_to_search = @global['include_steps'].map do |path|
+        dir_to_search = resolved_global['include_steps'].map do |path|
           steps_dirs.map do |steps_dir|
             [File.join(steps_dir, section.name, path),
               File.join(steps_dir, path)]
@@ -317,6 +314,11 @@ module Kameleon
     end
 
     def resolve!
+      unless @global.keys.include? "kameleon_uuid"
+        kameleon_id = SecureRandom.uuid
+        @global["kameleon_uuid"] = kameleon_id
+        @global["kameleon_short_uuid"] = kameleon_id.split("-").last
+      end
       # Resolve dynamically-defined variables !!
       resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
       @global.merge! YAML.load(resolved_global)
@@ -546,7 +548,6 @@ module Kameleon
   end
 
   class RecipeTemplate < Recipe
-
     def relative_path()
       @path.relative_path_from(Kameleon.env.templates_path)
     end

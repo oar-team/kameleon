@@ -17,7 +17,7 @@ module Kameleon
       templates_path = Kameleon.env.templates_path
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
-        tpl = RecipeTemplate.new(template_path, :strict => false)
+        tpl = RecipeTemplate.new(template_path)
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
@@ -40,7 +40,7 @@ module Kameleon
       templates_path = Kameleon.env.templates_path
       template_path = File.join(templates_path, template_name) + '.yaml'
       begin
-        tpl = RecipeTemplate.new(template_path, :strict => false)
+        tpl = RecipeTemplate.new(template_path)
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
@@ -79,7 +79,7 @@ module Kameleon
       templates_files = all_yaml_files - steps_files
       templates_files.each do |f|
         begin
-        recipe = RecipeTemplate.new(f, :strict => false)
+        recipe = RecipeTemplate.new(f)
         templates_hash.push({
           "name" => f.gsub(templates_path, "").chomp(".yaml"),
           "description" => recipe.metainfo['description'],
