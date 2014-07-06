@@ -1,0 +1,26 @@
+enabled?:
+  - exec_local: test -f $$kameleon_cwd/checkpoint_enabled
+  - exec_local: VBoxManage list vms | grep -q $$virtualbox_vmid
+
+create:
+  - exec_local: VBoxManage snapshot $$virtualbox_vmid take @microstep_id
+
+apply:
+  - exec_local: VBoxManage snapshot $$virtualbox_vmid restore @microstep_id
+
+clear:
+  - exec_local: |
+      if VBoxManage list vms | grep -q $$virtualbox_vmid; then
+        _checkpoints=$(VBoxManage snapshot $$virtualbox_vmid list | grep 'Name:' | awk '{print $2}')
+        _checkpoints=($_checkpoints)
+        for checkpoint in "${_checkpoints[@]}"; do
+          echo "Removing old checkpoint $checkpoint"
+          VBoxManage snapshot $$virtualbox_vmid restore @microstep_id
+        done
+      fi
+
+list:
+  - exec_local: |
+      if VBoxManage list vms | grep -q $$virtualbox_vmid; then
+          VBoxManage snapshot $$virtualbox_vmid list | grep 'Name:' | awk '{print $2}'
+      fi

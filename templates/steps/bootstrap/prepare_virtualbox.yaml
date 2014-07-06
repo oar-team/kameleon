@@ -10,7 +10,6 @@
   - exec_local: VBoxManage createhd --filename $$virtualbox_image_disk --size $$virtualbox_image_size
 
 - register_vm:
-  - on_checkpoint: redo
   - exec_local: echo "Creating virtual machine"
   - exec_local: VBoxManage createvm --name $$virtualbox_vmid --register
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --ostype $$virtualbox_os_type
@@ -27,6 +26,9 @@
         --type hdd \
         --medium $$virtualbox_image_disk
   - exec_local: VBoxManage storageattach $$virtualbox_vmid --storagectl "IDE Controller" --port 1 --device 0 --type dvddrive --medium $$kameleon_cwd/boot2kameleon.iso
+
+- delete_vm:
+  - on_checkpoint: skip
   - on_export_clean:
     - exec_local: VBoxManage unregistervm --delete $$virtualbox_vmid
 
