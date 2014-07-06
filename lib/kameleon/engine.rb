@@ -25,7 +25,6 @@ module Kameleon
           @recipe.global[key] = build_recipe["global"][key]
         end
       end
-
       @enable_checkpoint = @options[:checkpoint]
       # Check if the recipe have checkpoint entry
       @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
@@ -53,7 +52,6 @@ module Kameleon
         #saving_steps_files
       end
 
-      @in_context = nil
       begin
         Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
         FileUtils.mkdir_p @cwd
@@ -71,8 +69,6 @@ module Kameleon
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd,
                                  :proxy_cache => @recipe.global["out_context"]["proxy_cache"])
-
-
 
       Kameleon.ui.debug("Building internal context [in]")
       @in_context = Context.new("in",
@@ -185,10 +181,6 @@ module Kameleon
         end
       end
       @cleaned_sections.push(section.name)
-
-
-      @cache.stop if @cache
-
     end
 
     def safe_exec_cmd(cmd, kwargs = {})
@@ -394,8 +386,6 @@ module Kameleon
     end
 
     def pretty_checkpoints_list
-
-
       def find_microstep_slug_by_id(id)
         @recipe.microsteps.each do |m|
           return m.slug if m.identifier == id

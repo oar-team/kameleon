@@ -123,9 +123,8 @@ module Kameleon
     end
 
     def pack()
-      Kameleon.ui.info("Packing up the generated cache in #{@cwd}")
+      Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar")
       execute("tar","-cf #{@name}-cache.tar -C cache/ .",@cwd)
-      # The cache directory cannot be deleted due to the checkpoints
     end
 
     def unpack(cache_path)
