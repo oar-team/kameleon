@@ -9,8 +9,10 @@
 ---
 # Loads some helpful aliases
 aliases: defaults.yaml
+
 # Enables qemu checkpoint
-# checkpoint: qemu.yaml
+checkpoint: qemu.yaml
+
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
@@ -22,6 +24,7 @@ global:
   release: wheezy
   arch: amd64
   kernel_arch: $$arch
+  hostname: kameleon-$$distrib
 
   ## QEMU options
   qemu_enable_kvm: "$(egrep '(vmx|svm)' /proc/cpuinfo > /dev/null && echo true)"
@@ -74,6 +77,7 @@ global:
 bootstrap:
   - prepare_qemu
   - start_qemu
+  - enable_checkpoint
   - initialize_disk:
     - disk_device: /dev/vda
   - debootstrap:
@@ -81,13 +85,11 @@ bootstrap:
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - enable_cache: false
+    - enable_cache: true
     - variant: minbase
   - start_chroot
 
 #== Install and configuration steps
-# WARNING: this part should be independante from the out context (whenever
-# possible...)
 setup:
   # Install
   - configure_apt:
@@ -112,8 +114,7 @@ setup:
     - timezone: UTC
   - configure_keyboard:
     - layout: "us,fr,de"
-  - configure_network:
-    - hostname: kameleon-$$distrib
+  - configure_network
   - create_group:
     - name: admin
   - create_user:
@@ -123,6 +124,7 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
+  - disable_checkpoint
   - qemu_save_appliance:
     - input: $$qemu_image_disk
     - output: $$kameleon_cwd/$$kameleon_recipe_name

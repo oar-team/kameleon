@@ -1,5 +1,7 @@
 # Install extlinux bootloader
 
+- extlinux_theme: none
+
 - install_bootloader:
   - write_in:
     - /etc/default/extlinux
@@ -15,7 +17,7 @@
       EXTLINUX_OS_PROBER="true"
       EXTLINUX_PARAMETERS="ro quiet"
       EXTLINUX_ROOT=""
-      EXTLINUX_THEME="$$distrib"
-      EXTLINUX_TIMEOUT="20"
+      EXTLINUX_THEME="$$extlinux_theme"
+      EXTLINUX_TIMEOUT="1"
   - exec_in: extlinux --install /boot/extlinux 2>&1
   - exec_in: extlinux-update 2>&1
