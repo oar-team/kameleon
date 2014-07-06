@@ -1,9 +1,0 @@
-- enable_checkpoint:
-  - on_checkpoint: redo
-  - on_setup_init:
-    - exec_local: touch $$kameleon_cwd/checkpoint_enabled
-
-- disable_checkpoint:
-  - on_checkpoint: redo
-  - on_setup_clean:
-    - exec_local: rm -f $$kameleon_cwd/checkpoint_enabled

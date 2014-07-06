@@ -185,3 +185,15 @@ print('\n')
         fi
     fi
 }
+
+function __find_linux_root_device() {
+    local PDEVICE=`stat -c %04D /`
+    for file in $(find /dev -type b 2>/dev/null) ; do
+        local CURRENT_DEVICE=$(stat -c "%02t%02T" $file)
+        if [ $CURRENT_DEVICE = $PDEVICE ]; then
+            ROOTDEVICE="$file"
+            break;
+        fi
+    done
+    echo "$ROOTDEVICE"
+}

@@ -1,0 +1,22 @@
+# Install extlinux bootloader
+
+- install_syslinux:
+  - check_cmd_in: extlinux
+  - check_cmd_in: syslinux-install_update
+  - exec_in: syslinux-install_update -a -m
+  - exec_in: cp -r /usr/lib/syslinux/bios/*.c32 /boot/syslinux/
+  - exec_in: extlinux --install /boot/syslinux 2>&1
+  - exec_in: syslinux-install_update -a -m
+  - write_in:
+    - /boot/syslinux/syslinux.cfg
+    - |
+      default $(echo $$kameleon_recipe_name | perl -ne 'print ucfirst')
+      timeout 1
+      
+      label $(echo $$kameleon_recipe_name | perl -ne 'print ucfirst')
+      kernel ../`basename /boot/vmlinuz*`
+      initrd ../`basename /boot/init*`
+      # the net.ifnames option is disable to get default net interface
+      # names according to this page:
+      # https://wiki.archlinux.org/index.php/Network_Configuration#Device_names
+      append root=UUID=`blkid -s UUID -o value $(__find_linux_root_device)` rw net.ifnames=0
