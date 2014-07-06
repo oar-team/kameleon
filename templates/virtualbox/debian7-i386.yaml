@@ -1,0 +1,32 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian 7 (Wheezy) base system
+#
+#==============================================================================
+
+---
+extend: debian7-amd64
+
+#== Global variables use by Kameleon engine and the steps
+global:
+  # Distribution
+  arch: i386
+  kernel_arch: "686"
+
+  ## Kameleon iso bootstrap
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2kameleon-0.1.0-i686-insecure.iso
+
+  ## VirtualBox options
+  virtualbox_os_type: Linux
+
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+
+export:
+  - @base
