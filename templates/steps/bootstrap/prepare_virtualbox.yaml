@@ -6,11 +6,11 @@
     - $$kameleon_cwd/boot2kameleon.iso
 
 - create_vdi_disk:
+  - exec_local: rm -f $$virtualbox_image_disk
   - exec_local: VBoxManage createhd --filename $$virtualbox_image_disk --size $$virtualbox_image_size
 
 - register_vm:
   - on_checkpoint: redo
-  - exec_local: echo "sync" ; sync
   - exec_local: echo "Creating virtual machine"
   - exec_local: VBoxManage createvm --name $$virtualbox_vmid --register
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --ostype $$virtualbox_os_type

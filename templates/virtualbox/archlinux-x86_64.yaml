@@ -1,0 +1,101 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Build an Archlinux base system system.
+#
+#==============================================================================
+
+---
+# Loads some helpful aliases
+aliases: defaults.yaml
+# Enables qcow2 checkpoint
+# checkpoint: qemu.yaml
+#== Global variables use by Kameleon engine and the steps
+global:
+  ## User varibales : used by the recipe
+  user_name: kameleon
+  user_password: $$user_name
+
+  # Distribution
+  distrib: archlinux
+  arch: x86_64
+  hostname: kameleon-$$distrib
+
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2kameleon-0.1.0-$${arch}-insecure.iso
+  insecure_ssh_key_url: http://kameleon.imag.fr/iso/keys/insecure_id_rsa
+
+  ## VirtualBox options
+  virtualbox_memory_size: 512
+  virtualbox_ssh_port: 55423
+  virtualbox_os_type: Linux_64
+  virtualbox_vmid: $${kameleon_recipe_name}_$${kameleon_short_uuid}
+  virtualbox_image_size: 10000  ## megabytes = 10G
+  virtualbox_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.vdi
+
+  # rootfs options
+  rootfs: /rootfs
+  rootfs_download_path: $$rootfs
+  filesystem_type: ext4
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps:
+    - $$distrib
+
+  # Apt options
+  apt_repository: http://ftp.debian.org/debian/
+  apt_enable_contrib: true
+  apt_enable_nonfree: true
+  apt_install_recommends: false
+
+
+  ssh_config_file: $$kameleon_cwd/ssh_config
+  out_context:
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
+    workdir: /root/kameleon_workdir
+
+  in_context:
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t chroot $$rootfs /bin/bash
+    workdir: /root/kameleon_workdir
+
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - prepare_virtualbox
+  - start_virtualbox
+  - initialize_disk:
+    - disk_device: /dev/sda
+  - arch_bootstrap:
+    - mirror: http://mir.archlinux.fr/
+    # You can choose any group from https://www.archlinux.org/groups/
+    # It's recommended to use 'base' (default) or 'base-devel' (with dev tools)
+    - pkg_group: base
+  - start_chroot
+
+#== Install and configuration steps
+# WARNING: this part should be independante from the out context (whenever
+# possible...)
+setup:
+  # Install
+  - install_software:
+    - packages: ntp zip unzip rsync sudo vim bash-completion syslinux
+  - install_bootloader
+  # Configuration
+  - configure_system:
+    - locales: POSIX C en_US fr_FR de_DE
+    - lang: en_US.UTF-8
+    - timezone: UTC
+  - configure_keyboard:
+    # set to english keyboard use 'localectl list-keymaps' to see available list
+    - layout: en
+  - configure_network
+  - create_user:
+    - name: $$user_name
+    - groups: wheel
+    - password: $$user_name
+
+#== Export the generated appliance in the format of your choice
+export:
+  - export_virtualbox:
+    - output: "$$kameleon_cwd/$${kameleon_recipe_name}.ova"
