@@ -3,9 +3,7 @@
 SUITE=jessie
 MIRROR=http://ftp.debian.org/debian
 PACKAGES="apt-utils ca-certificates isc-dhcp-client isc-dhcp-common ifupdown
-          iproute2 iptables iputils-ping openssh-server
-          sysvinit xz-utils qemu-utils parted curl vim nano
-          debootstrap less rsync rinse"
+          iproute2 openssh-server sysvinit xz-utils"
 
 if [ "$(uname -m)" == "i686" ] ; then
     PACKAGES="linux-image-686 $PACKAGES"

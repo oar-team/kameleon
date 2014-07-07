@@ -20,6 +20,6 @@ bash $CURRENT_DIR/build_ramdisk.sh $WORKDIR $WORKDIR/init.gz $CURRENT_DIR/init
 mkdir -p $DEBOOTSTRAP_DIR
 sudo bash $CURRENT_DIR/debootstrap.sh $DEBOOTSTRAP_DIR
 
-## Generate appliance
+## Generate iso
 rsync -aAX --exclude '/.kameleon_timestamp' $DEBOOTSTRAP_DIR/* $ROOTFS_DIR
-bash $CURRENT_DIR/build_iso.sh $EXPORT_DIR/boot2kameleon-$VERSION-$(uname -m).iso
+bash $CURRENT_DIR/build_iso.sh $EXPORT_DIR/debian-jessie-$VERSION-$(uname -m)-insecure.iso

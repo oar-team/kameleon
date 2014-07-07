@@ -1,8 +1,0 @@
-#!/bin/sh
-
-set -e
-
-apt-get update -q
-apt-get install -y --force-yes --no-install-recommends ruby ruby-dev build-essential
-gem install kameleon-builder --no-ri --no-rdoc --verbose
-apt-get remove --purge -y --force-yes ruby-dev build-essential

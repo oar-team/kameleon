@@ -1,4 +1,8 @@
 #!/bin/sh
 set -e
 
+if [ -d /root/.ssh ]; then
+    chmod 700 /root/.ssh
+    chmod 600 /root/.ssh/*
+fi
 chown -R root:root /root
