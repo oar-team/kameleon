@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+# autologin
+sed -ri 's!/sbin/getty.*(tty[0-9]+).*!/bin/login -f root </dev/\1 >/dev/\1 2>\&1!g' /etc/inittab
