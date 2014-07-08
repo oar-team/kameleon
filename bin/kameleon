@@ -39,7 +39,7 @@ rescue Errno::ENOENT => e
 rescue Exception => e
   if Kameleon.env.debug
     Kameleon.ui.error("Error : #{e}")
-    Kameleon.ui.trace(e)
+    raise e
   else
     msg = "Unfortunately, a fatal error has occurred : "\
           "#{e.message}.\nUse --debug option for more details\n"
