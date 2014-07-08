@@ -19,8 +19,7 @@ global:
   boot2kameleon_url: http://kameleon.imag.fr/iso/boot2kameleon-0.1.0-i686-insecure.iso
 
   ## VirtualBox options
-  virtualbox_os_type: Linux
-
+  virtualbox_os_type: Debian
 
 bootstrap:
   - @base

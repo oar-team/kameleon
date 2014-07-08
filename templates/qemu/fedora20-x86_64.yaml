@@ -91,10 +91,11 @@ setup:
     - groups: wheel
     - password: $$user_password
 
-# == Export the generated appliance in the format of your choice
+#== Export the generated appliance in the format of your choice
 export:
+  - disable_checkpoint
   - qemu_save_appliance:
-    - input: $$image_disk
+    - input: $$qemu_image_disk
     - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2
     # - save_as_qed

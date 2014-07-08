@@ -2,24 +2,24 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Debian Testing base system
+# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) Desktop edition.
 #
 #==============================================================================
 
 ---
-extend: debian7
+extend: ubuntu-12.04-amd64
 
 global:
-  # Distribution
-  distrib: debian
-  release: testing
-  arch: amd64
+  # Apt options
+  apt_install_recommends: true
 
 bootstrap:
   - @base
 
 setup:
   - @base
+  - install_software:
+    - packages: ubuntu-desktop
 
 export:
   - @base

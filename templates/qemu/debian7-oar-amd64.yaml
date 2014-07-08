@@ -7,7 +7,7 @@
 #==============================================================================
 
 ---
-extend: debian7
+extend: debian7-amd64
 
 global:
   distrib: debian

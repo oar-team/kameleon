@@ -2,16 +2,18 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) Desktop edition.
+# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) Desktop edition.
 #
 #==============================================================================
 
 ---
-extend: ubuntu-12.04
+extend: ubuntu-14.04-amd64
 
 global:
-  # Apt options
-  apt_install_recommends: true
+  # Distribution
+  distrib: ubuntu
+  release: trusty
+  arch: amd64
 
 bootstrap:
   - @base

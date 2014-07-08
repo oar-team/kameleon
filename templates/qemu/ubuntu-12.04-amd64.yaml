@@ -21,24 +21,30 @@ global:
   distrib: ubuntu
   release: precise
   arch: amd64
+  kernel_arch: $$arch
+  hostname: kameleon-$$distrib
 
   ## QEMU options
-  qemu_enable_kvm: true
+  qemu_enable_kvm: "$(egrep '(vmx|svm)' /proc/cpuinfo > /dev/null && echo true)"
   qemu_cpu: 2
   qemu_memory_size: 512
   qemu_monitor_port: 10023
   qemu_ssh_port: 55423
   qemu_arch: x86_64
+  qemu_image_size: 10G
+  qemu_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
 
-  ## Disk options
-  nbd_device: /dev/nbd1
-  image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
-  image_size: 10G
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2kameleon-0.1.0-$${qemu_arch}-insecure.iso
+  insecure_ssh_key_url: http://kameleon.imag.fr/iso/keys/insecure_id_rsa
+
+  # rootfs options
+  rootfs: /rootfs
+  rootfs_download_path: $$rootfs
   filesystem_type: ext4
 
   # rootfs options
-  rootfs: $$kameleon_cwd/rootfs
-  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
+  rootfs: /rootfs
+  rootfs_download_path: $$rootfs
 
   # Apt options
   apt_repository: http://archive.ubuntu.com/ubuntu/
@@ -52,38 +58,35 @@ global:
     - $$distrib
     - debian
 
-  # Shell session from where we launch exec_out commands. There is often a
-  # local bash session, but it can be a remote shell on other machines or on
-  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-  out_context:
-    cmd: bash
-    workdir: $$kameleon_cwd
-
-  # Shell session that allows us to connect to the building machine in order to
-  # configure it and setup additional programs
   ssh_config_file: $$kameleon_cwd/ssh_config
-  in_context:
-    cmd: ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
+  out_context:
+    cmd: ssh -o ConnectTimeout=1 -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
+    proxy_cache: 10.0.2.2
+
+  in_context:
+    cmd: ssh -o ConnectTimeout=1 -F $$ssh_config_file $${kameleon_recipe_name} -t chroot $$rootfs /bin/bash
+    workdir: /root/kameleon_workdir
+    proxy_cache: 10.0.2.2
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
+  - prepare_qemu
+  - start_qemu
+  - enable_checkpoint
+  - initialize_disk:
+    - disk_device: /dev/sda
   - debootstrap:
-    - include_pkg: >
-        acpi-support kbd udev linux-image-virtual locales openssh-server
-        bzip2 linux-image-generic
+    - include_pkg: acpi-support kbd bzip2 udev locales less
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
     - enable_cache: true
-  - initialize_disk_qemu
-  - prepare_qemu
-  - install_bootloader
-  - start_qemu
+    - variant: minbase
+  - start_chroot
+
 
 #== Install and configuration steps
-# WARNING: this part should be independante from the out context (whenever
-# possible...)
 setup:
   # Install
   - configure_apt:
@@ -94,10 +97,13 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        apt-transport-https ca-certificates rsync sudo less bash-completion
-        curl nano vim psmisc language-pack-en
+        apt-transport-https ca-certificates sudo less bash-completion
+        curl nano vim psmisc language-pack-en linux-image-generic ifupdown
+        iptables iputils-ping iproute pciutils psmisc extlinux
+        syslinux-themes-ubuntu
   - configure_kernel:
     - arch: $$arch
+  - install_bootloader
   # Configuration
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
@@ -105,8 +111,7 @@ setup:
     - timezone: UTC
   - configure_keyboard:
     - layout: "us,fr,de"
-  - configure_network:
-    - hostname: kameleon-$$distrib
+  - configure_network
   - create_group:
     - name: admin
   - create_user:
@@ -116,8 +121,9 @@ setup:
 
 #== Export the generated appliance in the format of your choice
 export:
+  - disable_checkpoint
   - qemu_save_appliance:
-    - input: $$image_disk
+    - input: $$qemu_image_disk
     - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2
     # - save_as_qed
@@ -125,4 +131,3 @@ export:
     # - save_as_raw
     # - save_as_vmdk
     # - save_as_vdi
-

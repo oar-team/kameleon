@@ -7,7 +7,7 @@
 #==============================================================================
 
 ---
-extend: debian7
+extend: debian7-amd64
 
 global:
   ## User varibales : used by the recipe
@@ -24,6 +24,7 @@ setup:
   - setup_vagrant_box
 
 export:
+  - disable_checkpoint
   - save_vagrant_box:
     - os_type: Debian_64
     - memory: "512"

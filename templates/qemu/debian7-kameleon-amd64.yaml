@@ -7,7 +7,7 @@
 #==============================================================================
 
 ---
-extend: debian7-desktop
+extend: debian7-desktop-amd64
 
 global:
   # You can see the base template `debian7-desktop.yaml` to know the

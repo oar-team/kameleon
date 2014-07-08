@@ -2,18 +2,12 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Ubuntu 14.04 LTS (Trusty Tahr) Desktop edition.
+# DESCRIPTION: Fedora 20 GNOME Desktop edition
 #
 #==============================================================================
 
 ---
-extend: ubuntu-14.04
-
-global:
-  # Distribution
-  distrib: ubuntu
-  release: trusty
-  arch: amd64
+extend: fedora20-x86_64
 
 bootstrap:
   - @base
@@ -21,7 +15,7 @@ bootstrap:
 setup:
   - @base
   - install_software:
-    - packages: ubuntu-desktop
+    - packages: @x-window-system @gnome-desktop
 
 export:
   - @base

@@ -9,8 +9,8 @@
 ---
 # Loads some helpful aliases
 aliases: defaults.yaml
-# Enables qcow2 checkpoint
-# checkpoint: qemu.yaml
+# Enables virtualbox checkpoint
+checkpoint: virtualbox.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
@@ -54,11 +54,12 @@ global:
   out_context:
     cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
+    proxy_cache: 10.0.2.2
 
   in_context:
     cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t chroot $$rootfs /bin/bash
     workdir: /root/kameleon_workdir
-
+    proxy_cache: 10.0.2.2
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:

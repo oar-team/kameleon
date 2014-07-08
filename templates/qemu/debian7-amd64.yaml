@@ -67,12 +67,6 @@ global:
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
 
-  ## System variables. Required by kameleon engine
-  # Include specific steps
-  include_steps:
-    - $$distrib/$$release
-    - $$distrib
-
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - prepare_qemu
