@@ -302,12 +302,10 @@ module Kameleon
           end
           microstep.commands.each do |cmd|
             if map.keys.include? cmd.key
-              unless map[cmd.key].closed?
               begin
-                exec_cmd(cmd)
+                exec_cmd(cmd) unless map[cmd.key].closed?
               rescue
                 Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
-              end
               end
             end
           end

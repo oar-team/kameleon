@@ -160,6 +160,9 @@ module Kameleon
                              :yield     => lambda{|buf| yield(buf, nil)} }
                 }
       while true
+        if @process.exited?
+          raise ShellError, "Process '#{@cmd}' exited..."
+        end
         iodata.each do |_, iodat|
           if iodat[:end] and not iodat[:begin]
             raise ShellError, "Cannot read #{iodat[:begin]} from shell"

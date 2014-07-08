@@ -155,7 +155,7 @@ module Kameleon
       engine.pretty_checkpoints_list
     end
 
-    desc "clean [RECIPE_PATH]", "Cleaning 'out' and 'local' contexts and removing all checkpoints"
+    desc "clean [RECIPE_PATH]", "Cleaning all contexts and removing the checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
