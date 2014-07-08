@@ -4,23 +4,15 @@
 - debootstrap:
   - check_cmd_out: debootstrap
   - check_cmd_out: qemu-arm-static
-  - exec_out: |
-        if [ $$enable_cache = true ]; then
-            [[ ! -f "$$rootfs_download_path/.kameleon_timestamp"  ]] || CACHE_AVAILABLE=1
-        fi
-        if [ -n $CACHE_AVAILABLE  ]; then
-          mkdir -p $$rootfs_download_path
-          debootstrap --no-check-gpg --foreign --variant=minbase --arch=$$arch --include="$$include_pkg" $$release $$rootfs_download_path $$repository
-          QEMU_USER_PATH=$(which qemu-arm-static)
-          cp $QEMU_USER_PATH $$rootfs_download_path/usr/bin/qemu-arm-static
-          chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh /debootstrap/debootstrap --second-stage
-          echo "deb $$repository wheezy main contrib non-free" > $$rootfs_download_path/etc/apt/sources.list
-          chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get update
-          chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get install -y --force-yes vim
-          date +%s > $$rootfs_download_path/.kameleon_timestamp
-        fi
-  - exec_out: false
-  - exec_out: date +%s > $$rootfs_download_path/.kameleon_timestamp
+  - exec_out:|
+        mkdir -p $$rootfs_download_path
+        debootstrap --no-check-gpg --foreign --variant=minbase --arch=$$arch --include="$$include_pkg" $$release $$rootfs_download_path $$repository
+        QEMU_USER_PATH=$(which qemu-arm-static)
+        cp $QEMU_USER_PATH $$rootfs_download_path/usr/bin/qemu-arm-static
+        chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh /debootstrap/debootstrap --second-stage
+        echo "deb $$repository wheezy main contrib non-free" > $$rootfs_download_path/etc/apt/sources.list
+        chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get update
+        chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get install -y --force-yes vim
   - exec_out: cat /etc/resolv.conf > $$rootfs_download_path/etc/resolv.conf
   - write_out:
     - $$rootfs_download_path/etc/network/interfaces
