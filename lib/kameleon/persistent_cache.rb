@@ -31,10 +31,12 @@ module Kameleon
       @polipo_port = find_unused_port
 
       @polipo_cmd_options = {:diskCacheRoot => "",
-                            :idleTime => "1",
-                            :chunkHighMark => "425165824",
-                            :proxyPort => @polipo_port,
-                            :relaxTransparency =>"true"
+                             :idleTime => "1",
+                             :chunkHighMark => "425165824",
+                             :proxyPort => @polipo_port,
+                             :relaxTransparency =>"true",
+                             :daemonise => false,
+                             :logFile => File.join(Kameleon.env.build_path, 'polipo.log')
                             }
 
       @activated = false
@@ -60,7 +62,7 @@ module Kameleon
       ports.each do |p|
         begin
           port = p
-          tmp = TCPServer.new('localhost',port)
+          tmp = TCPServer.new('localhost', port)
         rescue
           port =0
         end
@@ -106,10 +108,11 @@ module Kameleon
       ## have to check if polipo is running
       Kameleon.ui.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
       @polipo_process.stop unless @polipo_process.nil?
-      command = ["#{@polipo_path}/polipo"]
+      command = ["#{@polipo_path}/polipo", "-c", "/dev/null"]
       @polipo_cmd_options[:diskCacheRoot] = directory
       @polipo_cmd_options.each{ |v,k| command.push("#{v}=#{k}") }
       ChildProcess.posix_spawn = true
+      Kameleon.ui.debug("Starting process '#{command}'")
       @polipo_process = ChildProcess.build(*command)
       @polipo_process.io.stdout = Tempfile.new("polipo_output")
       @polipo_process.start
