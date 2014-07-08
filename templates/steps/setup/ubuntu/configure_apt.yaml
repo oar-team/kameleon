@@ -47,7 +47,7 @@
   - write_out:
     - $$rootfs_download_path/etc/apt/sources.list
     - |
-      deb $$repository $$release main restricted universe multiverse
+      deb $$repository $$release main universe multiverse
 
 - enable_restricted:
   - exec_in: |
