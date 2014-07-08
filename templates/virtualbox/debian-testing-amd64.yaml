@@ -1,0 +1,25 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian Testing base system
+#
+#==============================================================================
+
+---
+extend: debian7-amd64
+
+global:
+  # Distribution
+  distrib: debian
+  release: testing
+  arch: amd64
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+
+export:
+  - @base
