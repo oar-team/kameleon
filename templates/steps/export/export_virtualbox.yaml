@@ -3,4 +3,5 @@
 - to_ova:
   - exec_local: rm -f $$output
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --natpf1 delete guestssh
+  - exec_local: VBoxManage storageattach $$virtualbox_vmid --storagectl "IDE Controller" --port 1 --device 0 --type dvddrive --medium none
   - exec_local: VBoxManage export $$virtualbox_vmid -o $$output
