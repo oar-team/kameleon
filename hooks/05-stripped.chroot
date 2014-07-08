@@ -34,7 +34,6 @@ apt-get autoremove --yes || true
 find . -name *~ | xargs rm -f
 
 rm -rf /usr/include/*
-#rm -rf /usr/share/groff/*
 rm -rf /usr/share/doc/*
 rm -rf /usr/share/locale/*
 rm -rf /usr/share/man/*
