@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ["lib"]
 
-  s.add_dependency 'childprocess', '~> 0.5'
+  s.add_dependency 'childprocess', '~> 0.3'
   s.add_dependency 'thor', '~> 0.15'
   s.add_dependency 'table_print', '~> 1.5'
   # Syck is also a dependency for Ruby 2 environments.
