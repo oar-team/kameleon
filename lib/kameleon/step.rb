@@ -127,7 +127,7 @@ module Kameleon
       content_id = commands_str.join(' ') + salt
       @identifier = "#{ Digest::SHA1.hexdigest content_id }"[0..11]
       @commands.each do |cmd|
-        map_id = cmd.string_cmd.to_s+@identifier
+        map_id = cmd.string_cmd.to_s + @identifier
         cmd.identifier = "#{ Digest::SHA1.hexdigest map_id }"[0..11]
       end
       @identifier

@@ -513,7 +513,11 @@ module Kameleon
       @sections.values.each do |section|
         section.sequence do |macrostep|
           macrostep.sequence do |microstep|
-            base_salt = microstep.calculate_identifier base_salt
+            if ["redo", "skip"].include? microstep.on_checkpoint
+              microstep.calculate_identifier ""
+            else
+              base_salt = microstep.calculate_identifier base_salt
+            end
             slug = "#{section.name}/#{macrostep.name}/#{microstep.name}"
             microstep.slug = slug
             microstep.order = (order += 1)
