@@ -29,15 +29,16 @@ global:
   ## QEMU options
   qemu_enable_kvm: "$(egrep '(vmx|svm)' /proc/cpuinfo > /dev/null && echo true)"
   qemu_cpu: 2
-  qemu_memory_size: 512
+  qemu_memory_size: 768
   qemu_monitor_port: 10023
   qemu_ssh_port: 55423
   qemu_arch: x86_64
   qemu_image_size: 10G
   qemu_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
 
-  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2kameleon-0.1.0-$${qemu_arch}-insecure.iso
-  insecure_ssh_key_url: http://kameleon.imag.fr/iso/keys/insecure_id_rsa
+  ## Kameleon iso bootstrap
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-$${qemu_arch}-insecure.iso
+  insecure_ssh_key_url: http://kameleon.imag.fr/iso/boot2debian/keys/insecure_id_rsa
 
   # rootfs options
   rootfs: /rootfs
@@ -72,6 +73,8 @@ bootstrap:
   - prepare_qemu
   - start_qemu
   - enable_checkpoint
+  - install_requirements:
+    - packages: parted e2fsprogs debootstrap
   - initialize_disk:
     - disk_device: /dev/vda
   - debootstrap:

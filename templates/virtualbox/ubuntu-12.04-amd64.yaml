@@ -2,7 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) base system.
+# DESCRIPTION: Ubuntu 12.04 LTS (Precise Pangolin) base system (amd64).
 #
 #==============================================================================
 
@@ -25,7 +25,7 @@ global:
   hostname: kameleon-$$distrib
 
   ## VirtualBox options
-  virtualbox_memory_size: 512
+  virtualbox_memory_size: 768
   virtualbox_ssh_port: 55423
   virtualbox_os_type: Ubuntu_64
   virtualbox_vmid: $${kameleon_recipe_name}_$${kameleon_short_uuid}
@@ -33,8 +33,8 @@ global:
   virtualbox_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.vdi
 
   ## Kameleon iso bootstrap
-  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2kameleon-0.1.0-x86_64-insecure.iso
-  insecure_ssh_key_url: http://kameleon.imag.fr/iso/keys/insecure_id_rsa
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-x86_64-insecure.iso
+  insecure_ssh_key_url: http://kameleon.imag.fr/iso/boot2debian/keys/insecure_id_rsa
 
   # rootfs options
   rootfs: /rootfs
@@ -69,6 +69,8 @@ bootstrap:
   - enable_checkpoint
   - prepare_virtualbox
   - start_virtualbox
+  - install_requirements:
+    - packages: parted e2fsprogs debootstrap
   - initialize_disk:
     - disk_device: /dev/sda
   - debootstrap:

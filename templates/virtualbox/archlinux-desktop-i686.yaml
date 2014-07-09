@@ -2,26 +2,24 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Debian 7 (Wheezy) GNOME Desktop edition (amd64).
+# DESCRIPTION: Archlinux GNOME Desktop edition (i686).
 #
 #==============================================================================
 
 ---
-extend: debian7-amd64
-
-global:
-  # Apt options
-  apt_install_recommends: true
-  virtualbox_memory_size: 1024
-  extlinux_theme: debian
+extend: archlinux-i686
 
 bootstrap:
   - @base
 
 setup:
   - @base
+  - install_yaourt
   - install_gnome:
-    - extra_packages: gedit gnome-documents
+    - keyboard_layout: en
+    - extra_packages: >
+        firefox-i18n-en-us flashplugin libreoffice libreoffice-en-US telepathy
+        hunspell-en faenza-icon-theme file-roller
 
 export:
   - @base

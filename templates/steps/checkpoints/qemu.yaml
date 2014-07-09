@@ -24,15 +24,7 @@ apply:
       fi
 
 clear:
-  - exec_local: |
-      if [ -f "$$qemu_image_disk" ] ; then
-        _checkpoints=$(qemu-img snapshot -l $$qemu_image_disk | tail -n +3 | awk '{print $2}')
-        _checkpoints=($_checkpoints)
-        for checkpoint in "${_checkpoints[@]}"; do
-          echo "Removing old checkpoint $checkpoint"
-          qemu-img snapshot -d $checkpoint $$qemu_image_disk
-      done
-      fi
+  - exec_local: rm -f $$qemu_image_disk
 
 list:
   - exec_local: |

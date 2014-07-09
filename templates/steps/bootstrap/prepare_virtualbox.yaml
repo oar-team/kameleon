@@ -30,7 +30,11 @@
 - delete_vm:
   - on_checkpoint: skip
   - on_export_clean:
-    - exec_local: VBoxManage unregistervm --delete $$virtualbox_vmid
+    - exec_local: echo "Removing the virtualbox vm ($$virtualbox_vmid)..."
+    - exec_local: |
+        if VBoxManage list vms | grep -q $$virtualbox_vmid; then
+          VBoxManage unregistervm --delete $$virtualbox_vmid
+        fi
 
 - configure_ssh_access:
   - download_file_local:

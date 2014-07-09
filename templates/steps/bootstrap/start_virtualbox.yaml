@@ -15,5 +15,8 @@
   - on_checkpoint: redo
   - on_setup_clean:
     - exec_local: echo "Shutting down virtualbox vm ($$virtualbox_vmid)"
-    - exec_local: VBoxManage controlvm $$virtualbox_vmid poweroff
+    - exec_local: |
+        if VBoxManage list runningvms | grep -q $$virtualbox_vmid; then
+          VBoxManage controlvm $$virtualbox_vmid poweroff
+        fi
 

@@ -12,6 +12,8 @@ extend: ubuntu-12.04-amd64
 global:
   # Apt options
   apt_install_recommends: true
+  extlinux_theme: debian
+  virtualbox_memory_size: 1024
 
 bootstrap:
   - @base

@@ -6,7 +6,9 @@
   - exec_out: mount -t proc /proc  $$rootfs/proc
   - exec_out: mount -t sysfs /sys  $$rootfs/sys
   - exec_out: test -f $$rootfs/etc/mtab || cat /proc/mounts > $$rootfs/etc/mtab
+  - exec_out: cat /etc/resolv.conf > $$rootfs/etc/resolv.conf
   - on_setup_clean:
+    - exec_out: rm -f $$rootfs/etc/resolv.conf
     - exec_out: echo try umount $$rootfs/sys... ; mountpoint -q $$rootfs/sys && umount -f -l $$rootfs/sys  || true
     - exec_out: echo try umount $$rootfs/proc... ; mountpoint -q $$rootfs/proc && umount  -f -l $$rootfs/proc  || true
     - exec_out: echo try umount $$rootfs/dev/pts... ; mountpoint -q $$rootfs/dev/pts && umount -f -l $$rootfs/dev/pts  || true

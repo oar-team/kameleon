@@ -17,6 +17,7 @@ clear:
           echo "Removing old checkpoint $checkpoint"
           VBoxManage snapshot $$virtualbox_vmid restore @microstep_id
         done
+        VBoxManage unregistervm --delete $$virtualbox_vmid
       fi
 
 list:
