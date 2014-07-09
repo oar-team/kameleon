@@ -27,7 +27,9 @@ module Kameleon
       end
       @enable_checkpoint = @options[:checkpoint]
       # Check if the recipe have checkpoint entry
-      @enable_checkpoint = !@recipe.checkpoint.nil? if @enable_checkpoint
+      if @enable_checkpoint && @recipe.checkpoint.nil?
+        fail BuildError, "Checkpoint is unavailable for this recipe"
+      end
 
       @recipe.resolve!
 
