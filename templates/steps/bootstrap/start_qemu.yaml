@@ -25,7 +25,7 @@
           -rtc base=localtime \
           -net nic,model=virtio -net user \
           -redir tcp:$${qemu_ssh_port}::22 \
-          -monitor tcp::$$qemu_monitor_port,server,nowait \
+          -monitor unix:$$qemu_monitor_socket,server,nowait \
           -daemonize -vnc :1 $LOADVM
   - exec_local: |
         echo -n "Waiting for SSH to become available"
@@ -38,10 +38,10 @@
 
 - force_shutdown_qemu_vm:
   - on_checkpoint: redo
+  - check_cmd_local: socat
   - on_setup_clean:
     - exec_local: |
-        if nc -w 1 -z localhost $$qemu_monitor_port 2>/dev/null
-        then
+        if [ -f $$qemu_monitor_socket ]; then
           echo "Shutting down qemu virtual machine..."
-          echo "system_reset" | nc -q 1 localhost $$qemu_monitor_port 1>/dev/null 2>&1
+          echo system_reset | socat - UNIX-CONNECT:$$qemu_monitor_socket
         fi

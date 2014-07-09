@@ -98,8 +98,7 @@ module Kameleon
 
     def create_checkpoint(microstep_id)
       @recipe.checkpoint["create"].each do |cmd|
-        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id),
-                      :log_level => "debug")
+        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id))
       end
     end
 
@@ -114,8 +113,7 @@ module Kameleon
 
     def apply_checkpoint(microstep_id)
       @recipe.checkpoint["apply"].each do |cmd|
-        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id),
-                      :log_level => "debug")
+        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id))
       end
     end
 
