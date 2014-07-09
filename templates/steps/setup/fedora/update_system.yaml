@@ -1,10 +1,16 @@
+- configure_yum:
+  - exec_in: rm -rf -- /var/lib/rpm/*
+  - exec_in: rpm --initdb
+  - exec_in: echo $$release > /etc/yum/vars/releasever
+
 - update_system:
-  - exec_in: yum update yum -y
-  - exec_in: yum groupupdate 'Minimal Install' -y
-  - exec_in: yum clean all
-  - exec_in: yum update -y
-  - exec_in: yum --releasever=$$release distro-sync
+  - exec_in: yum update --releasever=$$release yum -y
+  - exec_in: yum clean all -y
+  - exec_in: yum distro-sync --releasever=$$release -y
 
 - clean:
   - on_setup_clean:
+    - exec_in: echo "Cleaning old yum repodata."
     - exec_in: yum clean all
+    - exec_in: yum history new
+    - exec_in: truncate -c -s 0 /var/log/yum.log

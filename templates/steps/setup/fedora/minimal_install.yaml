@@ -1,0 +1,3 @@
+# Software Install
+- install_packages:
+  - exec_in: yum groupupdate --releasever=$$release 'Minimal Install' -y 2>&1

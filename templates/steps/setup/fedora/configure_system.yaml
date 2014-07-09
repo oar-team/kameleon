@@ -1,4 +1,4 @@
-# System configuration for Archlinux
+# System configuration
 #
 # This will set the locals and the timezone
 
@@ -13,47 +13,18 @@
 - set_wheel_sudo:
   - exec_in: echo "%wheel      ALL=(ALL) ALL" >> /etc/sudoers
 
-- reinstall_extlinux:
-  - exec_in: VMLINUZ=$(echo /boot/vmlinuz-* | tr ' ' '\n' | head -n 1)
-  - exec_in: VMLINUZ_VERSION=$(echo $VMLINUZ | sed 's/\/boot\/vmlinuz-//g')
-  - exec_in: INITRAMFS="$(echo $VMLINUZ | sed 's/vmlinuz/initramfs/g').img"
-  - exec_in: depmod -a $VMLINUZ_VERSION
-  - exec_in: dracut -f $INITRAMFS $VMLINUZ_VERSION
-  - exec_in: extlinux --install /boot/extlinux 2>&1
-  - exec_in: |
-      MBR_PATH=
-      PATHS=("/usr/share/syslinux/mbr.bin"
-             "/usr/lib/bios/syslinux/mbr.bin"
-             "/usr/lib/syslinux/bios/mbr.bin"
-             "/usr/lib/extlinux/mbr.bin"
-             "/usr/lib/syslinux/mbr.bin")
-      for element in "${PATHS[@]}"
-      do
-        if [ -f "$element" ]; then
-          MBR_PATH="$element"
-          break
-        fi
-      done
-      if [ "$MBR_PATH" == "" ]; then
-        fail "unable to locate the extlinux mbr"
-      else
-        dd if="$MBR_PATH" of="/dev/vda" bs=440  2>&1
-      fi
-  - write_in:
-    - /boot/extlinux/extlinux.conf
-    - |
-      menu autoboot Welcome to Fedora $$release $${arch} . Automatic boot in # second{,s}. Press a key for options.
-      menu title Fedora-$${release}-$${arch} Boot Options.
-      default Fedora-$${release}-$${arch}
-      timeout 10
-      totaltimeout 600
-      
-      label Fedora-$${release}-$${arch} ($VMLINUZ_VERSION)
-      kernel ../`basename $VMLINUZ`
-      append ro root=UUID=`blkid -s UUID -o value /dev/vda1` console=tty1 console=ttyS0,115200n8
-      initrd ../`basename $INITRAMFS`
-      
-      label Fedora-$${release}-$${arch}-kameleon ($(uname -r))
-      kernel ../vmlinuz
-      append ro root=UUID=`blkid -s UUID -o value /dev/vda1` console=tty1 console=ttyS0,115200n8
-      initrd ../initrd.img
+- setup_systemd:
+  - exec_in: echo "Setting default runlevel to multiuser text mode"
+  - exec_in: rm -f /etc/systemd/system/default.target
+  - exec_in: ln -s /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+
+- disable_tmpfs_for_tmp:
+  - exec_in: echo "Disabling tmpfs for /tmp."
+  - exec_in: systemctl mask tmp.mount
+
+- remove_random_seed:
+  - exec_in: echo "Removing random-seed so it's not the same in every image."
+  - exec_in: rm -f /var/lib/random-seed
+
+- compress_cracklib:
+  - exec_in: gzip -9 /usr/share/cracklib/pw_dict.pwd

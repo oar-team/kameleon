@@ -10,7 +10,11 @@
   - exec_in: chkconfig network on
 
 - set_host:
-  - exec_in: echo "127.0.0.1 localhost $$hostname" > /etc/hosts
+  - write_in:
+    - /etc/hosts
+    - |
+      127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 $$hostname
+      ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6 $$hostname
 
 - set_interface:
   - write_in:
@@ -28,3 +32,9 @@
     - |
       NETWORKING=yes
       HOSTNAME=$$hostname
+
+- enable_dhcp_service:
+  - exec_in: |
+      ln -sf \
+        '/usr/lib/systemd/system/network.service' \
+        '/etc/systemd/system/multi-user.target.wants/network.service'
