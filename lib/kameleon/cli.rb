@@ -64,7 +64,6 @@ module Kameleon
           recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
           copy_file(recipe_path, Pathname.new(recipe_dst))
         end
-        # template_recipe.copy_extended_recipe(recipe_name, options[:force])
       end
     end
 
@@ -160,8 +159,11 @@ module Kameleon
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
     def clean(recipe_path)
-      engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
-      engine.clear
+      opts = Hash.new.merge options
+      opts[:lazyload] = false
+      opts[:fail_silently] = true
+      engine = Kameleon::Engine.new(Recipe.new(recipe_path), opts)
+      engine.clean(:with_checkpoint => true)
     end
     map %w(clear) => :clean
 

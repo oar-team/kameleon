@@ -48,8 +48,6 @@ module Kameleon
         if @recipe.global["out_context"]["proxy_cache"].nil? then
           raise BuildError, "Missing varible for out context 'proxy_cache' when using the option --cache"
         end
-
-        #saving_steps_files
       end
 
       begin
@@ -58,17 +56,30 @@ module Kameleon
       rescue
         raise BuildError, "Failed to create build directory #{@cwd}"
       end
+      @cache.start if @cache
+      build_contexts
+    end
+
+    def build_contexts
+      lazyload = @options.fetch(:lazyload, true)
+      fail_silently = @options.fetch(:fail_silently, false)
+      proxy_cache_out = @recipe.global["out_context"]["proxy_cache"]
+      proxy_cache_in = @recipe.global["in_context"]["proxy_cache"]
 
       Kameleon.ui.debug("Building local context [local]")
       @local_context = Context.new("local", "bash", @cwd, "", @cwd,
-                                   :proxy_cache => "localhost")
+                                   :proxy_cache => "localhost",
+                                   :lazyload => false,
+                                   :fail_silently => false)
       Kameleon.ui.debug("Building external context [out]")
       @out_context = Context.new("out",
                                  @recipe.global["out_context"]["cmd"],
                                  @recipe.global["out_context"]["workdir"],
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd,
-                                 :proxy_cache => @recipe.global["out_context"]["proxy_cache"])
+                                 :proxy_cache => proxy_cache_out,
+                                 :lazyload => lazyload,
+                                 :fail_silently => fail_silently)
 
       Kameleon.ui.debug("Building internal context [in]")
       @in_context = Context.new("in",
@@ -76,9 +87,9 @@ module Kameleon
                                 @recipe.global["in_context"]["workdir"],
                                 @recipe.global["in_context"]["exec_prefix"],
                                 @cwd,
-                                :proxy_cache => @recipe.global["in_context"]["proxy_cache"])
-      @cache.start if @cache
-
+                                :proxy_cache => proxy_cache_in,
+                                :lazyload => lazyload,
+                                :fail_silently => fail_silently)
     end
 
     def saving_steps_files
@@ -285,12 +296,24 @@ module Kameleon
       return breakpoint(message, :enable_retry => true)
     end
 
-    def clean()
+    def clean(kwargs = {})
+      map = {"exec_in" => @in_context,
+             "exec_out" => @out_context,
+             "exec_local" => @local_context}
+      if kwargs.fetch(:with_checkpoint, false)
+        Kameleon.ui.info("Removing all checkpoints")
+        @recipe.checkpoint["clear"].each do |cmd|
+          if map.keys.include? cmd.key
+            begin
+              exec_cmd(cmd) unless map[cmd.key].closed?
+            rescue
+              Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
+            end
+          end
+        end
+      end
       @recipe.sections.values.each do |section|
         next if @cleaned_sections.include?(section.name)
-        map = {"exec_in" => @in_context,
-               "exec_out" => @out_context,
-               "exec_local" => @local_context}
         Kameleon.ui.info("Cleaning #{section.name} section")
         section.clean_macrostep.sequence do |microstep|
           if @enable_checkpoint
@@ -310,16 +333,6 @@ module Kameleon
         end
       end
       @cache.stop_web_proxy if @options[:cache] ## stopping polipo
-    end
-
-    def clear
-      clean
-      unless @recipe.checkpoint.nil?
-        Kameleon.ui.info("Removing all old checkpoints")
-        cmd = @recipe.checkpoint["clear"]
-        clear_cmd = Kameleon::Command.new({"exec_out" => cmd}, "checkpoint")
-        safe_exec_cmd(clear_cmd, :log_level => "info")
-      end
     end
 
     def build

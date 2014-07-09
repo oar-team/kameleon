@@ -12,12 +12,12 @@ module Kameleon
     attr :process
     attr :shell_cmd
 
-    def initialize(context_name, cmd, shell_workdir, local_workdir, kwargs = {})
+    def initialize(context_name, cmd, shell_workdir, local_workdir, proxy_cache)
       @cmd = cmd.chomp
       @context_name = context_name
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
-      @kwargs = kwargs
+      @proxy_cache = proxy_cache
       @bashrc_file = ".kameleon_#{@context_name}_bash_rc"
       @bash_history_file = ".kameleon_#{@context_name}_bash_history"
       @bash_env_file = ".kameleon_#{@context_name}_bash_env"
@@ -93,8 +93,7 @@ module Kameleon
         tpl = ERB.new(File.read(@default_bashrc_file))
         bashrc_content = tpl.result(binding)
         if @cache.activated? then
-          proxy_address = @kwargs.fetch(:proxy_cache)
-          if proxy_address.nil? then
+          if @proxy_cache.nil? then
             Kameleon.ui.warn("Variable 'proxy_cache' not defined for this context, persistent cache will not be generated")
           else
             tpl = ERB.new(File.read(@cache.polipo_env))

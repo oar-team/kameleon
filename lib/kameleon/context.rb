@@ -12,7 +12,14 @@ module Kameleon
       @workdir = workdir
       @exec_prefix = exec_prefix
       @local_workdir = local_workdir
-      @shell = Kameleon::Shell.new(@name, @cmd, @workdir, @local_workdir, :proxy_cache => kwargs[:proxy_cache])
+      @proxy_cache = kwargs[:proxy_cache]
+      @fail_silently = kwargs.fetch(:fail_silently, true)
+      @lazyload = kwargs.fetch(:lazyload, false)
+      @shell = Kameleon::Shell.new(@name,
+                                   @cmd,
+                                   @workdir,
+                                   @local_workdir,
+                                   @proxy_cache)
       Kameleon.ui.debug("Initialize new ctx (#{name})")
 
       instance_variables.each do |v|
@@ -20,6 +27,9 @@ module Kameleon
       end
 
       @cache = Kameleon::Persistent_cache.instance
+      unless @lazyload
+        load_shell
+      end
     end
 
     def do_log(out, log_level)
@@ -56,7 +66,7 @@ module Kameleon
     end
 
     def execute(cmd, kwargs = {})
-      lazyload_shell
+      load_shell
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
       cmd_with_prefix.split( /\r?\n/ ).each {|m| Kameleon.ui.debug "+ #{m}" }
       log_level = kwargs.fetch(:log_level, "info")
@@ -68,7 +78,7 @@ module Kameleon
       fail ExecError unless exit_status.eql? 0
     rescue ShellError, Errno::EPIPE  => e
       Kameleon.ui.debug("Shell cmd failed to launch: #{@shell.shell_cmd}")
-      raise ShellError, e.message + ". Check the cmd argument of the '#{@name}_context'."
+      raise ShellError, e.message + ". The '#{@name}_context' is inaccessible."
     end
 
     def pipe(cmd, other_cmd, other_ctx)
@@ -94,19 +104,23 @@ module Kameleon
       other_ctx.execute(other_cmd_with_pipe)
     end
 
-    def lazyload_shell()
+    def load_shell()
       unless @shell.started?
         @shell.restart
         execute("echo The '#{name}_context' has been initialized", :log_level => "info")
       end
-    rescue
+    rescue Exception => e
       @shell.stop
-      raise
+      if @fail_silently
+        e.message.split( /\r?\n/ ).each {|m| Kameleon.ui.error m }
+      else
+        raise
+      end
     end
 
     def start_shell
       #TODO: Load env and history
-      lazyload_shell
+      load_shell
       Kameleon.ui.info("Starting interactive shell")
       @shell.fork_and_wait
     rescue ShellError => e
