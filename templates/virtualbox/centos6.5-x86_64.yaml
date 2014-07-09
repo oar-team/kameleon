@@ -18,8 +18,8 @@ global:
   user_password: $$user_name
 
   # Distribution
-  distrib: fedora
-  release: 20
+  distrib: centos
+  release: 6.5
   arch: x86_64
   hostname: kameleon-$$distrib
 
@@ -45,6 +45,7 @@ global:
   include_steps:
     - $$distrib/$$release
     - $$distrib
+    - "fedora"
 
   ssh_config_file: $$kameleon_cwd/ssh_config
   out_context:
@@ -63,11 +64,11 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs yum rpm curl
+    - packages: parted e2fsprogs yum rpm rsync
   - initialize_disk:
     - disk_device: /dev/sda
   - yum_bootstrap:
-    - release_package: http://mirrors.kernel.org/fedora/releases/$${release}/Fedora/$$arch/os/Packages/f/fedora-release-20-1.noarch.rpm
+    - release_package: http://mirrors.kernel.org/$${distrib}/$$release/os/$$arch/Packages/$${distrib}-release-6-5.el6.$${distrib}.11.1.$${arch}.rpm
   - start_chroot
 
 #== Install and configuration steps

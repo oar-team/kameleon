@@ -1,5 +1,3 @@
-- release_package: mirrors.kernel.org::fedora/releases/$${release}/Fedora/$$arch/os/Packages/f/fedora-release-$${release}*
-
 - fix_yum:
   - check_cmd_out: yum
   - exec_out: sed -i "s/opts.ssl_verify_host/2/g" /usr/lib/pymodules/python2.7/urlgrabber/grabber.py
@@ -9,10 +7,11 @@
   - exec_out: mkdir -p $$rootfs_download_path/var/lib/rpm
   - exec_out: rpm --root $$rootfs_download_path --initdb
 
-- install_fedora_release:
-  - check_cmd_out: rsync
-  - exec_out: rsync -av $$release_package release_package.rpm
-  - exec_out: rpm --root $$rootfs_download_path -ivh --force-debian --nodeps release_package.rpm
+- install_distrib_release:
+  - download_file_out:
+    - $$release_package
+    - $KAMELEON_WORKDIR/$${distrib}-release.rpm
+  - exec_out: rpm --root $$rootfs_download_path -ivh --force-debian --nodeps $KAMELEON_WORKDIR/$${distrib}-release.rpm
   - exec_out: ln -sf /rootfs/etc/pki/ /etc/pki
-  - exec_out: yum --installroot $$rootfs_download_path -y install findutils yum
+  - exec_out: yum --installroot $$rootfs_download_path -y install findutils yum util-linux
   - exec_out: echo $${release} > $$rootfs_download_path/etc/yum/vars/releasever

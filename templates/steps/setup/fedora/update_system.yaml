@@ -5,6 +5,7 @@
 
 - update_system:
   - exec_in: yum update --releasever=$$release yum -y
+  - exec_in: yum upgrade -y --releasever=$$release 
   - exec_in: yum clean all -y
   - exec_in: yum distro-sync --releasever=$$release -y
 
