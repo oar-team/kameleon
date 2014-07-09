@@ -101,6 +101,14 @@ module Kameleon
           end
         end
       end
+      # Inject sigint handler
+      bashrc_content << <<-SCRIPT
+      function save_state_handler {
+        echo "Saved ENV in #{@bash_env_file} file"
+        (comm -3 <(declare | sort) <(declare -f | sort)) > #{@bash_env_file}
+      }
+      trap save_state_handler EXIT
+      SCRIPT
       bashrc = Shellwords.escape(bashrc_content)
       if @shell_workdir
         unless @shell_workdir.eql? "/"
@@ -117,6 +125,7 @@ module Kameleon
       end
       shell_cmd << "source #{@bashrc_file}\n"
       shell_cmd << "export KAMELEON_WORKDIR=$PWD\n"
+      shell_cmd << "(comm -3 <(declare | sort) <(declare -f | sort)) > #{@bash_env_file}\n"
       shell_cmd
     end
 
@@ -127,11 +136,11 @@ module Kameleon
         shell_cmd << init_shell_cmd
         @sent_first_cmd = true
       end
+      shell_cmd << "source #{@bash_env_file} 2> /dev/null || true\n"
       shell_cmd << "KAMELEON_LAST_COMMAND=#{Shellwords.escape(cmd.value)}\n"
-      shell_cmd << "( set -o posix ; set ) > #{@bash_env_file}\n"
-      shell_cmd << "env | xargs -I {} echo export {} >> #{@bash_env_file}\n"
       shell_cmd << "#{ cmd.value }\nexport __exit_status__=$?\n"
       shell_cmd << "#{ ECHO_CMD } $KAMELEON_LAST_COMMAND >> \"$HISTFILE\"\n"
+      shell_cmd << "(comm -3 <(declare | sort) <(declare -f | sort)) > #{@bash_env_file}\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_err } 1>&2\n"
       shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_out }\n"
       @process.io.stdin.puts shell_cmd
