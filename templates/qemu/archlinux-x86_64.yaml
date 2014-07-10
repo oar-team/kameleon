@@ -31,6 +31,7 @@ global:
   qemu_arch: x86_64
   qemu_image_size: 10G
   qemu_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
+  qemu_pidfile: $$kameleon_cwd/qemu.pid
 
   ## Kameleon iso bootstrap
   boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-$${arch}-insecure.iso

@@ -29,6 +29,7 @@ global:
   qemu_monitor_socket: $$kameleon_cwd/qemu_monitor.socket
   qemu_ssh_port: 55423
   qemu_arch: $$arch
+  qemu_pidfile: $$kameleon_cwd/qemu.pid
 
   ## Disk options
   nbd_device: /dev/nbd1

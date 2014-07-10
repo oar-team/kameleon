@@ -1,6 +1,6 @@
 enabled?:
   - exec_local: test -f $$kameleon_cwd/checkpoint_enabled
-  - exec_local: test -f $$qemu_monitor_socket
+  - exec_local: test -S $$qemu_monitor_socket
 
 create:
   - exec_local: echo -e "savevm @microstep_id" | socat - UNIX-CONNECT:$$qemu_monitor_socket
