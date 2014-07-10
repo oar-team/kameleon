@@ -19,3 +19,6 @@
 
 - compress_cracklib:
   - exec_in: gzip -9 /usr/share/cracklib/pw_dict.pwd
+
+- enable_sshd:
+  - exec_in: chkconfig sshd on
