@@ -311,6 +311,7 @@ module Kameleon
           return microstep
         end
       end
+      return nil
     end
 
     def resolve!
