@@ -3,7 +3,6 @@ set -e
 
 export CURRENT_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
 export WORKDIR=$(mktemp -d)
-export VERSION=$(cat $CURRENT_DIR/../VERSION)
 export DEBOOTSTRAP_DIR=/var/cache/debootstrap
 export ROOTFS_DIR=$WORKDIR/rootfs
 
@@ -22,4 +21,4 @@ sudo bash $CURRENT_DIR/debootstrap.sh $DEBOOTSTRAP_DIR
 
 ## Generate iso
 rsync -aAX --exclude '/.kameleon_timestamp' $DEBOOTSTRAP_DIR/* $ROOTFS_DIR
-bash $CURRENT_DIR/build_iso.sh $EXPORT_DIR/debian-jessie-$VERSION-$(uname -m)-insecure.iso
+bash $CURRENT_DIR/build_iso.sh $EXPORT_DIR/debian-jessie-$(uname -m)-insecure.iso
