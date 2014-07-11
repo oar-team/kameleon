@@ -4,6 +4,7 @@
   - check_cmd_in: depmod
   - check_cmd_in: dracut
   - check_cmd_in: extlinux
+  - exec_in: DISTRIB_TITLE="$$kameleon_recipe_name"
   - exec_in: VMLINUZ=$(echo /boot/vmlinuz-* | tr ' ' '\n' | grep -v rescue | head -n 1)
   - exec_in: VMLINUZ_VERSION=$(echo $VMLINUZ | sed 's/\/boot\/vmlinuz-//g')
   - exec_in: INITRAMFS="$(echo $VMLINUZ | sed 's/vmlinuz/initramfs/g').img"
@@ -32,18 +33,13 @@
   - write_in:
     - /boot/extlinux/extlinux.conf
     - |
-      menu autoboot Welcome to Fedora $$release $${arch} . Automatic boot in # second{,s}. Press a key for options.
-      menu title Fedora-$${release}-$${arch} Boot Options.
-      default Fedora-$${release}-$${arch}
+      menu autoboot Welcome to ${DISTRIB_TITLE^} $$release $${arch} . Automatic boot in # second{,s}. Press a key for options.
+      menu title ${DISTRIB_TITLE^}-$${release}-$${arch} Boot Options.
+      default ${DISTRIB_TITLE^}
       timeout 10
       totaltimeout 600
       
-      label Fedora-$${release}-$${arch} ($VMLINUZ_VERSION)
+      label ${DISTRIB_TITLE^}
       kernel ../`basename $VMLINUZ`
       append ro root=UUID=`blkid -s UUID -o value $(__find_linux_root_device)` console=tty1 console=ttyS0,115200n8
       initrd ../`basename $INITRAMFS`
-      
-      label Fedora-$${release}-$${arch}-kameleon ($(uname -r))
-      kernel ../vmlinuz
-      append ro root=UUID=`blkid -s UUID -o value $(__find_linux_root_device)` console=tty1 console=ttyS0,115200n8
-      initrd ../initrd.img

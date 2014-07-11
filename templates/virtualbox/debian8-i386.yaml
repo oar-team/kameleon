@@ -2,18 +2,24 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Debian Testing base system (amd64)
+# DESCRIPTION: Debian 7 (Jessie) base system (i386)
 #
 #==============================================================================
 
 ---
-extend: debian7-amd64
+extend: debian8-amd64
 
+#== Global variables use by Kameleon engine and the steps
 global:
   # Distribution
-  distrib: debian
-  release: testing
-  arch: amd64
+  arch: i386
+  kernel_arch: "686"
+
+  ## Kameleon iso bootstrap
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-i686-insecure.iso
+
+  ## VirtualBox options
+  virtualbox_os_type: Debian
 
 bootstrap:
   - @base

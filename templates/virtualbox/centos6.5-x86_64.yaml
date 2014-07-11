@@ -2,7 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Fedora 20 base system
+# DESCRIPTION: Centos 6.5 base system (x86_64)
 #
 #==============================================================================
 
@@ -26,7 +26,7 @@ global:
   ## VirtualBox options
   virtualbox_memory_size: 768
   virtualbox_ssh_port: 55423
-  virtualbox_os_type: Fedora_64
+  virtualbox_os_type: Linux_64
   virtualbox_vmid: $${kameleon_recipe_name}_$${kameleon_short_uuid}
   virtualbox_image_size: 10000  ## megabytes
   virtualbox_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.vdi
@@ -64,19 +64,19 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs yum rpm curl
+    - packages: parted e2fsprogs yum rpm lynx
   - initialize_disk:
     - disk_device: /dev/sda
   - yum_bootstrap:
-    - release_package: http://mirrors.kernel.org/$${distrib}/$$release/os/$$arch/Packages/$${distrib}-release-6-5.el6.$${distrib}.11.1.$${arch}.rpm
+    - mirror_packages_url: http://mirrors.kernel.org/$${distrib}/$$release/os/$$arch/Packages/
   - start_chroot
 
-# == Install and configuration steps
+#== Install and configuration steps
 setup:
   - update_system
   - minimal_install
   - install_software:
-    - packages: > 
+    - packages: >
         kernel kernel-devel syslinux-extlinux bash-completion kbd dhclient 
         sudo openssh-server openssh-clients
   - install_bootloader
@@ -96,5 +96,14 @@ setup:
 #== Export the generated appliance in the format of your choice
 export:
   - disable_checkpoint
-  - export_virtualbox:
-    - output: "$$kameleon_cwd/$${kameleon_recipe_name}.ova"
+  - virtualbox_save_appliance:
+    - output: "$$kameleon_cwd/$${kameleon_recipe_name}"
+    - save_as_ova
+    # - save_as_vdi
+    # - save_as_vmdk
+    # - save_as_tar_gz
+    # - save_as_tar_xz
+    # - save_as_tar_bz2
+    # - save_as_raw
+    # - save_as_qcow2
+    # - save_as_qed

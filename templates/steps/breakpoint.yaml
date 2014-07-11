@@ -1,2 +1,3 @@
 - breakpoint:
+  - on_checkpoint: redo
   - breakpoint: "Kameleon breakpoint"

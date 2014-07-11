@@ -7,11 +7,21 @@
   - exec_out: mkdir -p $$rootfs_download_path/var/lib/rpm
   - exec_out: rpm --root $$rootfs_download_path --initdb
 
+- fetch_release_package:
+  - check_cmd_out: lynx
+  - exec_out: RELEASE_PACKAGE_URL=$(lynx $$mirror_packages_url -dump -listonly -nonumbers | grep $${distrib}-release | head -1)
+  - exec_out: |
+      if [ -z "${RELEASE_PACKAGE_URL-unset}" ]; then
+          fail "$${distrib}-release package not found!"
+      fi
+
 - install_distrib_release:
   - download_file_out:
-    - $$release_package
+    - $RELEASE_PACKAGE_URL
     - $KAMELEON_WORKDIR/$${distrib}-release.rpm
   - exec_out: rpm --root $$rootfs_download_path -ivh --force-debian --nodeps $KAMELEON_WORKDIR/$${distrib}-release.rpm
-  - exec_out: ln -sf /rootfs/etc/pki/ /etc/pki
+
+- install_minimal_package:
+  - exec_out: ln -sf $$rootfs_download_path/etc/pki/ /etc/pki
   - exec_out: yum --installroot $$rootfs_download_path -y install findutils yum util-linux
   - exec_out: echo $${release} > $$rootfs_download_path/etc/yum/vars/releasever

@@ -1,0 +1,31 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Centos 7 base system (x86_64)
+#
+#==============================================================================
+
+---
+extend: centos6.5-x86_64
+
+global:
+  # Distribution
+  release: 7
+  arch: x86_64
+  hostname: kameleon-$$distrib
+
+  ## VirtualBox options
+  virtualbox_os_type: Linux_64
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - @base
+
+#== Install and configuration steps
+setup:
+  - @base
+
+#== Export the generated appliance in the format of your choice
+export:
+  - @base

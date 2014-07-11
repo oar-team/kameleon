@@ -3,6 +3,7 @@
 - install_syslinux:
   - check_cmd_in: extlinux
   - check_cmd_in: syslinux-install_update
+  - exec_in: DISTRIB_TITLE="$$kameleon_recipe_name"
   - exec_in: syslinux-install_update -a -m
   - exec_in: cp -r /usr/lib/syslinux/bios/*.c32 /boot/syslinux/
   - exec_in: extlinux --install /boot/syslinux 2>&1
@@ -10,10 +11,10 @@
   - write_in:
     - /boot/syslinux/syslinux.cfg
     - |
-      default $(echo $$kameleon_recipe_name | perl -ne 'print ucfirst')
+      default ${DISTRIB_TITLE^}
       timeout 1
       
-      label $(echo $$kameleon_recipe_name | perl -ne 'print ucfirst')
+      label ${DISTRIB_TITLE^}
       kernel ../`basename /boot/vmlinuz*`
       initrd ../`basename /boot/init*`
       # the net.ifnames option is disable to get default net interface

@@ -128,7 +128,9 @@ export:
     - output: $$kameleon_cwd/$$kameleon_recipe_name
     - save_as_qcow2
     # - save_as_qed
-    # - save_as_tgz
+    # - save_as_tar_gz
+    # - save_as_tar_xz
+    # - save_as_tar_bz2
     # - save_as_raw
     # - save_as_vmdk
     # - save_as_vdi

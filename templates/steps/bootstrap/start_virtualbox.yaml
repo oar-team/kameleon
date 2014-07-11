@@ -3,7 +3,7 @@
   - exec_local: echo "Starting virtualbox..."
   - exec_local: VBoxManage startvm  $$virtualbox_vmid --type headless
   - exec_local: |
-        echo -n "Waiting for SSH to become available"
+        echo -n "Waiting for SSH to become available for out_context"
         until ssh-keyscan -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
         do
           echo -n "."

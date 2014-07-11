@@ -1,54 +1,48 @@
 # Save Appliance
 
-- save_as_tgz:
-  - check_cmd_local: qemu-nbd
-  - exec_local: echo "Exporting appliance to tar.gz..."
-  - exec_local: qemu-nbd -c $$nbd_device $$input -n || fail nbd device $$nbd_device is unavailable
-  - exec_local: mkdir -p $$rootfs
-  - exec_local: mount $${nbd_device}p1 $$rootfs || fail cannot mount /
-  - exec_local: cp $$rootfs/etc/fstab $$kameleon_cwd/fstab.orig
-  - write_local:
-    - $$rootfs/etc/fstab
-    - |
-      # UNCONFIGURED FSTAB FOR BASE SYSTEM
-  - exec_local: |
-      tar -zcf $$output.tar.gz --numeric-owner \
-      --exclude=tmp/* \
-      --exclude=dev/* \
-      --exclude=proc/* \
-      --exclude=sys/* \
-      --exclude=run/* \
-      --exclude=mnt/* \
-      --exclude=media/* \
-      --exclude=lost+found/* \
-      -C $$rootfs .
-  - exec_local: cat $$kameleon_cwd/fstab.orig > $$rootfs/etc/fstab
-  - exec_local: sync
-  - exec_local: echo "Saved tar.gz appliance to $$output.tar.gz"
-  - on_export_clean:
-    - exec_local: sync
-    - exec_local: "echo try umount $$rootfs... ; mountpoint -q $$rootfs && umount -f -l $$rootfs || true"
-    - exec_local: qemu-nbd -d $$nbd_device
-    - exec_local: pgrep qemu-nbd | xargs -I {} kill -9 {} || true
+- tar_out_opts: numericowner:true excludes:etc/fstab
+
+- save_as_tar_gz:
+  - check_cmd_local: guestfish
+  - check_cmd_local: gzip
+  - exec_local: echo "Exporting appliance to $$output.tar.gz..."
+  - exec_local: guestfish --ro -i tar-out -a $$input / - $$tar_out_opts | gzip --best > $$output.tar.gz
+
+- save_as_tar_xz:
+  - check_cmd_local: guestfish
+  - check_cmd_local: xz
+  - exec_local: echo "Exporting appliance to $$output.tar.xz..."
+  - exec_local: guestfish --ro -i tar-out -a $$input / - $$tar_out_opts | xz -9 -c - > $$output.tar.xz
+
+- save_as_tar_bz2:
+  - check_cmd_local: guestfish
+  - check_cmd_local: bzip2
+  - exec_local: echo "Exporting appliance to $$output.tar.bz2..."
+  - exec_local: guestfish --ro -i tar-out -a $$input / - $$tar_out_opts | bzip2 --best > $$output.tar.bz2
 
 - save_as_raw:
-
+  - check_cmd_local: qemu-img
+  - exec_local: echo "Exporting appliance to $$output.raw..."
   - exec_local: qemu-img convert -O raw $$input $$output.raw
-  - exec_local: echo "Saved raw appliance to $$output.raw"
 
 - save_as_qcow2:
-  - exec_local: qemu-img convert -O qcow2 $$input $$output.qcow2
-  - exec_local: echo "Saved qcow2 appliance to $$output.qcow2"
+  - check_cmd_local: qemu-img
+  - exec_local: echo "Exporting appliance to $$output.qcow2..."
+  - exec_local: qemu-img convert -c -O qcow2 $$input $$output.qcow2
 
 - save_as_qed:
+  - check_cmd_local: qemu-img
+  - exec_local: echo "Exporting appliance to $$output.qed..."
   - exec_local: qemu-img convert -O qed $$input $$output.qed
-  - exec_local: echo "Saved qed appliance to $$output.qed"
 
 - save_as_vmdk:
+  - check_cmd_local: qemu-img
+  - exec_local: echo "Exporting appliance to $$output.vmdk..."
   - exec_local: qemu-img convert -O vmdk $$input $$output.vmdk
-  - exec_local: echo "Saved vmdk appliance to $$output.vmdk"
 
 - save_as_vdi:
+  - check_cmd_local: qemu-img
+  - exec_local: echo "Exporting appliance to $$output.vdi..."
   - exec_local: qemu-img convert -O vdi $$input $$output.vdi
   - rescue:
     - exec_local: |
@@ -56,4 +50,3 @@
         VBoxManage modifyhd $$output.vdi --compact 2>&1
     - exec_local: |
         echo "Cannot compact the vdi disk : VBoxManage is missing."
-  - exec_local: echo "Saved vdi appliance to $$output.vdi"
