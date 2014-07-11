@@ -2,7 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Fedora 20 base system
+# DESCRIPTION: Fedora 20 base system (x86_64)
 #
 #==============================================================================
 
@@ -63,11 +63,11 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs yum rpm curl
+    - packages: parted e2fsprogs yum rpm lynx
   - initialize_disk:
     - disk_device: /dev/sda
   - yum_bootstrap:
-    - release_package: http://mirrors.kernel.org/fedora/releases/$${release}/Fedora/$$arch/os/Packages/f/fedora-release-20-1.noarch.rpm
+    - mirror_packages_url: http://mirrors.kernel.org/fedora/releases/$${release}/Fedora/$$arch/os/Packages/f/
   - start_chroot
 
 #== Install and configuration steps
@@ -75,7 +75,9 @@ setup:
   - update_system
   - minimal_install
   - install_software:
-    - packages: kernel kernel-devel syslinux-extlinux bash-completion kbd
+    - packages: >
+        kernel kernel-devel syslinux-extlinux bash-completion kbd dhclient 
+        sudo openssh-server openssh-clients
   - install_bootloader
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
@@ -89,10 +91,18 @@ setup:
     - name: $$user_name
     - groups: wheel
     - password: $$user_password
-  - breakpoint
 
 #== Export the generated appliance in the format of your choice
 export:
   - disable_checkpoint
-  - export_virtualbox:
-    - output: "$$kameleon_cwd/$${kameleon_recipe_name}.ova"
+  - virtualbox_save_appliance:
+    - output: "$$kameleon_cwd/$${kameleon_recipe_name}"
+    - save_as_ova
+    # - save_as_vdi
+    # - save_as_vmdk
+    # - save_as_tar_gz
+    # - save_as_tar_xz
+    # - save_as_tar_bz2
+    # - save_as_raw
+    # - save_as_qcow2
+    # - save_as_qed
