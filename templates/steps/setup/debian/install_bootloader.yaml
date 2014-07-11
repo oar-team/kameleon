@@ -3,6 +3,7 @@
 - extlinux_theme: none
 
 - install_bootloader:
+  - exec_in: DISTRIB_TITLE="$$kameleon_recipe_name"
   - write_in:
     - /etc/default/extlinux
     - |
@@ -13,7 +14,7 @@
       EXTLINUX_ENTRIES="all"
       EXTLINUX_MEMDISK="true"
       EXTLINUX_MEMDISK_DIRECTORY="/boot"
-      EXTLINUX_MENU_LABEL="$(echo $$kameleon_recipe_name | perl -ne 'print ucfirst'), kernel"
+      EXTLINUX_MENU_LABEL="${DISTRIB_TITLE^}, kernel"
       EXTLINUX_OS_PROBER="true"
       EXTLINUX_PARAMETERS="ro quiet"
       EXTLINUX_ROOT=""
