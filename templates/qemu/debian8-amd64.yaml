@@ -12,7 +12,7 @@ extend: debian7-amd64
 global:
   # Distribution
   distrib: debian
-  release: testing
+  release: jessie
   arch: amd64
 
 bootstrap:

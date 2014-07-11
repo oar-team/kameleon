@@ -1,0 +1,25 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian 8 (Jessie) base system (amd64)
+#
+#==============================================================================
+
+---
+extend: debian7-amd64
+
+global:
+  # Distribution
+  distrib: debian
+  release: jessie
+  arch: amd64
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+
+export:
+  - @base
