@@ -1,0 +1,25 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Archlinux GNOME Desktop edition (i686).
+#
+#==============================================================================
+
+---
+extend: archlinux-i686
+
+bootstrap:
+  - @base
+
+setup:
+  - @base
+  - install_yaourt
+  - install_gnome:
+    - keyboard_layout: en
+    - extra_packages: >
+        firefox-i18n-en-us flashplugin libreoffice libreoffice-en-US telepathy
+        hunspell-en faenza-icon-theme file-roller
+
+export:
+  - @base
