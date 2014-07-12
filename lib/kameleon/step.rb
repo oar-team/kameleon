@@ -19,7 +19,12 @@ module Kameleon
 
     def key
       if @key.nil?
-        @key = YAML.load(@string_cmd).keys.first
+        object = YAML.load(@string_cmd)
+        if object.kind_of? String
+          @key = object
+        else
+          @key = object.keys.first
+        end
       end
       @key
     rescue
@@ -33,6 +38,8 @@ module Kameleon
         object = YAML.load(@string_cmd)
         if object.kind_of? Command
           @value = object
+        elsif object.kind_of? String
+          @value = nil
         else
           raise RecipeError unless object.kind_of? Hash
           raise RecipeError unless object.keys.count == 1

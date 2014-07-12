@@ -246,6 +246,7 @@ module Kameleon
 
 
     def breakpoint(message, kwargs = {})
+      message = "Kameleon breakpoint!" if message.nil?
       message.split( /\r?\n/ ).each {|m| Kameleon.ui.error "#{m}" }
       enable_retry = kwargs[:enable_retry]
       msg = ""
