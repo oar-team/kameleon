@@ -2,7 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Centos 6.5 base system (x86_64)
+# DESCRIPTION: A standard Debian 7 vagrant base box (amd64)
 #
 #==============================================================================
 
@@ -18,21 +18,22 @@ global:
   user_password: $$user_name
 
   # Distribution
-  distrib: centos
-  release: 6.5
-  arch: x86_64
+  distrib: debian
+  release: wheezy
+  arch: amd64
+  kernel_arch: $$arch
   hostname: kameleon-$$distrib
 
   ## VirtualBox options
   virtualbox_memory_size: 768
   virtualbox_ssh_port: 55423
-  virtualbox_os_type: Linux_64
+  virtualbox_os_type: Debian_64
   virtualbox_vmid: $${kameleon_recipe_name}_$${kameleon_short_uuid}
   virtualbox_image_size: 10000  ## megabytes
   virtualbox_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.vdi
 
   ## Kameleon iso bootstrap
-  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-$${arch}-insecure.iso
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-x86_64-insecure.iso
   insecure_ssh_key_url: http://kameleon.imag.fr/iso/boot2debian/keys/insecure_id_rsa
 
   ## Rootfs options
@@ -45,7 +46,12 @@ global:
   include_steps:
     - $$distrib/$$release
     - $$distrib
-    - "fedora"
+
+  # Apt options
+  apt_repository: http://ftp.debian.org/debian/
+  apt_enable_contrib: true
+  apt_enable_nonfree: true
+  apt_install_recommends: false
 
   ssh_config_file: $$kameleon_cwd/ssh_config
   out_context:
@@ -64,41 +70,58 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs yum rpm lynx
+    - packages: parted e2fsprogs debootstrap
   - initialize_disk:
     - disk_device: /dev/sda
-  - yum_bootstrap:
-    - mirror_packages_url: http://mirrors.kernel.org/$${distrib}/$$release/os/$$arch/Packages/
+  - debootstrap:
+    - include_pkg: apt-utils ca-certificates locales less
+    - release: $$release
+    - arch: $$arch
+    - repository: $$apt_repository
+    - enable_cache: true
+    - variant: minbase
   - start_chroot
 
 #== Install and configuration steps
 setup:
-  - update_system
-  - minimal_install
+  # Install
+  - configure_apt:
+    - repository: $$apt_repository
+    - enable_contrib_repo: $$apt_enable_contrib
+    - enable_nonfree_repo: $$apt_enable_nonfree
+    - install_recommends: $$apt_install_recommends
+  - upgrade_system:
+    - dist_upgrade: true
   - install_software:
     - packages: >
-        kernel kernel-devel syslinux-extlinux bash-completion kbd dhclient 
-        sudo openssh-server openssh-clients
+        debian-keyring ntp sudo less vim bash-completion curl less acpid
+        linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
+        iptables iputils-ping iproute pciutils psmisc extlinux
+        syslinux-themes-debian build-essential dkms linux-headers-$$kernel_arch
+  - configure_kernel
   - install_bootloader
+  # Configuration
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
     - lang: en_US.UTF-8
     - timezone: UTC
   - configure_keyboard:
-    - layout: "us"
-  - configure_network:
-    - hostname: kameleon-$$distrib
+    - layout: "us,fr,de"
+  - configure_network
+  - create_group:
+    - name: admin
   - create_user:
     - name: $$user_name
-    - groups: wheel
+    - groups: sudo admin
     - password: $$user_password
+  - setup_vagrant_box
 
 #== Export the generated appliance in the format of your choice
 export:
   - disable_checkpoint
   - virtualbox_save_appliance:
     - output: "$$kameleon_cwd/$${kameleon_recipe_name}"
-    - save_as_ova
+    # - save_as_ova
     # - save_as_vdi
     # - save_as_vmdk
     # - save_as_tar_gz
@@ -107,4 +130,4 @@ export:
     # - save_as_raw
     # - save_as_qcow2
     # - save_as_qed
-    # - save_as_vagrant_box
+    - save_as_vagrant_box
