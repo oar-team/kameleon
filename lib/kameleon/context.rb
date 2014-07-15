@@ -53,12 +53,6 @@ module Kameleon
       end
     end
 
-    def log(log_level, msg)
-      Kameleon.ui.confirm(msg) if log_level == "info"
-      Kameleon.ui.error(msg) if log_level == "error"
-      Kameleon.ui.debug msg if log_level == "debug"
-    end
-
     def log_progress(log_level, msg)
       Kameleon.ui.confirm(msg, false) if log_level == "info"
       Kameleon.ui.error(msg, false) if log_level == "error"
@@ -78,7 +72,7 @@ module Kameleon
       fail ExecError unless exit_status.eql? 0
     rescue ShellError, Errno::EPIPE  => e
       Kameleon.ui.debug("Shell cmd failed to launch: #{@shell.shell_cmd}")
-      raise ShellError, e.message + ". The '#{@name}_context' is inaccessible."
+      raise ExecError, e.message + ". The '#{@name}_context' is inaccessible."
     end
 
     def pipe(cmd, other_cmd, other_ctx)
@@ -105,7 +99,7 @@ module Kameleon
     end
 
     def load_shell()
-      unless @shell.started?
+      unless @shell.started? || @shell.exited?
         @shell.restart
         execute("echo The '#{name}_context' has been initialized", :log_level => "info")
       end
@@ -135,8 +129,12 @@ module Kameleon
       @shell.stop
     end
 
-    def reopen
-      @shell.restart
+    def reload
+      @shell = Kameleon::Shell.new(@name,
+                                   @cmd,
+                                   @workdir,
+                                   @local_workdir,
+                                   @proxy_cache)
     end
 
     def send_file(source_path, dest_path)

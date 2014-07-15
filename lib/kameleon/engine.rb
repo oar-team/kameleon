@@ -205,11 +205,23 @@ module Kameleon
     end
 
     def exec_cmd(cmd, kwargs = {})
+      map = {"exec_in" => @in_context,
+             "exec_out" => @out_context,
+             "exec_local" => @local_context}
       case cmd.key
       when "breakpoint"
         breakpoint(cmd.value)
+      when "reload_context"
+        context = "exec_" + cmd.value
+        expected_names = map.keys.map { |k| k.gsub "exec_", "" }
+        unless map.keys.include? context
+          Kameleon.ui.error("Invalid context name arguments. Expected : "\
+                           "#{expected_names}")
+          fail ExecError
+        else
+          map[context].reload
+        end
       when "exec_in"
-        skip_alert(cmd) if @in_context.nil?
         @in_context.execute(cmd.value, kwargs)
       when "exec_out"
         @out_context.execute(cmd.value, kwargs)
@@ -220,14 +232,11 @@ module Kameleon
         expected_cmds = ["exec_in", "exec_out", "exec_local"]
         [first_cmd.key, second_cmd.key].each do |key|
           unless expected_cmds.include?(key)
-            Kameleon.ui.error("Invalid pipe arguments. Expected "\
-                          "#{expected_cmds} commands")
+            Kameleon.ui.error("Invalid pipe arguments. Expected : "\
+                              "#{expected_cmds}")
             fail ExecError
           end
         end
-        map = {"exec_in" => @in_context,
-               "exec_out" => @out_context,
-               "exec_local" => @local_context,}
         first_context = map[first_cmd.key]
         second_context = map[second_cmd.key]
         @cache.cache_cmd_id(cmd.identifier) if @cache
@@ -246,6 +255,7 @@ module Kameleon
 
 
     def breakpoint(message, kwargs = {})
+      message = "Kameleon breakpoint!" if message.nil?
       message.split( /\r?\n/ ).each {|m| Kameleon.ui.error "#{m}" }
       enable_retry = kwargs[:enable_retry]
       msg = ""
@@ -372,9 +382,9 @@ module Kameleon
           Kameleon.ui.error("Aborted...")
         elsif e.is_a?(SystemExit) || e.is_a?(Interrupt)
           Kameleon.ui.error("Interrupted...")
-          @out_context.reopen
-          @in_context.reopen
-          @local_context.reopen
+          @out_context.reload
+          @in_context.reload
+          @local_context.reload
         else
           Kameleon.ui.error("fatal error...")
         end

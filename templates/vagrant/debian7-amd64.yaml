@@ -2,7 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Debian 7 (Wheezy) base system (amd64)
+# DESCRIPTION: A standard Debian 7 vagrant base box (amd64)
 #
 #==============================================================================
 
@@ -97,7 +97,7 @@ setup:
         debian-keyring ntp sudo less vim bash-completion curl less acpid
         linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
         iptables iputils-ping iproute pciutils psmisc extlinux
-        syslinux-themes-debian
+        syslinux-themes-debian build-essential dkms linux-headers-$$kernel_arch
   - configure_kernel
   - install_bootloader
   # Configuration
@@ -114,13 +114,14 @@ setup:
     - name: $$user_name
     - groups: sudo admin
     - password: $$user_password
+  - setup_vagrant_box
 
 #== Export the generated appliance in the format of your choice
 export:
   - disable_checkpoint
   - virtualbox_save_appliance:
     - output: "$$kameleon_cwd/$${kameleon_recipe_name}"
-    - save_as_ova
+    # - save_as_ova
     # - save_as_vdi
     # - save_as_vmdk
     # - save_as_tar_gz
@@ -129,4 +130,4 @@ export:
     # - save_as_raw
     # - save_as_qcow2
     # - save_as_qed
-    # - save_as_vagrant_box
+    - save_as_vagrant_box

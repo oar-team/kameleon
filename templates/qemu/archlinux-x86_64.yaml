@@ -28,7 +28,7 @@ global:
   qemu_memory_size: 768
   qemu_monitor_socket: $$kameleon_cwd/qemu_monitor.socket
   qemu_ssh_port: 55423
-  qemu_arch: x86_64
+  qemu_arch: $$arch
   qemu_image_size: 10G
   qemu_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
   qemu_pidfile: $$kameleon_cwd/qemu.pid

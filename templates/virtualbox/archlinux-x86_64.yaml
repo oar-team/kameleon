@@ -96,5 +96,15 @@ setup:
 #== Export the generated appliance in the format of your choice
 export:
   - disable_checkpoint
-  - export_virtualbox:
-    - output: "$$kameleon_cwd/$${kameleon_recipe_name}.ova"
+  - virtualbox_save_appliance:
+    - output: "$$kameleon_cwd/$${kameleon_recipe_name}"
+    - save_as_ova
+    # - save_as_vdi
+    # - save_as_vmdk
+    # - save_as_tar_gz
+    # - save_as_tar_xz
+    # - save_as_tar_bz2
+    # - save_as_raw
+    # - save_as_qcow2
+    # - save_as_qed
+    # - save_as_vagrant_box
