@@ -418,7 +418,7 @@ module Kameleon
         end
       end
       dict_checkpoints = []
-      if @enable_checkpoint
+      unless @recipe.checkpoint.nil?
         list_checkpoints.each do |id|
           slug = find_microstep_slug_by_id id
           unless slug.nil?

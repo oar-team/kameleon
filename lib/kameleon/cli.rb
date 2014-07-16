@@ -150,6 +150,7 @@ module Kameleon
                   :default => nil, :aliases => "-b",
                   :desc => "Set the build directory path"
     def checkpoints(recipe_path)
+      Kameleon.ui.level = "error"
       engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
       engine.pretty_checkpoints_list
     end
@@ -169,7 +170,7 @@ module Kameleon
 
     desc "commands", "Lists all available commands", :hide => true
     def commands
-      puts CLI.all_commands.keys - ["commands", "completions"]
+      Kameleon.ui.info CLI.all_commands.keys - ["commands", "completions"]
     end
 
     desc "source_root", "Prints the kameleon directory path", :hide => true
