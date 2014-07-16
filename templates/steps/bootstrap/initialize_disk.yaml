@@ -4,9 +4,9 @@
   - check_cmd_out: parted
   - exec_out: |
       echo "Partitioning disk..."
-      parted $${disk_device} mklabel msdos
-      parted $${disk_device} mkpart primary 0% 100%
-      parted $${disk_device} set 1 boot on
+      parted -s $${disk_device} mklabel msdos
+      parted -s -a none $${disk_device} mkpart primary 64s 100%
+      parted -s $${disk_device} set 1 boot on
   - exec_out: |
       echo Creating root partition...
       mkfs.$$filesystem_type -q $${disk_device}1 || fail cannot create / ext4
