@@ -37,6 +37,11 @@
       timeout 50
       #totaltimeout 9000
 
+  - exec_in: |
+      if [ $$disable_selinux = true ]; then
+        SELINUX="selinux=0"
+      fi
+
   - exec_in: | 
       NAME="$$distrib"
       FIRST=1
@@ -49,6 +54,6 @@
           fi
           echo "  INITRD /boot/initramfs-$RELEASE.img" >> /boot/extlinux/extlinux.conf
           echo "  KERNEL $KERNEL" >> /boot/extlinux/extlinux.conf
-          echo "  APPEND root=UUID=`blkid -s UUID -o value $(__find_linux_root_device)` rw net.ifnames=0 biosdevname=0" >> /boot/extlinux/extlinux.conf
+          echo "  APPEND root=UUID=`blkid -s UUID -o value $(__find_linux_root_device)` rw net.ifnames=0 biosdevname=0 $SELINUX" >> /boot/extlinux/extlinux.conf
           echo >> /boot/extlinux/extlinux.conf
       done

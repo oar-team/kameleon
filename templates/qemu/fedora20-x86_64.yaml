@@ -36,7 +36,6 @@ global:
   image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
   image_size: 10G
   filesystem_type: ext4
-
   # rootfs options
   rootfs: $$kameleon_cwd/rootfs
   rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
@@ -48,6 +47,7 @@ global:
     - $$distrib
     - "archlinux"
 
+  disable_selinux: true
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
   # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
