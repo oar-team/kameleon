@@ -59,8 +59,5 @@
       IdentitiesOnly yes
       LogLevel FATAL
       ForwardAgent yes
-      ControlPath /tmp/$${kameleon_short_uuid}%r@%h:%p
-      ControlMaster auto
-      ControlPersist yes
       Compression yes
       Protocol 2
