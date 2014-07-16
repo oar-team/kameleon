@@ -39,6 +39,7 @@ global:
   rootfs: /rootfs
   rootfs_download_path: $$rootfs
   filesystem_type: ext4
+  disk_device: /dev/sda
 
   ## System variables. Required by kameleon engine
   # Include specific steps
@@ -53,7 +54,7 @@ global:
     proxy_cache: 10.0.2.2
 
   in_context:
-    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t chroot $$rootfs /bin/bash
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
 
@@ -63,21 +64,26 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs yum rpm lynx
-  - initialize_disk:
-    - disk_device: /dev/sda
+    - packages: parted e2fsprogs yum rpm lynx extlinux
+  - initialize_disk
   - yum_bootstrap:
-    - mirror_packages_url: http://mirrors.kernel.org/fedora/releases/$${release}/Fedora/$$arch/os/Packages/f/
-  - start_chroot
+    - mirror_packages_url: http://mirrors.kernel.org/fedora/releases/$$release/Fedora/$$arch/os/Packages/f/
+    - include_pkgs: >
+        findutils yum util-linux dhclient vim-minimal net-tools NetworkManager
+        openssh-server
+  - init_pxeboot:
+    - pxe_initrd_url: http://mirrors.kernel.org/fedora/releases/$$release/Fedora/$$arch/os/images/pxeboot/initrd.img
+    - pxe_vmlinuz_url: http://mirrors.kernel.org/fedora/releases/$$release/Fedora/$$arch/os/images/pxeboot/vmlinuz
+  - switch_context_virtualbox
 
 #== Install and configuration steps
 setup:
+  - configure_kernel
   - update_system
   - minimal_install
   - install_software:
     - packages: >
-        kernel kernel-devel syslinux-extlinux bash-completion kbd dhclient 
-        sudo openssh-server openssh-clients
+        kernel bash-completion kbd sudo openssh-clients syslinux-extlinux acpid
   - install_bootloader
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE

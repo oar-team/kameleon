@@ -1,0 +1,9 @@
+- configure_kernel:
+  - write_in:
+    - /etc/sysconfig/kernel
+    - |
+      # UPDATEDEFAULT specifies if new-kernel-pkg should make
+      # new kernels the default
+      UPDATEDEFAULT=yes
+      # DEFAULTKERNEL specifies the default kernel package type
+      DEFAULTKERNEL=kernel

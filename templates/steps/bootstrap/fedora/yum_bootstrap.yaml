@@ -4,8 +4,8 @@
 
 - init_rpm_db:
   - check_cmd_out: rpm
-  - exec_out: mkdir -p $$rootfs_download_path/var/lib/rpm
-  - exec_out: rpm --root $$rootfs_download_path --initdb
+  - exec_out: mkdir -p $$rootfs/var/lib/rpm
+  - exec_out: rpm --root $$rootfs --initdb
 
 - fetch_release_package:
   - check_cmd_out: lynx
@@ -19,9 +19,25 @@
   - download_file_out:
     - $RELEASE_PACKAGE_URL
     - $KAMELEON_WORKDIR/$${distrib}-release.rpm
-  - exec_out: rpm --root $$rootfs_download_path -ivh --force-debian --nodeps $KAMELEON_WORKDIR/$${distrib}-release.rpm
+  - exec_out: rpm --root $$rootfs -ivh --force-debian --nodeps $KAMELEON_WORKDIR/$${distrib}-release.rpm
 
-- install_minimal_package:
-  - exec_out: ln -sf $$rootfs_download_path/etc/pki/ /etc/pki
-  - exec_out: yum --installroot $$rootfs_download_path -y install findutils yum util-linux
-  - exec_out: echo $${release} > $$rootfs_download_path/etc/yum/vars/releasever
+- install_yum:
+  - exec_out: ln -sf $$rootfs/etc/pki/ /etc/pki
+  - exec_out: yum --installroot $$rootfs -y install yum
+  - exec_out: echo $${release} > $$rootfs/etc/yum/vars/releasever
+
+- mount_chroot:
+  - exec_out: mount -o bind /dev  $$rootfs/dev
+  - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
+  - exec_out: mount -t proc /proc  $$rootfs/proc
+  - exec_out: mount -t sysfs /sys  $$rootfs/sys
+
+- install_packages:
+  - exec_out: chroot $$rootfs yum install --releasever=$$release -y $$include_pkgs
+
+- umount_chroot:
+  - on_clean:
+    - umount_out: $$rootfs/sys
+    - umount_out: $$rootfs/proc
+    - umount_out: $$rootfs/dev/pts
+    - umount_out: $$rootfs/dev

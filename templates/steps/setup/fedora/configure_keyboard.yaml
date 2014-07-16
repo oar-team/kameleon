@@ -5,8 +5,8 @@
     - /etc/vconsole.conf
     - |
       KEYMAP=$$layout
-  # - exec_in: loadkeys $$layout
-  # - write_in:
-  #   - /etc/sysconfig/keyboard
-  #   - |
-  #     KEYTABLE=$$layout
+  - exec_in: loadkeys $$layout
+  - write_in:
+    - /etc/sysconfig/keyboard
+    - |
+      KEYTABLE=$$layout

@@ -1,0 +1,13 @@
+- download_pxeboot_initrd:
+  - download_file_out:
+    - $$pxe_initrd_url
+    - $$rootfs/boot/initrd.img
+  - on_setup_init:
+    - exec_in: rm -f /boot/initrd.img
+
+- download_pxeboot_vmlinuz:
+  - download_file_out:
+    - $$pxe_vmlinuz_url
+    - $$rootfs/boot/vmlinuz
+  - on_setup_init:
+    - exec_in: rm -f /boot/vmlinuz

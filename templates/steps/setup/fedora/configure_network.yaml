@@ -34,7 +34,5 @@
       HOSTNAME=$$hostname
 
 - enable_dhcp_service:
-  - exec_in: |
-      ln -sf \
-        '/usr/lib/systemd/system/network.service' \
-        '/etc/systemd/system/multi-user.target.wants/network.service'
+  - exec_in: systemctl disable NetworkManager.service  2>&1
+  - exec_in: systemctl enable network.service  2>&1
