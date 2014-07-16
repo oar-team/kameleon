@@ -1,6 +1,9 @@
+- reboot_timeout: 15
+
 - prepare_sshd:
   - exec_out: mkdir -p $$rootfs/root/.ssh/
   - exec_out: cat /root/.ssh/authorized_keys >> $$rootfs/root/.ssh/authorized_keys
+  - exec_out: chmod 600 -R $$rootfs/root/.ssh
   - on_setup_clean:
     - exec_in: rm -rf $$rootfs/root/.ssh/authorized_keys
 
@@ -20,6 +23,7 @@
       UUID=`blkid -s UUID -o value $${disk_device}1` /               $$filesystem_type    errors=remount-ro  0       1
 
 - install_initial_bootloader:
+  - exec_out: mkdir -p $$rootfs/boot/extlinux
   - exec_out: extlinux --install $$rootfs/boot/extlinux 2>&1
   - exec_out: MBR_PATH="/usr/lib/extlinux/mbr.bin"
   - exec_out: dd if="$MBR_PATH" of="$$disk_device" bs=440  2>&1
@@ -47,12 +51,15 @@
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --boot2 dvd
   - exec_local: VBoxManage startvm  $$virtualbox_vmid --type headless
   - exec_local: |
-        echo -n "Waiting for SSH to become available for in_context"
-        until ssh-keyscan -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
+        NEXT_WAIT_TIME=0
+        until ssh-keyscan -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null || [ $NEXT_WAIT_TIME -eq $$reboot_timeout ];
         do
-          echo -n "."
+          echo -en "\rWaiting for SSH to become available for in_context...($(( $$reboot_timeout - 1 - NEXT_WAIT_TIME++ ))s)"
           sleep 1
         done
-        echo " ~> OK"
+        echo ""
+  - rescue:
+    - exec_local: ssh-keyscan -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
+    - breakpoint: Failed to connect to VM via SSH. Please verify the VM successfully booted by looking at the VirtualBox GUI.
+
   - reload_context: out
-  - exec_out: false
