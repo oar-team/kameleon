@@ -93,7 +93,7 @@ module Kameleon
     end
 
     def create_cache_directory(step_name)
-      Kameleon.ui.info("Creating  cache directory #{step_name} for Polipo")
+      Kameleon.ui.debug("Creating  cache directory #{step_name} for Polipo")
       directory_name = File.join(@cache_dir,"#{step_name}")
       FileUtils.mkdir_p directory_name
       directory_name
