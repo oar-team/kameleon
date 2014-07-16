@@ -76,9 +76,9 @@ bootstrap:
   - initialize_disk
   - debootstrap:
     - include_pkg: > 
-        apt-utils ca-certificates locales less extlinux syslinux-themes-debian
-        linux-image-$$kernel_arch isc-dhcp-client ifupdown iptables
-        iputils-ping iproute pciutils psmisc acpid openssh-server
+        apt-utils ca-certificates locales less linux-image-$$kernel_arch
+        isc-dhcp-client ifupdown iptables iputils-ping iproute pciutils
+        psmisc acpid acpi-support-base openssh-server
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
@@ -97,7 +97,9 @@ setup:
   - upgrade_system:
     - dist_upgrade: true
   - install_software:
-    - packages: debian-keyring ntp sudo less vim bash-completion curl less
+    - packages: >
+        debian-keyring ntp sudo less vim bash-completion curl less bzip2 wget 
+        dialog htop tree extlinux syslinux-themes-debian
   - install_bootloader
   # Configuration
   - configure_system:
