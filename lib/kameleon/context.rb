@@ -20,6 +20,7 @@ module Kameleon
                                    @workdir,
                                    @local_workdir,
                                    @proxy_cache)
+      @already_loaded = false
       Kameleon.ui.debug("Initialize new ctx (#{name})")
 
       instance_variables.each do |v|
@@ -30,6 +31,10 @@ module Kameleon
       unless @lazyload
         load_shell
       end
+    end
+
+    def already_loaded?
+      @already_loaded
     end
 
     def do_log(out, log_level)
@@ -102,6 +107,7 @@ module Kameleon
       unless @shell.started? || @shell.exited?
         @shell.restart
         execute("echo The '#{name}_context' has been initialized", :log_level => "info")
+        @already_loaded = true
       end
     rescue Exception => e
       @shell.stop
@@ -135,6 +141,7 @@ module Kameleon
                                    @workdir,
                                    @local_workdir,
                                    @proxy_cache)
+      @shell.start
     end
 
     def send_file(source_path, dest_path)

@@ -382,9 +382,9 @@ module Kameleon
           Kameleon.ui.error("Aborted...")
         elsif e.is_a?(SystemExit) || e.is_a?(Interrupt)
           Kameleon.ui.error("Interrupted...")
-          @out_context.reload
-          @in_context.reload
-          @local_context.reload
+          @out_context.reload if @out_context.already_loaded?
+          @in_context.reload  if @in_context.already_loaded?
+          @local_context.reload  if @local_context.already_loaded?
         else
           Kameleon.ui.error("fatal error...")
         end
@@ -418,7 +418,7 @@ module Kameleon
         end
       end
       dict_checkpoints = []
-      if @enable_checkpoint
+      unless @recipe.checkpoint.nil?
         list_checkpoints.each do |id|
           slug = find_microstep_slug_by_id id
           unless slug.nil?

@@ -13,6 +13,8 @@
   - exec_local: echo "Creating virtual machine"
   - exec_local: VBoxManage createvm --name $$virtualbox_vmid --register
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --ostype $$virtualbox_os_type
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --boot1 dvd
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --boot2 disk
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --memory $$virtualbox_memory_size
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --acpi on
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nic1 nat --nictype1 82540EM --cableconnected1 on

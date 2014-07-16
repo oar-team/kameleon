@@ -46,6 +46,7 @@
           echo "Shutting down qemu virtual machine..."
           echo system_reset | socat - UNIX-CONNECT:$$qemu_monitor_socket
         fi
+        rm -f $$qemu_monitor_socket
     - exec_local: |
         if [ -f $$qemu_pidfile ]; then
           _QEMU_PID=$(cat $$qemu_pidfile)
