@@ -1,4 +1,4 @@
-- boot_timeout: 15
+- boot_timeout: 30
 - shutdown_timeout: 10
 
 - start_vm:
