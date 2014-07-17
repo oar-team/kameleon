@@ -46,6 +46,7 @@ global:
     - $$distrib/$$release
     - $$distrib
 
+  disable_selinux: true
   ssh_config_file: $$kameleon_cwd/ssh_config
   out_context:
     cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
@@ -83,6 +84,7 @@ setup:
   - install_software:
     - packages: >
         kernel bash-completion kbd sudo openssh-clients syslinux-extlinux acpid
+        ntp ntpdate
   - install_bootloader
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE

@@ -21,63 +21,74 @@ global:
   distrib: fedora
   release: 20
   arch: x86_64
+  hostname: kameleon-$$distrib
 
   ## QEMU options
-  qemu_enable_kvm: true
+  qemu_enable_kvm: "$(egrep '(vmx|svm)' /proc/cpuinfo > /dev/null && echo true)"
   qemu_cpu: 2
   qemu_memory_size: 768
   qemu_monitor_socket: $$kameleon_cwd/qemu_monitor.socket
   qemu_ssh_port: 55423
-  qemu_arch: $$arch
+  qemu_arch: x86_64
+  qemu_image_size: 10G
+  qemu_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
   qemu_pidfile: $$kameleon_cwd/qemu.pid
 
-  ## Disk options
-  nbd_device: /dev/nbd1
-  image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
-  image_size: 10G
-  filesystem_type: ext4
+  ## Kameleon iso bootstrap
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-$${qemu_arch}-insecure.iso
+  insecure_ssh_key_url: http://kameleon.imag.fr/iso/boot2debian/keys/insecure_id_rsa
+
   # rootfs options
+  disk_device: /dev/vda
   rootfs: /rootfs
+  filesystem_type: ext4
 
   ## System variables. Required by kameleon engine
   # Include specific steps
   include_steps:
     - $$distrib/$$release
     - $$distrib
-    - "archlinux"
 
   disable_selinux: true
-  # Shell session from where we launch exec_out commands. There is often a
-  # local bash session, but it can be a remote shell on other machines or on
-  # any shell. (eg. bash, chroot, fakechroot, ssh, tmux, lxc...)
-  out_context:
-    cmd: bash
-    workdir: $$kameleon_cwd
-
-  # Shell session that allows us to connect to the building machine in order to
-  # configure it and setup additional programs
   ssh_config_file: $$kameleon_cwd/ssh_config
-  in_context:
-    cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
+  out_context:
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
+    proxy_cache: 10.0.2.2
+
+  in_context:
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
+    workdir: /root/kameleon_workdir
+    proxy_cache: 10.0.2.2
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - liveos_bootstrap
-  - initialize_disk_qemu
+  - enable_checkpoint
   - prepare_qemu
-  - install_bootloader
   - start_qemu
-
+  - install_requirements:
+    - packages: parted e2fsprogs yum rpm lynx extlinux
+  - initialize_disk
+  - yum_bootstrap:
+    - mirror_packages_url: http://mirrors.kernel.org/fedora/releases/$$release/Fedora/$$arch/os/Packages/f/
+    - include_pkgs: >
+        findutils yum util-linux dhclient vim-minimal net-tools NetworkManager
+        openssh-server
+  - init_pxeboot:
+    - pxe_initrd_url: http://mirrors.kernel.org/fedora/releases/$$release/Fedora/$$arch/os/images/pxeboot/initrd.img
+    - pxe_vmlinuz_url: http://mirrors.kernel.org/fedora/releases/$$release/Fedora/$$arch/os/images/pxeboot/vmlinuz
+  - switch_context_qemu
 
 #== Install and configuration steps
-# WARNING: this part should be independante from the out context (whenever
-# possible...)
 setup:
+  - configure_kernel
   - update_system
+  - minimal_install
   - install_software:
     - packages: >
-        ntp zip unzip rsync sudo less vim bash-completion wget kernel kernel-devel
+        kernel bash-completion kbd sudo openssh-clients syslinux-extlinux acpid
+        ntp ntpdate
+  - install_bootloader
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
     - lang: en_US.UTF-8
