@@ -3,9 +3,11 @@
 - prepare_sshd:
   - exec_out: mkdir -p $$rootfs/root/.ssh/
   - exec_out: cat /root/.ssh/authorized_keys >> $$rootfs/root/.ssh/authorized_keys
+  - exec_out: cat /root/.ssh/authorized_keys >> $$rootfs/root/.ssh/authorized_keys_to_remove
   - exec_out: chmod 600 -R $$rootfs/root/.ssh
   - on_setup_clean:
-    - exec_in: rm -rf $$rootfs/root/.ssh/authorized_keys
+    - exec_in: grep -v -f /root/.ssh/authorized_keys_to_remove /root/.ssh/authorized_keys || true
+    - exec_in: rm -f /root/.ssh/authorized_keys_to_remove
 
 - mount_chroot:
   - exec_out: mount -o bind /dev  $$rootfs/dev
