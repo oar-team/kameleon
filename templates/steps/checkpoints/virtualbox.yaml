@@ -3,21 +3,15 @@ enabled?:
   - exec_local: VBoxManage list vms | grep -q $$virtualbox_vmid
 
 create:
-  - exec_local: VBoxManage snapshot $$virtualbox_vmid take @microstep_id
+  - exec_local: VBoxManage snapshot $$virtualbox_vmid take @microstep_id 2>&1
 
 apply:
-  - exec_local: VBoxManage snapshot $$virtualbox_vmid restore @microstep_id
+  - exec_local: VBoxManage snapshot $$virtualbox_vmid restore @microstep_id 2>&1
 
 clear:
   - exec_local: |
       if VBoxManage list vms | grep -q $$virtualbox_vmid; then
-        _checkpoints=$(VBoxManage snapshot $$virtualbox_vmid list | grep 'Name:' | awk '{print $2}')
-        _checkpoints=($_checkpoints)
-        for checkpoint in "${_checkpoints[@]}"; do
-          echo "Removing old checkpoint $checkpoint"
-          VBoxManage snapshot $$virtualbox_vmid restore @microstep_id
-        done
-        VBoxManage unregistervm --delete $$virtualbox_vmid
+        VBoxManage unregistervm --delete $$virtualbox_vmid 2>&1
       fi
 
 list:

@@ -46,10 +46,10 @@
 
 - switch_out2in:
   - exec_local: echo "Rebooting virtualbox vm ($$virtualbox_vmid)"
-  - exec_local: VBoxManage controlvm $$virtualbox_vmid poweroff
+  - exec_local: VBoxManage controlvm $$virtualbox_vmid poweroff 2>&1
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --boot1 disk
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --boot2 dvd
-  - exec_local: VBoxManage startvm  $$virtualbox_vmid --type headless
+  - exec_local: VBoxManage startvm  $$virtualbox_vmid --type headless 2>&1
   - exec_local: |
         NEXT_WAIT_TIME=0
         until ssh-keyscan -T 1 -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null || [ $NEXT_WAIT_TIME -eq $$reboot_timeout ];
