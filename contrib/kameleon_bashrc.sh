@@ -186,8 +186,8 @@ print('\n')
     fi
 }
 
-function __find_linux_root_device() {
-    local PDEVICE=`stat -c %04D /`
+function __find_linux_boot_device() {
+    local PDEVICE=`stat -c %04D /boot`
     for file in $(find /dev -type b 2>/dev/null) ; do
         local CURRENT_DEVICE=$(stat -c "%02t%02T" $file)
         if [ $CURRENT_DEVICE = $PDEVICE ]; then

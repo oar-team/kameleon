@@ -20,4 +20,4 @@
       # the net.ifnames option is disable to get default net interface
       # names according to this page:
       # https://wiki.archlinux.org/index.php/Network_Configuration#Device_names
-      append root=UUID=`blkid -s UUID -o value $(__find_linux_root_device)` rw net.ifnames=0
+      append root=UUID=`blkid -s UUID -o value $(__find_linux_boot_device)` rw net.ifnames=0
