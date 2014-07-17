@@ -1,5 +1,5 @@
 # Install extlinux bootloader
-- extlinux_timeout: 5
+- extlinux_timeout: 1
 
 - install_syslinux:
   - check_cmd_in: extlinux
