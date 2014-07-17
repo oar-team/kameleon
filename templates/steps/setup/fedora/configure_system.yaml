@@ -17,6 +17,7 @@
   - exec_in: echo "Setting default runlevel to multiuser text mode"
   - exec_in: rm -f /etc/systemd/system/default.target
   - exec_in: ln -s /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+  - exec_in: systemctl daemon-reload
 
 - disable_tmpfs_for_tmp:
   - exec_in: echo "Disabling tmpfs for /tmp."
@@ -28,3 +29,6 @@
 
 - compress_cracklib:
   - exec_in: gzip -9 /usr/share/cracklib/pw_dict.pwd
+
+- enable_ntpdate_service:
+  - exec_in: systemctl enable ntpdate.service
