@@ -35,10 +35,8 @@ global:
   ## Kameleon iso bootstrap
   boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-x86_64-insecure.iso
   insecure_ssh_key_url: http://kameleon.imag.fr/iso/boot2debian/keys/insecure_id_rsa
-  ssh_port: $$virtualbox_ssh_port
 
   ## Rootfs options
-  disk_device: /dev/sda
   rootfs: /rootfs
   filesystem_type: ext4
 
@@ -61,7 +59,7 @@ global:
     proxy_cache: 10.0.2.2
 
   in_context:
-    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t chroot $$rootfs /bin/bash
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
 
@@ -71,19 +69,17 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs debootstrap extlinux
-  - initialize_disk
+    - packages: parted e2fsprogs debootstrap
+  - initialize_disk:
+    - disk_device: /dev/sda
   - debootstrap:
-    - include_pkg: > 
-        apt-utils ca-certificates locales less linux-image-$$kernel_arch
-        isc-dhcp-client ifupdown iptables iputils-ping iproute pciutils
-        psmisc acpid acpi-support-base openssh-server
+    - include_pkg: apt-utils ca-certificates locales less
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
     - enable_cache: true
     - variant: minbase
-  - switch_context_virtualbox
+  - start_chroot
 
 #== Install and configuration steps
 setup:
@@ -97,8 +93,12 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp sudo less vim bash-completion curl less bzip2 wget 
-        dialog htop tree extlinux syslinux-themes-debian
+        debian-keyring ntp sudo less vim bash-completion curl less acpid
+        linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
+        iptables iputils-ping iproute pciutils psmisc extlinux acpid 
+        acpi-support-base dialog htop tree syslinux-themes-debian 
+        openssh-server
+  - configure_kernel
   - install_bootloader
   # Configuration
   - configure_system:
