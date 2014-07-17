@@ -31,6 +31,11 @@
   - exec_out: mount -o bind /dev/pts $$rootfs/dev/pts
   - exec_out: mount -t proc /proc  $$rootfs/proc
   - exec_out: mount -t sysfs /sys  $$rootfs/sys
+  - exec_out: cp /etc/resolv.conf $$rootfs/etc/resolv.conf
+
+- init_rpm_db:
+  - exec_out: chroot $$rootfs rm -f /var/lib/rpm/__*
+  - exec_out: chroot $$rootfs rpm --rebuilddb
 
 - install_packages:
   - exec_out: chroot $$rootfs yum install --releasever=$$release -y $$include_pkgs
@@ -41,3 +46,4 @@
     - umount_out: $$rootfs/proc
     - umount_out: $$rootfs/dev/pts
     - umount_out: $$rootfs/dev
+    - exec_out: rm -f $$rootfs/etc/resolv.conf
