@@ -9,33 +9,39 @@
 
 - install_vbox_guest_additions:
   - exec_in: echo "VirtualBox Guest Additions..."
-  - exec_in: wget http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_4.3.8.iso
-  - exec_in: sudo mkdir /media/VBoxGuestAdditions
-  - exec_in: sudo mount -o loop,ro VBoxGuestAdditions_4.3.8.iso /media/VBoxGuestAdditions
-  - exec_in: sudo sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11
-  - exec_in: rm VBoxGuestAdditions_4.3.8.iso
-  - exec_in: sudo umount /media/VBoxGuestAdditions
-  - exec_in: sudo rmdir /media/VBoxGuestAdditions
+  - download_file_in:
+    - "http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_4.3.8.iso"
+    - VBoxGuestAdditions_4.3.8.iso
+  - exec_in: mkdir /media/VBoxGuestAdditions
+  - exec_in: mount -o loop VBoxGuestAdditions_4.3.8.iso /media/VBoxGuestAdditions
+  - exec_in: yes|sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11 || true 2>&1
+  - exec_in: rm -f VBoxGuestAdditions_4.3.8.iso
+  - exec_in: umount /media/VBoxGuestAdditions
+  - exec_in: rmdir /media/VBoxGuestAdditions
 
 - install_puppet:
   - exec_in: echo "Installing puppet..."
-  - exec_in: wget -q http://apt.puppetlabs.com/puppetlabs-release-stable.deb -O /tmp/puppetlabs-release-stable.deb
-  - exec_in: dpkg -i "/tmp/puppetlabs-release-stable.deb"
+  - download_file_in:
+    - "http://apt.puppetlabs.com/puppetlabs-release-stable.deb"
+    - puppetlabs-release-stable.deb
+  - exec_in: dpkg -i "puppetlabs-release-stable.deb"
   - exec_in: apt-get update
   - exec_in: apt-get install puppet -y --force-yes
-  - exec_in: rm -f /tmp/puppetlabs-release-stable.deb
+  - exec_in: rm -f puppetlabs-release-stable.deb
 
 - install_chef:
   - exec_in: curl -L https://www.opscode.com/chef/install.sh -k | bash
 
 - copy_insecure_sshkey:
-  - exec_in: mkdir -p /home/$$user_name/.ssh/
-  - exec_in: chmod 0755 /home/$$user_name/.ssh/
-  - exec_in: echo -e  'y\n' | ssh-keygen -q -t dsa -f /home/$$user_name/.ssh/id_rsa -N ''
-  - write_in:
-    - /home/$$user_name/.ssh/authorized_keys
-    - |
-      ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== $$user_name insecure public key
+  - exec_in: mkdir -pm 700 /home/$$user_name/.ssh/
+  - download_file_in:
+    - "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant"
+    - /home/$$user_name/.ssh/id_rsa
+  - download_file_in:
+    - "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub"
+    - /home/$$user_name/.ssh/id_rsa.pub
+  - exec_in: cp /home/$$user_name/.ssh/id_rsa.pub /home/$$user_name/.ssh/authorized_keys
+  - exec_in: chmod 0600 /home/$$user_name/.ssh/*
 
 - config_ssh:
   - exec_in: echo "UseDNS no" >> /etc/ssh/sshd_config
@@ -49,4 +55,28 @@
       AddressFamily inet
   - exec_in: chmod 0600 /home/$$user_name/.ssh/config
   - exec_in: rsync -ah /home/$$user_name/.ssh/ /root/.ssh/
-  - exec_in: chown "$$user_name:" -R /home/$$user_name
+  - exec_in: chown "$$user_name:$$user_name" -R /home/$$user_name
+
+- customize_motd:
+  - exec_in: echo 'Welcome to your Vagrant-built virtual machine.' > /etc/motd
+
+- cleanup:
+  - exec_in: rm -rf /tmp/* || true
+  - exec_in: rm -rf /var/tmp/* || true
+  - exec_in: apt-get -y remove linux-headers-$(uname -r) build-essential
+  - exec_in: echo "cleaning up dhcp leases"
+  - exec_in: rm -f /var/lib/dhcp/*
+  - exec_in: echo "cleaning up udev rules"
+  - exec_in: rm -f /etc/udev/rules.d/70-persistent-net.rules
+  - exec_in: mkdir /etc/udev/rules.d/70-persistent-net.rules
+  - exec_in: rm -rf /dev/.udev/
+  - exec_in: rm -f /lib/udev/rules.d/75-persistent-net-generator.rules
+  - exec_in: |
+      echo "Adding a 2 sec delay to the interface up, to make the dhclient happy"
+      echo "pre-up sleep 2" >> /etc/network/interfaces
+
+- nullify_freespace:
+  - exec_in: |
+      echo "Nullify freespace..."
+      dd if=/dev/zero of=/bigemptyfile bs=1M 2>&1 >/dev/null || true
+      rm -f /bigemptyfile
