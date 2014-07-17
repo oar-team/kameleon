@@ -52,14 +52,13 @@
   - exec_local: VBoxManage startvm  $$virtualbox_vmid --type headless
   - exec_local: |
         NEXT_WAIT_TIME=0
-        until ssh-keyscan -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null || [ $NEXT_WAIT_TIME -eq $$reboot_timeout ];
+        until ssh-keyscan -T 1 -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null || [ $NEXT_WAIT_TIME -eq $$reboot_timeout ];
         do
           echo -en "\rWaiting for SSH to become available for in_context...($(( $$reboot_timeout - 1 - NEXT_WAIT_TIME++ ))s)"
-          sleep 1
         done
         echo ""
   - rescue:
-    - exec_local: ssh-keyscan -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
+    - exec_local: ssh-keyscan -T 1 -4 -p $$virtualbox_ssh_port localhost  2>&1 | grep -e ssh-rsa -e ssh-dsa &> /dev/null
     - breakpoint: Failed to connect to VM via SSH. Please verify the VM successfully booted by looking at the VirtualBox GUI.
 
   - reload_context: out
