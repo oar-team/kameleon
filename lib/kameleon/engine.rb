@@ -154,6 +154,12 @@ module Kameleon
     def do_steps(section_name)
       section = @recipe.sections.fetch(section_name)
       section.sequence do |macrostep|
+        if @cache then
+          Kameleon.ui.info("Starting proxy cache server for macrostep '#{macrostep.name}'...")
+          # the following function start a polipo web proxy and stops a previous run
+          dir_cache = @cache.create_cache_directory(macrostep.name)
+          @cache.start_web_proxy_in(dir_cache)
+        end
         macrostep.sequence do |microstep|
           step_prefix = "Step #{ microstep.order } : "
           Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
@@ -165,12 +171,6 @@ module Kameleon
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
               Kameleon.ui.info("--> Using checkpoint")
             else
-              if @cache then
-                Kameleon.ui.info("--> Starting proxy cache server...")
-                # the following function start a polipo web proxy and stops a previous run
-                dir_cache = @cache.create_cache_directory(macrostep.name)
-                @cache.start_web_proxy_in(dir_cache)
-              end
               Kameleon.ui.info("--> Running the step...")
               microstep.commands.each do |cmd|
                 safe_exec_cmd(cmd)
@@ -183,12 +183,6 @@ module Kameleon
               end
             end
           else
-            if @cache then
-              Kameleon.ui.info("--> Starting proxy cache server...")
-              # the following function start a polipo web proxy and stops a previous run
-              dir_cache = @cache.create_cache_directory(macrostep.name)
-              @cache.start_web_proxy_in(dir_cache)
-            end
             Kameleon.ui.info("--> Running the step...")
             microstep.commands.each do |cmd|
               safe_exec_cmd(cmd)
