@@ -48,6 +48,7 @@ global:
   out_context:
     cmd: bash
     workdir: $$kameleon_cwd
+    proxy_cache: localhost
 
   # Shell session that allows us to connect to the building machine in order to
   # configure it and setup additional programs
@@ -55,6 +56,7 @@ global:
   in_context:
     cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
     workdir: /root/kameleon_workdir
+    proxy_cache: 172.17.42.1
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
@@ -66,7 +68,7 @@ bootstrap:
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - enable_cache: true
+    - variant: minbase
   - prepare_docker
   - start_docker
 
@@ -104,4 +106,4 @@ setup:
 export:
   - save_docker_appliance:
     - commit:
-      - exec_out: docker commit $(cat MAIN_CONTAINER_ID) -t $$kameleon_recipe_name:latest
+      - exec_out: docker commit $(cat MAIN_CONTAINER_ID) $$kameleon_recipe_name:latest
