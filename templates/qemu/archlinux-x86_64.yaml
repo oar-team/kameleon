@@ -2,7 +2,7 @@
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
 #==============================================================================
 #
-# DESCRIPTION: Build an Archlinux base system system.
+# DESCRIPTION: Build an Archlinux base system system (x86_64).
 #
 #==============================================================================
 
