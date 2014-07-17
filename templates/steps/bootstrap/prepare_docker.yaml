@@ -14,19 +14,19 @@
 - configure_ssh_access:
   - exec_out: echo -e  'y\n' | ssh-keygen -q -t dsa -f $$insecure_ssh_key -N ''
   - exec_out: cat $$insecure_ssh_key
-  - exec_out: chroot $$rootfs_download_path mkdir -p /root/.ssh
+  - exec_out: chroot $$rootfs mkdir -p /root/.ssh
   - exec_out: |
-        cat $${insecure_ssh_key}.pub > $$rootfs_download_path/root/.ssh/authorized_keys
-        cat $${insecure_ssh_key}.pub > $$rootfs_download_path/root/.ssh/kameleon_insecure_public_key
-        chmod 600 $$rootfs_download_path/root/.ssh/authorized_keys
-        chmod 755 $$rootfs_download_path/root/.ssh
+        cat $${insecure_ssh_key}.pub > $$rootfs/root/.ssh/authorized_keys
+        cat $${insecure_ssh_key}.pub > $$rootfs/root/.ssh/kameleon_insecure_public_key
+        chmod 600 $$rootfs/root/.ssh/authorized_keys
+        chmod 755 $$rootfs/root/.ssh
   - on_clean:
-    - exec_out: rm -rf $$rootfs_download_path/root/.ssh
+    - exec_out: rm -rf $$rootfs/root/.ssh
 
 - import_to_docker:
   - check_cmd_out: docker
   - exec_out: echo "Importing $$docker_image to docker..."
-  - exec_out: tar -C $$rootfs_download_path -c . | $DOCKER import - $$docker_image:base
+  - exec_out: tar -C $$rootfs -c . | docker import - $$docker_image:base
 
 - create_ssh_config:
   - write_out:

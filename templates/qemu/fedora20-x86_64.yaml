@@ -37,8 +37,7 @@ global:
   image_size: 10G
   filesystem_type: ext4
   # rootfs options
-  rootfs: $$kameleon_cwd/rootfs
-  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
+  rootfs: /rootfs
 
   ## System variables. Required by kameleon engine
   # Include specific steps

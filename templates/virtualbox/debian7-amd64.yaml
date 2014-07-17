@@ -40,7 +40,6 @@ global:
   ## Rootfs options
   disk_device: /dev/sda
   rootfs: /rootfs
-  rootfs_download_path: $$rootfs
   filesystem_type: ext4
 
   ## System variables. Required by kameleon engine

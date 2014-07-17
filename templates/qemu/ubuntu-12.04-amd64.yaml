@@ -42,12 +42,10 @@ global:
   # rootfs options
   disk_device: /dev/vda
   rootfs: /rootfs
-  rootfs_download_path: $$rootfs
   filesystem_type: ext4
 
   # rootfs options
   rootfs: /rootfs
-  rootfs_download_path: $$rootfs
 
   # Apt options
   apt_repository: http://archive.ubuntu.com/ubuntu/

@@ -5,17 +5,17 @@
   - check_cmd_out: debootstrap
   - check_cmd_out: qemu-arm-static
   - exec_out:|
-        mkdir -p $$rootfs_download_path
-        debootstrap --no-check-gpg --foreign --variant=minbase --arch=$$arch --include="$$include_pkg" $$release $$rootfs_download_path $$repository
+        mkdir -p $$rootfs
+        debootstrap --no-check-gpg --foreign --variant=minbase --arch=$$arch --include="$$include_pkg" $$release $$rootfs $$repository
         QEMU_USER_PATH=$(which qemu-arm-static)
-        cp $QEMU_USER_PATH $$rootfs_download_path/usr/bin/qemu-arm-static
-        chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh /debootstrap/debootstrap --second-stage
-        echo "deb $$repository wheezy main contrib non-free" > $$rootfs_download_path/etc/apt/sources.list
-        chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get update
-        chroot $$rootfs_download_path /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get install -y --force-yes vim
-  - exec_out: cat /etc/resolv.conf > $$rootfs_download_path/etc/resolv.conf
+        cp $QEMU_USER_PATH $$rootfs/usr/bin/qemu-arm-static
+        chroot $$rootfs /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh /debootstrap/debootstrap --second-stage
+        echo "deb $$repository wheezy main contrib non-free" > $$rootfs/etc/apt/sources.list
+        chroot $$rootfs /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get update
+        chroot $$rootfs /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh apt-get install -y --force-yes vim
+  - exec_out: cat /etc/resolv.conf > $$rootfs/etc/resolv.conf
   - write_out:
-    - $$rootfs_download_path/etc/network/interfaces
+    - $$rootfs/etc/network/interfaces
     - |
       auto lo
       iface lo inet loopback

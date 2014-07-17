@@ -28,7 +28,7 @@ global:
   docker_hostname: $$kameleon_recipe_name
 
   # rootfs options
-  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
+  rootfs: $$kameleon_cwd/rootfs
 
   ## System variables. Required by kameleon engine
   # Include specific steps

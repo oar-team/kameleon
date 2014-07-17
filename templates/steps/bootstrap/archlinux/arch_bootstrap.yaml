@@ -178,29 +178,29 @@
       EOF
 
 - call_arch_boostrap:
-  - exec_out: bash $KAMELEON_WORKDIR/arch-bootstrap.sh -a $$arch -r $$mirror $$rootfs_download_path
+  - exec_out: bash $KAMELEON_WORKDIR/arch-bootstrap.sh -a $$arch -r $$mirror $$rootfs
   - on_clean:
-    - umount_out: $$rootfs_download_path/proc
-    - umount_out: $$rootfs_download_path/dev
+    - umount_out: $$rootfs/proc
+    - umount_out: $$rootfs/dev
 
 - enable_sshd_service:
   - exec_out: |
-      chroot $$rootfs_download_path \
+      chroot $$rootfs \
         ln -sf \
           '/usr/lib/systemd/system/sshd.service' \
           '/etc/systemd/system/multi-user.target.wants/sshd.service'
 
 - enable_dhcp_service:
   - exec_out: |
-      chroot $$rootfs_download_path \
+      chroot $$rootfs \
         ln -sf \
           '/usr/lib/systemd/system/dhcpcd.service' \
           '/etc/systemd/system/multi-user.target.wants/dhcpcd.service'
 
 - add_nobody_user:  ## To allow sshd to run correctly
-  - exec_out: echo "nobody:x:99:99:nobody:/:/bin/false" >> $$rootfs_download_path/etc/passwd
-  - exec_out: echo "nobody:x:99:" >> $$rootfs_download_path/etc/group
-  - exec_out: echo "nobody:x:14871::::::" >> $$rootfs_download_path/etc/shadow
+  - exec_out: echo "nobody:x:99:99:nobody:/:/bin/false" >> $$rootfs/etc/passwd
+  - exec_out: echo "nobody:x:99:" >> $$rootfs/etc/group
+  - exec_out: echo "nobody:x:14871::::::" >> $$rootfs/etc/shadow
 
 - configure_pacman:
   - on_setup_init:

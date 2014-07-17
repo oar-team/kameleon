@@ -67,7 +67,7 @@
         --exclude '/dev/*' \
         --exclude '/proc/*' \
         --exclude '/sys/*' \
-        $$rootfs_download_path/* $$rootfs
+        $$rootfs/* $$rootfs
   - exec_out: echo "sync..." ; sync
 
 - create_fstab:

@@ -45,7 +45,7 @@
 
 - enable_universe_and_multiverse:
   - write_out:
-    - $$rootfs_download_path/etc/apt/sources.list
+    - $$rootfs/etc/apt/sources.list
     - |
       deb $$repository $$release main universe multiverse
 

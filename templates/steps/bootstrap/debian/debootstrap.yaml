@@ -1,7 +1,7 @@
 # # Bootstrap
 - debootstrap:
   - check_cmd_out: debootstrap
-  - exec_out: mkdir -p $$rootfs_download_path
+  - exec_out: mkdir -p $$rootfs
   - exec_out: |
       debootstrap \
       --variant=$$variant \
@@ -9,10 +9,10 @@
       --arch=$$arch \
       --include="$$include_pkg" \
       $$release \
-      $$rootfs_download_path \
+      $$rootfs \
       $$repository
   - write_out:
-    - $$rootfs_download_path/etc/network/interfaces
+    - $$rootfs/etc/network/interfaces
     - |
       auto lo
       iface lo inet loopback

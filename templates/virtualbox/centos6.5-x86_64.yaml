@@ -37,7 +37,6 @@ global:
 
   ## Rootfs options
   rootfs: /rootfs
-  rootfs_download_path: $$rootfs
   filesystem_type: ext4
 
   ## System variables. Required by kameleon engine

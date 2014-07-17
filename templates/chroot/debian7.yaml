@@ -32,7 +32,6 @@ global:
 
   # rootfs options
   rootfs: $$kameleon_cwd/rootfs
-  rootfs_download_path: /var/cache/kameleon/$$distrib/$$release/$$arch/rootfs
 
   ## System variables. Required by kameleon engine
   # Include specific steps
