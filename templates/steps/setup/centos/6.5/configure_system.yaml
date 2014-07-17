@@ -22,3 +22,6 @@
 
 - enable_sshd:
   - exec_in: chkconfig sshd on
+
+- enable_ntpdate_service:
+  - exec_in: chkconfig ntpd on

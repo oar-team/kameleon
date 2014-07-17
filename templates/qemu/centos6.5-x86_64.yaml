@@ -9,8 +9,8 @@
 ---
 # Loads some helpful aliases
 aliases: defaults.yaml
-# Enables virtualbox checkpoint
-checkpoint: virtualbox.yaml
+# Enables qemu checkpoint
+checkpoint: qemu.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
@@ -23,22 +23,25 @@ global:
   arch: x86_64
   hostname: kameleon-$$distrib
 
-  ## VirtualBox options
-  virtualbox_memory_size: 768
-  virtualbox_ssh_port: 55423
-  virtualbox_os_type: Linux_64
-  virtualbox_vmid: $${kameleon_recipe_name}_$${kameleon_short_uuid}
-  virtualbox_image_size: 10000  ## megabytes
-  virtualbox_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.vdi
+  ## QEMU options
+  qemu_enable_kvm: "$(egrep '(vmx|svm)' /proc/cpuinfo > /dev/null && echo true)"
+  qemu_cpu: 2
+  qemu_memory_size: 768
+  qemu_monitor_socket: $$kameleon_cwd/qemu_monitor.socket
+  qemu_ssh_port: 55423
+  qemu_arch: x86_64
+  qemu_image_size: 10G
+  qemu_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.qcow2
+  qemu_pidfile: $$kameleon_cwd/qemu.pid
 
   ## Kameleon iso bootstrap
-  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-$${arch}-insecure.iso
+  boot2kameleon_url: http://kameleon.imag.fr/iso/boot2debian/debian-jessie-$${qemu_arch}-insecure.iso
   insecure_ssh_key_url: http://kameleon.imag.fr/iso/boot2debian/keys/insecure_id_rsa
 
-  ## Rootfs options
+  # rootfs options
+  disk_device: /dev/vda
   rootfs: /rootfs
   filesystem_type: ext4
-  disk_device: /dev/sda
 
   ## System variables. Required by kameleon engine
   # Include specific steps
@@ -61,8 +64,8 @@ global:
 
 bootstrap:
   - enable_checkpoint
-  - prepare_virtualbox
-  - start_virtualbox
+  - prepare_qemu
+  - start_qemu
   - install_requirements:
     - packages: parted e2fsprogs yum rpm lynx
   - initialize_disk:
@@ -97,7 +100,7 @@ setup:
 #== Export the generated appliance in the format of your choice
 export:
   - disable_checkpoint
-  - virtualbox_save_appliance:
+  - qemu_save_appliance:
     - output: "$$kameleon_cwd/$${kameleon_recipe_name}"
     - save_as_ova
     # - save_as_vdi
