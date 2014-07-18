@@ -86,7 +86,6 @@ setup:
         debian-keyring ntp sudo less vim bash-completion curl less acpid
         linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
         iptables iputils-ping iproute pciutils psmisc resolvconf extlinux
-        syslinux-themes-debian
   - configure_kernel
   - install_bootloader
   # Configuration

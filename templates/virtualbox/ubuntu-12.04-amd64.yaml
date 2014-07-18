@@ -93,7 +93,6 @@ setup:
         apt-transport-https ca-certificates sudo less bash-completion
         curl nano vim psmisc language-pack-en linux-image-generic ifupdown
         iptables iputils-ping iproute pciutils psmisc extlinux
-        syslinux-themes-ubuntu
   - configure_kernel:
     - arch: $$arch
   - install_bootloader

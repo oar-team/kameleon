@@ -102,7 +102,6 @@ setup:
   - install_software:
     - packages: >
         bash-completion curl nano vim-minimal language-pack-en extlinux sudo
-        syslinux-themes-ubuntu
   - configure_kernel:
     - arch: $$arch
   - install_bootloader

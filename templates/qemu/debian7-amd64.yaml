@@ -101,7 +101,7 @@ setup:
   - install_software:
     - packages: >
         debian-keyring ntp sudo less vim bash-completion curl less bzip2 wget 
-        dialog htop tree extlinux syslinux-themes-debian
+        dialog htop tree extlinux
   - install_bootloader
   # Configuration
   - configure_system:

@@ -12,7 +12,6 @@ extend: debian7-amd64
 global:
   # Apt options
   virtualbox_memory_size: 1024
-  extlinux_theme: debian
 
 bootstrap:
   - @base
