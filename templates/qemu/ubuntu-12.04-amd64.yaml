@@ -50,7 +50,6 @@ global:
   # Apt options
   apt_repository: http://archive.ubuntu.com/ubuntu/
   apt_enable_restricted: true
-  apt_install_recommends: false
 
   ## System variables. Required by kameleon engine
   # Include specific steps
@@ -98,7 +97,6 @@ setup:
   - configure_apt:
     - repository: $$apt_repository
     - enable_restricted: $$apt_enable_restricted
-    - install_recommends: $$apt_install_recommends
   - upgrade_system:
     - dist_upgrade: true
   - install_software:

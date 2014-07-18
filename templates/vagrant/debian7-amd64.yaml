@@ -51,7 +51,6 @@ global:
   apt_repository: http://ftp.debian.org/debian/
   apt_enable_contrib: true
   apt_enable_nonfree: true
-  apt_install_recommends: false
 
   ssh_config_file: $$kameleon_cwd/ssh_config
   out_context:
@@ -91,7 +90,6 @@ setup:
     - repository: $$apt_repository
     - enable_contrib_repo: $$apt_enable_contrib
     - enable_nonfree_repo: $$apt_enable_nonfree
-    - install_recommends: $$apt_install_recommends
   - upgrade_system:
     - dist_upgrade: true
   - install_software:

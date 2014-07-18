@@ -67,7 +67,7 @@ setup:
   - configure_apt:
     - enable_contrib_repo: true
     - enable_nonfree_repo: true
-    - install_recommends: false
+    
   - upgrade_system:
     - dist_upgrade: true
   - install_software:

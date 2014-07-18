@@ -1,7 +1,7 @@
 # Software Install
 - enable_contrib: true
 - enable_nonfree: true
-- install_recommends: false
+
 
 - configure_apt_to_use_less_disk_space:
   - write_in:
@@ -9,11 +9,6 @@
     - |
       Acquire::GzipIndexes "true";
       Acquire::CompressionTypes::Order:: "gz";
-  - exec_in: |
-      if [ $$install_recommends = false ]; then
-        echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/01norecommend
-        echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/01norecommend
-      fi
   - write_in:
     - /etc/apt/apt.conf.d/02nocache
     - |

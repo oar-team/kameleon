@@ -96,7 +96,6 @@ setup:
     - repository: $$apt_repository
     - enable_contrib_repo: $$apt_enable_contrib
     - enable_nonfree_repo: $$apt_enable_nonfree
-    - install_recommends: $$apt_install_recommends
   - upgrade_system:
     - dist_upgrade: true
   - install_software:

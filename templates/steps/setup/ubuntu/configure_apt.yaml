@@ -1,6 +1,6 @@
 # Software Install
 - enable_restricted: true
-- install_recommends: false
+
 
 - configure_apt_to_use_less_disk_space:
   - write_in:
