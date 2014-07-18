@@ -71,14 +71,10 @@
   - exec_out: echo "sync..." ; sync
 
 - create_fstab:
-  - write_out:
-    - $$rootfs/etc/fstab
-    - |
-      # /etc/fstab: static file system information.
-      #
-      # Use 'blkid' to print the universally unique identifier for a
-      # nbd_device; this may be used with UUID= as a more robust way to name nbd_devices
-      # that works even if disks are added and removed. See fstab(5).
-      #
-      # <file system> <mount point>   <type>  <options>       <dump>  <pass>
-      UUID=`blkid -s UUID -o value $${nbd_device}p1` /               $$filesystem_type    errors=remount-ro  0       1
+  - on_setup_init:
+    - write_out:
+      - $$rootfs/etc/fstab
+      - |
+        # /etc/fstab: static file system information.
+        # <file system> <mount point>   <type>  <options>       <dump>  <pass>
+        UUID=`blkid -s UUID -o value $${nbd_device}p1` /               $$filesystem_type    errors=remount-ro  0       1

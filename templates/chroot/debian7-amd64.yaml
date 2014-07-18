@@ -43,7 +43,6 @@ global:
   apt_repository: http://ftp.debian.org/debian/
   apt_enable_contrib: true
   apt_enable_nonfree: true
-  apt_install_recommends: false
 
   # Shell session from where we launch exec_out commands. There is often a
   # local bash session, but it can be a remote shell on other machines or on
@@ -61,15 +60,15 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
+  - initialize_disk_chroot
+  - enable_checkpoint
   - debootstrap:
     - include_pkg: apt-utils ca-certificates locales less
     - release: $$release
     - arch: $$arch
     - repository: http://ftp.debian.org/debian/
     - variant: minbase
-  - initialize_disk_chroot
   - start_chroot
-  - enable_checkpoint
 
 #== Install and configuration steps
 # WARNING: this part should be independante from the out context (whenever
@@ -80,14 +79,13 @@ setup:
     - repository: $$apt_repository
     - enable_contrib_repo: $$apt_enable_contrib
     - enable_nonfree_repo: $$apt_enable_nonfree
-    - install_recommends: $$apt_install_recommends
   - upgrade_system:
     - dist_upgrade: true
   - install_software:
     - packages: >
         debian-keyring ntp sudo less vim bash-completion curl less acpid
         linux-image-$$kernel_arch isc-dhcp-client isc-dhcp-common ifupdown
-        iptables iputils-ping iproute pciutils psmisc extlinux
+        iptables iputils-ping iproute pciutils psmisc resolvconf extlinux
         syslinux-themes-debian
   - configure_kernel
   - install_bootloader
