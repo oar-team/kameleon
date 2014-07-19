@@ -95,7 +95,6 @@ module Kameleon
     def saving_steps_files
       @recipe.files.each do |file|
         Kameleon.ui.info("File #{file} loaded from the recipe")
-        sleep 1
       end
 
     end
