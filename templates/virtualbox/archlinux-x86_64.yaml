@@ -60,7 +60,7 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs
+    - packages: parted e2fsprogs wget
   - initialize_disk:
     - disk_device: /dev/sda
   - arch_bootstrap:

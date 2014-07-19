@@ -62,7 +62,7 @@ bootstrap:
   - prepare_qemu
   - start_qemu
   - install_requirements:
-    - packages: parted e2fsprogs
+    - packages: parted e2fsprogs wget
   - enable_checkpoint
   - initialize_disk:
     - disk_device: /dev/vda
