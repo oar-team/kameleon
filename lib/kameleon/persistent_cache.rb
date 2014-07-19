@@ -106,14 +106,13 @@ module Kameleon
       ## Stopping first the previous proxy
       ## have to check if polipo is running
       Kameleon.ui.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
-      @polipo_process.stop unless @polipo_process.nil?
+      @polipo_process.stop(0) unless @polipo_process.nil?
       command = ["#{@polipo_path}/polipo", "-c", "/dev/null"]
       @polipo_cmd_options[:diskCacheRoot] = directory
       @polipo_cmd_options.each{ |v,k| command.push("#{v}=#{k}") }
       ChildProcess.posix_spawn = true
       Kameleon.ui.debug("Starting process '#{command}'")
       @polipo_process = ChildProcess.build(*command)
-      @polipo_process.io.stdout = Tempfile.new("polipo_output")
       @polipo_process.start
       return true
     end
