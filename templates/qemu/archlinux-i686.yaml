@@ -13,7 +13,7 @@ extend: archlinux-x86_64
 global:
   # Distribution
   arch: i686
-
+  qemu_arch: i386
 
 bootstrap:
   - @base
