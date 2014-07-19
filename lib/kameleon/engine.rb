@@ -6,8 +6,6 @@ module Kameleon
   class Engine
     attr_accessor :recipe
     attr_accessor :cwd
-    attr_accessor :build_recipe_path
-    attr_accessor :pretty_list_checkpoints
 
     def initialize(recipe, options)
       @options = options
@@ -271,7 +269,11 @@ module Kameleon
       responses.merge!({"i" => "launch in_context"})
       while true
         msg.split( /\r?\n/ ).each {|m| Kameleon.ui.info "#{m}" }
-        answer = Kameleon.ui.ask "answer ? [" + responses.keys().join("/") + "]: "
+        if Kameleon.env.script?
+          answer = "a"
+        else
+          answer = Kameleon.ui.ask "answer ? [" + responses.keys().join("/") + "]: "
+        end
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!
         if responses.keys.include?(answer)
@@ -304,6 +306,9 @@ module Kameleon
     def rescue_exec_error(cmd)
       message = "Error occured when executing the following command :\n"
       cmd.string_cmd.split( /\r?\n/ ).each {|m| message << "\n> #{m}" }
+      if Kameleon.env.script?
+        raise ExecError, message
+      end
       return breakpoint(message, :enable_retry => true)
     end
 

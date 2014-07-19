@@ -10,6 +10,9 @@ module Kameleon
                  :desc => "Enable colorization in output"
     class_option :debug, :type => :boolean, :default => false,
                  :desc => "Enable debug output"
+    class_option :script, :type => :boolean, :default => false,
+                 :desc => "never prompts for user intervention",
+                 :aliases => "-s"
     map %w(-h --help) => :help
 
     desc "import [TEMPLATE_NAME]", "Imports the given template"

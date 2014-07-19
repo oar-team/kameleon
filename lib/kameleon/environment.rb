@@ -8,9 +8,11 @@ module Kameleon
     attr_accessor :templates_path
     attr_accessor :build_path
     attr_accessor :cache_path
-    attr_accessor :log_file
     attr_accessor :debug
 
+    def script?
+      @script
+    end
 
     def initialize(options = {})
       # symbolify commandline options
@@ -24,7 +26,7 @@ module Kameleon
         :templates_names => Kameleon.templates_names,
         :build_path => Pathname.new(build_path),
         :cache_path => Pathname.new(cache_path),
-        :log_file => Pathname.new(File.join(workspace, "kameleon.log"))
+        :script => options[:script],
       }
       options = defaults.merge(options)
       Kameleon.ui.debug("Environment initialized (#{self})")
