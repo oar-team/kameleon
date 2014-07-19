@@ -118,6 +118,9 @@ module Kameleon
     method_option :cache, :type => :boolean,
                   :default => false,
                   :desc => "Generate a persistent cache for the appliance."
+    method_option :cache_path, :type => :string ,
+                  :default => nil,
+                  :desc => "Set the cache directory path"
     method_option :from_cache, :type => :string ,
                   :default => nil,
                   :desc => "Using a persistent cache tar file to build the image."

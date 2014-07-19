@@ -42,7 +42,7 @@ module Kameleon
       @activated = false
 
       @mode = nil #It could be build or from
-      @cache_dir = ""
+      @cache_dir = Kameleon.env.cache_path
       @polipo_path = nil
       @cwd = ""
       #structure {:cmd => "cmd", :stdout_filename => "file_name"}
@@ -89,7 +89,6 @@ module Kameleon
 
     def cwd=(dir)
       @cwd = dir
-      @cache_dir = File.join(@cwd,"/cache/")
     end
 
     def create_cache_directory(step_name)
