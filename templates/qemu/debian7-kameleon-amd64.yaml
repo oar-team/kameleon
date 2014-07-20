@@ -37,7 +37,4 @@ setup:
           rm -f /bigemptyfile
 
 export:
-  - save_appliance:
-    - save_as_qcow2:
-      - exec_out: qemu-img convert -c -O qcow2 $$qemu_image_disk $KAMELEON_WORKDIR/$$kameleon_recipe_name.qcow2
-      - exec_out: echo "Saved qcow2 appliance to $KAMELEON_WORKDIR/$$kameleon_recipe_name.qcow2"
+  - @base

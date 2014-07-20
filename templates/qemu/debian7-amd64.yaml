@@ -81,11 +81,10 @@ bootstrap:
     - include_pkg: > 
         apt-utils ca-certificates locales less linux-image-$$kernel_arch
         isc-dhcp-client ifupdown iptables iputils-ping iproute pciutils
-        psmisc acpid acpi-support-base openssh-server
+        psmisc acpid acpi-support-base openssh-server sysvinit
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - enable_cache: true
     - variant: minbase
   - switch_context_qemu
 

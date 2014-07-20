@@ -68,17 +68,19 @@ bootstrap:
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs debootstrap
-  - initialize_disk:
-    - disk_device: /dev/sda
+    - packages: parted e2fsprogs debootstrap extlinux
+  - initialize_disk
   - debootstrap:
-    - include_pkg: acpi-support kbd bzip2 udev locales less
+    - include_pkg: > 
+        apt-transport-https ca-certificates less acpid acpi-support kbd bzip2 udev
+        locales psmisc linux-image-generic ifupdown iptables iputils-ping
+        iproute pciutils isc-dhcp-client openssh-server
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - enable_cache: true
     - variant: minbase
-  - start_chroot
+  - switch_context_virtualbox
+
 
 #== Install and configuration steps
 setup:
@@ -90,9 +92,7 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        apt-transport-https ca-certificates sudo less bash-completion
-        curl nano vim psmisc language-pack-en linux-image-generic ifupdown
-        iptables iputils-ping iproute pciutils psmisc extlinux
+        bash-completion curl nano vim language-pack-en extlinux sudo
   - configure_kernel:
     - arch: $$arch
   - install_bootloader

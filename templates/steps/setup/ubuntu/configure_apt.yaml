@@ -8,11 +8,6 @@
     - |
       Acquire::GzipIndexes "true";
       Acquire::CompressionTypes::Order:: "gz";
-  - exec_in: |
-      if [ $$install_recommends = false ]; then
-        echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/01norecommend
-        echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/01norecommend
-      fi
   - write_in:
     - /etc/apt/apt.conf.d/02nocache
     - |
@@ -44,8 +39,8 @@
       #VERBOSE
 
 - enable_universe_and_multiverse:
-  - write_out:
-    - $$rootfs/etc/apt/sources.list
+  - write_in:
+    - /etc/apt/sources.list
     - |
       deb $$repository $$release main universe multiverse
 

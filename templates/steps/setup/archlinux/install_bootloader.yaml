@@ -15,8 +15,8 @@
       timeout 1
       
       label ${DISTRIB_TITLE^}
-      kernel ../`basename /boot/vmlinuz*`
-      initrd ../`basename /boot/init*`
+      kernel ../vmlinuz-linux
+      initrd ../initramfs-linux.img
       # the net.ifnames option is disable to get default net interface
       # names according to this page:
       # https://wiki.archlinux.org/index.php/Network_Configuration#Device_names

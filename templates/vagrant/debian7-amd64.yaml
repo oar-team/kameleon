@@ -79,7 +79,6 @@ bootstrap:
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - enable_cache: true
     - variant: minbase
   - switch_context_virtualbox
 

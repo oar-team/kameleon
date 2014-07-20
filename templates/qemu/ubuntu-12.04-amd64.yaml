@@ -60,12 +60,12 @@ global:
 
   ssh_config_file: $$kameleon_cwd/ssh_config
   out_context:
-    cmd: ssh -o ConnectTimeout=1 -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
 
   in_context:
-    cmd: ssh -o ConnectTimeout=1 -F $$ssh_config_file $${kameleon_recipe_name} /bin/bash
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
 
@@ -74,21 +74,19 @@ bootstrap:
   - prepare_qemu
   - start_qemu
   - install_requirements:
-    - packages: parted e2fsprogs debootstrap
+    - packages: parted e2fsprogs debootstrap extlinux
   - enable_checkpoint
-  - initialize_disk:
-    - disk_device: /dev/sda
+  - initialize_disk
   - debootstrap:
     - include_pkg: > 
-        apt-transport-https ca-certificates less acpi-support kbd bzip2 udev
+        apt-transport-https ca-certificates less acpid acpi-support kbd bzip2 udev
         locales psmisc linux-image-generic ifupdown iptables iputils-ping
-        iproute pciutils isc-dhcp-client
+        iproute pciutils isc-dhcp-client openssh-server
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - enable_cache: true
     - variant: minbase
-  - start_chroot
+  - switch_context_qemu
 
 
 #== Install and configuration steps
@@ -101,7 +99,7 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        bash-completion curl nano vim-minimal language-pack-en extlinux sudo
+        bash-completion curl nano vim language-pack-en extlinux sudo
   - configure_kernel:
     - arch: $$arch
   - install_bootloader
