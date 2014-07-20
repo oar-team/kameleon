@@ -1,8 +1,80 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.2.0
+-------------
+
+Released on July 20th 2014
+
+- [proxy cache] Added ``proxy_cache`` recipe option to context_in/out to enable
+  persistant cache for every context
+- [proxy cache] Added ``--cache-path`` CLI option to set different cache directory
+- [proxy cache] Shared cache directory between recipes by default
+- [proxy cache] No more internal cache for debootstrap
+- [proxy_cache] Polipo does not use default config file anymore
+- [proxy_cache] Recipe is now stored in cache at the end
+- [package] Removed diffy from dependencies
+- [package] Removed log4r-color from dependencies
+- [core] Rewrote checkpoint mechanism. (allow to run multiple commands)
+- [core] Added ``--script`` CLI option to enable non-interactive mode
+- [core] Added ``reload_context`` command that reloads the context from the recipe
+- [core] From now on, Kameleon tries to clean all contexts without blocking the shell
+- [core] Improved cleaning contexts upon interruption
+- [core] If microstep is marked as ``redo`` or ``skip`` (on checkpoint), the ID will be independent from other steps
+- [template] Grouped templates by virtualization tools
+- [template] Removed extlinux timeout for debian
+- [template] Configured apt to install recommended packages by default
+- [template] Added architecture type in templates description
+- [template] Forced killing qemu with sigterm signal
+- [template] Removed ssh ControlPath option
+- [template] Used parted tool in script mode
+- [template] Added a timeout during startup and shutdown VMs
+- [template] Restored eth0 as default interface in Fedora (net.ifnames=0 biosdevname=0)
+- [template] Ensured that the checkpoint was disabled at the beginning of the recipe
+- [template] Make sure that qemu is stopped at the end
+- [template] Replaced netcat by socat
+- [template] Removed duplicated ubuntu repository (restricted)
+- [template] Used a debian-jessie iso to bootstrap the out_context with a minimal linux system
+- [template] Hide default kameleon state files
+- [template] Enabled debug mode with ``KAMELEON_DEBUG=1`` environment variable
+- [template] Added ``download_file`` alias that uses curl/wget or python to download files
+- [template] Enabled kvm only if available
+- [template] Do not run qemu with nohup (Use ``-daemonize`` instead)
+- [template] Improved context_out/in log readability
+- [template] Removed fedora-rawhide templates
+- [template] Added new templates :
+
+  - qemu/archlinux-desktop-i686
+  - qemu/archlinux-i686
+  - qemu/centos6.5-x86_64
+  - qemu/centos7-x86_64
+  - qemu/debian8-amd64
+  - vagrant/debian7-amd64
+  - virtualbox/archlinux-desktop-i686
+  - virtualbox/archlinux-desktop-x86_64
+  - virtualbox/archlinux-i686
+  - virtualbox/archlinux-x86_64
+  - virtualbox/centos6.5-i386
+  - virtualbox/centos6.5-x86_64
+  - virtualbox/centos7-x86_64
+  - virtualbox/debian7-amd64
+  - virtualbox/debian7-desktop-amd64
+  - virtualbox/debian7-i386
+  - virtualbox/debian7-kameleon-amd64
+  - virtualbox/debian7-oar-amd64
+  - virtualbox/debian8-amd64
+  - virtualbox/debian8-i386
+  - virtualbox/fedora20-x86_64
+  - virtualbox/ubuntu-12.04-amd64
+  - virtualbox/ubuntu-12.04-desktop-amd64
+  - virtualbox/ubuntu-14.04-amd64
+  - virtualbox/ubuntu-14.04-desktop-amd64
+
+
 version 2.1.3
 -------------
+
+Released on June 16th 2014
 
  - [core] Loading dependent gems based on the users ruby version
  - [core] Getting back compatibility with ruby 1.8.7
@@ -14,7 +86,7 @@ version 2.1.3
 version 2.1.0
 -------------
 
-Released on May 12th 2014
+Released on June 12th 2014
 
 - [core] Fixed psych yaml parsing (#1)
 - [core] Changed option ``--no-no-color`` to ``--color``
@@ -95,3 +167,4 @@ version 2.0.0
 Released on February 17th 2014
 
 Initial public release of kameleon 2
+
