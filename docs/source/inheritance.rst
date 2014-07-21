@@ -20,10 +20,10 @@ Recipe example that inherits the recipe ``debian7``::
     extend: debian7
 
     bootstrap:
-      - @base
+      - "@base"
 
     setup:
-      - @base
+      - "@base"
       - create_user:
         - name: my_super_user
         - groups: sudo admin
@@ -60,13 +60,13 @@ the appliance according to your needs::
       filesystem_type: ext3  ## instead of 'ext4'
 
     bootstrap:
-      - @base
+      - "@base"
 
     setup:
-      - @base
+      - "@base"
 
     export:
-      - @base
+      - "@base"
 
 On the previous example, we get a new recipe and a new appliance,
 without having to maintain the base recipe ``fedora20``.

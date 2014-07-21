@@ -10,12 +10,12 @@
 extend: fedora20-x86_64
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - install_software:
-    - packages: @x-window-system @gnome-desktop
+    - packages: "@x-window-system @gnome-desktop"
 
 export:
-  - @base
+  - "@base"

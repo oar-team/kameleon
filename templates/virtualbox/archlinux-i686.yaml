@@ -19,10 +19,10 @@ global:
 
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
 
 export:
-  - @base
+  - "@base"

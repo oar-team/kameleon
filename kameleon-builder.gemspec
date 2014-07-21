@@ -21,17 +21,11 @@ Gem::Specification.new do |s|
 
   s.files         = `git ls-files`.split($/)
   s.files.reject! { |file| file.start_with?("docs/") }
-  s.files.reject! { |file| file.start_with?("omnibus/") }
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ["lib"]
 
-  s.add_dependency 'childprocess', '~> 0.3'
-  s.add_dependency 'thor', '~> 0.15'
-  s.add_dependency 'table_print', '~> 1.5'
-  # Syck is also a dependency for Ruby 2 environments.
-  # It is installed at install-time if necessary,
-  # via ext/mkrf_conf.rb
-  # To allow installing the Syck gem when Ruby version is >2.0.0
-  s.extensions = ["ext/mkrf_conf.rb"]
+  s.add_dependency 'childprocess', '>= 0.3'
+  s.add_dependency 'thor', '>= 0.15'
+  s.add_dependency 'table_print', '>= 1.5'
 end

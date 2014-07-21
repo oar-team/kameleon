@@ -14,10 +14,10 @@ global:
     # variables that you can override
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - autologin
   - install_software:
     - packages: parted qemu-system debootstrap qemu-utils ruby ruby-childprocess
@@ -35,4 +35,4 @@ setup:
           rm -f /bigemptyfile
 
 export:
-  - @base
+  - "@base"

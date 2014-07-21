@@ -269,13 +269,13 @@ This will create the file debian_customized.yaml which contents are::
      # variables that you can override
 
      bootstrap:
-       - @base
+       - "@base"
 
      setup:
-       - @base
+       - "@base"
 
      export:
-       - @base
+       - "@base"
 
 If we try to build this recipe, it will generate the exact same image as before.
 But the idea here is to change it in order to install the desired software.
@@ -288,16 +288,16 @@ Therefore, we will modify the setup section like this::
      # variables that you can override
 
      bootstrap:
-       - @base
+       - "@base"
 
      setup:
-       - @base
+       - "@base"
        - install_software:
          - packages: >
             g++ make taktuk openssh-server openmpi-bin openmpi-common openmpi-dev
 
      export:
-       - @base
+       - "@base"
 
 
 For building execute::
@@ -324,16 +324,16 @@ In order to use it in your recipe, modify it as follows:
      # variables that you can override
 
      bootstrap:
-       - @base
+       - "@base"
 
      setup:
-       - @base
+       - "@base"
        - install_software:
          - packages: >
             g++ make taktuk openssh-server openmpi-bin openmpi-common openmpi-dev
        - tau_install
      export:
-       - @base
+       - "@base"
 
 
 And rebuild the image again, you will see that it wont start from the beginning.
@@ -401,10 +401,10 @@ Therefore, we can extend the recipe created before:
          # variables that you can override
 
      bootstrap:
-       - @base
+       - "@base"
 
      setup:
-       - @base
+       - "@base"
 
      export:
        - save_appliance:

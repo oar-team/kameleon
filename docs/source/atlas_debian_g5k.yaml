@@ -16,10 +16,10 @@ global:
     g5k_site: grenoble  # CHANGE ME
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - install_software:
     - packages: >
         g++ make taktuk openssh-server openmpi-bin openmpi-common openmpi-dev
@@ -33,4 +33,4 @@ setup:
     - hpl_makefile: "/tmp/Make.Linux"
 
 export:
-  - @base
+  - "@base"

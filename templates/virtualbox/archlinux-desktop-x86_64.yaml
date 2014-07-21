@@ -13,10 +13,10 @@ global:
   virtualbox_memory_size: 1024
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - install_yaourt
   - install_gnome:
     - keyboard_layout: en
@@ -25,4 +25,4 @@ setup:
         hunspell-en faenza-icon-theme file-roller
 
 export:
-  - @base
+  - "@base"

@@ -13,12 +13,12 @@ global:
   # Apt options
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - install_gnome:
     - extra_packages: gedit gnome-documents
 
 export:
-  - @base
+  - "@base"

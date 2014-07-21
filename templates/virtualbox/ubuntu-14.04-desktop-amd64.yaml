@@ -16,12 +16,12 @@ global:
   arch: amd64
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - install_software:
     - packages: ubuntu-desktop
 
 export:
-  - @base
+  - "@base"

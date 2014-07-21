@@ -14,12 +14,12 @@ global:
   virtualbox_memory_size: 1024
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - install_software:
     - packages: ubuntu-desktop
 
 export:
-  - @base
+  - "@base"

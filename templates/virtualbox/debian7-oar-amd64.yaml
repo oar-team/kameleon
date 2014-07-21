@@ -30,10 +30,10 @@ global:
   oar_prefix_install: "/usr/local"
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
   - oar_prereq_install
   - oar_devel_prereq_install
   - oar_git_install
@@ -48,4 +48,4 @@ setup:
   - autologin
 
 export:
-  - @base
+  - "@base"

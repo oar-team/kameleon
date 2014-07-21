@@ -28,12 +28,12 @@ global:
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
-  - @base
+  - "@base"
 
 #== Install and configuration steps
 setup:
-  - @base
+  - "@base"
 
 #== Export the generated appliance in the format of your choice
 export:
-  - @base
+  - "@base"

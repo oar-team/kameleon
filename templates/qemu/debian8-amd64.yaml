@@ -16,10 +16,10 @@ global:
   arch: amd64
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
 
 export:
-  - @base
+  - "@base"

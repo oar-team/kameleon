@@ -16,10 +16,10 @@ global:
   qemu_arch: i386
 
 bootstrap:
-  - @base
+  - "@base"
 
 setup:
-  - @base
+  - "@base"
 
 export:
-  - @base
+  - "@base"
