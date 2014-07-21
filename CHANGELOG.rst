@@ -1,6 +1,14 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.2.1
+-------------
+
+Released on July 21st 2014
+
+- [core] Switch to default yaml parser (psych) and removed syck from dependencies
+
+
 version 2.2.0
 -------------
 
