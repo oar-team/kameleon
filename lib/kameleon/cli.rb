@@ -176,7 +176,7 @@ module Kameleon
 
     desc "commands", "Lists all available commands", :hide => true
     def commands
-      Kameleon.ui.info CLI.all_commands.keys - ["commands", "completions"]
+      puts CLI.all_commands.keys - ["commands", "completions"]
     end
 
     desc "source_root", "Prints the kameleon directory path", :hide => true
