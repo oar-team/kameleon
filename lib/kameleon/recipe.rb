@@ -46,7 +46,7 @@ module Kameleon
       Kameleon.ui.debug("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
-      yaml_recipe = YAML.load File.open @path
+      yaml_recipe = YAML.load_file @path
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml error"
       end
@@ -155,7 +155,7 @@ module Kameleon
       base_recipe_path << ".yaml" unless base_recipe_path.end_with? ".yaml"
       fail RecipeError, "Could not find this following recipe : #{@recipe_path}" \
          unless File.file? @path
-      base_yaml_recipe = YAML.load File.open base_recipe_path
+      base_yaml_recipe = YAML.load_file base_recipe_path
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml error"
       end
