@@ -25,8 +25,6 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ['lib']
 
-  s.required_rubygems_version = '>= 1.8.23'
-
   s.add_dependency 'childprocess', '~> 0.5.3', '>= 0.3.0'
   s.add_dependency 'thor', '~> 0.19', '>= 0.15.0'
   s.add_dependency 'table_print', '~> 1.5.2'
