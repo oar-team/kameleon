@@ -16,6 +16,9 @@ module Kameleon
     map %w(-h --help) => :help
 
     desc "import [TEMPLATE_NAME]", "Imports the given template"
+    method_option :templates_path, :type => :string ,
+                  :default => Kameleon.default_templates_path, :aliases => "-t",
+                  :desc => "Using another templates directory"
     def import(template_name)
       templates_path = Kameleon.env.templates_path
       template_path = File.join(templates_path, template_name) + '.yaml'
@@ -36,6 +39,9 @@ module Kameleon
     end
 
     desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
+    method_option :templates_path, :type => :string ,
+                  :default => Kameleon.default_templates_path, :aliases => "-t",
+                  :desc => "Using another templates directory"
     def new(recipe_name, template_name)
       if recipe_name == template_name
         fail RecipeError, "Recipe name should be different from template name"
@@ -71,9 +77,12 @@ module Kameleon
     end
 
     desc "templates", "Lists all defined templates"
+    method_option :templates_path, :type => :string ,
+                  :default => Kameleon.default_templates_path, :aliases => "-t",
+                  :desc => "Using another templates directory"
     def templates
       puts "The following templates are available in " \
-                 "#{ Kameleon.templates_path }:"
+                 "#{ Kameleon.env.templates_path }:"
       templates_hash = []
       templates_path = File.join(Kameleon.env.templates_path, "/")
       all_yaml_files = Dir["#{templates_path}**/*.yaml"]
@@ -90,9 +99,11 @@ module Kameleon
           raise e if Kameleon.env.debug
         end
       end
+      unless templates_hash.empty?
       templates_hash = templates_hash.sort_by{ |k| k["name"] }
       name_width = templates_hash.map { |k| k['name'].size }.max
       desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
+      end
       tp(templates_hash,
         {"name" => {:width => name_width}},
         { "description" => {:width => desc_width}})
