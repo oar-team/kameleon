@@ -195,7 +195,7 @@ module Kameleon
       Kameleon.ui.level = "debug" if self.options["debug"]
       opts = args[1]
       cmd_name = args[2][:current_command].name
-      if opts.include? "--help"
+      if opts.include? "--help" or opts.include? "-h"
         CLI.command_help(Kameleon.ui.shell, cmd_name)
         raise Kameleon::Exit
       end
