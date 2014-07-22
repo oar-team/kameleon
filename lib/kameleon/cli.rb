@@ -65,7 +65,7 @@ module Kameleon
           recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
           ## copying recipe
           File.open(recipe_path, 'w+') do |file|
-            extend_erb_tpl = File.join(Kameleon.env.templates_path, "extend.erb")
+            extend_erb_tpl = File.join(Kameleon.default_templates_path, "extend.erb")
             erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
             result = erb.result(binding)
             file.write(result)
