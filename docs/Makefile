@@ -9,7 +9,7 @@ BUILDDIR      = build
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
-$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed : "easy_install sphinx sphinx_rtd_theme")
+$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed : "easy_install sphinx")
 endif
 
 # Internal variables.
