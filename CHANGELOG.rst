@@ -1,6 +1,15 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.2.2
+-------------
+
+Released on July 23rd 2014
+
+- [core] Added ``-h`` CLI option to print help
+- [core] Added ``--templates-path`` CLI option to set different templates directory
+- [core] Fixed regression about recipe ancestors loading
+
 version 2.2.1
 -------------
 
