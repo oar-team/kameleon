@@ -46,8 +46,12 @@ module Kameleon
       Kameleon.ui.debug("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
+      yaml_recipe = YAML.load_file @path
+      unless yaml_recipe.kind_of? Hash
+        fail RecipeError, "Invalid yaml error"
+      end
       # Load entended recipe variables
-      yaml_recipe = load_base_recipe(@path)
+      yaml_recipe = load_base_recipe(yaml_recipe, @path)
       yaml_recipe.delete("extend")
 
       # Load Global variables
@@ -137,12 +141,7 @@ module Kameleon
       }
     end
 
-    def load_base_recipe(path)
-      yaml_recipe = YAML.load_file path
-
-      unless yaml_recipe.kind_of? Hash
-        fail RecipeError, "Invalid yaml error, #{path}"
-      end
+    def load_base_recipe(yaml_recipe, path)
       base_recipe_name = yaml_recipe.fetch("extend", "")
       return yaml_recipe if base_recipe_name.empty?
 
@@ -188,7 +187,7 @@ module Kameleon
         end
       end
       @base_recipes_files.push(Pathname.new(base_recipe_path))
-      return load_base_recipe(base_recipe_path)
+      return load_base_recipe(base_yaml_recipe, base_recipe_path)
     end
 
     def load_aliases(yaml_recipe)
