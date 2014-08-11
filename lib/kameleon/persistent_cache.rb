@@ -99,7 +99,7 @@ module Kameleon
     end
 
     def start_web_proxy_in(directory)
-
+      sleep 2 # this is for assuring that the cache is correctly created
       ## setting current step dir
       @current_step_dir = directory
       ## This function assumes that the cache directory has already been created by the engine
@@ -125,7 +125,7 @@ module Kameleon
 
     def pack()
       Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar")
-      execute("tar","-cf #{@name}-cache.tar -C cache/ .",@cwd)
+      execute("tar","-cf #{@name}-cache.tar -C #{@cache_dir} .",@cwd)
     end
 
     def unpack(cache_path)
