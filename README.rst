@@ -7,40 +7,44 @@ step by step your own distribution. At start Kameleon is used to create custom
 kvm, LXC, VirtualBox, iso images, ..., but as it is designed to be very generic
 you can probably do a lot more than that.
 
+.. _`installation`:
+
 ------------
 Installation
 ------------
-
-Gem package
------------
 
 To install the latest release from `RubyGems`_:
 
 .. _RubyGems: https://rubygems.org/gems/kameleon-builder
 
+From RubyGems
+-------------
+
+Debian/Ubuntu
+-------------
+
 ::
 
-    gem install kameleon-builder
+    apt-get install ruby-childprocess
+    gem install --no-ri --no-rdoc kameleon-builder
 
-Or from source::
+Fedora
+------
+
+::
+
+    yum install rubygem-childprocess
+    gem install --no-ri --no-rdoc kameleon-builder
+
+
+From Source
+-----------
+
+::
 
     git clone https://github.com/oar-team/kameleon.git && cd kameleon
     gem build kameleon-builder.gemspec
     gem install kameleon-builder-*.gem
-
-On debian based distribution be sure to install the ``ruby-dev`` package first
-
-
-Dist packages
--------------
-
-These packages contain Kameleon and all its dependencies (Ruby, polipo and all
-gems with their native extensions already compiled). These packages are made
-with `omnibus project`_.
-
-.. _`omnibus project`: https://github.com/opscode/omnibus-ruby
-
-Please download the package in the following `page <http://kameleon.imag.fr/installation.html#dist-packages>`_
 
 -----
 Usage
