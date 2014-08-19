@@ -1,6 +1,12 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.2.3
+-------------
+Released on Aug 19th 2014
+
+- [template] The extlinux MBR path has changed because jessie is not frozen (Fix #17)
+
 version 2.2.2
 -------------
 
