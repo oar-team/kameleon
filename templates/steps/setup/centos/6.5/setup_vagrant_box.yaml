@@ -1,0 +1,83 @@
+- enable_passwordless_sudo:
+  - exec_in: |
+      sed -i.bkp -e \
+      's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' \
+      /etc/sudoers
+
+- set_root_password:
+  - exec_in: echo -n 'root:$$user_name' | chpasswd
+
+- install_vbox_guest_additions:
+  - exec_in: echo "VirtualBox Guest Additions..."
+  - download_file_in:
+    - "http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_4.3.8.iso"
+    - VBoxGuestAdditions_4.3.8.iso
+  - exec_in: mkdir /media/VBoxGuestAdditions
+  - exec_in: mount -o loop VBoxGuestAdditions_4.3.8.iso /media/VBoxGuestAdditions
+  - exec_in: yes|sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11 || true 2>&1
+  - exec_in: rm -f VBoxGuestAdditions_4.3.8.iso
+  - exec_in: umount /media/VBoxGuestAdditions
+  - exec_in: rmdir /media/VBoxGuestAdditions
+
+- install_rsync:
+  - exec_in: yum -y install rsync 2>&1
+
+- install_puppet:
+  - exec_in: echo "Installing puppet..."
+  - write_in:
+    - /etc/yum.repos.d/puppetlabs.repo
+    - |
+      [puppetlabs-dependencies]
+      name=puppetlabdsdependencies
+      baseurl=http://yum.puppetlabs.com/el/6/dependencies/\$basearch
+      enabled=1
+      gpgcheck=0
+      [puppetlabs]
+      name=puppetlabs
+      baseurl=http://yum.puppetlabs.com/el/6/products/\$basearch
+      enabled=1
+      gpgcheck=0
+  - exec_in: yum -y install puppet facter ruby-shadow 2>&1
+
+- install_chef:
+  - exec_in: curl -L https://www.opscode.com/chef/install.sh -k | bash
+
+- copy_insecure_sshkey:
+  - exec_in: mkdir -pm 700 /home/$$user_name/.ssh/
+  - download_file_in:
+    - "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant"
+    - /home/$$user_name/.ssh/id_rsa
+  - download_file_in:
+    - "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub"
+    - /home/$$user_name/.ssh/id_rsa.pub
+  - exec_in: cp /home/$$user_name/.ssh/id_rsa.pub /home/$$user_name/.ssh/authorized_keys
+  - exec_in: chmod 0600 /home/$$user_name/.ssh/*
+
+- config_ssh:
+  - exec_in: echo "UseDNS no" >> /etc/ssh/sshd_config
+  - write_in:
+    - /home/$$user_name/.ssh/config
+    - |
+      Host *
+      ForwardX11 no
+      StrictHostKeyChecking no
+      PasswordAuthentication no
+      AddressFamily inet
+  - exec_in: chmod 0600 /home/$$user_name/.ssh/config
+  - exec_in: rsync -ah /home/$$user_name/.ssh/ /root/.ssh/
+  - exec_in: chown "$$user_name:$$user_name" -R /home/$$user_name
+
+- customize_motd:
+  - exec_in: echo 'Welcome to your Vagrant-built virtual machine.' > /etc/motd
+
+- cleanup:
+  - exec_in: rm -rf /tmp/* || true
+  - exec_in: rm -rf /var/tmp/* || true
+  - exec_in: echo "cleaning up dhcp leases"
+  - exec_in: rm -f /etc/udev/rules.d/70-persistent-net.rules
+
+- nullify_freespace:
+  - exec_in: |
+      echo "Nullify freespace..."
+      dd if=/dev/zero of=/bigemptyfile bs=1M 2>&1 >/dev/null || true
+      rm -f /bigemptyfile
