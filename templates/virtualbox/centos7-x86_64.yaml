@@ -113,4 +113,3 @@ export:
     # - save_as_raw
     # - save_as_qcow2
     # - save_as_qed
-    # - save_as_vagrant_box
