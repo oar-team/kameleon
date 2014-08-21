@@ -139,14 +139,14 @@ fi
 
 function __download {
     echo "Downloading: $1..."
-    if which curl >/dev/null; then
-        curl -# -L --retry 999 --retry-max-time 0 "$1" -o "$2" 2>&1
+    if which wget >/dev/null; then
+        wget --progress=bar:force "$1" -O "$2" 2>&1
     else
-        fail "curl is missing, trying with wget..."
-        if which wget >/dev/null; then
-            wget --progress=bar:force "$1" -O "$2" 2>&1
+        fail "wget is missing, trying with curl..."
+        if which curl >/dev/null; then
+            curl -# -L --retry 999 --retry-max-time 0 "$1" -o "$2" 2>&1
         else
-            fail "wget is missing, trying with python..."
+            fail "curl is missing, trying with python..."
             if which python >/dev/null; then
                 python -c "
 import sys
