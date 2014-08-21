@@ -1,26 +1,21 @@
 - enable_passwordless_sudo:
   - exec_in: |
-      sed -i.bkp -e \
-      's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' \
-      /etc/sudoers
+      sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
+      echo "$$user_name ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 - set_root_password:
   - exec_in: echo -n 'root:$$user_name' | chpasswd
 
 - install_vbox_guest_additions:
   - exec_in: echo "VirtualBox Guest Additions..."
-  - download_file_in:
-    - "http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_4.3.8.iso"
-    - VBoxGuestAdditions_4.3.8.iso
+  - exec_in: |
+      wget --progress=bar:force http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_4.3.8.iso 2>&1
   - exec_in: mkdir /media/VBoxGuestAdditions
   - exec_in: mount -o loop VBoxGuestAdditions_4.3.8.iso /media/VBoxGuestAdditions
   - exec_in: yes|sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11 || true 2>&1
   - exec_in: rm -f VBoxGuestAdditions_4.3.8.iso
   - exec_in: umount /media/VBoxGuestAdditions
   - exec_in: rmdir /media/VBoxGuestAdditions
-
-- install_rsync:
-  - exec_in: yum -y install rsync 2>&1
 
 - install_puppet:
   - exec_in: echo "Installing puppet..."
@@ -44,12 +39,9 @@
 
 - copy_insecure_sshkey:
   - exec_in: mkdir -pm 700 /home/$$user_name/.ssh/
-  - download_file_in:
-    - "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant"
-    - /home/$$user_name/.ssh/id_rsa
-  - download_file_in:
-    - "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub"
-    - /home/$$user_name/.ssh/id_rsa.pub
+  - exec_in: |
+      wget --progress=bar:force https://raw.github.com/mitchellh/vagrant/master/keys/vagrant -O /home/$$user_name/.ssh/id_rsa 2>&1
+      wget --progress=bar:force https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -O /home/$$user_name/.ssh/id_rsa.pub 2>&1
   - exec_in: cp /home/$$user_name/.ssh/id_rsa.pub /home/$$user_name/.ssh/authorized_keys
   - exec_in: chmod 0600 /home/$$user_name/.ssh/*
 

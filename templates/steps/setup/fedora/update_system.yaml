@@ -13,6 +13,6 @@
   - on_setup_clean:
     - exec_in: test ! -f /var/run/yum.pid || rm -f /var/run/yum.pid $(pgrep yum)
     - exec_in: echo "Cleaning old yum repodata."
-    - exec_in: yum clean all
+    - exec_in: yum clean all  -y
     - exec_in: yum history new
     - exec_in: truncate -c -s 0 /var/log/yum.log

@@ -56,7 +56,6 @@
       NETWORKING=yes
       HOSTNAME=$$hostname
 
-
 - umount_chroot:
   - on_clean:
     - umount_out: $$rootfs/sys

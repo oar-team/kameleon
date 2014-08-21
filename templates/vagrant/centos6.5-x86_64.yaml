@@ -71,18 +71,20 @@ bootstrap:
     - mirror_packages_url: http://mirrors.kernel.org/$$distrib/$$release/os/$$arch/Packages/
     - include_pkgs: >
         findutils yum util-linux dhclient vim-minimal net-tools NetworkManager
-        openssh-server kernel kernel-devel
+        openssh-server kernel kernel-devel acpid
   - switch_context_virtualbox
 
 #== Install and configuration steps
 setup:
   - configure_kernel
+  - configure_repo
   - update_system
   - minimal_install
   - install_software:
     - packages: >
         syslinux-extlinux bash-completion kbd sudo openssh-clients ntp ntpdate
-        dhclient net-tools NetworkManager rsync nfs-common
+        rsync gcc make gcc-c++ kernel-devel-`uname -r` zlib-devel
+        openssl-devel readline-devel sqlite-devel perl wget dkms nfs-utils
   - install_bootloader
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
