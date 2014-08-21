@@ -46,7 +46,10 @@ global:
     - $$distrib
     - "fedora"
 
-  disable_selinux: true
+  # SELinux configuration
+  selinux: permissive  ## Can take one of these three values: enforcing, permissive or disabled
+  selinuxtype: targeted  # Possible values are: strict, targeted
+
   ssh_config_file: $$kameleon_cwd/ssh_config
   out_context:
     cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
