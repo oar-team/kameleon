@@ -12,10 +12,8 @@ extend: debian7-amd64.yaml
 global:
   ## User varibales : used by the recipe
   user_name: vagrant
-  user_password: $$user_name
   install_chef: true
   install_puppet: true
-  install_salt: false
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
