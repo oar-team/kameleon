@@ -327,13 +327,6 @@ module Kameleon
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
-      Kameleon.ui.info("Resolving variables")
-      @sections.values.each do |section|
-        section.macrosteps.each do |macrostep|
-          macrostep.resolve_variables!(@global)
-        end
-      end
-
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
           # First pass : resolve aliases
@@ -347,6 +340,18 @@ module Kameleon
           # flatten for multiple-command alias + variables
           Kameleon.ui.debug("Resolving check statements for macrostep '#{macrostep.name}'")
           macrostep.microsteps.each { |microstep| microstep.commands.flatten! }
+        end
+      end
+
+      Kameleon.ui.info("Resolving variables")
+      @sections.values.each do |section|
+        section.macrosteps.each do |macrostep|
+          macrostep.resolve_variables!(@global)
+        end
+      end
+
+      @sections.values.each do |section|
+        section.macrosteps.each do |macrostep|
           # Second pass : resolve variables + clean/init hooks
           macrostep.microsteps.each do |microstep|
             microstep.commands.map! do |cmd|
