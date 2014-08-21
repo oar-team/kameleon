@@ -55,32 +55,35 @@ global:
     proxy_cache: 10.0.2.2
 
   in_context:
-    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t chroot $$rootfs /bin/bash
+    cmd: ssh -F $$ssh_config_file $${kameleon_recipe_name} -t /bin/bash
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
 
+#== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - enable_checkpoint
   - prepare_virtualbox
   - start_virtualbox
   - install_requirements:
-    - packages: parted e2fsprogs yum rpm lynx
-  - initialize_disk:
+    - packages: parted e2fsprogs yum rpm lynx extlinux
+  - initialize_disk
   - yum_bootstrap:
     - mirror_packages_url: http://mirrors.kernel.org/$$distrib/$$release/os/$$arch/Packages/
-    - include_pkgs: findutils util-linux
-  - start_chroot
+    - include_pkgs: >
+        findutils yum util-linux dhclient vim-minimal net-tools NetworkManager
+        openssh-server kernel kernel-devel acpid
+  - switch_context_virtualbox
 
 #== Install and configuration steps
 setup:
   - configure_kernel
+  - configure_repo
   - update_system
   - minimal_install
   - install_software:
     - packages: >
-        kernel kernel-devel syslinux-extlinux bash-completion kbd dhclient 
-        sudo openssh-server openssh-clients ntp ntpdate dhclient
-        net-tools NetworkManager
+        syslinux-extlinux bash-completion kbd sudo openssh-clients ntp ntpdate
+        rsync
   - install_bootloader
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
