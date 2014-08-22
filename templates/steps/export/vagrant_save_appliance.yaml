@@ -1,0 +1,7 @@
+# Save Appliance from virtualbox ti vagrant
+
+- save_box:
+  - check_cmd_local: vagrant
+  - exec_local: echo "Exporting appliance to $$output.box..."
+  - exec_local: rm -f $$output.box
+  - exec_local: vagrant package --base $$virtualbox_vmid --output $$output.box

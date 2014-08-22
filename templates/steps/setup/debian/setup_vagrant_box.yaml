@@ -20,17 +20,20 @@
   - exec_in: rmdir /media/VBoxGuestAdditions
 
 - install_puppet:
-  - exec_in: echo "Installing puppet..."
-  - download_file_in:
-    - "http://apt.puppetlabs.com/puppetlabs-release-stable.deb"
-    - puppetlabs-release-stable.deb
-  - exec_in: dpkg -i "puppetlabs-release-stable.deb"
-  - exec_in: apt-get update
-  - exec_in: apt-get install puppet -y --force-yes
-  - exec_in: rm -f puppetlabs-release-stable.deb
+  - exec_in: |
+      if [ $$install_puppet = true ]; then
+        wget --progress=bar:force http://apt.puppetlabs.com/puppetlabs-release-stable.deb 2>&1
+        dpkg -i puppetlabs-release-stable.deb
+        apt-get update
+        apt-get install puppet -y --force-yes
+        rm -f puppetlabs-release-stable.deb
+      fi
 
 - install_chef:
-  - exec_in: curl -L https://www.opscode.com/chef/install.sh -k | bash
+  - exec_in: |
+      if [ $$install_chef = true ]; then
+        curl -L https://www.opscode.com/chef/install.sh -k | bash
+      fi
 
 - copy_insecure_sshkey:
   - exec_in: mkdir -pm 700 /home/$$user_name/.ssh/

@@ -1,0 +1,34 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: A standard Debian 7 vagrant base box (amd64)
+#
+#==============================================================================
+
+---
+extend: debian7-amd64.yaml
+
+global:
+  ## User varibales : used by the recipe
+  user_name: vagrant
+  install_chef: true
+  install_puppet: true
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - "@base"
+
+#== Install and configuration steps
+setup:
+  - "@base"
+  - install_software:
+    - packages: >
+        linux-headers-$(uname -r) nfs-common dkms rsync
+  - setup_vagrant_box
+
+#== Export the generated appliance in the format of your choice
+export:
+  - disable_checkpoint
+  - vagrant_save_appliance:
+    - output: "$$kameleon_cwd/$${kameleon_recipe_name}"

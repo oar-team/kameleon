@@ -1,0 +1,35 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: A standard Centos 6.5 vagrant base box (amd64)
+#
+#==============================================================================
+
+---
+extend: centos6.5-x86_64
+
+global:
+  ## User varibales : used by the recipe
+  user_name: vagrant
+  install_chef: true
+  install_puppet: true
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - "@base"
+
+#== Install and configuration steps
+setup:
+  - "@base"
+  - install_software:
+    - packages: >
+        gcc make gcc-c++ kernel-devel-`uname -r` zlib-devel
+        openssl-devel readline-devel sqlite-devel perl wget dkms nfs-utils
+  - setup_vagrant_box
+
+#== Export the generated appliance in the format of your choice
+export:
+  - disable_checkpoint
+  - vagrant_save_appliance:
+    - output: "$$kameleon_cwd/$${kameleon_recipe_name}"
