@@ -2,7 +2,7 @@
 
 - save_as_g5k:
   - exec_out: echo "Using tgz g5k to Export the machine"
-  - exec_in: tgz-g5k $$filename.tar.gz
+  - exec_in: tgz-g5k $$in_cwd/$$filename.tar.gz
   - exec_out: |
       rsync -avz -e "ssh -F $$out_cwd/ssh_config" \
         $$kameleon_recipe_name:$$in_cwd/$$filename.tar.gz \
