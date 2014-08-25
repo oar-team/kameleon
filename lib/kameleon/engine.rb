@@ -1,6 +1,7 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
 require 'kameleon/persistent_cache'
+# require 'pry'
 module Kameleon
 
   class Engine
@@ -38,7 +39,7 @@ module Kameleon
         @cache.name = @recipe.name
         @cache.mode = @options[:cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
-        @cache.recipe_files = @recipe.files # I'm passing the Pathname objects
+        @cache.recipe_files = @recipe.files + @recipe.base_recipes_files# I'm passing the Pathname objects
         @cache.recipe_path = @recipe.path
 
         if @recipe.global["in_context"]["proxy_cache"].nil? then
@@ -235,7 +236,7 @@ module Kameleon
         end
         first_context = map[first_cmd.key]
         second_context = map[second_cmd.key]
-        @cache.cache_cmd_id(cmd.identifier) if @cache
+        @cache.cache_cmd_raw(cmd.raw_cmd_id) if @cache
         first_context.pipe(first_cmd.value, second_cmd.value, second_context)
       when "rescue"
         first_cmd, second_cmd = cmd.value

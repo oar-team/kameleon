@@ -1,6 +1,7 @@
 require 'childprocess'
 require 'singleton'
 require 'socket'
+require 'pry'
 module Kameleon
   #This ruby class will control the execution of Polipo web proxy
   class Persistent_cache
@@ -48,7 +49,7 @@ module Kameleon
       #structure {:cmd => "cmd", :stdout_filename => "file_name"}
       @cmd_cached = []
       @cache_path = ""
-      @current_cmd_id = nil
+      @current_raw_cmd = nil
       @current_step_dir = nil
       @recipe_file = nil
       @steps_files = []
@@ -93,7 +94,7 @@ module Kameleon
 
     def create_cache_directory(step_name)
       Kameleon.ui.debug("Creating  cache directory #{step_name} for Polipo")
-      directory_name = File.join(@cache_dir,"#{step_name}")
+      directory_name = File.join(@cache_dir,"DATA","#{step_name}")
       FileUtils.mkdir_p directory_name
       directory_name
     end
@@ -135,10 +136,9 @@ module Kameleon
     end
 
 
-    # This function caches the command with its respective stdout
-    # a command id is associate to a file
-    def cache_cmd_id(cmd_identifier)
-      @current_cmd_id = cmd_identifier
+    # This function caches the raw command specified in the recipe
+    def cache_cmd_raw(raw_cmd_id)
+      @current_raw_cmd = raw_cmd_id
       return true
     end
 
@@ -147,16 +147,18 @@ module Kameleon
       Kameleon.ui.debug("command: cp #{file_path} #{@cwd}/cache/files/")
       FileUtils.mkdir_p @current_step_dir + "/data/"
       FileUtils.cp file_path, @current_step_dir + "/data/"
-      @cmd_cached.push({:cmd_id => @current_cmd_id,
-                        :cmd => cmd ,
+      @cmd_cached.push({:raw_cmd_id => @current_raw_cmd,
                         :stdout_filename => File.basename(file_path)})
     end
 
     def get_cache_cmd(cmd)
       return false if @mode == :build
-      cache_line = @cmd_cached.select{ |reg|
-        (reg[:cmd_id] == @current_cmd_id && reg[:cmd] == cmd) }.first
-
+      cache_line = @cmd_cached.select{ |reg| reg[:raw_cmd_id] == @current_raw_cmd  }.first
+      if cache_line.nil? then
+        # This error can be due to the improper format of the file cache_cmd_index
+        Kameleon.ui.error("Persistent cache missing file")
+        raise BuildError, "Failed to use persistent cache"
+      end
       return File.new("#{@current_step_dir}/data/#{cache_line[:stdout_filename]}","r")
     end
 
@@ -164,22 +166,34 @@ module Kameleon
       @polipo_process.stop
       Kameleon.ui.info("Stopping web proxy polipo")
       Kameleon.ui.info("Finishing persistent cache with last files")
-
+      cache_metadata_dir = File.join(@cache_dir,"metadata")
       if @mode == :build then
-        File.open("#{@cache_dir}/cache_cmd_index",'w+') do |f|
+        File.open("#{cache_metadata_dir}/cache_cmd_index",'w+') do |f|
           f.puts(@cmd_cached.to_yaml)
         end
 
         unless @recipe_files.empty?
-          recipe_dir = Pathname.new(common_prefix(@recipe_files))
           all_files = @recipe_files.push(@recipe_path)
-          Kameleon::Utils.copy_files(recipe_dir, @cache_dir, all_files)
+          recipe_dir = Pathname.new(common_prefix(all_files))
+          cached_recipe_dir = Pathname.new(File.join(@cache_dir,"recipe"))
+       #   binding.pry
+          Kameleon::Utils.copy_files(recipe_dir, cached_recipe_dir, all_files)
         end
         ## Saving metadata information
         Kameleon.ui.info("Caching recipe")
-        File.open("#{@cached_recipe_dir}/header",'w+') do |f|
-          f.puts({:recipe_path => @recipe_path.to_s}.to_yaml)
+
+        File.open("#{cache_metadata_dir}/header",'w+') do |f|
+          f.puts({:recipe_path => @recipe_path.basename.to_s}.to_yaml)
+          f.puts({:date => Time.now.to_i}.to_yaml)
         end
+
+        #Removing empty directories
+        cache_data_dir = File.join(@cache_dir,"DATA")
+        Dir.foreach(cache_data_dir) do |item|
+          dir_temp = File.join(cache_data_dir,item)
+          Dir.delete(dir_temp) if File.stat(dir_temp).nlink == 2
+        end
+
         pack
       end
     end
@@ -193,20 +207,24 @@ module Kameleon
           raise BuildError, "Failed to untar the persistent cache file"
         end
         ## We have to load the file
-        @cmd_cached = YAML.load(File.read("#{@cache_dir}/cache_cmd_index"))
+        metadata_dir = File.join(@cache_dir,"metadata")
+        @cmd_cached = YAML.load(File.read("#{metadata_dir}/cache_cmd_index"))
       end
       @activated = true
-      @cached_recipe_dir = @cache_dir
-      FileUtils.mkdir_p @cached_recipe_dir
+      #@cached_recipe_dir = @cache_dir
+      FileUtils.mkdir_p @cache_dir
+      # Creating sctructure of the cache
+      FileUtils.mkdir_p File.join(@cache_dir,"recipe")
+      FileUtils.mkdir_p File.join(@cache_dir,"DATA")
+      FileUtils.mkdir_p File.join(@cache_dir,"metadata")
     end
 
     def get_recipe()
       cached_recipe=Dir.mktmpdir("cache")
-      puts "cache path : #{@cache_path}"
-      execute("tar","-xf #{@cache_path} -C #{cached_recipe} .")
+      execute("tar","-xf #{@cache_path} -C #{cached_recipe} ./recipe ./metadata")
       Kameleon.ui.info("Getting cached recipe")
-      recipe_header = YAML::load(File.read("#{cached_recipe}/header"))
-      recipe_file = recipe_header[:recipe_path]
+      recipe_header = YAML::load(File.read(File.join(cached_recipe,"metadata","header")))
+      recipe_file = File.join(cached_recipe,"recipe",recipe_header[:recipe_path])
       return recipe_file
     end
 

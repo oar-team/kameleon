@@ -3,11 +3,13 @@ module Kameleon
   class Command
 
     attr_accessor :string_cmd
+    attr_accessor :raw_cmd_id
     attr_accessor :microstep_name
     attr_accessor :identifier
 
     def initialize(yaml_cmd, microstep_name)
       @string_cmd = YAML.dump(yaml_cmd).gsub("---", "").strip
+      @raw_cmd_id = Digest::SHA1.hexdigest(YAML.dump(yaml_cmd).gsub("---", "").strip)
       @microstep_name = microstep_name
       @identifier = nil
     end
