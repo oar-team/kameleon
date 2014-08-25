@@ -1,7 +1,7 @@
 require 'childprocess'
 require 'singleton'
 require 'socket'
-require 'pry'
+
 module Kameleon
   #This ruby class will control the execution of Polipo web proxy
   class Persistent_cache
