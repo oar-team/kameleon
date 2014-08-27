@@ -37,6 +37,7 @@ global:
   insecure_ssh_key_url: http://kameleon.imag.fr/iso/boot2debian/keys/insecure_id_rsa
 
   # rootfs options
+  disk_device: /dev/sda
   rootfs: /rootfs
   filesystem_type: ext4
 
@@ -71,7 +72,7 @@ bootstrap:
     - packages: parted e2fsprogs debootstrap extlinux
   - initialize_disk
   - debootstrap:
-    - include_pkg: > 
+    - include_pkg: >
         apt-transport-https ca-certificates less acpid acpi-support kbd bzip2 udev
         locales psmisc linux-image-generic ifupdown iptables iputils-ping
         iproute pciutils isc-dhcp-client openssh-server
