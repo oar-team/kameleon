@@ -152,6 +152,7 @@ module Kameleon
     def do_steps(section_name)
       section = @recipe.sections.fetch(section_name)
       section.sequence do |macrostep|
+        macrostep_time = Time.now.to_i
         if @cache then
           Kameleon.ui.info("Starting proxy cache server for macrostep '#{macrostep.name}'...")
           # the following function start a polipo web proxy and stops a previous run
@@ -187,6 +188,7 @@ module Kameleon
             end
           end
         end
+        Kameleon.ui.info("Step #{macrostep.name} took: #{Time.now.to_i-macrostep_time} secs")
       end
       @cleaned_sections.push(section.name)
     end
