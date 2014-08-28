@@ -37,6 +37,7 @@ module Kameleon
                              :proxyPort => @polipo_port,
                              :relaxTransparency =>"true",
                              :daemonise => false,
+                             :proxyAddress => "0.0.0.0",
                              :logFile => File.join(Kameleon.env.build_path, 'polipo.log')
                             }
 
@@ -46,7 +47,6 @@ module Kameleon
       @cache_dir = Kameleon.env.cache_path
       @polipo_path = nil
       @cwd = ""
-      #structure {:cmd => "cmd", :stdout_filename => "file_name"}
       @cmd_cached = []
       @cache_path = ""
       @current_raw_cmd = nil
