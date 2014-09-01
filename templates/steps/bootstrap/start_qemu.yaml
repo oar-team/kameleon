@@ -22,6 +22,7 @@
           -cdrom $$kameleon_cwd/boot2kameleon.iso \
           -drive file="$$qemu_image_disk",cache=unsafe,media=disk,if=virtio,id=drive0 \
           -smp $${qemu_cpu} \
+          -cpu host \
           -m $$qemu_memory_size \
           -rtc base=localtime \
           -net nic,model=virtio -net user \
