@@ -12,8 +12,6 @@ extend: centos6.5-x86_64
 global:
   ## User varibales : used by the recipe
   user_name: vagrant
-  install_chef: true
-  install_puppet: true
 
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:

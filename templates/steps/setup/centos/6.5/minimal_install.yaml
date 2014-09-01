@@ -1,0 +1,20 @@
+# Software Install
+- default_packages: >
+    acl attr audit authconfig b43-openfwwf bridge-utils bzip2 cronie
+    cronie-anacron crontabs cryptsetup-luks cryptsetup-luks-libs cyrus-sasl
+    dash device-mapper device-mapper-event device-mapper-event-libs
+    device-mapper-libs device-mapper-multipath device-mapper-multipath-libs
+    device-mapper-persistent-data dhclient dhcp-common dracut dracut-kernel
+    e2fsprogs e2fsprogs-libs efibootmgr file fuse gnupg2 gpgme grub grubby
+    iptables-ipv6 iscsi-initiator-utils kernel kernel-firmware kpartx
+    libaio libcap-ng libdrm libgcrypt libgpg-error libpciaccess libss
+    libudev libuser logrotate lvm2 lvm2-libs m4 mdadm mysql-libs newt
+    newt-python openssh-server passwd pciutils-libs pinentry plymouth
+    plymouth-core-libs plymouth-scripts postfix pth pygpgme python-iniparse
+    python-pycurl python-urlgrabber redhat-logos rootfiles rpm-python rsyslog
+    selinux-policy selinux-policy-targeted slang system-config-firewall-base
+    which xfsprogs yum yum-metadata-parser yum-plugin-fastestmirror
+- extra_packages: ""
+- install_packages:
+  - exec_in: yum groupupdate --releasever=$$release 'Minimal Install' -y 2>&1
+  - exec_in: yum install -y $$default_packages $$extra_packages -y 2>&1

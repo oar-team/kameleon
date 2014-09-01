@@ -73,8 +73,8 @@ bootstrap:
   - yum_bootstrap:
     - mirror_packages_url: http://mirrors.kernel.org/$$distrib/$$release/os/$$arch/Packages/
     - include_pkgs: >
-        findutils yum util-linux dhclient vim-minimal net-tools NetworkManager
-        openssh-server kernel kernel-devel acpid
+        findutils yum util-linux dhclient vim-minimal net-tools openssh-server
+        kernel kernel-devel acpid
   - switch_context_virtualbox
 
 #== Install and configuration steps
