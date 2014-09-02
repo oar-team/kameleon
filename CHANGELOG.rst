@@ -1,6 +1,19 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.2.4
+-------------
+Released on Sep 2nd 2014
+
+- [template] Added the ``-cpu host`` option to qemu to improve performances
+- [template] Made centos image as close as possible as default Centos installation
+- [template] Configured SELinux for Fedora and Centos
+- [template] Fixed Grid'5000 export step
+- [template] Extended vagrant recipes from virtualbox recipes
+- [core] Adding the step elapsed time to the Kamelon output
+- [proxy cache] Restructured persistent cache and improved caching of pipes
+- [proxy cache] Added ``ProxyAdrres`` paramter to polipo to take into account all the host network interfaces
+
 version 2.2.3
 -------------
 Released on Aug 19th 2014
