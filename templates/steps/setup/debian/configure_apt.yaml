@@ -39,6 +39,19 @@
       #QUICKNDIRTYCALC
       #VERBOSE
 
+- configure_source_list:
+  - write_in:
+    - /etc/apt/sources.list
+    - |
+      deb $$apt_repository $${distrib} main
+      deb-src $$apt_repository $${distrib} main
+      
+      deb $$apt_repository $${distrib}-backports main
+      deb-src $$apt_repository $${distrib}-backports main
+      
+      deb http://security.debian.org/ $${distrib}/updates main
+      deb-src http://security.debian.org/ $${distrib}/updates main
+
 - add_contribs_and_nonfree_sources:
   - exec_in: |
       if [ $$enable_contrib = true ]; then
