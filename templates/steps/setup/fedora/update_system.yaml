@@ -1,6 +1,4 @@
 - configure_yum:
-  - exec_in: rm -rf -- /var/lib/rpm/*
-  - exec_in: rpm --initdb
   - exec_in: echo $$release > /etc/yum/vars/releasever
 
 - update_system:
