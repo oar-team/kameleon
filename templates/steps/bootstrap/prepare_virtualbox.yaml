@@ -17,7 +17,11 @@
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --boot2 disk
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --memory $$virtualbox_memory_size
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --acpi on
-  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nic1 nat --nictype1 82540EM --cableconnected1 on
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nictype1 82540EM
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nictype2 82540EM
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nictype3 82540EM
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nictype4 82540EM
+  - exec_local: VBoxManage modifyvm $$virtualbox_vmid --nic1 nat --cableconnected1 on
   - exec_local: VBoxManage modifyvm $$virtualbox_vmid --natpf1 guestssh,tcp,,$$virtualbox_ssh_port,,22
   - exec_local: VBoxManage storagectl $$virtualbox_vmid --name "IDE Controller" --add ide
   - exec_local: |
