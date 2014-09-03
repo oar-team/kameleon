@@ -16,16 +16,18 @@
 - set_interface:
   - write_in:
     - /etc/sysconfig/network-scripts/ifcfg-eth0
-    - |
-      DEVICE=eth0
-      BOOTPROTO=dhcp
-      ONBOOT=yes
-      HOSTNAME=$$hostname
-      NM_CONTROLLED=no
-      TYPE=Ethernet
-      MTU=$$mtu
+    - |      
+      DEVICE="eth0"
+      BOOTPROTO="dhcp"
+      HOSTNAME="$$hostname"
+      IPV6INIT="yes"
+      NM_CONTROLLED="yes"
+      ONBOOT="yes"
+      TYPE="Ethernet"
+      MTU="$$mtu"
   - write_in:
     - /etc/sysconfig/network
     - |
       NETWORKING=yes
       HOSTNAME=$$hostname
+      RES_OPTIONS="single-request-reopen"
