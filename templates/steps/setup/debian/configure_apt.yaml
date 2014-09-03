@@ -43,14 +43,14 @@
   - write_in:
     - /etc/apt/sources.list
     - |
-      deb $$apt_repository $${distrib} main
-      deb-src $$apt_repository $${distrib} main
+      deb $$apt_repository $${release} main
+      deb-src $$apt_repository $${release} main
       
-      deb $$apt_repository $${distrib}-backports main
-      deb-src $$apt_repository $${distrib}-backports main
+      deb $$apt_repository $${release}-backports main
+      deb-src $$apt_repository $${release}-backports main
       
-      deb http://security.debian.org/ $${distrib}/updates main
-      deb-src http://security.debian.org/ $${distrib}/updates main
+      deb http://security.debian.org/ $${release}/updates main
+      deb-src http://security.debian.org/ $${release}/updates main
 
 - add_contribs_and_nonfree_sources:
   - exec_in: |
