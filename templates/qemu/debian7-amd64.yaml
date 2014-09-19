@@ -100,7 +100,7 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp sudo less vim bash-completion curl less bzip2 wget 
+        debian-keyring sudo less vim bash-completion curl less bzip2 wget
         dialog htop tree extlinux
   - install_bootloader
   # Configuration

@@ -85,7 +85,7 @@ setup:
     - dist_upgrade: true
   - install_software:
     - packages: >
-        debian-keyring ntp rsync sudo less vim bash-completion
+        debian-keyring rsync sudo less vim bash-completion
   # Configuration
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
