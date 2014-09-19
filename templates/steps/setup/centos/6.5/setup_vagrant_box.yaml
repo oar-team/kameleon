@@ -66,7 +66,8 @@
 - cleanup:
   - exec_in: rm -rf /tmp/* || true
   - exec_in: rm -rf /var/tmp/* || true
-  - exec_in: echo "cleaning up dhcp leases"
+  - exec_in: echo "Remove traces of mac address from network configuration"
+  - exec_in: sed -i /HWADDR/d /etc/sysconfig/network-scripts/ifcfg-eth0
   - exec_in: rm -f /etc/udev/rules.d/70-persistent-net.rules
 
 - nullify_freespace:
