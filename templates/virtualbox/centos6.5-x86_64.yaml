@@ -91,7 +91,7 @@ setup:
         iptables-ipv6 libuser logrotate m4 openssh-server passwd
         pciutils-libs rsyslog dbus system-config-firewall-base which
         findutils yum util-linux vim-minimal net-tools openssh-server
-        kernel kernel-devel acpid
+        kernel kernel-devel acpid man
   - install_bootloader
   - configure_system:
     - locales: POSIX C en_US fr_FR de_DE
