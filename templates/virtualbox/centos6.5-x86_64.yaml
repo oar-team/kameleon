@@ -26,7 +26,7 @@ global:
   ## VirtualBox options
   virtualbox_memory_size: 768
   virtualbox_ssh_port: 55423
-  virtualbox_os_type: Linux_64
+  virtualbox_os_type: RedHat_64
   virtualbox_vmid: $${kameleon_recipe_name}_$${kameleon_short_uuid}
   virtualbox_image_size: 10000  ## megabytes
   virtualbox_image_disk: $$kameleon_cwd/base_$$kameleon_recipe_name.vdi
