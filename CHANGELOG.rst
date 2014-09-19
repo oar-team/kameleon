@@ -1,8 +1,29 @@
 Kameleon CHANGELOG
 ==================
 
+
+version 2.2.5
+-------------
+
+Released on Sep 19th 2014
+
+ - [template] Customized vm memory size before vagrant export
+ - [template] Configured virtualbox to use ``82540EM`` driver for ethX interfaces
+ - [template][debian] installed man-db and net-tools with debootstrap
+ - [template][centos] Removed traces of mac address from network configuration
+ - [template][centos] installed man package
+ - [template][centos] Set OS type to ``Redhat_64`` in virtualbox
+ - [template][debian] Added security and backports repository
+ - [template][debian] Added debian security and backports repositories
+ - [template][debian] Removed ntp from all debian recipes
+ - [template][centos] Added ``single-request-reopen`` option to network config (centos)
+ - [template][centos] Fixed corrupted rpm database
+
+
+
 version 2.2.4
 -------------
+
 Released on Sep 2nd 2014
 
 - [template] Added the ``-cpu host`` option to qemu to improve performances
