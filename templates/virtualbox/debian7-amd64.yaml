@@ -72,10 +72,11 @@ bootstrap:
     - packages: parted e2fsprogs debootstrap extlinux
   - initialize_disk
   - debootstrap:
-    - include_pkg: > 
+    - include_pkg: >
         apt-utils ca-certificates locales less linux-image-$$kernel_arch
         isc-dhcp-client ifupdown iptables iputils-ping iproute pciutils
-        psmisc acpid acpi-support-base openssh-server sysvinit
+        psmisc acpid acpi-support-base openssh-server sysvinit man-db
+        net-tools
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
@@ -94,7 +95,7 @@ setup:
   - install_software:
     - packages: >
         debian-keyring sudo less vim bash-completion curl less bzip2 wget
-        dialog tree extlinux net-tools man
+        dialog tree extlinux
   - install_bootloader
   # Configuration
   - configure_system:
