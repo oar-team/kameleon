@@ -57,13 +57,15 @@ global:
     workdir: /root/kameleon_workdir
     proxy_cache: 172.17.42.1
 
+  bootstrap_packages: >
+    ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
+    net-tools iproute acpid openssh-server pciutils extlinux
+    linux-image-$$arch
+
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - debootstrap:
-    - include_pkg: >
-        ifupdown locales libui-dialog-perl dialog isc-dhcp-client netbase
-        net-tools iproute acpid openssh-server pciutils extlinux
-        linux-image-$$arch
+    - include_pkg: $$bootstrap_packages
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository

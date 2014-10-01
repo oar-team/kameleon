@@ -69,6 +69,12 @@ global:
     workdir: /root/kameleon_workdir
     proxy_cache: 10.0.2.2
 
+  bootstrap_packages: >
+    apt-utils ca-certificates locales less linux-image-$$kernel_arch
+    isc-dhcp-client ifupdown iptables iputils-ping iproute pciutils
+    psmisc acpid acpi-support-base openssh-server sysvinit man-db
+    net-tools
+
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - prepare_qemu
@@ -78,11 +84,7 @@ bootstrap:
     - packages: parted e2fsprogs debootstrap extlinux
   - initialize_disk
   - debootstrap:
-    - include_pkg: >
-        apt-utils ca-certificates locales less linux-image-$$kernel_arch
-        isc-dhcp-client ifupdown iptables iputils-ping iproute pciutils
-        psmisc acpid acpi-support-base openssh-server sysvinit man-db
-        net-tools
+    - include_pkg: $$bootstrap_packages
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository

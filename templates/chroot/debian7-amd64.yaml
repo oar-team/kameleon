@@ -58,12 +58,14 @@ global:
     workdir: /root/kameleon_workdir
     proxy_cache: 127.0.0.1
 
+  bootstrap_packages: apt-utils ca-certificates locales less
+
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - initialize_disk_chroot
   - enable_checkpoint
   - debootstrap:
-    - include_pkg: apt-utils ca-certificates locales less
+    - include_pkg: $$bootstrap_packages
     - release: $$release
     - arch: $$arch
     - repository: http://ftp.debian.org/debian/
