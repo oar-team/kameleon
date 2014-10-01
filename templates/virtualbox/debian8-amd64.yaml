@@ -15,6 +15,12 @@ global:
   release: jessie
   arch: amd64
 
+  bootstrap_packages: >
+    apt-utils ca-certificates locales less linux-image-$$kernel_arch
+    isc-dhcp-client isc-dhcp-common ifupdown iptables iproute2 iputils-ping
+    pciutils psmisc acpid acpi-support-base openssh-server sysvinit man-db
+    systemd systemd-sysv net-tools
+
 bootstrap:
   - "@base"
 
