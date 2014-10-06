@@ -85,7 +85,7 @@ bootstrap:
     - release: $$release
     - arch: $$arch
     - repository: $$apt_repository
-    - variant: minbase
+    - variant: default  # default|minbase|buildd|fakechroot|scratchbox
   - switch_context_qemu
 
 

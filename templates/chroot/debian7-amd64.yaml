@@ -69,7 +69,7 @@ bootstrap:
     - release: $$release
     - arch: $$arch
     - repository: http://ftp.debian.org/debian/
-    - variant: minbase
+    - variant: default  # default|minbase|buildd|fakechroot|scratchbox
   - start_chroot
 
 #== Install and configuration steps

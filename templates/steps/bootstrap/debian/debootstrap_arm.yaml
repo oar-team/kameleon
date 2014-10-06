@@ -6,7 +6,7 @@
   - check_cmd_out: qemu-arm-static
   - exec_out:|
         mkdir -p $$rootfs
-        debootstrap --no-check-gpg --foreign --variant=minbase --arch=$$arch --include="$$include_pkg" $$release $$rootfs $$repository
+        debootstrap --no-check-gpg --foreign --arch=$$arch --include="$$include_pkg" $$release $$rootfs $$repository
         QEMU_USER_PATH=$(which qemu-arm-static)
         cp $QEMU_USER_PATH $$rootfs/usr/bin/qemu-arm-static
         chroot $$rootfs /usr/bin/qemu-arm-static -cpu cortex-a9 /bin/sh /debootstrap/debootstrap --second-stage
