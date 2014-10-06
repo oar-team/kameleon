@@ -15,6 +15,7 @@
   - download_file_in:
     - "http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_$VBOXGA_VERSION.iso"
     - /tmp/vboxga.iso
+  - exec_in: modprobe loop
   - exec_in: mkdir /media/VBoxGuestAdditions
   - exec_in: mount -o loop,ro /tmp/vboxga.iso /media/VBoxGuestAdditions
   - exec_in: yes|sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11 || true 2>&1
