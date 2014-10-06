@@ -24,6 +24,7 @@ setup:
     - packages: >
         gcc make gcc-c++ kernel-devel-`uname -r` zlib-devel
         openssl-devel readline-devel sqlite-devel perl wget dkms nfs-utils
+  - install_virtualbox_guestaddons
   - setup_vagrant_box
 
 #== Export the generated appliance in the format of your choice

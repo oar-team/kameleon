@@ -1,0 +1,23 @@
+- download_iso:
+  - download_file_in:
+    - "http://download.virtualbox.org/virtualbox/LATEST.TXT"
+    - /tmp/vboxga_version
+  - exec_in: VBOXGA_VERSION="$(cat /tmp/vboxga_version)"
+  - exec_in: echo "Downloading virtualBox Guest Additions version $VBOXGA_VERSION..."
+  - download_file_in:
+    - "http://download.virtualbox.org/virtualbox/$VBOXGA_VERSION/VBoxGuestAdditions_${VBOXGA_VERSION}.iso"
+    - /tmp/vboxga.iso
+
+- mount_iso:
+  - exec_in: mkdir /media/VBoxGuestAdditions
+  - exec_in: modprobe loop
+  - exec_in: mount -o loop,ro /tmp/vboxga.iso /media/VBoxGuestAdditions
+
+- install_vboxga:
+  - exec_in: yes|sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11 || true 2>&1
+
+- clean:
+  - on_clean:
+    - exec_in: umount /media/VBoxGuestAdditions
+    - exec_in: rmdir /media/VBoxGuestAdditions
+    - exec_in: rm -f /tmp/vboxga.iso /tmp/vboxga_version

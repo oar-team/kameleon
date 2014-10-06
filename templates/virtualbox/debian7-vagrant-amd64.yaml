@@ -23,6 +23,7 @@ setup:
   - install_software:
     - packages: >
         linux-headers-$(uname -r) nfs-common dkms rsync
+  - install_virtualbox_guestaddons
   - setup_vagrant_box
 
 #== Export the generated appliance in the format of your choice

@@ -6,26 +6,8 @@
 - set_root_password:
   - exec_in: echo -n 'root:$$user_name' | chpasswd
 
-- install_vbox_guest_additions:
-  - download_file_in:
-    - "http://download.virtualbox.org/virtualbox/LATEST.TXT"
-    - /tmp/vboxga_version
-  - exec_in: VBOXGA_VERSION="$(cat /tmp/vboxga_version)"
-  - exec_in: echo "VirtualBox Guest Additions version $VBOXGA_VERSION..."
-  - download_file_in:
-    - "http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_$VBOXGA_VERSION.iso"
-    - /tmp/vboxga.iso
-  - exec_in: modprobe loop
-  - exec_in: mkdir /media/VBoxGuestAdditions
-  - exec_in: mount -o loop,ro /tmp/vboxga.iso /media/VBoxGuestAdditions
-  - exec_in: yes|sh /media/VBoxGuestAdditions/VBoxLinuxAdditions.run --nox11 || true 2>&1
-  - exec_in: umount /media/VBoxGuestAdditions
-  - exec_in: rmdir /media/VBoxGuestAdditions
-  - exec_in: rm -f /tmp/vboxga.iso /tmp/vboxga_version
-
 - install_puppet:
-  - exec_in: 
-  - write_in: 
+  - write_in: |
     - /etc/yum.repos.d/puppetlabs.repo
     - |
       [puppetlabs-dependencies]
