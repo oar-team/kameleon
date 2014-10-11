@@ -7,7 +7,7 @@
   - exec_in: echo -n 'root:$$user_name' | chpasswd
 
 - install_puppet:
-  - write_in: |
+  - write_in:
     - /etc/yum.repos.d/puppetlabs.repo
     - |
       [puppetlabs-dependencies]
