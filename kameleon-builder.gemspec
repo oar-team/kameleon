@@ -9,10 +9,12 @@ Gem::Specification.new do |s|
   s.authors       = ['Salem Harrache',
                      'Michael Mercier',
                      'Cristan Ruiz',
+                     'Pierre Neyron',
                      'Bruno Bzeznik']
   s.email         = ['salem.harrache@inria.fr',
                      'michael.mercier@inria.fr',
                      'cristian.ruiz@imag.fr',
+                     'pierre.neyron@imag.fr',
                      'bruno.bzeznik@imag.fr']
   s.description   = %q{The mindful appliance builder}
   s.summary       = %q{Kameleon is a tool to build virtual machines from scratch}
