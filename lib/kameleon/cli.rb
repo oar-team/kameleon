@@ -109,7 +109,7 @@ module Kameleon
 
     class Repository < Thor
 
-      desc "add [NAME] [URL]", "Add a new named <name> repository at <url>."
+      desc "add [NAME] [URL]", "Adds a new named <name> repository at <url>."
       def add(name, url)
       end
 
@@ -117,11 +117,11 @@ module Kameleon
       def list(repository_name, repository_url)
       end
 
-      desc "rename [OLD_NAME] [NEW_NAME]", "Rename the repository named <old> to <new>"
+      desc "rename [OLD_NAME] [NEW_NAME]", "Renames the repository named <old> to <new>"
       def rename(old_name, new_name)
       end
 
-      desc "update [NAME]", "update a named <name> repository"
+      desc "update [NAME]", "Updates a named <name> repository"
       def update(old_name, new_name)
       end
       default_task :list
@@ -132,15 +132,15 @@ module Kameleon
     include Thor::Actions
 
     register CLI::Recipe, 'recipe', 'recipe', 'Manages the local recipes'
-    register CLI::Template, 'template', 'template', 'Show local templates'
-    register CLI::Repository, 'repository', 'repository', 'Manage set of remote git repositories'
+    register CLI::Template, 'template', 'template', 'Lists and imports templates'
+    register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
 
     class_option :color, :type => :boolean, :default => true,
-                 :desc => "Enable colorization in output"
+                 :desc => "Enables colorization in output"
     class_option :debug, :type => :boolean, :default => false,
-                 :desc => "Enable debug output"
+                 :desc => "Enables debug output"
     class_option :script, :type => :boolean, :default => false,
-                 :desc => "never prompts for user intervention",
+                 :desc => "Never prompts for user intervention",
                  :aliases => "-s"
     map %w(-h --help) => :help
 
@@ -154,26 +154,26 @@ module Kameleon
     desc "build [RECIPE_PATH]", "Builds the appliance from the given recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
-                  :desc => "Set the build directory path"
+                  :desc => "Sets the build directory path"
     method_option :clean, :type => :boolean ,
                   :default => false,
-                  :desc => "Run the command `kameleon clean` first"
+                  :desc => "Runs the command `kameleon clean` first"
     method_option :from_checkpoint, :type => :string ,
                   :default => nil,
-                  :desc => "Using specific checkpoint to build the image. " \
+                  :desc => "Uses specific checkpoint to build the image. " \
                            "Default value is the last checkpoint."
     method_option :checkpoint, :type => :boolean ,
                   :default => false,
-                  :desc => "Enable checkpoint"
+                  :desc => "Enables checkpoint"
     method_option :cache, :type => :boolean,
                   :default => false,
-                  :desc => "Generate a persistent cache for the appliance."
+                  :desc => "Generates a persistent cache for the appliance."
     method_option :cache_path, :type => :string ,
                   :default => nil,
-                  :desc => "Set the cache directory path"
+                  :desc => "Sets the cache directory path"
     method_option :from_cache, :type => :string ,
                   :default => nil,
-                  :desc => "Using a persistent cache tar file to build the image."
+                  :desc => "Uses a persistent cache tar file to build the image."
     method_option :proxy_path, :type => :string ,
                   :default => nil,
                   :desc => "Full path of the proxy binary to use for the persistent cache."
@@ -208,10 +208,10 @@ module Kameleon
       engine.pretty_checkpoints_list
     end
 
-    desc "clean [RECIPE_PATH]", "Cleaning all contexts and removing the checkpoints"
+    desc "clean [RECIPE_PATH]", "Cleans all contexts and removing the checkpoints"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
-                  :desc => "Set the build directory path"
+                  :desc => "Sets the build directory path"
     def clean(recipe_path)
       opts = Hash.new.merge options
       opts[:lazyload] = false
