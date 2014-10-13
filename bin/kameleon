@@ -14,6 +14,7 @@ require 'kameleon'
 ENV["THOR_DEBUG"] = "1"
 
 begin
+  Kameleon.init_userconf
   Kameleon::Main.start
 rescue Kameleon::Exit => e
   exit e.status_code

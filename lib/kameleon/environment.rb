@@ -9,7 +9,6 @@ module Kameleon
     attr_accessor :build_path
     attr_accessor :cache_path
     attr_accessor :debug
-    attr_accessor :script
 
     def script?
       @script
@@ -17,18 +16,21 @@ module Kameleon
 
     def initialize(options = {})
       # symbolify commandline options
-      options = options.inject({}) {|result,(key,value)| result.update({key.to_sym => value})}
+      options = options.inject({}) {|result,(key, value)| result.update({key.to_sym => value})}
       workspace = File.expand_path(Dir.pwd)
-      templates_path = File.expand_path(options[:templates_path] || Kameleon.default_templates_path)
+      # templates_path = File.expand_path(options[:templates_path] || Kameleon.default_templates_path)
       build_path = File.expand_path(options[:build_path] || File.join(workspace, "build"))
       cache_path = File.expand_path(options[:cache_path] || File.join(build_path, "cache"))
+      repositories_path = File.expand_path(Kameleon.default_values[:repositories_path])
       env_options = {
         :workspace => Pathname.new(workspace),
-        :templates_path => Pathname.new(templates_path),
+        # :templates_path => Pathname.new(templates_path),
         :build_path => Pathname.new(build_path),
         :cache_path => Pathname.new(cache_path),
+        :repositories_path => Pathname.new(repositories_path),
       }
-      options.merge!(env_options)
+
+      options = Kameleon.default_values.merge(options).merge(env_options)
       Kameleon.ui.debug("Environment initialized (#{self})")
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|

@@ -9,9 +9,6 @@ module Kameleon
     class Recipe < Thor
 
       desc "new [RECIPE_NAME] [[TEMPLATE_NAME]]", "Creates a new recipe"
-      method_option :templates_path, :type => :string ,
-                    :default => Kameleon.default_templates_path, :aliases => "-t",
-                    :desc => "Using another templates directory"
       def new(recipe_name, template_name)
         if recipe_name == template_name
           fail RecipeError, "Recipe name should be different from template name"
@@ -50,9 +47,6 @@ module Kameleon
     class Template < Thor
 
       desc "list", "Lists all defined templates"
-      method_option :templates_path, :type => :string ,
-                    :default => Kameleon.default_templates_path, :aliases => "-t",
-                    :desc => "Using another templates directory"
       def list
         puts "The following templates are available in " \
                    "#{ Kameleon.env.templates_path }:"
@@ -84,9 +78,6 @@ module Kameleon
 
 
       desc "import [TEMPLATE_NAME]", "Imports the given template"
-      method_option :templates_path, :type => :string ,
-                    :default => Kameleon.default_templates_path, :aliases => "-t",
-                    :desc => "Using another templates directory"
       def import(template_name)
         templates_path = Kameleon.env.templates_path
         template_path = File.join(templates_path, template_name) + '.yaml'
@@ -135,15 +126,14 @@ module Kameleon
     register CLI::Template, 'template', 'template', 'Lists and imports templates'
     register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
 
-    class_option :color, :type => :boolean, :default => true,
+    class_option :color, :type => :boolean, :default => Kameleon.default_values[:color],
                  :desc => "Enables colorization in output"
-    class_option :debug, :type => :boolean, :default => false,
+    class_option :debug, :type => :boolean, :default => Kameleon.default_values[:debug],
                  :desc => "Enables debug output"
-    class_option :script, :type => :boolean, :default => false,
+    class_option :script, :type => :boolean, :default => Kameleon.default_values[:script],
                  :desc => "Never prompts for user intervention",
                  :aliases => "-s"
     map %w(-h --help) => :help
-
 
     desc "version", "Prints the Kameleon's version information"
     def version
