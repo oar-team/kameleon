@@ -9,6 +9,7 @@ module Kameleon
     attr_accessor :build_path
     attr_accessor :cache_path
     attr_accessor :debug
+    attr_accessor :script
 
     def script?
       @script
@@ -21,12 +22,13 @@ module Kameleon
       templates_path = File.expand_path(options[:templates_path] || Kameleon.default_templates_path)
       build_path = File.expand_path(options[:build_path] || File.join(workspace, "build"))
       cache_path = File.expand_path(options[:cache_path] || File.join(build_path, "cache"))
-      options = {
+      env_options = {
         :workspace => Pathname.new(workspace),
         :templates_path => Pathname.new(templates_path),
         :build_path => Pathname.new(build_path),
         :cache_path => Pathname.new(cache_path),
       }
+      options.merge!(env_options)
       Kameleon.ui.debug("Environment initialized (#{self})")
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|
