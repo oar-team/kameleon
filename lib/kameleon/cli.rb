@@ -3,8 +3,137 @@ require 'kameleon/recipe'
 require 'kameleon/utils'
 
 module Kameleon
-  class CLI < Thor
+
+
+  module CLI
+    class Recipe < Thor
+
+      desc "new [RECIPE_NAME] [[TEMPLATE_NAME]]", "Creates a new recipe"
+      method_option :templates_path, :type => :string ,
+                    :default => Kameleon.default_templates_path, :aliases => "-t",
+                    :desc => "Using another templates directory"
+      def new(recipe_name, template_name)
+        if recipe_name == template_name
+          fail RecipeError, "Recipe name should be different from template name"
+        end
+        templates_path = Kameleon.env.templates_path
+        template_path = File.join(templates_path, template_name) + '.yaml'
+        begin
+          tpl = RecipeTemplate.new(template_path)
+        rescue
+          raise TemplateNotFound, "Template '#{template_name}' not found. " \
+                                  "To see all templates, run the command "\
+                                  "`kameleon templates`"
+        else
+          files2copy = tpl.base_recipes_files + tpl.files
+          files2copy.each do |path|
+            relative_path = path.relative_path_from(Kameleon.env.templates_path)
+            dst = File.join(Kameleon.env.workspace, relative_path)
+            copy_file(path, dst)
+          end
+          Dir::mktmpdir do |tmp_dir|
+            recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
+            ## copying recipe
+            File.open(recipe_path, 'w+') do |file|
+              extend_erb_tpl = File.join(Kameleon.default_templates_path, "extend.erb")
+              erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
+              result = erb.result(binding)
+              file.write(result)
+            end
+            recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
+            copy_file(recipe_path, Pathname.new(recipe_dst))
+          end
+        end
+      end
+    end
+
+    class Template < Thor
+
+      desc "list", "Lists all defined templates"
+      method_option :templates_path, :type => :string ,
+                    :default => Kameleon.default_templates_path, :aliases => "-t",
+                    :desc => "Using another templates directory"
+      def list
+        puts "The following templates are available in " \
+                   "#{ Kameleon.env.templates_path }:"
+        templates_hash = []
+        templates_path = File.join(Kameleon.env.templates_path, "/")
+        all_yaml_files = Dir["#{templates_path}**/*.yaml"]
+        steps_files = Dir["#{templates_path}steps/**/*.yaml"]
+        templates_files = all_yaml_files - steps_files
+        templates_files.each do |f|
+          begin
+          recipe = RecipeTemplate.new(f)
+          templates_hash.push({
+            "name" => f.gsub(templates_path, "").chomp(".yaml"),
+            "description" => recipe.metainfo['description'],
+          })
+          rescue => e
+            raise e if Kameleon.env.debug
+          end
+        end
+        unless templates_hash.empty?
+        templates_hash = templates_hash.sort_by{ |k| k["name"] }
+        name_width = templates_hash.map { |k| k['name'].size }.max
+        desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
+        end
+        tp(templates_hash,
+          {"name" => {:width => name_width}},
+          { "description" => {:width => desc_width}})
+      end
+
+
+      desc "import [TEMPLATE_NAME]", "Imports the given template"
+      method_option :templates_path, :type => :string ,
+                    :default => Kameleon.default_templates_path, :aliases => "-t",
+                    :desc => "Using another templates directory"
+      def import(template_name)
+        templates_path = Kameleon.env.templates_path
+        template_path = File.join(templates_path, template_name) + '.yaml'
+        begin
+          tpl = RecipeTemplate.new(template_path)
+        rescue
+          raise TemplateNotFound, "Template '#{template_name}' not found. " \
+                                  "To see all templates, run the command "\
+                                  "`kameleon templates`"
+        else
+          files2copy = tpl.base_recipes_files + tpl.files
+          files2copy.each do |path|
+            relative_path = path.relative_path_from(Kameleon.env.templates_path)
+            dst = File.join(Kameleon.env.workspace, relative_path)
+            copy_file(path, dst)
+          end
+        end
+      end
+    end
+
+    class Repository < Thor
+
+      desc "add [NAME] [URL]", "Add a new named <name> repository at <url>."
+      def add(name, url)
+      end
+
+      desc "list", "Lists available repositories."
+      def list(repository_name, repository_url)
+      end
+
+      desc "rename [OLD_NAME] [NEW_NAME]", "Rename the repository named <old> to <new>"
+      def rename(old_name, new_name)
+      end
+
+      desc "update [NAME]", "update a named <name> repository"
+      def update(old_name, new_name)
+      end
+      default_task :list
+    end
+  end
+
+  class Main < Thor
     include Thor::Actions
+
+    register CLI::Recipe, 'recipe', 'recipe', 'Manages the local recipes'
+    register CLI::Template, 'template', 'template', 'Show local templates'
+    register CLI::Repository, 'repository', 'repository', 'Manage set of remote git repositories'
 
     class_option :color, :type => :boolean, :default => true,
                  :desc => "Enable colorization in output"
@@ -15,99 +144,6 @@ module Kameleon
                  :aliases => "-s"
     map %w(-h --help) => :help
 
-    desc "import [TEMPLATE_NAME]", "Imports the given template"
-    method_option :templates_path, :type => :string ,
-                  :default => Kameleon.default_templates_path, :aliases => "-t",
-                  :desc => "Using another templates directory"
-    def import(template_name)
-      templates_path = Kameleon.env.templates_path
-      template_path = File.join(templates_path, template_name) + '.yaml'
-      begin
-        tpl = RecipeTemplate.new(template_path)
-      rescue
-        raise TemplateNotFound, "Template '#{template_name}' not found. " \
-                                "To see all templates, run the command "\
-                                "`kameleon templates`"
-      else
-        files2copy = tpl.base_recipes_files + tpl.files
-        files2copy.each do |path|
-          relative_path = path.relative_path_from(Kameleon.env.templates_path)
-          dst = File.join(Kameleon.env.workspace, relative_path)
-          copy_file(path, dst)
-        end
-      end
-    end
-
-    desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
-    method_option :templates_path, :type => :string ,
-                  :default => Kameleon.default_templates_path, :aliases => "-t",
-                  :desc => "Using another templates directory"
-    def new(recipe_name, template_name)
-      if recipe_name == template_name
-        fail RecipeError, "Recipe name should be different from template name"
-      end
-      templates_path = Kameleon.env.templates_path
-      template_path = File.join(templates_path, template_name) + '.yaml'
-      begin
-        tpl = RecipeTemplate.new(template_path)
-      rescue
-        raise TemplateNotFound, "Template '#{template_name}' not found. " \
-                                "To see all templates, run the command "\
-                                "`kameleon templates`"
-      else
-        files2copy = tpl.base_recipes_files + tpl.files
-        files2copy.each do |path|
-          relative_path = path.relative_path_from(Kameleon.env.templates_path)
-          dst = File.join(Kameleon.env.workspace, relative_path)
-          copy_file(path, dst)
-        end
-        Dir::mktmpdir do |tmp_dir|
-          recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
-          ## copying recipe
-          File.open(recipe_path, 'w+') do |file|
-            extend_erb_tpl = File.join(Kameleon.default_templates_path, "extend.erb")
-            erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
-            result = erb.result(binding)
-            file.write(result)
-          end
-          recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
-          copy_file(recipe_path, Pathname.new(recipe_dst))
-        end
-      end
-    end
-
-    desc "templates", "Lists all defined templates"
-    method_option :templates_path, :type => :string ,
-                  :default => Kameleon.default_templates_path, :aliases => "-t",
-                  :desc => "Using another templates directory"
-    def templates
-      puts "The following templates are available in " \
-                 "#{ Kameleon.env.templates_path }:"
-      templates_hash = []
-      templates_path = File.join(Kameleon.env.templates_path, "/")
-      all_yaml_files = Dir["#{templates_path}**/*.yaml"]
-      steps_files = Dir["#{templates_path}steps/**/*.yaml"]
-      templates_files = all_yaml_files - steps_files
-      templates_files.each do |f|
-        begin
-        recipe = RecipeTemplate.new(f)
-        templates_hash.push({
-          "name" => f.gsub(templates_path, "").chomp(".yaml"),
-          "description" => recipe.metainfo['description'],
-        })
-        rescue => e
-          raise e if Kameleon.env.debug
-        end
-      end
-      unless templates_hash.empty?
-      templates_hash = templates_hash.sort_by{ |k| k["name"] }
-      name_width = templates_hash.map { |k| k['name'].size }.max
-      desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
-      end
-      tp(templates_hash,
-        {"name" => {:width => name_width}},
-        { "description" => {:width => desc_width}})
-    end
 
     desc "version", "Prints the Kameleon's version information"
     def version
@@ -187,7 +223,7 @@ module Kameleon
 
     desc "commands", "Lists all available commands", :hide => true
     def commands
-      puts CLI.all_commands.keys - ["commands", "completions"]
+      puts Main.all_commands.keys - ["commands", "completions"]
     end
 
     desc "source_root", "Prints the kameleon directory path", :hide => true
@@ -207,7 +243,7 @@ module Kameleon
       opts = args[1]
       cmd_name = args[2][:current_command].name
       if opts.include? "--help" or opts.include? "-h"
-        CLI.command_help(Kameleon.ui.shell, cmd_name)
+        Main.command_help(Kameleon.ui.shell, cmd_name)
         raise Kameleon::Exit
       end
     end
