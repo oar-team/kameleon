@@ -93,6 +93,12 @@ module Kameleon
                                 :fail_silently => fail_silently)
     end
 
+    def reload_contexts
+      [@local_context, @out_context, @in_context].each do |ctx|
+        ctx.reload if ctx.shell.started?
+      end
+    end
+
     def saving_steps_files
       @recipe.files.each do |file|
         Kameleon.ui.info("File #{file} loaded from the recipe")
@@ -182,13 +188,19 @@ module Kameleon
               end
             end
           else
+            begin
             Kameleon.ui.info("--> Running the step...")
             microstep.commands.each do |cmd|
               safe_exec_cmd(cmd)
             end
+            sleep 1
+            rescue SystemExit, Interrupt
+              reload_contexts
+              breakpoint(nil)
+            end
           end
-        end
         Kameleon.ui.info("Step #{macrostep.name} took: #{Time.now.to_i-macrostep_time} secs")
+        end
       end
       @cleaned_sections.push(section.name)
     end
@@ -198,7 +210,8 @@ module Kameleon
       begin
         exec_cmd(cmd, kwargs)
         finished = true
-      rescue ExecError
+      rescue SystemExit, Interrupt, ExecError
+        reload_contexts
         finished = rescue_exec_error(cmd)
       end until finished
     end
