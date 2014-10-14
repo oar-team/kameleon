@@ -52,5 +52,47 @@ module Kameleon
       end
     end
 
+    def self.list_recipes(repository_path, kwargs = {})
+      catch_exception = kwargs.fetch(:catch_exception, false)
+      recipes_hash = []
+      recipes_files = get_recipes(repository_path)
+      recipes_files.each do |f|
+        path = f.to_path
+        begin
+        recipe = RecipeTemplate.new(path)
+        name = path.gsub(repository_path.to_path + '/', '').chomp('.yaml')
+        recipes_hash.push({
+          "name" => name,
+          "description" => recipe.metainfo['description'],
+        })
+        rescue => e
+          raise e if Kameleon.env.debug or not catch_exception
+        end
+      end
+      unless recipes_hash.empty?
+        recipes_hash = recipes_hash.sort_by{ |k| k["name"] }
+        name_width = recipes_hash.map { |k| k['name'].size }.max
+        desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
+        desc_width = (80 - name_width - 3) if desc_width < 0
+      end
+      tp(recipes_hash,
+        {"name" => {:width => name_width}},
+        { "description" => {:width => desc_width}})
+    end
+
+    def self.get_recipes(path)
+      path.children.collect do |child|
+        if child.file?
+          if child.extname == ".yaml"
+            unless child.to_path.include? "/steps/" or child.to_path.include? "/.steps/"
+              child
+            end
+          end
+        elsif child.directory?
+          get_recipes(child)
+        end
+      end.select { |x| x }.flatten(1)
+    end
+
   end
 end

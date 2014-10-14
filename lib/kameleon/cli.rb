@@ -7,6 +7,11 @@ module Kameleon
   module CLI
     class Recipe < Thor
 
+      desc "list", "Lists all defined recipes in the current directory"
+      def list
+        Utils.list_recipes(Kameleon.env.workspace)
+      end
+
       desc "new [RECIPE_NAME] [[TEMPLATE_NAME]]", "Creates a new recipe"
       def new(recipe_name, template_name)
         if recipe_name == template_name
@@ -47,38 +52,9 @@ module Kameleon
 
       desc "list", "Lists all defined templates"
       def list
-        puts "The following templates are available in " \
-                   "#{ Kameleon.env.repositories_path }:"
-        templates_hash = []
-        Dir["#{Kameleon.env.repositories_path}/*"].each do |repository_path|
-          next unless File.directory?(repository_path)
-          repository = File.basename(repository_path)
-          templates_path = File.join(repository_path, "/")
-          all_yaml_files = Dir["#{templates_path}**/*.yaml"]
-          steps_files = Dir["#{templates_path}steps/**/*.yaml"]
-          steps_files = steps_files + Dir["#{templates_path}.steps/**/*.yaml"]
-          templates_files = all_yaml_files - steps_files
-          templates_files.each do |f|
-            begin
-            recipe = RecipeTemplate.new(f)
-            templates_hash.push({
-              "name" => "#{repository}/#{f.gsub(templates_path, '').chomp('.yaml')}",
-              "description" => recipe.metainfo['description'],
-            })
-            rescue => e
-              raise e if Kameleon.env.debug
-            end
-          end
-        end
-        unless templates_hash.empty?
-          templates_hash = templates_hash.sort_by{ |k| k["name"] }
-          name_width = templates_hash.map { |k| k['name'].size }.max
-          desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
-          desc_width = (80 - name_width - 3) if desc_width < 0
-        end
-        tp(templates_hash,
-          {"name" => {:width => name_width}},
-          { "description" => {:width => desc_width}})
+        Kameleon.ui.info "The following templates are available in " \
+                         "#{ Kameleon.env.repositories_path }:"
+        Utils.list_recipes(Kameleon.env.repositories_path, :catch_exception => true)
       end
 
 
