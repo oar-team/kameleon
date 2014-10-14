@@ -6,21 +6,28 @@ module Kameleon
 
   module CLI
     class Recipe < Thor
+      include Thor::Actions
+
+      def self.source_root
+        Kameleon.env.repositories_path
+      end
 
       desc "list", "Lists all defined recipes in the current directory"
       def list
         Utils.list_recipes(Kameleon.env.workspace)
       end
 
-      desc "new [RECIPE_NAME] [[TEMPLATE_NAME]]", "Creates a new recipe"
+      desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
       def new(recipe_name, template_name)
         if recipe_name == template_name
           fail RecipeError, "Recipe name should be different from template name"
         end
-        templates_path = Kameleon.env.templates_path
-        template_path = File.join(templates_path, template_name) + '.yaml'
+        template_path = File.join(Kameleon.env.repositories_path, template_name)
+        unless template_name.end_with? '.yaml'
+          template_path = template_path + '.yaml'
+        end
         begin
-          tpl = RecipeTemplate.new(template_path)
+          tpl = Kameleon::RecipeTemplate.new(template_path)
         rescue
           raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                   "To see all templates, run the command "\
@@ -28,15 +35,18 @@ module Kameleon
         else
           files2copy = tpl.base_recipes_files + tpl.files
           files2copy.each do |path|
-            relative_path = path.relative_path_from(Kameleon.env.templates_path)
+            relative_path = path.relative_path_from(Kameleon.env.repositories_path)
             dst = File.join(Kameleon.env.workspace, relative_path)
             copy_file(path, dst)
           end
           Dir::mktmpdir do |tmp_dir|
-            recipe_path = File.join(tmp_dir, recipe_name + '.yaml')
+            recipe_path = File.join(tmp_dir, recipe_name)
+            unless recipe_path.end_with? '.yaml'
+              recipe_path = recipe_path + '.yaml'
+            end
             ## copying recipe
             File.open(recipe_path, 'w+') do |file|
-              extend_erb_tpl = File.join(Kameleon.default_templates_path, "extend.erb")
+              extend_erb_tpl = File.join(Kameleon.erb_dirpath, "extend.erb")
               erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
               result = erb.result(binding)
               file.write(result)
@@ -46,9 +56,19 @@ module Kameleon
           end
         end
       end
+
+      desc "info [RECIPE_NAME]", "Display detailed information about a recipe"
+      def info(recipe)
+        # tpl = Kameleon::Recipe.new(recipe)
+      end
     end
 
     class Template < Thor
+      include Thor::Actions
+
+      def self.source_root
+        Kameleon.env.repositories_path
+      end
 
       desc "list", "Lists all defined templates"
       def list
@@ -60,8 +80,10 @@ module Kameleon
 
       desc "import [TEMPLATE_NAME]", "Imports the given template"
       def import(template_name)
-        templates_path = Kameleon.env.templates_path
-        template_path = File.join(templates_path, template_name) + '.yaml'
+        template_path = File.join(Kameleon.env.repositories_path, template_name)
+        unless template_name.end_with? '.yaml'
+          template_path = template_path + '.yaml'
+        end
         begin
           tpl = RecipeTemplate.new(template_path)
         rescue
@@ -71,12 +93,17 @@ module Kameleon
         else
           files2copy = tpl.base_recipes_files + tpl.files
           files2copy.each do |path|
-            relative_path = path.relative_path_from(Kameleon.env.templates_path)
+            relative_path = path.relative_path_from(Kameleon.env.repositories_path)
             dst = File.join(Kameleon.env.workspace, relative_path)
             copy_file(path, dst)
           end
         end
       end
+
+      desc "info [TEMPLATE]", "Display detailed information about a <template>"
+      def info(template)
+      end
+
     end
 
     class Repository < Thor
@@ -86,17 +113,13 @@ module Kameleon
       end
 
       desc "list", "Lists available repositories."
-      def list(repository_name, repository_url)
-      end
-
-      desc "rename [OLD_NAME] [NEW_NAME]", "Renames the repository named <old> to <new>"
-      def rename(old_name, new_name)
+      def list
       end
 
       desc "update [NAME]", "Updates a named <name> repository"
       def update(old_name, new_name)
       end
-      default_task :list
+
     end
   end
 
