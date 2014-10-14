@@ -4,7 +4,6 @@ require 'kameleon/utils'
 
 module Kameleon
 
-
   module CLI
     class Recipe < Thor
 
@@ -49,27 +48,33 @@ module Kameleon
       desc "list", "Lists all defined templates"
       def list
         puts "The following templates are available in " \
-                   "#{ Kameleon.env.templates_path }:"
+                   "#{ Kameleon.env.repositories_path }:"
         templates_hash = []
-        templates_path = File.join(Kameleon.env.templates_path, "/")
-        all_yaml_files = Dir["#{templates_path}**/*.yaml"]
-        steps_files = Dir["#{templates_path}steps/**/*.yaml"]
-        templates_files = all_yaml_files - steps_files
-        templates_files.each do |f|
-          begin
-          recipe = RecipeTemplate.new(f)
-          templates_hash.push({
-            "name" => f.gsub(templates_path, "").chomp(".yaml"),
-            "description" => recipe.metainfo['description'],
-          })
-          rescue => e
-            raise e if Kameleon.env.debug
+        Dir["#{Kameleon.env.repositories_path}/*"].each do |repository_path|
+          next unless File.directory?(repository_path)
+          repository = File.basename(repository_path)
+          templates_path = File.join(repository_path, "/")
+          all_yaml_files = Dir["#{templates_path}**/*.yaml"]
+          steps_files = Dir["#{templates_path}steps/**/*.yaml"]
+          steps_files = steps_files + Dir["#{templates_path}.steps/**/*.yaml"]
+          templates_files = all_yaml_files - steps_files
+          templates_files.each do |f|
+            begin
+            recipe = RecipeTemplate.new(f)
+            templates_hash.push({
+              "name" => "#{repository}/#{f.gsub(templates_path, '').chomp('.yaml')}",
+              "description" => recipe.metainfo['description'],
+            })
+            rescue => e
+              raise e if Kameleon.env.debug
+            end
           end
         end
         unless templates_hash.empty?
-        templates_hash = templates_hash.sort_by{ |k| k["name"] }
-        name_width = templates_hash.map { |k| k['name'].size }.max
-        desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
+          templates_hash = templates_hash.sort_by{ |k| k["name"] }
+          name_width = templates_hash.map { |k| k['name'].size }.max
+          desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
+          desc_width = (80 - name_width - 3) if desc_width < 0
         end
         tp(templates_hash,
           {"name" => {:width => name_width}},
