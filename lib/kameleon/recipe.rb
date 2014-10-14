@@ -48,7 +48,7 @@ module Kameleon
          unless File.file? @path
       yaml_recipe = YAML.load_file @path
       unless yaml_recipe.kind_of? Hash
-        fail RecipeError, "Invalid yaml error"
+        fail RecipeError, "Invalid yaml error : #{@path}"
       end
       # Load entended recipe variables
       yaml_recipe = load_base_recipe(yaml_recipe, @path)
@@ -157,7 +157,7 @@ module Kameleon
          unless File.file? path
       base_yaml_recipe = YAML.load_file base_recipe_path
       unless yaml_recipe.kind_of? Hash
-        fail RecipeError, "Invalid yaml error"
+        fail RecipeError, "Invalid yaml error : #{base_yaml_recipe}"
       end
       base_yaml_recipe.keys.each do |key|
         if ["export", "bootstrap", "setup"].include? key
