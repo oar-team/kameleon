@@ -4,12 +4,6 @@ module Kameleon
   # this environment
   class Environment
 
-    attr_accessor :workspace
-    attr_accessor :templates_path
-    attr_accessor :build_path
-    attr_accessor :cache_path
-    attr_accessor :debug
-
     def script?
       @script
     end
@@ -34,6 +28,7 @@ module Kameleon
       Kameleon.ui.debug("Environment initialized (#{self})")
       # Injecting all variables of the options and assign the variables
       options.each do |key, value|
+        self.class.__send__(:attr_accessor, "#{key}")
         instance_variable_set("@#{key}".to_sym, options[key])
         Kameleon.ui.debug("  @#{key} : #{options[key]}")
       end
