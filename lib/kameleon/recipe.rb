@@ -235,6 +235,7 @@ module Kameleon
               @checkpoint = YAML.load_file(path)
               @checkpoint["path"] = path.to_s
               @files.push(path)
+              break
             end
           end
           fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
