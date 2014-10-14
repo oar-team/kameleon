@@ -38,6 +38,7 @@ module Kameleon
       @files = []
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
+      @steps_dirs = []
       load! :strict => false
     end
 
@@ -54,6 +55,16 @@ module Kameleon
       yaml_recipe = load_base_recipe(yaml_recipe, @path)
       yaml_recipe.delete("extend")
 
+      # Where we can find steps
+      @steps_dirs = @base_recipes_files.map do |recipe_path|
+        dirname = File.dirname(recipe_path)
+        [ File.expand_path(File.join(dirname, 'steps')),
+          File.expand_path(File.join(dirname, '.steps')),
+          File.expand_path(File.join(dirname, '..', 'steps')),
+          File.expand_path(File.join(dirname, '..', '.steps')),
+        ]
+      end.flatten(1)
+
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
       # Resolve dynamically-defined variables !!
@@ -64,23 +75,17 @@ module Kameleon
       # Loads checkpoint configuration
       load_checkpoint_config(yaml_recipe)
 
-      #Find and load steps
-      steps_dirs = [
-        File.join(File.dirname(@path), 'steps'),
-        File.expand_path(File.join(File.dirname(@path), '..', 'steps')),
-      ]
       resolved_global['include_steps'] ||= []
       resolved_global['include_steps'].push ''
       resolved_global['include_steps'].flatten!
       resolved_global['include_steps'].compact!
       @sections.values.each do |section|
         dir_to_search = resolved_global['include_steps'].map do |path|
-          steps_dirs.map do |steps_dir|
+          @steps_dirs.map do |steps_dir|
             [File.join(steps_dir, section.name, path),
               File.join(steps_dir, path)]
           end
-        end
-        dir_to_search.flatten!
+        end.flatten
         if yaml_recipe.key? section.name
           yaml_section = yaml_recipe.fetch(section.name)
           next unless yaml_section.kind_of? Array
@@ -196,11 +201,9 @@ module Kameleon
         if aliases.kind_of? Hash
           @aliases = aliases
         elsif aliases.kind_of? String
-          dir_search = [
-            File.join(File.dirname(@path), "steps", "aliases"),
-            File.join(File.dirname(@path), "..", "steps", "aliases"),
-            File.join(File.dirname(@path), "aliases")
-          ]
+          dir_search = @steps_dirs.map do |steps_dir|
+              File.join(steps_dir, "aliases")
+          end.flatten
           dir_search.each do |dir_path|
             path = Pathname.new(File.join(dir_path, aliases))
             if File.file?(path)
@@ -210,7 +213,7 @@ module Kameleon
               return path
             end
           end
-          fail RecipeError, "Aliases file '#{path}' does not exists"
+          fail RecipeError, "Aliases file for recipe '#{path}' does not exists"
         end
       end
     end
@@ -222,11 +225,9 @@ module Kameleon
           @checkpoint = checkpoint
           @checkpoint["path"] = @path
         elsif checkpoint.kind_of? String
-          dir_search = [
-            File.join(File.dirname(@path), "steps", "checkpoints"),
-            File.join(File.dirname(@path), "..", "steps", "checkpoints"),
-            File.join(File.dirname(@path), "checkpoints")
-          ]
+          dir_search = @steps_dirs.map do |steps_dir|
+              File.join(steps_dir, "checkpoints")
+          end.flatten
           dir_search.each do |dir_path|
             path = Pathname.new(File.join(dir_path, checkpoint))
             if File.file?(path)
@@ -559,7 +560,7 @@ module Kameleon
 
   class RecipeTemplate < Recipe
     def relative_path()
-      @path.relative_path_from(Kameleon.env.templates_path)
+      @path.relative_path_from(Kameleon.env.repositories_path)
     end
   end
 end
