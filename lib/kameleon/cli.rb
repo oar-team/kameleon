@@ -153,7 +153,7 @@ module Kameleon
     end
     map %w(-v --version) => :version
 
-    desc "build [RECIPE_PATH]", "Builds the appliance from the given recipe"
+    desc "build [[RECIPE_PATH]]", "Builds the appliance from the given recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Sets the build directory path"
@@ -164,10 +164,10 @@ module Kameleon
                   :default => nil,
                   :desc => "Uses specific checkpoint to build the image. " \
                            "Default value is the last checkpoint."
-    method_option :checkpoint, :type => :boolean ,
+    method_option :enable_checkpoint, :type => :boolean ,
                   :default => false,
-                  :desc => "Enables checkpoint"
-    method_option :cache, :type => :boolean,
+                  :desc => "Enables checkpoint [experimental]"
+    method_option :enable_cache, :type => :boolean,
                   :default => false,
                   :desc => "Generates a persistent cache for the appliance."
     method_option :cache_path, :type => :string ,

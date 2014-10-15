@@ -15,7 +15,7 @@ module Kameleon
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, ".build_recipe")
 
-      @recipe.global["persistent_cache"] = @options[:cache] ? "true" : "false"
+      @recipe.global["persistent_cache"] = @options[:enable_cache] ? "true" : "false"
 
       build_recipe = load_build_recipe
       # restore previous build uuid
@@ -24,7 +24,7 @@ module Kameleon
           @recipe.global[key] = build_recipe["global"][key]
         end
       end
-      @enable_checkpoint = @options[:checkpoint]
+      @enable_checkpoint = @options[:enable_checkpoint]
       # Check if the recipe have checkpoint entry
       if @enable_checkpoint && @recipe.checkpoint.nil?
         fail BuildError, "Checkpoint is unavailable for this recipe"
@@ -32,12 +32,12 @@ module Kameleon
 
       @recipe.resolve!
 
-      if @options[:cache] || @options[:from_cache] then
+      if @options[:enable_cache] || @options[:from_cache] then
         @cache = Kameleon::Persistent_cache.instance
         @cache.cwd = @cwd
         @cache.polipo_path = @options[:proxy_path]
         @cache.name = @recipe.name
-        @cache.mode = @options[:cache] ? :build : :from
+        @cache.mode = @options[:enable_cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
         @cache.recipe_files = @recipe.files + @recipe.base_recipes_files# I'm passing the Pathname objects
         @cache.recipe_path = @recipe.path
@@ -362,7 +362,7 @@ module Kameleon
           end
         end
       end
-      @cache.stop_web_proxy if @options[:cache] ## stopping polipo
+      @cache.stop_web_proxy if @options[:enable_cache] ## stopping polipo
     end
 
     def build
