@@ -557,14 +557,18 @@ module Kameleon
       Kameleon.ui.info("Description:")
       prefix ; Kameleon.ui.info("#{@metainfo['description']}")
       Kameleon.ui.info("Path:")
-      prefix ; Kameleon.ui.info("#{@path.relative_path_from(relative_dir)}")
+      prefix ; Kameleon.ui.info("#{@path}")
       Kameleon.ui.info("Parent recipes:")
       (@base_recipes_files - [@path]).each do |base_recipe_file|
-        prefix ; Kameleon.ui.info("#{base_recipe_file.relative_path_from(relative_dir)}")
+        prefix ; Kameleon.ui.info("#{base_recipe_file}")
       end
       Kameleon.ui.info("Steps:")
       @files.each do |step|
-        prefix ; Kameleon.ui.info("#{step.relative_path_from(relative_dir)}")
+        prefix ; Kameleon.ui.info("#{step}")
+      end
+      Kameleon.ui.info("Variables:")
+      @global.each do |key, value|
+        prefix ; Kameleon.ui.info("#{key}: #{value}")
       end
     end
 
@@ -581,23 +585,6 @@ module Kameleon
   class RecipeTemplate < Recipe
     def relative_path()
       @path.relative_path_from(Kameleon.env.repositories_path)
-    end
-    def display_info
-      def prefix
-        Kameleon.ui.shell.say " -> ", :blue
-      end
-      Kameleon.ui.info("Description:")
-      prefix ; Kameleon.ui.info("#{@metainfo['description']}")
-      Kameleon.ui.info("Path:")
-      prefix ; Kameleon.ui.info("#{@path}")
-      Kameleon.ui.info("Parent recipes:")
-      (@base_recipes_files - [@path]).each do |base_recipe_file|
-        prefix ; Kameleon.ui.info("#{base_recipe_file}")
-      end
-      Kameleon.ui.info("Steps:")
-      @files.each do |step|
-        prefix ; Kameleon.ui.info("#{step}")
-      end
     end
   end
 end
