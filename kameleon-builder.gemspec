@@ -6,6 +6,7 @@ require 'kameleon/version'
 Gem::Specification.new do |s|
   s.name          = 'kameleon-builder'
   s.version       = Kameleon::VERSION
+  s.date          = Time.now.strftime('%Y-%m-%d')
   s.authors       = ['Salem Harrache',
                      'Michael Mercier',
                      'Cristan Ruiz',
@@ -18,7 +19,7 @@ Gem::Specification.new do |s|
                      'bruno.bzeznik@imag.fr']
   s.description   = %q{The mindful appliance builder}
   s.summary       = %q{Kameleon is a tool to build virtual machines from scratch}
-  s.homepage      = 'http://kameleon.readthedocs.org/'
+  s.homepage      = 'http://kameleon.imag.fr/'
   s.license       = 'GPL-2'
 
   s.files         = `git ls-files`.split($/)
