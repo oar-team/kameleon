@@ -1,0 +1,13 @@
+# Desktop installation on Debian
+#
+# Install and setup a fully working Gnome configuration
+- extra_packages: ""
+
+- install_aptitude:
+  - exec_in: apt-get -y --force-yes install aptitude 2>&1
+
+- gnome_desktop_task:
+  - exec_in: aptitude -q --without-recommends -o APT::Install-Recommends=no -y install ~t^desktop$ ~t^gkde-desktop$
+
+- install_extra_packages:
+  - exec_in: apt-get -y --force-yes install kde-standard $$extra_packages 2>&1

@@ -1,0 +1,9 @@
+- add_epel_repo:
+  - write_in:
+    - /etc/yum.repos.d/epel.repo 
+    - |
+      [epel]
+      name=epel
+      baseurl=http://download.fedoraproject.org/pub/epel/6/\$basearch
+      enabled=1
+      gpgcheck=0
