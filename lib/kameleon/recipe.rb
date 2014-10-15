@@ -252,6 +252,7 @@ module Kameleon
     def load_macrostep(step_path, name, args)
       if step_path.nil?
         macrostep_yaml = args
+        step_path = @path
       else
         macrostep_yaml = YAML.load_file(step_path)
         # Basic macrostep syntax check
