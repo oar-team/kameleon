@@ -13,7 +13,7 @@ module Kameleon
       @recipe = recipe
       @cleaned_sections = []
       @cwd = @recipe.global["kameleon_cwd"]
-      @build_recipe_path = File.join(@cwd, "kameleon_build_recipe.yaml")
+      @build_recipe_path = File.join(@cwd, ".build_recipe")
 
       @recipe.global["persistent_cache"] = @options[:cache] ? "true" : "false"
 
