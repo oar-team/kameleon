@@ -191,7 +191,7 @@ module Kameleon
           base_yaml_recipe[key] = base_section.merge(recipe_section)
         end
       end
-      @base_recipes_files.push(Pathname.new(base_recipe_path))
+      @base_recipes_files.push(Pathname.new(File.expand_path(base_recipe_path)))
       return load_base_recipe(base_yaml_recipe, base_recipe_path)
     end
 
@@ -549,6 +549,24 @@ module Kameleon
       return recipe_hash
     end
 
+    def display_info(relative_dir)
+      def prefix
+        Kameleon.ui.shell.say " -> ", :blue
+      end
+      Kameleon.ui.info("Description:")
+      prefix ; Kameleon.ui.info("#{@metainfo['description']}")
+      Kameleon.ui.info("Path:")
+      prefix ; Kameleon.ui.info("#{@path.relative_path_from(relative_dir)}")
+      Kameleon.ui.info("Parent recipes:")
+      (@base_recipes_files - [@path]).each do |base_recipe_file|
+        prefix ; Kameleon.ui.info("#{base_recipe_file.relative_path_from(relative_dir)}")
+      end
+      Kameleon.ui.info("Steps:")
+      @files.each do |step|
+        prefix ; Kameleon.ui.info("#{step.relative_path_from(relative_dir)}")
+      end
+    end
+
     def to_array
       array = []
       @sections.values.each do |section|
@@ -562,6 +580,23 @@ module Kameleon
   class RecipeTemplate < Recipe
     def relative_path()
       @path.relative_path_from(Kameleon.env.repositories_path)
+    end
+    def display_info
+      def prefix
+        Kameleon.ui.shell.say " -> ", :blue
+      end
+      Kameleon.ui.info("Description:")
+      prefix ; Kameleon.ui.info("#{@metainfo['description']}")
+      Kameleon.ui.info("Path:")
+      prefix ; Kameleon.ui.info("#{@path}")
+      Kameleon.ui.info("Parent recipes:")
+      (@base_recipes_files - [@path]).each do |base_recipe_file|
+        prefix ; Kameleon.ui.info("#{base_recipe_file}")
+      end
+      Kameleon.ui.info("Steps:")
+      @files.each do |step|
+        prefix ; Kameleon.ui.info("#{step}")
+      end
     end
   end
 end

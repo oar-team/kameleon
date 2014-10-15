@@ -57,10 +57,12 @@ module Kameleon
         end
       end
 
-      desc "info [RECIPE_NAME]", "Display detailed information about a recipe"
-      def info(recipe)
-        # tpl = Kameleon::Recipe.new(recipe)
+      desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
+      def info(recipe_path)
+        recipe = Kameleon::Recipe.new(recipe_path)
+        recipe.display_info(Kameleon.env.workspace)
       end
+
     end
 
     class Template < Thor
@@ -100,8 +102,14 @@ module Kameleon
         end
       end
 
-      desc "info [TEMPLATE]", "Display detailed information about a <template>"
-      def info(template)
+      desc "info [TEMPLATE_NAME]", "Display detailed information about a template"
+      def info(template_name)
+        template_path = File.join(Kameleon.env.repositories_path, template_name)
+        unless template_name.end_with? '.yaml'
+          template_path = template_path + '.yaml'
+        end
+        tpl = RecipeTemplate.new(template_path)
+        tpl.display_info
       end
 
     end
@@ -247,10 +255,6 @@ module Kameleon
     rescue Exception => e
       Kameleon.ui = Kameleon::UI::Shell.new
       raise e
-    end
-
-    def self.source_root
-      Kameleon.source_root
     end
 
   end
