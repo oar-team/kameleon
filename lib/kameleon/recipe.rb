@@ -550,7 +550,7 @@ module Kameleon
       return recipe_hash
     end
 
-    def display_info(relative_dir)
+    def display_info
       def prefix
         Kameleon.ui.shell.say " -> ", :blue
       end

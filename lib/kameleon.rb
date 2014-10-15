@@ -94,6 +94,7 @@ end
 require 'kameleon/compat'
 require 'kameleon/utils'
 require 'kameleon/error'
+require 'kameleon/repository'
 require 'kameleon/cli'
 require 'kameleon/environment'
 require 'kameleon/version'

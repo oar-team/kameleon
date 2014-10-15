@@ -75,7 +75,7 @@ module Kameleon
 
     def check_polipo_binary
 
-      @polipo_path ||= which("polipo")
+      @polipo_path ||= Utils.which("polipo")
 
       if @polipo_path.nil? then
         Kameleon.ui.error("Polipo binary not found, make sure it is in your current PATH")
@@ -234,14 +234,6 @@ module Kameleon
       process.cwd = dir unless dir.nil?
       process.start
       process.wait
-    end
-
-    def which(cmd)
-      ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
-        exe = File.join(path, "#{cmd}")
-        return path if File.executable? exe
-      end
-      return nil
     end
 
     def common_prefix(paths)

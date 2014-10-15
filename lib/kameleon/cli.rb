@@ -60,7 +60,7 @@ module Kameleon
       desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
       def info(recipe_path)
         recipe = Kameleon::Recipe.new(recipe_path)
-        recipe.display_info(Kameleon.env.workspace)
+        recipe.display_info
       end
 
     end
@@ -117,15 +117,22 @@ module Kameleon
     class Repository < Thor
 
       desc "add [NAME] [URL]", "Adds a new named <name> repository at <url>."
+      method_option :branch, :type => :string ,
+                    :default => nil,
+                    :desc => "checkout <branch>",
+                    :aliases => "-b"
       def add(name, url)
+        Kameleon::Repository.add(name, url, options)
       end
 
       desc "list", "Lists available repositories."
       def list
+        Kameleon::Repository.list
       end
 
       desc "update [NAME]", "Updates a named <name> repository"
-      def update(old_name, new_name)
+      def update(name)
+        Kameleon::Repository.update(name)
       end
 
     end

@@ -23,7 +23,6 @@ module Kameleon
         :cache_path => Pathname.new(cache_path),
         :repositories_path => Pathname.new(repositories_path),
       }
-
       options = Kameleon.default_values.merge(options).merge(env_options)
       Kameleon.ui.debug("Environment initialized (#{self})")
       # Injecting all variables of the options and assign the variables
@@ -33,6 +32,9 @@ module Kameleon
         Kameleon.ui.debug("  @#{key} : #{options[key]}")
       end
       @debug = true if ENV['KAMELEON_DEBUG']
+
+      Dir.mkdir(@repositories_path.to_path) unless File.exists?(@repositories_path.to_path)
+
     end
   end
 end

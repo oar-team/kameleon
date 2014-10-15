@@ -94,5 +94,12 @@ module Kameleon
       end.select { |x| x }.flatten(1)
     end
 
+    def self.which(cmd)
+      ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+        exe = File.join(path, "#{cmd}")
+        return path if File.executable? exe
+      end
+      return nil
+    end
   end
 end
