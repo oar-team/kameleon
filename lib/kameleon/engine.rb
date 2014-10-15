@@ -193,7 +193,6 @@ module Kameleon
             microstep.commands.each do |cmd|
               safe_exec_cmd(cmd)
             end
-            sleep 1
             rescue SystemExit, Interrupt
               reload_contexts
               breakpoint(nil)
