@@ -72,7 +72,7 @@ module Kameleon
         Kameleon.env.repositories_path
       end
 
-      desc "list", "Lists all defined templates"
+      desc "list", "Lists all available templates"
       def list
         Kameleon.ui.info "The following templates are available in " \
                          "#{ Kameleon.env.repositories_path }:"
