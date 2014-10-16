@@ -5,64 +5,6 @@ require 'kameleon/utils'
 module Kameleon
 
   module CLI
-    class Recipe < Thor
-      include Thor::Actions
-
-      def self.source_root
-        Kameleon.env.repositories_path
-      end
-
-      desc "list", "Lists all defined recipes in the current directory"
-      def list
-        Utils.list_recipes(Kameleon.env.workspace)
-      end
-
-      desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
-      def new(recipe_name, template_name)
-        if recipe_name == template_name
-          fail RecipeError, "Recipe name should be different from template name"
-        end
-        template_path = File.join(Kameleon.env.repositories_path, template_name)
-        unless template_name.end_with? '.yaml'
-          template_path = template_path + '.yaml'
-        end
-        begin
-          tpl = Kameleon::RecipeTemplate.new(template_path)
-        rescue
-          raise TemplateNotFound, "Template '#{template_name}' not found. " \
-                                  "To see all templates, run the command "\
-                                  "`kameleon templates`"
-        else
-          files2copy = tpl.base_recipes_files + tpl.files
-          files2copy.each do |path|
-            relative_path = path.relative_path_from(Kameleon.env.repositories_path)
-            dst = File.join(Kameleon.env.workspace, relative_path)
-            copy_file(path, dst)
-          end
-          Dir::mktmpdir do |tmp_dir|
-            recipe_path = File.join(tmp_dir, recipe_name)
-            unless recipe_path.end_with? '.yaml'
-              recipe_path = recipe_path + '.yaml'
-            end
-            ## copying recipe
-            File.open(recipe_path, 'w+') do |file|
-              extend_erb_tpl = File.join(Kameleon.erb_dirpath, "extend.erb")
-              erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
-              result = erb.result(binding)
-              file.write(result)
-            end
-            recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
-            copy_file(recipe_path, Pathname.new(recipe_dst))
-          end
-        end
-      end
-
-      desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
-      def info(recipe_path)
-        recipe = Kameleon::Recipe.new(recipe_path)
-        recipe.display_info
-      end
-
 
     class Repository < Thor
       include Thor::Actions
@@ -145,9 +87,8 @@ module Kameleon
   class Main < Thor
     include Thor::Actions
 
-    register CLI::Recipe, 'recipe', 'recipe', 'Manages the local recipes'
+    # register CLI::Recipe, 'recipe', 'recipe', 'Manages the local recipes'
     register CLI::Template, 'template', 'template', 'Lists and imports templates'
-    register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
 
     class_option :color, :type => :boolean, :default => Kameleon.default_values[:color],
                  :desc => "Enables colorization in output"
@@ -163,6 +104,62 @@ module Kameleon
       puts "Kameleon version #{Kameleon::VERSION}"
     end
     map %w(-v --version) => :version
+
+    def self.source_root
+      Kameleon.env.repositories_path
+    end
+
+    desc "list", "Lists all defined recipes in the current directory"
+    def list
+      Utils.list_recipes(Kameleon.env.workspace)
+    end
+    map %w(ls) => :list
+
+    desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
+    def new(recipe_name, template_name)
+      if recipe_name == template_name
+        fail RecipeError, "Recipe name should be different from template name"
+      end
+      template_path = File.join(Kameleon.env.repositories_path, template_name)
+      unless template_name.end_with? '.yaml'
+        template_path = template_path + '.yaml'
+      end
+      begin
+        tpl = Kameleon::RecipeTemplate.new(template_path)
+      rescue
+        raise TemplateNotFound, "Template '#{template_name}' not found. " \
+                                "To see all templates, run the command "\
+                                "`kameleon templates`"
+      else
+        files2copy = tpl.base_recipes_files + tpl.files
+        files2copy.each do |path|
+          relative_path = path.relative_path_from(Kameleon.env.repositories_path)
+          dst = File.join(Kameleon.env.workspace, relative_path)
+          copy_file(path, dst)
+        end
+        Dir::mktmpdir do |tmp_dir|
+          recipe_path = File.join(tmp_dir, recipe_name)
+          unless recipe_path.end_with? '.yaml'
+            recipe_path = recipe_path + '.yaml'
+          end
+          ## copying recipe
+          File.open(recipe_path, 'w+') do |file|
+            extend_erb_tpl = File.join(Kameleon.erb_dirpath, "extend.erb")
+            erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
+            result = erb.result(binding)
+            file.write(result)
+          end
+          recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
+          copy_file(recipe_path, Pathname.new(recipe_dst))
+        end
+      end
+    end
+
+    desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
+    def info(recipe_path)
+      recipe = Kameleon::Recipe.new(recipe_path)
+      recipe.display_info
+    end
 
     desc "build [[RECIPE_PATH]]", "Builds the appliance from the given recipe"
     method_option :build_path, :type => :string ,
