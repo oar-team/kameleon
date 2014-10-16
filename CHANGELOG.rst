@@ -2,6 +2,27 @@ Kameleon CHANGELOG
 ==================
 
 
+version 2.3.0
+-------------
+
+Released on Oct 16th 2014
+
+- Handled Ctrl-C to make a breakpoint instead of quitting. (Fixed #29)
+- Stored kameleon user configuration file in ``~/.kameleon.d/config`` (Fixed #24)
+- Fixed ``kameleon new`` to take an absolute or relative path and place the recipe in a subdir (Fixed #22)
+- Moved builtin recipes to an external repository : See [http://kameleon.imag.fr/repository.html](Docs) (Fixed #24)
+- Renamed ``--cache`` option to ``--enable-cache``
+- Renamed ``--checkpoint`` option to ``--enable-checkpoint``
+- Removed ``kameleon import`` command
+- Removed ``kameleon templates`` command
+- Added ``kameleon info`` to display detailed information about a recipe
+- Added ``kameleon list`` to list all defined recipes in the current directory
+- Added ``kameleon template info`` to display detailed information about a template
+- Added ``kameleon template import`` to import a template
+- Added ``kameleon template list`` to list all available templates
+- Added ``kameleon template repository`` to manage external git recipes repositories
+
+
 version 2.2.5
 -------------
 
