@@ -2,21 +2,16 @@
 Recipe
 ------
 
-Kameleon reads YAML files, named  *recipes*, that describes how you will
-build your appliance. These files are stored in the root of your :ref:`workspace`.
-A recipe is a hierarchical structure of `Section`_, `Step`_, `Microstep`_ and
-:ref:`commands`. Here is an overview of this structure:
+Kameleon reads YAML files, named  *recipes*, that describes how you will build
+your appliance. A recipe is a hierarchical structure of `Section`_, `Step`_,
+`Microstep`_ and :ref:`commands`. Here is an overview of this structure:
 
 .. code-block:: yaml
 
     recipe
-    |
     `-- section
-        |
         `-- step
-            |
             `-- microstep
-                |
                 `-- command
 
 The recipe also contains set of `Global variables`_ declaration and some
@@ -47,7 +42,7 @@ export
 .. _`microstep`:
 
 Step and microstep
--------------------
+------------------
 
 Each *step* contains a list of *microsteps* that contains a list of :ref:`commands`
 written in one YAML file.  To be found by Kameleon this file must be named by
@@ -70,7 +65,7 @@ with the step name plus the YAML extension ``.yaml``. For example the
         - exec_in: apt-get -y --force-yes autoremove
     # default packages
     - packages: "ntp sudo"
-    - extra_packages:
+    - install_extra_packages:
       - exec_in: apt-get -y --force-yes install $$packages
 
 
@@ -82,18 +77,19 @@ is an example of step call:
 .. code-block:: yaml
 
     - software_install:
-        - update_repositories
-        - add_contribs_source
-        - clean
-        - extra_packages
         - packages: "debian-keyring ntp zip unzip rsync sudo"
+        - add_contribs_source
+        - update_repositories
+        - clean
+        - install_extra_packages
 
 Steps path
 ~~~~~~~~~~
 
-The steps are YAML formated files stored in the ``recipe/steps`` directory of
-the :ref:`workspace`. To enable a better recipe reuse and ease of write the steps
-are stored by default in specific folders depending on the sections.
+The steps are YAML formated files stored in the ``steps`` directory which is
+located in the same directory as the recipe. To enable a better recipe reuse
+and ease of write the steps are stored by default in specific folders depending
+on the sections.
 
 Kameleon is looking for the steps files using the ``include_steps`` list value,
 if it is set in the recipe (NOT mandatory). These includes are often the
@@ -145,7 +141,7 @@ with a ``-`` like this ``- my_var: foo``.
 
 
 Global variables
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 Global variables are defined in the ``global`` dictionary of the recipe.
 Kameleon use some global variable to enable the appliance build. See
@@ -157,6 +153,14 @@ Step local variables
 
 In the recipe, you can provide some variables when you call a step. This
 variable override the global and the default variables.
+
+.. code-block:: yaml
+
+    setup:
+      - add_user:
+        - name: foo
+      - add_user:
+        - name: bar
 
 
 Step default variables

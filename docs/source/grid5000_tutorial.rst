@@ -52,29 +52,23 @@ Save the previous file as a YAML file. For instance, hello_world.yaml.
 
 Then, you run it like this::
 
-     kameleon build hello_world.yaml
+    kameleon build hello_world.yaml
 
 You will have some output that looks like this::
 
-      [kameleon]: Starting recipe consistency check
-      [kameleon]: Resolving variables
-      [kameleon]: Calculating microstep identifiers
-      [kameleon]: Creating kameleon working directory : /home/cristian/Repositories/exptools/setup_complex_exp/tests/new_version/build/hello_world
-      [kameleon]: Building local context [local]
-      [kameleon]: Building external context [out]
-      [kameleon]: Building internal context [in]
-      [kameleon]: Starting build recipe 'hello_world.yaml'
-      [kameleon]: Step 1 : setup/first_step/hello_microstep
-      [kameleon]:  ---> Running step
-      [kameleon]: Starting process: "bash"
-      [local_ctx]: The local_context has been initialized
-      [local_ctx]: Hello world
-      [kameleon]:
-      [kameleon]: Build recipe 'hello_world.yaml' is completed !
-      [kameleon]: Build total duration : 0 secs
-      [kameleon]: Build directory : /home/cristian/Repositories/exptools/setup_complex_exp/tests/new_version/build/hello_world
-      [kameleon]: Build recipe file : /home/cristian/Repositories/exptools/setup_complex_exp/tests/new_version/build/hello_world/kameleon_build_recipe.yaml
-      [kameleon]: Log file : /home/cristian/Repositories/exptools/setup_complex_exp/tests/new_version/kameleon.log
+    Starting recipe consistency check
+    Resolving variables
+    Creating kameleon build directory : /tmp/kameleon_hello_world_TNwvlQxK/build/hello_word
+    Starting process: "bash"
+    [local] The local_context has been initialized
+    Starting build recipe 'hello_word.yaml'
+    Step 1 : setup/first_step/hello_microstep
+    --> Running the step...
+    [local] Hello world
+    Step first_step took: 0 secs
+
+    Successfully built 'hello_word.yaml'
+    Total duration : 0 secs
 
 With this simple example, we have already introduced most of the Kameleon concepts and syntax.
 First, how recipes are structured using a hierarchy composed of: sections, steps, microsteps.
