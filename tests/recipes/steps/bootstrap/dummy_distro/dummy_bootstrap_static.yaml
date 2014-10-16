@@ -1,4 +1,0 @@
-# # Dummy Bootstrap Static
-- dummy_bootstrap_static:
-  - exec_out: echo $$distrib_version_name > /dev/null
-  - exec_in: echo $$distrib_repository > /dev/null

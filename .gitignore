@@ -21,3 +21,4 @@ coverage
 .vagrant
 *.log
 bin/*
+build

@@ -44,7 +44,7 @@ module Kameleon
       def list
         Kameleon.ui.info "The following templates are available in " \
                          "#{ Kameleon.env.repositories_path }:"
-        Utils.list_recipes(Kameleon.env.repositories_path, :catch_exception => true)
+        Utils.list_recipes(Kameleon.env.repositories_path)
       end
 
       desc "import [TEMPLATE_NAME]", "Imports the given template"

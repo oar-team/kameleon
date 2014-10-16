@@ -1,0 +1,7 @@
+# # Dummy Software Install
+- intall:
+  - exec_in: echo install
+- configure:
+  - exec_out: echo configure
+- clean:
+  - exec_in: echo clean

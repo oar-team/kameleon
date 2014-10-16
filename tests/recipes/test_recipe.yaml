@@ -1,0 +1,41 @@
+#===============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#===============================================================================
+#
+# DESCRIPTION: This is a test recipe made for unit testing
+#
+#===============================================================================
+---
+# Loads some helpful aliases
+aliases: defaults.yaml
+checkpoint: test.yaml
+#== Global variables use by Kameleon engine and the steps
+global:
+  ## User varibales : used by the recipe
+  user_name: kameleon
+  user_password: $$user_name
+
+  # Distribution
+  distrib: linux
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps:
+    - $$distrib
+
+  bootstrap_packages: >
+    less vim python
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - enable_something
+  - bootstrap:
+    - include_pkg: $$bootstrap_packages
+
+setup:
+  - software_install
+
+export:
+  - save_appliance:
+    - save_as_raw
+    # - save_as_vmdk
