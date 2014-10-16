@@ -29,7 +29,7 @@ module Kameleon
       check_git_binary
       git_repo = File.join(Kameleon.env.repositories_path, name)
       cmd = ["git", "--git-dir", File.join(git_repo, ".git"), "--work-tree",
-             git_repo, "--", "pull"]
+             git_repo, "pull", "--verbose"]
       process = ChildProcess.build(*cmd)
       process.io.inherit!
       process.start
