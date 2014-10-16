@@ -63,58 +63,9 @@ module Kameleon
         recipe.display_info
       end
 
-    end
-
-    class Template < Thor
-      include Thor::Actions
-
-      def self.source_root
-        Kameleon.env.repositories_path
-      end
-
-      desc "list", "Lists all available templates"
-      def list
-        Kameleon.ui.info "The following templates are available in " \
-                         "#{ Kameleon.env.repositories_path }:"
-        Utils.list_recipes(Kameleon.env.repositories_path, :catch_exception => true)
-      end
-
-
-      desc "import [TEMPLATE_NAME]", "Imports the given template"
-      def import(template_name)
-        template_path = File.join(Kameleon.env.repositories_path, template_name)
-        unless template_name.end_with? '.yaml'
-          template_path = template_path + '.yaml'
-        end
-        begin
-          tpl = RecipeTemplate.new(template_path)
-        rescue
-          raise TemplateNotFound, "Template '#{template_name}' not found. " \
-                                  "To see all templates, run the command "\
-                                  "`kameleon templates`"
-        else
-          files2copy = tpl.base_recipes_files + tpl.files
-          files2copy.each do |path|
-            relative_path = path.relative_path_from(Kameleon.env.repositories_path)
-            dst = File.join(Kameleon.env.workspace, relative_path)
-            copy_file(path, dst)
-          end
-        end
-      end
-
-      desc "info [TEMPLATE_NAME]", "Display detailed information about a template"
-      def info(template_name)
-        template_path = File.join(Kameleon.env.repositories_path, template_name)
-        unless template_name.end_with? '.yaml'
-          template_path = template_path + '.yaml'
-        end
-        tpl = RecipeTemplate.new(template_path)
-        tpl.display_info
-      end
-
-    end
 
     class Repository < Thor
+      include Thor::Actions
 
       desc "add [NAME] [URL]", "Adds a new named <name> repository at <url>."
       method_option :branch, :type => :string ,
@@ -134,9 +85,62 @@ module Kameleon
       def update(name)
         Kameleon::Repository.update(name)
       end
+      map %w(-h --help) => :help
+      map %w(ls) => :list
+    end
 
+    class Template < Thor
+      include Thor::Actions
+
+      register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
+
+      def self.source_root
+        Kameleon.env.repositories_path
+      end
+
+      desc "list", "Lists all available templates"
+      def list
+        Kameleon.ui.info "The following templates are available in " \
+                         "#{ Kameleon.env.repositories_path }:"
+        Utils.list_recipes(Kameleon.env.repositories_path, :catch_exception => true)
+      end
+
+      desc "import [TEMPLATE_NAME]", "Imports the given template"
+      def import(template_name)
+        template_path = File.join(Kameleon.env.repositories_path, template_name)
+        unless template_name.end_with? '.yaml'
+          template_path = template_path + '.yaml'
+        end
+        begin
+          tpl = RecipeTemplate.new(template_path)
+        rescue
+          raise TemplateNotFound, "Template '#{template_name}' not found. " \
+                                  "To see all templates, run the command "\
+                                  "`kameleon template ls`"
+        else
+          files2copy = tpl.base_recipes_files + tpl.files
+          files2copy.each do |path|
+            relative_path = path.relative_path_from(Kameleon.env.repositories_path)
+            dst = File.join(Kameleon.env.workspace, relative_path)
+            copy_file(path, dst)
+          end
+        end
+      end
+
+      desc "info [TEMPLATE_NAME]", "Display detailed information about a template"
+      def info(template_name)
+        template_path = File.join(Kameleon.env.repositories_path, template_name)
+        unless template_name.end_with? '.yaml'
+          template_path = template_path + '.yaml'
+        end
+        tpl = RecipeTemplate.new(template_path)
+        tpl.display_info
+      end
+      map %w(-h --help) => :help
+      map %w(ls) => :list
     end
   end
+
 
   class Main < Thor
     include Thor::Actions
