@@ -115,15 +115,24 @@ module Kameleon
     end
     map %w(ls) => :list
 
-    desc "new [RECIPE_NAME] [TEMPLATE_NAME]", "Creates a new recipe"
-    def new(recipe_name, template_name)
-      if recipe_name == template_name
-        fail RecipeError, "Recipe name should be different from template name"
-      end
-      template_path = File.join(Kameleon.env.repositories_path, template_name)
+    desc "new [RECIPE_PATH] [TEMPLATE_NAME]", "Creates a new recipe"
+    def new(recipe_path, template_name)
       unless template_name.end_with? '.yaml'
-        template_path = template_path + '.yaml'
+        template_name = template_name + '.yaml'
       end
+
+      unless recipe_path.end_with? '.yaml'
+        recipe_path = recipe_path + '.yaml'
+      end
+
+      if recipe_path == template_name
+        fail RecipeError, "Recipe path should be different from template name"
+      end
+
+      template_path = File.join(Kameleon.env.repositories_path, template_name)
+
+      recipe_path = Pathname.new(Kameleon.env.workspace).join(recipe_path).to_path
+
       begin
         tpl = Kameleon::RecipeTemplate.new(template_path)
       rescue
@@ -138,19 +147,15 @@ module Kameleon
           copy_file(path, dst)
         end
         Dir::mktmpdir do |tmp_dir|
-          recipe_path = File.join(tmp_dir, recipe_name)
-          unless recipe_path.end_with? '.yaml'
-            recipe_path = recipe_path + '.yaml'
-          end
+          recipe_temp = File.join(tmp_dir, File.basename(recipe_path))
           ## copying recipe
-          File.open(recipe_path, 'w+') do |file|
+          File.open(recipe_temp, 'w+') do |file|
             extend_erb_tpl = File.join(Kameleon.erb_dirpath, "extend.erb")
             erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
             result = erb.result(binding)
             file.write(result)
           end
-          recipe_dst = File.join(Kameleon.env.workspace, recipe_name + '.yaml')
-          copy_file(recipe_path, Pathname.new(recipe_dst))
+          copy_file(recipe_temp, recipe_path)
         end
       end
     end

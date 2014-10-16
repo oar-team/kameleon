@@ -583,8 +583,11 @@ module Kameleon
   end
 
   class RecipeTemplate < Recipe
-    def relative_path()
-      @path.relative_path_from(Kameleon.env.repositories_path)
+    def relative_path_from_recipe(recipe_path)
+      recipe_path = Pathname.new(recipe_path)
+      relative_path_tpl_repo = @path.relative_path_from(Kameleon.env.repositories_path)
+      absolute_path = Pathname.new(Kameleon.env.workspace).join(relative_path_tpl_repo)
+      return absolute_path.relative_path_from(recipe_path.dirname)
     end
   end
 end

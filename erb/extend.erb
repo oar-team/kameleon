@@ -7,10 +7,10 @@
 #==============================================================================
 
 ---
-extend: <%= tpl.relative_path %>
+extend: <%= tpl.relative_path_from_recipe(recipe_path) %>
 
 global:
-    # You can see the base template `<%= tpl.relative_path %>.yaml` to know the
+    # You can see the base template `<%= tpl.relative_path_from_recipe(recipe_path) %>.yaml` to know the
     # variables that you can override
 
 bootstrap:
