@@ -4,7 +4,7 @@ SUITE=jessie
 MIRROR=http://ftp.debian.org/debian
 PACKAGES="apt-utils ca-certificates isc-dhcp-client isc-dhcp-common ifupdown
           iproute2 openssh-server xz-utils systemd systemd-sysv acpid
-          acpi-support-base"
+          acpi-support-base parted e2fsprogs debootstrap extlinux"
 
 if [ "$(uname -m)" == "i686" ] ; then
     PACKAGES="linux-image-486 $PACKAGES"
