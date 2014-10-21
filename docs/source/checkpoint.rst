@@ -7,8 +7,6 @@ Checkpoint
 .. note::
     This documentation is currently being written...
 
-
-
 Your own checkpoint mechanism
 =============================
 
