@@ -14,102 +14,79 @@ First thing to know is that Kameleon is an automation tool for bash. It brings
 the ease of error handling, retry, checkpointing, easy debugging and cleaning
 to your scripts to help you build your software appliance.
 
-The template system built-in allows you quickly build a system and to understand the
-Kameleon basics. Let see the template list::
+Kameleon is delivered without any template by default. To begin, a recipe
+repository has to be added::
 
-    kameleon templates
+    $ kameleon template repo add default https://github.com/oar-team/kameleon-recipes.git
+    $ kameleon template list
 
 It shows the templates names and descriptions directly from the templates files shipped
 with  Kameleon::
 
-    The following templates are available in /var/lib/gems/1.9.1/gems/kameleon-builder-2.0.0/templates:
-    NAME                 | DESCRIPTION
-    ---------------------|-----------------------------------------------------------
-    archlinux            | Build an Archlinux base system system.
-    archlinux-desktop    | Archlinux GNOME Desktop edition.
-    debian-testing       | Debian Testing base system
-    debian7              | Debian 7 (Wheezy) base system
-    debian7-desktop      | Debian 7 (Wheezy) GNOME Desktop edition.
-    debian7-kameleon     | Debian 7 appliance with kameleon.
-    debian7-oar-dev      | Debian 7 dev appliance with OAR-2.5 (node/server/frontend).
-    docker-debian7       | Build a debian image for docker with docker
-    fedora-rawhide       | Fedora Rawhide base system
-    fedora20             | Fedora 20 base system
-    fedora20-desktop     | Fedora 20 GNOME Desktop edition
-    old-debian7          | [deprecated] Build a debian wheezy appliance using chroot...
-    ubuntu-12.04         | Ubuntu 12.04 LTS (Precise Pangolin) base system.
-    ubuntu-12.04-desktop | Ubuntu 12.04 LTS (Precise Pangolin) Desktop edition.
-    ubuntu-14.04         | Ubuntu 14.04 LTS (Trusty Tahr) base system.
-    ubuntu-14.04-desktop | Ubuntu 14.04 LTS (Trusty Tahr) Desktop edition.
-    vagrant-debian7      | A standard Debian 7 vagrant base box
+    The following templates are available in /home/salem/.kameleon.d/repos:
+    NAME                           | DESCRIPTION
+    -------------------------------|------------------------------------------------------------
+    default/base/archlinux         | Base template for Archlinux appliance.
+    default/base/centos            | Base template for Centos appliance.
+    default/base/debian            | Base template for Debian appliance.
+    default/base/fedora            | Base template for Fedora appliance.
+    default/base/ubuntu            | Base template for Ubuntu appliance.
+    default/chroot/debian7         | Debian 7 (Wheezy) appliance built with chroot and qemu-nbd.
+    default/docker/debian7         | Debian base image for docker built with docker.
+    default/grid5000/debian7       | Debian 7 (Wheezy) image built with Grid5000 platform.
+    default/qemu/archlinux         | Archlinux base system built with qemu-kvm.
+    default/qemu/centos6.5         | Centos 6.5 base system built with qemu-kvm.
+    default/qemu/centos7           | Centos 7 base system built with qemu-kvm.
+    default/qemu/debian7           | Debian 7 (Wheezy) base system built with qemu-kvm.
+    default/qemu/debian8           | Debian 8 (Jessie) base system built with qemu-kvm.
+    default/qemu/fedora20          | Fedora 20 base system built with qemu-kvm.
+    default/qemu/ubuntu12.04       | Ubuntu 12.04 LTS base system built with qemu-kvm.
+    default/qemu/ubuntu14.04       | Ubuntu 14.04 LTS base system built with qemu-kvm.
+    default/vagrant/centos6.5      | A standard Centos 6.5 vagrant base box.
+    default/vagrant/debian7        | A standard Debian 7 vagrant base box.
+    default/vagrant/debian8        | A standard Debian 8 vagrant base box.
+    default/virtualbox/archlinux   | Archlinux base system built with virtualbox.
+    default/virtualbox/centos6.5   | Centos 6.5 base system built with virtualbox.
+    default/virtualbox/centos7     | Centos 7 base system built with virtualbox.
+    default/virtualbox/debian7     | Debian 7 (Wheezy) base system built with virtualbox.
+    default/virtualbox/debian8     | Debian 8 (Jessie) base system built with virtualbox.
+    default/virtualbox/fedora20    | Fedora 20 base system built with virtualbox.
+    default/virtualbox/ubuntu12.04 | Ubuntu 12.04 LTS base system built with virtualbox.
+    default/virtualbox/ubuntu14.04 | Ubuntu 14.04 LTS base system built with virtualbox.
 
 Let's pick one of these. The ``debian7`` is a good example. Now you
 will create a new recipe from this template.  Let's name it ``my_debian``::
 
-    kameleon new my_debian debian7
+    kameleon new my_debian default/qemu/debian7
 
 Kameleon make a direct copy of the YAML template recipe file and all
 the other required files like steps or aliases ones. You can see that in the
 ``new`` command output::
 
-    [kameleon]: Cloning template 'debian7'...
-    [kameleon]: create /root/debian7.yaml
-    [kameleon]: create /root/steps/aliases/defaults.yaml
-    [kameleon]: create /root/steps/checkpoints/qemu.yaml
-    [kameleon]: create /root/steps/export/save_appliance.yaml
-    [kameleon]: create /root/steps/setup/debian/configure_apt.yaml
-    [kameleon]: create /root/steps/setup/debian/upgrade_system.yaml
-    [kameleon]: create /root/steps/setup/debian/install_software.yaml
-    [kameleon]: create /root/steps/setup/debian/configure_kernel.yaml
-    [kameleon]: create /root/steps/setup/debian/configure_system.yaml
-    [kameleon]: create /root/steps/setup/debian/configure_keyboard.yaml
-    [kameleon]: create /root/steps/setup/debian/configure_network.yaml
-    [kameleon]: create /root/steps/setup/create_group.yaml
-    [kameleon]: create /root/steps/setup/create_user.yaml
-    [kameleon]: create /root/steps/bootstrap/debian/debootstrap.yaml
-    [kameleon]: create /root/steps/bootstrap/initialize_disk_qemu.yaml
-    [kameleon]: create /root/steps/bootstrap/prepare_qemu.yaml
-    [kameleon]: create /root/steps/bootstrap/install_bootloader.yaml
-    [kameleon]: create /root/steps/bootstrap/start_qemu.yaml
-    [kameleon]: Creating extended recipe from template 'debian7'...
-    [kameleon]: create /root/my_debian.yaml
-    [kameleon]: done
-
-You can check that you got all the files in your workspace for example with the
-UNIX ``tree`` command::
-
-    tree
-    .
-    `-- debian7.yaml
-    `-- my_debian.yaml
-    `-- steps
-        |-- aliases
-        |   `-- defaults.yaml
-        |-- bootstrap
-        |   |-- debian
-        |   |   `-- debootstrap.yaml
-        |   |-- initialize_disk_qemu.yaml
-        |   |-- install_bootloader.yaml
-        |   |-- prepare_qemu.yaml
-        |   `-- start_qemu.yaml
-        |-- checkpoints
-        |   `-- qemu.yaml
-        |-- export
-        |   `-- save_appliance.yaml
-        `-- setup
-            |-- create_group.yaml
-            |-- create_user.yaml
-            `-- debian
-                |-- configure_apt.yaml
-                |-- configure_kernel.yaml
-                |-- configure_keyboard.yaml
-                |-- configure_network.yaml
-                |-- configure_system.yaml
-                |-- install_software.yaml
-                `-- upgrade_system.yaml
-
-
-    8 directories, 19 files
+      create  default/qemu/debian7.yaml
+      create  default/base/debian.yaml
+      create  default/steps/aliases/defaults.yaml
+      create  default/steps/checkpoints/qemu.yaml
+      create  default/steps/bootstrap/prepare_qemu.yaml
+      create  default/steps/bootstrap/start_qemu.yaml
+      create  default/steps/enable_checkpoint.yaml
+      create  default/steps/bootstrap/install_requirements.yaml
+      create  default/steps/bootstrap/initialize_disk.yaml
+      create  default/steps/bootstrap/debian/debootstrap.yaml
+      create  default/steps/bootstrap/reboot_qemu.yaml
+      create  default/steps/setup/debian/configure_apt.yaml
+      create  default/steps/setup/debian/upgrade_system.yaml
+      create  default/steps/setup/debian/install_software.yaml
+      create  default/steps/setup/debian/configure_kernel.yaml
+      create  default/steps/setup/debian/install_bootloader.yaml
+      create  default/steps/setup/debian/configure_system.yaml
+      create  default/steps/setup/debian/configure_keyboard.yaml
+      create  default/steps/setup/debian/configure_network.yaml
+      create  default/steps/setup/create_group.yaml
+      create  default/steps/setup/create_user.yaml
+      create  default/steps/disable_checkpoint.yaml
+      create  default/steps/export/qemu_save_appliance.yaml
+      create  my_debian7.yaml
 
 To understand this hierarchy please refer to the :doc:`recipe` documentation.
 
@@ -125,7 +102,7 @@ from your system bootstrap to its export. It empowers you to customize anything
 you want at anytime during the appliance build. But before changing anything
 just build the template to see how it works::
 
-     kameleon build my_debian
+     kameleon build my_debian.yaml
 
 Oups! Maybe you get an error like this::
 
@@ -183,7 +160,7 @@ How to use the checkpoint
 
 You just have to run the build again and you will notice that it is much faster::
 
-    kameleon build my_debian
+    kameleon build my_debian.yaml
     ...
     [kameleon]: Step 1 : bootstrap/_init_bootstrap/_init_0_debootstrap
     [kameleon]:  ---> Using cache
