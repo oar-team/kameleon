@@ -1,6 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.3.1
+-------------
+
+Released on Nov 5th 2014
+
+- ``--from-checkpoint`` option automatically enable the checkpoint process.
+- ``--from-checkpoint`` could take a special value "last" to refer to the last valid checkpoint.
 
 version 2.3.0
 -------------
