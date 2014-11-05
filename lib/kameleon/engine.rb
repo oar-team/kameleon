@@ -369,7 +369,7 @@ module Kameleon
     def build
       if @enable_checkpoint
         @from_checkpoint = @options[:from_checkpoint]
-        if @from_checkpoint.nil?
+        if @from_checkpoint.nil? || @from_checkpoint == "last"
           @from_checkpoint = list_checkpoints.last
         else
           unless list_checkpoints.include?@from_checkpoint
