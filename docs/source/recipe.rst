@@ -187,19 +187,19 @@ They are used to contextualize the execution of a recipe in a given
 environment.
 
 kameleon_recipe_name
-    The recipe name (eg. my_debian7)
+    The recipe name (eg. ``my_debian7``)
 
 kameleon_recipe_dir
-    Directory where the recipe is located (eg. ~/recipes)
+    Directory where the recipe is located (eg. ``~/recipes``)
 
 kameleon_cwd
-    Current recipe of Kameleon during the build (eg. ~/recipes/build/my_debian7)
+    Current recipe of Kameleon during the build (eg. ``~/recipes/build/my_debian7``)
 
 kameleon_uuid
-    Unique identifier of a Kameleon build. (eg. 33fb8999-bbd3-4bc5-badd-93983b14555d)
+    Unique identifier of a Kameleon build. (eg. ``33fb8999-bbd3-4bc5-badd-93983b14555d``)
 
 kameleon_short_uuid
-    Shorter version of the identifier (eg. 93983b14555d)
+    Shorter version of the identifier (eg. ``93983b14555d``)
 
 persistent_cache
-    'true' if the user enabled the cache, otherwise 'false'
+    ``true`` if the user enabled the cache, otherwise ``false``
