@@ -14,8 +14,8 @@ your appliance. A recipe is a hierarchical structure of `Section`_, `Step`_,
             `-- microstep
                 `-- command
 
-The recipe also contains set of `Global variables`_ declaration and some
-imports like :ref:`aliases` and :ref:`checkpoint`.
+The recipe also contains a set of `Global variables`_ declaration and some
+imports such as :ref:`aliases` and :ref:`checkpoint`.
 
 Here is an example of a recipe:
 
@@ -32,10 +32,10 @@ bootstrap
     context (see :ref:`context`).
 
 setup
-    It is dedicated to install and configuration steps.
+    Installs and configures steps.
 
 export
-    Export the generated appliance in the format of your choice.
+    Exports the generated appliance in the desired format.
 
 
 .. _`step`:
@@ -44,10 +44,10 @@ export
 Step and microstep
 ------------------
 
-Each *step* contains a list of *microsteps* that contains a list of :ref:`commands`
-written in one YAML file.  To be found by Kameleon this file must be named by
-with the step name plus the YAML extension ``.yaml``. For example the
-``software_install.yaml`` step file looks like this:
+Each *step* contains a list of *microsteps* itself containing a list of
+ :ref:`commands` written in one YAML file. To be found by Kameleon,
+this file must be named by the step name plus the YAML extension ``.yaml``.
+For example the ``software_install.yaml`` step file looks like this:
 
 .. code-block:: yaml
 
@@ -88,13 +88,12 @@ Steps path
 
 The steps are YAML formated files stored in the ``steps`` directory which is
 located in the same directory as the recipe. To enable a better recipe reuse
-and ease of write the steps are stored by default in specific folders depending
-on the sections.
+and ease of write, the steps are stored by default in specific folders
+depending on the sections.
 
 Kameleon is looking for the steps files using the ``include_steps`` list value,
-if it is set in the recipe (NOT mandatory). These includes are often the
-distribution steps. For example if you are building an ubuntu based
-distribution you can use:
+if it is set in the recipe (NOT mandatory). For example, if you are building an
+ubuntu based distribution you can use:
 
 .. code-block:: yaml
 
@@ -103,7 +102,7 @@ distribution you can use:
         - debian/wheezy
         - debian
 
-It also search uppermost within the current section folder. For the previous
+It also searches uppermost within the current section folder. In the previous
 example, in the bootstrap section, the search paths are scanned in this
 order:
 
@@ -123,10 +122,10 @@ Variables
 ---------
 
 Kameleon is using preprocessed variables. You can define it with the YAML
-key/value syntax ``my_var: my_value``.To access these variables you have to use
-the two dollars (``$$``) prefix.  Like in a Shell you can also use
+key/value syntax ``my_var: my_value``.To access these variables, you have to
+use the two dollar (``$$``) prefix. Like in a Shell you can also use
 ``$${var_name}`` to include your variables in string like this
-``my-$${variable_name}-templated``. It's also possible to use nested variables
+``my-$${variable_name}-templated``. It is also possible to use nested variables
 like:
 
 .. code-block:: yaml
@@ -135,16 +134,16 @@ like:
     my_nested_var: $${my_var}-bar
 
 Be careful, in YAML you cannot mix dictionary and list on the same level.
-That's why, in the global dictionary, you can define your variables like in the
-example above but, in the recipe or the steps, you must prefix your variable
-with a ``-`` like this ``- my_var: foo``.
+That's why, in the global dictionary, you can define your variables as
+indicated in the example above but, in the recipe or the steps, you must prefix
+your variable with a ``-`` like this ``- my_var: foo``.
 
 
 Global variables
 ~~~~~~~~~~~~~~~~
 
 Global variables are defined in the ``global`` dictionary of the recipe.
-Kameleon use some global variable to enable the appliance build. See
+Kameleon use some global variables to enable the appliance build. See
 :ref:`context` and `Steps path`_ for more details
 
 
@@ -167,10 +166,10 @@ Step default variables
 ~~~~~~~~~~~~~~~~~~~~~~
 
 In the step file, you can define some default variables for your microsteps. Be
-careful, to avoid some mistakes, these variables can be override by the step
+careful, to avoid some mistakes, these variables can be overridden by the step
 local variables but not by the global ones. If this is the behavior you
-expected just add a step local variable that take the global variable value
-like this:
+expected, just add a step local variable that can be assigned by the global
+variable value:
 
 .. code-block:: yaml
 
@@ -179,3 +178,28 @@ like this:
     setup:
         - my_step:
             - foo: $$foo
+
+Kameleon variables
+~~~~~~~~~~~~~~~~~~
+
+It is possible to access some variables created by Kameleon from the recipe.
+They are used to contextualize the execution of a recipe in a given
+environment.
+
+kameleon_recipe_name
+    The recipe name (eg. my_debian7)
+
+kameleon_recipe_dir
+    Directory where the recipe is located (eg. ~/recipes)
+
+kameleon_cwd
+    Current recipe of Kameleon during the build (eg. ~/recipes/build/my_debian7)
+
+kameleon_uuid
+    Unique identifier of a Kameleon build. (eg. 33fb8999-bbd3-4bc5-badd-93983b14555d)
+
+kameleon_short_uuid
+    Shorter version of the identifier (eg. 93983b14555d)
+
+persistent_cache
+    'true' if the user enabled the cache, otherwise 'false'

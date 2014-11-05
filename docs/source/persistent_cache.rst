@@ -4,7 +4,6 @@
 Persistent Cache
 ----------------
 
-.. versionadded:: 2.0.1
 
 In order to exactly reconstruct a software appliance with the same exact
 version of packages. Kameleon offer the option of creating a persistent cache
@@ -38,10 +37,10 @@ Before using it you have to declare the variable proxy_cache, for example
 
 
 To use, you just have to
-add the option ``--cache`` as an argument of the build command.
+add the option ``--enable-cache`` as an argument of the build command.
 For example::
 
-  kameleon build my_recipe.yaml -b /tmp/kameleon/ --cache
+  kameleon build my_recipe.yaml -b /tmp/kameleon/ --enable-cache
 
 This will create a tar file in the build directory ``/tmp/kameleon`` called
 ``my_recipe-cache.tar``.  In order to use this generated cache file in

@@ -16,15 +16,24 @@ Debian/Ubuntu
 
 ::
 
-    apt-get install ruby-childprocess
+    apt-get install ruby-childprocess polipo
     gem install --no-ri --no-rdoc kameleon-builder
 
-Fedora
-------
+Centos/Fedora
+-------------
 
 ::
 
-    yum install rubygem-childprocess
+    yum install     rubygem-childprocess polipo
+    gem install --no-ri --no-rdoc kameleon-builder
+
+
+Archlinux
+---------
+
+::
+
+    pacman -S ruby polipo
     gem install --no-ri --no-rdoc kameleon-builder
 
 

@@ -5,23 +5,26 @@ Getting Started
 Installation
 ~~~~~~~~~~~~
 
-To install Kameleon have a look at the :doc:`installation` section.
+To install Kameleon, have a look at the :doc:`installation` section.
 
 Create a new recipe from template
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First thing to know is that Kameleon is an automation tool for bash. It brings
-the ease of error handling, retry, checkpointing, easy debugging and cleaning
-to your scripts to help you build your software appliance.
+Kameleon can be seen as a shell sequencer which will boost your shell scripts.
+It is based on the execution of shell scripts but it also provides some syntax sugar
+that makes working with shell scripts less painful.
 
-Kameleon is delivered without any template by default. To begin, a recipe
-repository has to be added::
+Kameleon is delivered without any template by default::
+
+    $ kameleon template list
+
+To begin, a recipe repository has to be added::
 
     $ kameleon template repo add default https://github.com/oar-team/kameleon-recipes.git
     $ kameleon template list
 
-It shows the templates names and descriptions directly from the templates files shipped
-with  Kameleon::
+Now, you should see the template list prefixed by the repository name, called
+"default"::
 
     The following templates are available in /home/salem/.kameleon.d/repos:
     NAME                           | DESCRIPTION
@@ -54,13 +57,18 @@ with  Kameleon::
     default/virtualbox/ubuntu12.04 | Ubuntu 12.04 LTS base system built with virtualbox.
     default/virtualbox/ubuntu14.04 | Ubuntu 14.04 LTS base system built with virtualbox.
 
-Let's pick one of these. The ``debian7`` is a good example. Now you
-will create a new recipe from this template.  Let's name it ``my_debian``::
+To build a Debian 7 image, it is possible to choose from several virtualization
+tools: chroot, qemu, virtualbox, etc.
 
-    kameleon new my_debian default/qemu/debian7
+In this tutorial, we are going to choose qemu. Let's import the debian7
+template in our workspace::
+
+    $ mkdir my_recipes && cd my_recipes  ## create a workspace
+    $ kameleon new my_debian7 default/qemu/debian7
+
 
 Kameleon make a direct copy of the YAML template recipe file and all
-the other required files like steps or aliases ones. You can see that in the
+other required files such as steps or aliases. You can see that in the
 ``new`` command output::
 
       create  default/qemu/debian7.yaml
@@ -88,120 +96,102 @@ the other required files like steps or aliases ones. You can see that in the
       create  default/steps/export/qemu_save_appliance.yaml
       create  my_debian7.yaml
 
-To understand this hierarchy please refer to the :doc:`recipe` documentation.
+To understand this hierarchy, please refer to the :doc:`recipe` documentation.
+
+We have thus the following recipes in our ``workspace``::
+
+    $ kameleon list
+    NAME                 | DESCRIPTION
+    ---------------------|---------------------------------------------------
+    default/base/debian  | Base template for Debian appliance.
+    default/qemu/debian7 | Debian 7 (Wheezy) base system built with qemu-kvm.
+    my_debian7           | <MY RECIPE DESCRIPTION>
+
+
+The new recipe ``my_debian7.yaml`` inherits the base recipe
+``default/qemu/debian7.yaml`` as we can see in the
+``my_debian7.yaml`` file with the keyword ``extend``
+
+.. code-block:: yaml
+   :linenos:
+   :emphasize-lines: 10,17,20,23
+
+    #==============================================================================
+    # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+    #==============================================================================
+    #
+    # DESCRIPTION: <MY RECIPE DESCRIPTION>
+    #
+    #==============================================================================
+
+    ---
+    extend: default/qemu/debian7.yaml
+
+    global:
+        # You can view the base template `default/qemu/debian7.yaml` to find
+        # out which variables you can override
+
+    bootstrap:
+      - "@base"
+
+    setup:
+      - "@base"
+
+    export:
+      - "@base"
+
+This recipe acts exactly as the parent recipe thanks to the keyword
+``"@base"``. (see :ref:`inheritance`)
 
 Build my new recipe
 ~~~~~~~~~~~~~~~~~~~
 
+There is no magic in Kameleon, everything is written in YAML, from your system
+bootstrap to its export. It empowers you to customize anything you want at
+anytime during the appliance build. But before changing anything, just build the
+template to see how it works::
+
+    $ kameleon build my_debian7.yaml --enable-cache
+
 .. note::
-    Be sure to be `root` to run the following steps. It is needed for loading
-    modules, chrooting,...
+  We enable caching all network data that will be used to build the appliance.
+  Thanks to this, the recipe reconstructability is ensured (see
+  :ref:`persistent_cache`)
 
-There is no magic in Kameleon, everything is written in YAML:
-from your system bootstrap to its export. It empowers you to customize anything
-you want at anytime during the appliance build. But before changing anything
-just build the template to see how it works::
-
-     kameleon build my_debian.yaml
-
-Oups! Maybe you get an error like this::
+Oops! Maybe you get an error like this one::
 
     ...
-    [kameleon]: debootstrap is missing from out_context
-    [kameleon]: Press [c] to continue with execution
-    [kameleon]: Press [a] to abort execution
-    [kameleon]: Press [l] to switch to local_context shell
-    [kameleon]: Press [o] to switch to out_context shell
-    [kameleon]: Press [i] to switch to in_context shell
-    [kameleon]: answer ? [i/o/l/a/c]:
+    socat is missing from local_context
+    Press [c] to continue with execution
+    Press [a] to abort execution
+    Press [l] to switch to local_context shell
+    Press [o] to switch to out_context shell
+    Press [i] to switch to in_context shell
+    answer ? [c/a/l/o/i]:
 
-This is the interactive prompt of Kameleon.
 
-It is a powerful tool that offers you the possibility to fix a problem if
-something goes wrong during the build process. For this example, the problem is
-due to the missing ``debootstrap`` binary.
+It is a powerful tool that offers the possibility to fix a problem if
+something goes wrong during the build process. In this example, the problem is
+due to the missing ``socat`` binary.
 
-So you have to install it on your ``out`` context (to read more about context
-see the :doc:`context` page). Just type the ``o`` key and ``Enter``. Now you
-are logged in your out context. If you are on a Debian based system install the
-missing package::
+So you have to install it on your ``local`` context (to read more about context
+see the :doc:`context` page). Just type the ``l`` key and ``Enter``. Now you
+are logged in your local context. If you are on a Debian based system install
+the missing package::
 
-    (out_context) root@f4b261b5fad7: ~/build/my_debian # sudo apt-get install debootstrap
+    (local_context) salem@myhost: ~/build/my_debian7 $ sudo apt-get install socat
 
 Press ``Ctrl-d`` or type ``exit`` to go back to the Kameleon prompt then press
 ``c`` and ``Enter`` to continue the build.
 
-The first time it will take a while to finish the building process. But, Thanks
-to the :doc:`checkpoint` mechanism you can abort with ``Ctrl-c`` anytime during
-the build without problem.
+When Kameleon ends, a directory called ``build`` will be generated in the
+current directory. You will have a debian wheezy appliance that you can try out
+by executing::
 
-Every step is backed up and if you start the build again, it will skip all the
-steps already done to restart at the point you have just stopped.
-
-Moreover, if you change anything in the recipe Kameleon will know it (using
-recipe and steps hashes), so your next build will automatically restart at the
-right steps. Here is a good example: The first time you built your recipe you
-should have something like this::
-
-    ...
-    [kameleon]: Build recipe 'my_debian.yaml' is completed !
-    [kameleon]: Build total duration : 224 secs
-    ...
-
-Now you can run your appliance using qemu::
-
-    qemu-system-x86_64 -enable-kvm builds/my_debian/my_debian.qcow2
+    $ qemu-system-x86_64 -enable-kvm -m 512 build/my_debian7/my_debian7.qcow2
 
 .. note::
     If you do not have access to a graphical server use the ``-curses`` option
-
-How to use the checkpoint
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You just have to run the build again and you will notice that it is much faster::
-
-    kameleon build my_debian.yaml
-    ...
-    [kameleon]: Step 1 : bootstrap/_init_bootstrap/_init_0_debootstrap
-    [kameleon]:  ---> Using cache
-    ...
-    [kameleon]: Build recipe 'my_debian' is completed !
-    [kameleon]: Build total duration : 22 secs
-    ...
-
-As you can see Kameleon has used the checkpoint cache for each step and in
-doing so it takes just 22 seconds to build the recipe again. Well the recipe
-did not change so there is no real challenge to build it so fast. Let's change
-the user name for example. Open the ``my_debian.yaml`` recipe file and in the
-global section change the user name like this::
-
-    user_name: my_user
-
-Save the file and re-build the recipe again. This is a part of the outputs you
-should see::
-
-    kameleon build my_debian
-    ...
-    [kameleon]: Step 29 : setup/create_user/create_group
-    [kameleon]:  ---> Using cache
-    [kameleon]: Step 30 : setup/create_user/add_user
-    [kameleon]:  ---> Running step
-    [kameleon]:  ---> Creating checkpoint : 6bde599e7ed1
-    [kameleon]: Step 31 : setup/create_user/add_group_to_sudoers
-    [kameleon]:  ---> Running step
-    [kameleon]:  ---> Creating checkpoint : 28b7a1fae5e2
-    ...
-    [kameleon]: Build recipe 'my_debian' is completed !
-    [kameleon]: Build total duration : 29 secs
-    ...
-
-This need a little explanation: You have change the ``user_name`` value in the
-recipe. This variable is firstly used in the ``add_user`` :ref:`microstep`, in
-the create_user :ref:`step` within the setup section.
-
-That is why allmicrosteps before this one (the 30 in our case) are using the
-cache but all the microsteps after are build again, to prevent side effects of
-this change, even if they are not using the ``add_user`` value.
 
 Add a new step
 ~~~~~~~~~~~~~~
@@ -216,7 +206,7 @@ Let's call it ``add_timestamp.yaml``:
 .. literalinclude:: ../../contrib/steps/setup/add_timestamp.yaml
     :language: yaml
 
-Then you should have this step to the recipe at the end of the setup section::
+Then you should add this step to the recipe at the end of the setup section::
 
     ...
     setup:
@@ -225,13 +215,13 @@ Then you should have this step to the recipe at the end of the setup section::
 
 Then build again your recipe and run it like before to see that your timestamp
 has been truly added.
-To get more information about steps definition and usage like default
-variable and microstep selection see :ref:`step`.
+To get more information about step definition and the use of default
+variable and microstep selection, see :ref:`step`.
 
 Advanced Features
 ~~~~~~~~~~~~~~~~~
 
 Kameleon gives you a lot of extension and customization possibilities. You can
-define you own :doc:`aliases` and even your own :doc:`checkpoint` mechanism. You
-are invited to go through the rest of the documentation to fully understand
-Kameleon and it's great possibilities.
+define your own :doc:`aliases` and even your own :doc:`checkpoint` mechanism.
+You are invited to go through the rest of the documentation to fully understand
+Kameleon and its great possibilities.
