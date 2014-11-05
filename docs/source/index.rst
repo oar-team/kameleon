@@ -13,11 +13,11 @@ Welcome to Kameleon's documentation!
 About
 -----
 
-Kameleon should be seen as a simple but powerful tool to generate customized
-appliances. With Kameleon, you make your recipe that describes how to create
-step by step your own distribution. At start Kameleon is used to create custom
-kvm, docker, VirtualBox, ..., but as it is designed to be very generic
-you can probably do a lot more than that.
+Kameleon is a simple but powerful tool to generate customized appliances. With
+Kameleon, you make your recipe that describes how to create step by step your
+own distribution. At start Kameleon is used to create custom kvm, docker,
+VirtualBox, ..., but as it is designed to be very generic you can probably do a
+lot more than that.
 
 
 ------------------
