@@ -8,4 +8,4 @@ VirtualBox, iso images, ..., but as it is designed to be very generic you can
 probably do a lot more than that.
 
 * Latest documentation: http://kameleon.imag.fr/getting_started.html
-* Source code and issue tracker: https://github.com/Kozea/WeasyPrint
+* Source code and issue tracker: https://github.com/oar-team/kameleon
