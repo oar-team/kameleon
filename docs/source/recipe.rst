@@ -44,8 +44,8 @@ export
 Step and microstep
 ------------------
 
-Each *step* contains a list of *microsteps* itself containing a list of
- :ref:`commands` written in one YAML file. To be found by Kameleon,
+Each step contains a list of microsteps itself containing a list of :ref:`commands` 
+written in one YAML file. To be found by Kameleon,
 this file must be named by the step name plus the YAML extension ``.yaml``.
 For example the ``software_install.yaml`` step file looks like this:
 
