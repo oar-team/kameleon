@@ -38,7 +38,10 @@ module Kameleon
       @files = []
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
-      @steps_dirs = []
+      @steps_dirs = [
+        File.expand_path(File.join(Kameleon.env.workspace, 'steps')),
+        File.expand_path(File.join(Kameleon.env.workspace, '.steps')),
+      ]
       load! :strict => false
     end
 
@@ -56,14 +59,12 @@ module Kameleon
       yaml_recipe.delete("extend")
 
       # Where we can find steps
-      @steps_dirs = @base_recipes_files.map do |recipe_path|
+      @base_recipes_files.each do |recipe_path|
         dirname = File.dirname(recipe_path)
-        [ File.expand_path(File.join(dirname, 'steps')),
-          File.expand_path(File.join(dirname, '.steps')),
-          File.expand_path(File.join(dirname, '..', 'steps')),
-          File.expand_path(File.join(dirname, '..', '.steps')),
-        ]
-      end.flatten(1)
+        @steps_dirs.push(File.expand_path(File.join(dirname, 'steps')))
+        @steps_dirs.push(File.expand_path(File.join(dirname, '.steps')))
+      end
+      @steps_dirs.uniq!
 
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
