@@ -1,6 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.3.2
+-------------
+
+Released on Nov 20th 2014
+
+- Search steps directories in the workspace first.
+
 version 2.3.1
 -------------
 
