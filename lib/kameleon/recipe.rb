@@ -39,12 +39,12 @@ module Kameleon
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
       @steps_dirs = []
-      steps_dir = get_default_steps_dirs
+      steps_dir = get_default_steps_dir
       @steps_dirs.push(steps_dir) unless steps_dir.nil?
       load! :strict => false
     end
 
-    def get_default_steps_dirs
+    def get_default_steps_dir
       relative_path = @path.to_path.gsub(Kameleon.env.root_dir.to_path + '/', '')
       last_dir = Kameleon.env.root_dir
       subdirs = [last_dir]
@@ -79,8 +79,10 @@ module Kameleon
       # Where we can find steps
       @base_recipes_files.each do |recipe_path|
         dirname = File.dirname(recipe_path)
-        @steps_dirs.push(File.expand_path(File.join(dirname, 'steps')))
-        @steps_dirs.push(File.expand_path(File.join(dirname, '.steps')))
+        ['steps', '.steps'].each do |p|
+          dir = File.expand_path(File.join(dirname, p))
+          @steps_dirs.push(dir) if File.exists? dir
+        end
       end
       @steps_dirs.uniq!
 
@@ -104,7 +106,8 @@ module Kameleon
             [File.join(steps_dir, section.name, path),
               File.join(steps_dir, path)]
           end
-        end.flatten
+        end.flatten.select { |x| File.exists? x }
+
         if yaml_recipe.key? section.name
           yaml_section = yaml_recipe.fetch(section.name)
           next unless yaml_section.kind_of? Array
@@ -604,10 +607,6 @@ module Kameleon
   class RecipeTemplate < Recipe
 
     def initialize(path, kwargs = {})
-      repo_path = Kameleon.env.repositories_path
-      relative_template_path = path.gsub(repo_path.to_path + '/', '')
-      local_repo_path = repo_path.join(relative_template_path.split('/')[0])
-      Kameleon.env.root_dir = local_repo_path
       super(path, kwargs)
     end
 

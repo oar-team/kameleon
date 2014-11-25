@@ -53,6 +53,7 @@ module Kameleon
     end
 
     def self.list_recipes(repository_path, kwargs = {})
+      Kameleon.env.root_dir = repository_path
       catch_exception = kwargs.fetch(:catch_exception, true)
       recipes_hash = []
       recipes_files = get_recipes(repository_path)
