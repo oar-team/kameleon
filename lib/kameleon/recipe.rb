@@ -38,11 +38,29 @@ module Kameleon
       @files = []
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
-      @steps_dirs = [
-        File.expand_path(File.join(Kameleon.env.workspace, 'steps')),
-        File.expand_path(File.join(Kameleon.env.workspace, '.steps')),
-      ]
+      @steps_dirs = []
+      steps_dir = get_default_steps_dirs
+      @steps_dirs.push(steps_dir) unless steps_dir.nil?
       load! :strict => false
+    end
+
+    def get_default_steps_dirs
+      relative_path = @path.to_path.gsub(Kameleon.env.root_dir.to_path + '/', '')
+      last_dir = Kameleon.env.root_dir
+      subdirs = [last_dir]
+      relative_path.split("/")[0...-1].each do |p|
+        subdir = last_dir.join(p)
+        subdirs.push(subdir)
+        last_dir = subdir
+      end
+      steps_dirs = []
+      subdirs.reverse_each do |p|
+        steps_dirs.push(File.expand_path(File.join(p.to_path, 'steps')))
+        steps_dirs.push(File.expand_path(File.join(p.to_path, '.steps')))
+      end
+      steps_dirs.each do |p|
+        return p if File.exist? p
+      end
     end
 
     def load!(kwargs = {})
@@ -584,6 +602,15 @@ module Kameleon
   end
 
   class RecipeTemplate < Recipe
+
+    def initialize(path, kwargs = {})
+      repo_path = Kameleon.env.repositories_path
+      relative_template_path = path.gsub(repo_path.to_path + '/', '')
+      local_repo_path = repo_path.join(relative_template_path.split('/')[0])
+      Kameleon.env.root_dir = local_repo_path
+      super(path, kwargs)
+    end
+
     def relative_path_from_recipe(recipe_path)
       recipe_path = Pathname.new(recipe_path)
       relative_path_tpl_repo = @path.relative_path_from(Kameleon.env.repositories_path)
