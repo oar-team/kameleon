@@ -1,6 +1,14 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.3.3
+-------------
+
+Released on Nov 26th 2014
+
+- Minor improvements
+- Fixed issue with listing the templates avaiable in a repository
+
 version 2.3.2
 -------------
 
