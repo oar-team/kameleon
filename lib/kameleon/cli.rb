@@ -49,6 +49,7 @@ module Kameleon
 
       desc "import [TEMPLATE_NAME]", "Imports the given template"
       def import(template_name)
+        Kameleon.env.root_dir = Kameleon.env.repositories_path
         template_path = File.join(Kameleon.env.repositories_path, template_name)
         unless template_name.end_with? '.yaml'
           template_path = template_path + '.yaml'
@@ -71,6 +72,7 @@ module Kameleon
 
       desc "info [TEMPLATE_NAME]", "Display detailed information about a template"
       def info(template_name)
+        Kameleon.env.root_dir = Kameleon.env.repositories_path
         template_path = File.join(Kameleon.env.repositories_path, template_name)
         unless template_name.end_with? '.yaml'
           template_path = template_path + '.yaml'
@@ -117,6 +119,7 @@ module Kameleon
 
     desc "new [RECIPE_PATH] [TEMPLATE_NAME]", "Creates a new recipe"
     def new(recipe_path, template_name)
+      Kameleon.env.root_dir = Kameleon.env.repositories_path
       unless template_name.end_with? '.yaml'
         template_name = template_name + '.yaml'
       end
