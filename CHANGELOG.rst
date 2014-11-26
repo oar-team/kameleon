@@ -1,6 +1,14 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.3.4
+-------------
+
+Released on Nov 26th 2014
+
+- Fixed kameleon 2.3.3 regressions about the template import
+
+
 version 2.3.3
 -------------
 
