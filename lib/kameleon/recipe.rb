@@ -39,13 +39,11 @@ module Kameleon
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
       @steps_dirs = []
-      steps_dir = get_default_steps_dir
-      @steps_dirs.push(steps_dir) unless steps_dir.nil?
       load! :strict => false
     end
 
-    def get_default_steps_dir
-      relative_path = @path.to_path.gsub(Kameleon.env.root_dir.to_path + '/', '')
+    def get_steps_dirs(recipe_path)
+      relative_path = recipe_path.to_path.gsub(Kameleon.env.root_dir.to_path + '/', '')
       last_dir = Kameleon.env.root_dir
       subdirs = [last_dir]
       relative_path.split("/")[0...-1].each do |p|
@@ -58,9 +56,7 @@ module Kameleon
         steps_dirs.push(File.expand_path(File.join(p.to_path, 'steps')))
         steps_dirs.push(File.expand_path(File.join(p.to_path, '.steps')))
       end
-      steps_dirs.each do |p|
-        return p if File.exist? p
-      end
+      steps_dirs.select! { |x| File.exists? x }
     end
 
     def load!(kwargs = {})
@@ -77,14 +73,9 @@ module Kameleon
       yaml_recipe.delete("extend")
 
       # Where we can find steps
-      @base_recipes_files.each do |recipe_path|
-        dirname = File.dirname(recipe_path)
-        ['steps', '.steps'].each do |p|
-          dir = File.expand_path(File.join(dirname, p))
-          @steps_dirs.push(dir) if File.exists? dir
-        end
-      end
-      @steps_dirs.uniq!
+      @steps_dirs = @base_recipes_files.map do |recipe_path|
+        get_steps_dirs(recipe_path)
+      end.flatten!.uniq!
 
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
