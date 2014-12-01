@@ -1,6 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.3.5
+-------------
+
+Released on Dec 1st 2014
+
+- Fixed kameleon 2.3.4 regressions about ``kameleon build``
+
 version 2.3.4
 -------------
 
