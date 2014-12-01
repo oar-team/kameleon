@@ -44,12 +44,16 @@ module Kameleon
 
     def get_steps_dirs(recipe_path)
       relative_path = recipe_path.to_path.gsub(Kameleon.env.root_dir.to_path + '/', '')
-      last_dir = Kameleon.env.root_dir
-      subdirs = [last_dir]
-      relative_path.split("/")[0...-1].each do |p|
-        subdir = last_dir.join(p)
-        subdirs.push(subdir)
-        last_dir = subdir
+      if relative_path.eql? recipe_path.to_path
+        subdirs = [recipe_path.dirname]
+      else
+        last_dir = Kameleon.env.root_dir
+        subdirs = [last_dir]
+        relative_path.split("/")[0...-1].each do |p|
+          subdir = last_dir.join(p)
+          subdirs.push(subdir)
+          last_dir = subdir
+        end
       end
       steps_dirs = []
       subdirs.reverse_each do |p|
