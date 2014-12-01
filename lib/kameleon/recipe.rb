@@ -75,7 +75,8 @@ module Kameleon
       # Where we can find steps
       @steps_dirs = @base_recipes_files.map do |recipe_path|
         get_steps_dirs(recipe_path)
-      end.flatten!.uniq!
+      end.flatten!
+      @steps_dirs.uniq!
 
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
@@ -92,8 +93,8 @@ module Kameleon
       resolved_global['include_steps'].flatten!
       resolved_global['include_steps'].compact!
       @sections.values.each do |section|
-        dir_to_search = resolved_global['include_steps'].map do |path|
-          @steps_dirs.map do |steps_dir|
+        dir_to_search = @steps_dirs.map do |steps_dir|
+          resolved_global['include_steps'].map do |path|
             [File.join(steps_dir, section.name, path),
               File.join(steps_dir, path)]
           end
