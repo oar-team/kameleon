@@ -92,6 +92,7 @@ module Kameleon
   class Main < Thor
     include Thor::Actions
 
+    register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
     # register CLI::Recipe, 'recipe', 'recipe', 'Manages the local recipes'
     register CLI::Template, 'template', 'template', 'Lists and imports templates'
 
