@@ -140,7 +140,7 @@ fi
 function __download {
     echo "Downloading: $1..."
     if which wget >/dev/null; then
-        wget --progress=bar:force "$1" -O "$2" 2>&1
+        wget --retry-connrefused --progress=bar:force "$1" -O "$2" 2>&1
     else
         fail "wget is missing, trying with curl..."
         if which curl >/dev/null; then
