@@ -23,6 +23,7 @@ module Kameleon
         :cache_path => Pathname.new(cache_path),
         :repositories_path => Pathname.new(repositories_path),
         :root_dir => Pathname.new(workspace),
+        :global => options.fetch(:global, {}),
       }
       options = Kameleon.default_values.merge(options).merge(env_options)
       Kameleon.ui.debug("Environment initialized (#{self})")

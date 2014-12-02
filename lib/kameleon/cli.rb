@@ -72,7 +72,7 @@ module Kameleon
 
       desc "info [TEMPLATE_NAME]", "Display detailed information about a template"
       method_option :global, :type => :hash ,
-                    :default => nil,  :aliases => "-g",
+                    :default => {},  :aliases => "-g",
                     :desc => "Set custom global variables."
       def info(template_name)
         Kameleon.env.root_dir = Kameleon.env.repositories_path
@@ -169,7 +169,7 @@ module Kameleon
 
     desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
     method_option :global, :type => :hash ,
-                  :default => nil,  :aliases => "-g",
+                  :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
     def info(recipe_path)
       recipe = Kameleon::Recipe.new(recipe_path)
