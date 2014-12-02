@@ -4,10 +4,10 @@ Kameleon CHANGELOG
 version 2.3.5
 -------------
 
-Released on Dec 1st 2014
+Released on Dec 2nd 2014
 
 - Fixed kameleon 2.3.4 regressions about ``kameleon build``
-- Improved the customization of steps with inheritance
+
 
 version 2.3.4
 -------------
