@@ -26,6 +26,7 @@ module Kameleon
         "setup" => Section.new("setup"),
         "export" => Section.new("export"),
       }
+      @cli_global = Kameleon.env.global.clone
       @global = {
         "kameleon_recipe_name" => @name,
         "kameleon_recipe_dir" => File.dirname(@path),
@@ -84,6 +85,7 @@ module Kameleon
 
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
+      @global.merge!(@cli_global)
       # Resolve dynamically-defined variables !!
       resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, kwargs)
       resolved_global = @global.merge YAML.load(resolved_global)

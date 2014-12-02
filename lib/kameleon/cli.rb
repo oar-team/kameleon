@@ -71,6 +71,9 @@ module Kameleon
       end
 
       desc "info [TEMPLATE_NAME]", "Display detailed information about a template"
+      method_option :global, :type => :hash ,
+                    :default => nil,  :aliases => "-g",
+                    :desc => "Set custom global variables."
       def info(template_name)
         Kameleon.env.root_dir = Kameleon.env.repositories_path
         template_path = File.join(Kameleon.env.repositories_path, template_name)
@@ -164,6 +167,9 @@ module Kameleon
     end
 
     desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
+    method_option :global, :type => :hash ,
+                  :default => nil,  :aliases => "-g",
+                  :desc => "Set custom global variables."
     def info(recipe_path)
       recipe = Kameleon::Recipe.new(recipe_path)
       recipe.display_info
@@ -195,7 +201,9 @@ module Kameleon
     method_option :proxy_path, :type => :string ,
                   :default => nil,
                   :desc => "Full path of the proxy binary to use for the persistent cache."
-
+    method_option :global, :type => :hash,
+                  :default => {}, :aliases => "-g",
+                  :desc => "Set custom global variables."
     def build(recipe_path=nil)
       if recipe_path.nil? && !options[:from_cache].nil?
         Kameleon.ui.info("Using the cached recipe")
