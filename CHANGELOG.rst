@@ -1,6 +1,16 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.4.0
+-------------
+
+(release date to be announced)
+
+- Improved the customization of steps with inheritance
+- Allow to set global variables from cli during build using ``--global key:value ..``
+- Moved repository command to the upper level ``kameleon repository``
+
+
 version 2.3.5
 -------------
 
