@@ -14,7 +14,9 @@ By default, the Kameleon command ``new`` creates a new recipe that
 inherits a template recipe. The keyword ``extend`` is used to specify
 the recipe upon which will be based the new recipe.
 
-Recipe example that inherits the recipe ``debian7``::
+Recipe example that inherits the recipe ``debian7``:
+
+.. code-block:: yaml
 
     ---
     extend: debian7
@@ -48,7 +50,9 @@ Inheritance and variables
 
 All global variables are overloaded in the daughter recipe.
 If the recipe contains various settings, we can use this feature to customize
-the appliance according to your needs::
+the appliance according to your needs:
+
+.. code-block:: yaml
 
     ---
     extend: fedora20
