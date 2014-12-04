@@ -216,24 +216,31 @@ module Kameleon
     end
 
     def load_aliases(yaml_recipe)
+      def load_aliases_file(aliases_file)
+        dir_search = @steps_dirs.map do |steps_dir|
+          File.join(steps_dir, "aliases")
+        end.flatten
+        dir_search.each do |dir_path|
+          path = Pathname.new(File.join(dir_path, aliases_file))
+          if File.file?(path)
+            Kameleon.ui.debug("Loading aliases #{path}")
+            @aliases.merge!(YAML.load_file(path))
+            @files.push(path)
+            return path
+          end
+        end
+        fail RecipeError, "Aliases file for recipe '#{path}' does not exists"
+      end
       if yaml_recipe.keys.include? "aliases"
         aliases = yaml_recipe.fetch("aliases")
         if aliases.kind_of? Hash
           @aliases = aliases
         elsif aliases.kind_of? String
-          dir_search = @steps_dirs.map do |steps_dir|
-              File.join(steps_dir, "aliases")
-          end.flatten
-          dir_search.each do |dir_path|
-            path = Pathname.new(File.join(dir_path, aliases))
-            if File.file?(path)
-              Kameleon.ui.debug("Loading aliases #{path}")
-              @aliases = YAML.load_file(path)
-              @files.push(path)
-              return path
-            end
+          load_aliases_file(aliases)
+        elsif aliases.kind_of? Array
+          aliases.each do |aliases_file|
+            load_aliases_file(aliases_file)
           end
-          fail RecipeError, "Aliases file for recipe '#{path}' does not exists"
         end
       end
     end
