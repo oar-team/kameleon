@@ -4,9 +4,12 @@
 Aliases
 -------
 
+How it works
+------------
+
 The aliases can be used anywhere instead of a Kameleon command. Some aliases
 are provided with the templates in the ``steps/aliases/defaults.yaml`` files
-within your workspace. You can add your own aliases in this file.
+within your workspace.
 
 An alias is define by its name as a key and a list of commands as a value. You
 can call an alias with any number of arguments given in a list.
@@ -29,3 +32,38 @@ A good example is the alias define to copy from the out to the in context:
     out2in:
         - ./my_file_out
         - ./copy_of_my_file_in
+
+Custom aliases file
+-------------------
+
+.. versionadded:: 2.4.0
+
+You can add your own aliases by adding a new aliases file in your steps in the 
+``step/aliases/`` path. For example you could create an alias for installing 
+packages in Debian in a file name ``my_aliases.yaml``:
+
+.. code-block:: yaml
+
+    # My aliases
+    deb_install_in:
+        - exec_in: apt-get install -y --force-yes @1
+
+Then add the ``aliases`` section your recipe to override the template's one and 
+add your own aliases file to the defaults and use it:
+
+.. code-block:: yaml
+    
+    extends: default/qemu/debian7
+    
+    aliases:
+        - defaults.yaml
+        - my_aliases.yaml
+    
+    ...
+    
+    setup:
+        - my_step:
+            - install_python:
+                -deb_install_in: python python-dev
+    ...
+
