@@ -427,6 +427,7 @@ module Kameleon
         end
       end
       calculate_step_identifiers
+      flatten_data
     end
 
     def consistency_check()
@@ -587,6 +588,21 @@ module Kameleon
         end
       end
     end
+
+    def flatten_data
+      files = []
+      @data.each do |d|
+        if d.directory?
+          Find.find("#{d}") do |f|
+            files.push(Pathname.new(f)) unless File.directory? f
+          end
+        else
+          files.push(d)
+        end
+      end
+      @data = files.uniq
+    end
+
 
     def to_hash
       recipe_hash = {

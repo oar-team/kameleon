@@ -9,6 +9,7 @@ require 'childprocess'
 require 'pathname'
 require 'table_print'
 require 'yaml'
+require 'find'
 
 require 'kameleon/ui'
 

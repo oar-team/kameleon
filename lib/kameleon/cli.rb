@@ -56,12 +56,13 @@ module Kameleon
         end
         begin
           tpl = RecipeTemplate.new(template_path)
+          tpl.resolve!
         rescue
           raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                   "To see all templates, run the command "\
                                   "`kameleon template ls`"
         else
-          files2copy = tpl.base_recipes_files + tpl.files
+          files2copy = tpl.base_recipes_files + tpl.files + tpl.data
           files2copy.each do |path|
             relative_path = path.relative_path_from(Kameleon.env.repositories_path)
             dst = File.join(Kameleon.env.workspace, relative_path)
@@ -143,12 +144,13 @@ module Kameleon
 
       begin
         tpl = Kameleon::RecipeTemplate.new(template_path)
+        tpl.resolve!
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
                                 "`kameleon templates`"
       else
-        files2copy = tpl.base_recipes_files + tpl.files
+        files2copy = tpl.base_recipes_files + tpl.files + tpl.data
         files2copy.each do |path|
           relative_path = path.relative_path_from(Kameleon.env.repositories_path)
           dst = File.join(Kameleon.env.workspace, relative_path)
