@@ -15,7 +15,7 @@ module Kameleon
     attr_accessor :metainfo
     attr_accessor :files
     attr_accessor :base_recipes_files
-
+    attr_accessor :data
 
     def initialize(path, kwargs = {})
       @path = Pathname.new(File.expand_path(path))
@@ -39,6 +39,7 @@ module Kameleon
       @files = []
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
+      @data = []
       @steps_dirs = []
       load! :strict => false
     end
@@ -87,7 +88,7 @@ module Kameleon
       @global.merge!(yaml_recipe.fetch("global", {}))
       @global.merge!(@cli_global)
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, kwargs)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self, kwargs)
       resolved_global = @global.merge YAML.load(resolved_global)
       # Loads aliases
       load_aliases(yaml_recipe)
@@ -113,10 +114,10 @@ module Kameleon
             embedded_step = false
             # Get macrostep name and arguments if available
             if raw_macrostep.kind_of? String
-              name = raw_macrostep
+              name = Utils.resolve_vars(raw_macrostep, @path, @global, self, kwargs)
               args = nil
             elsif raw_macrostep.kind_of? Hash
-              name = raw_macrostep.keys[0]
+              name = Utils.resolve_vars(raw_macrostep.keys[0], @path, @global, self, kwargs)
               args = raw_macrostep.values[0]
             else
               fail RecipeError, "Malformed yaml recipe in section: "\
@@ -134,7 +135,7 @@ module Kameleon
             end
             if embedded_step
               Kameleon.ui.debug("Loading embedded macrostep #{name}")
-              macrostep = load_macrostep(nil, name, args)
+              macrostep = load_macrostep(nil, name, args, kwargs)
               section.macrosteps.push(macrostep)
               next
             end
@@ -144,11 +145,11 @@ module Kameleon
               macrostep_path = Pathname.new(File.join(dir, name + '.yaml'))
               if File.file?(macrostep_path)
                 Kameleon.ui.debug("Loading macrostep #{macrostep_path}")
-                macrostep = load_macrostep(macrostep_path, name, args)
+                macrostep = load_macrostep(macrostep_path, name, args, kwargs)
                 section.macrosteps.push(macrostep)
                 @files.push(macrostep_path)
                 Kameleon.ui.debug("Macrostep '#{name}' found in this path: " \
-                              "#{macrostep_path}")
+                                  "#{macrostep_path}")
                 loaded = true
                 break
               else
@@ -276,7 +277,7 @@ module Kameleon
       end
     end
 
-    def load_macrostep(step_path, name, args)
+    def load_macrostep(step_path, name, args, kwargs)
       if step_path.nil?
         macrostep_yaml = args
         step_path = @path
@@ -331,6 +332,12 @@ module Kameleon
           loaded_microsteps = strip_microsteps
         end
       end
+      # Resolved neested variables earlier
+      local_variables.each do |k, v|
+        if v.kind_of? String
+          local_variables[k] = Utils.resolve_vars(v, @path, @global, self, kwargs)
+        end
+      end
       return Macrostep.new(name, loaded_microsteps, local_variables, step_path)
     end
 
@@ -344,6 +351,23 @@ module Kameleon
       return nil
     end
 
+    def resolve_data_path(partial_path, step_path)
+      Kameleon.ui.debug("Looking for data '#{partial_path}'")
+      dir_search = @steps_dirs.map do |steps_dir|
+          File.join(steps_dir, "data")
+      end.flatten
+      dir_search.each do |dir_path|
+        real_path = Pathname.new(File.join(dir_path, partial_path)).cleanpath
+        if real_path.exist?
+          Kameleon.ui.debug("Register data #{real_path}")
+          @data.push(real_path) unless @data.include? real_path
+          return real_path
+        end
+        Kameleon.ui.debug("#{real_path} : nonexistent")
+      end
+      fail RecipeError, "Cannot found data '#{partial_path}' unsed in '#{step_path}'"
+    end
+
     def resolve!
       unless @global.keys.include? "kameleon_uuid"
         kameleon_id = SecureRandom.uuid
@@ -351,7 +375,7 @@ module Kameleon
         @global["kameleon_short_uuid"] = kameleon_id.split("-").last
       end
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self)
       @global.merge! YAML.load(resolved_global)
 
       consistency_check
@@ -376,7 +400,7 @@ module Kameleon
       Kameleon.ui.info("Resolving variables")
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
-          macrostep.resolve_variables!(@global)
+          macrostep.resolve_variables!(@global, self)
         end
       end
 
@@ -440,7 +464,8 @@ module Kameleon
         @checkpoint[key].each do |cmd|
           cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd,
                                               @checkpoint["path"],
-                                              @global)
+                                              @global,
+                                              self)
         end
       end
     end
@@ -571,6 +596,7 @@ module Kameleon
         "base_recipes_files" => @base_recipes_files.map {|p| p.to_s },
         "global" => @global,
         "aliases" => @aliases,
+        "data" => @data,
       }
       recipe_hash["checkpoint"] = @checkpoint unless @checkpoint.nil?
       recipe_hash["steps"] = to_array
@@ -592,6 +618,10 @@ module Kameleon
       Kameleon.ui.info("Steps:")
       @files.each do |step|
         prefix ; Kameleon.ui.info("#{step}")
+      end
+      Kameleon.ui.info("Data:")
+      @data.each do |d|
+        prefix ; Kameleon.ui.info("#{d}")
       end
       Kameleon.ui.info("Variables:")
       @global.each do |key, value|

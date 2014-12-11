@@ -81,6 +81,7 @@ module Kameleon
           template_path = template_path + '.yaml'
         end
         tpl = RecipeTemplate.new(template_path)
+        tpl.resolve!
         tpl.display_info
       end
       map %w(-h --help) => :help
@@ -173,6 +174,7 @@ module Kameleon
                   :desc => "Set custom global variables."
     def info(recipe_path)
       recipe = Kameleon::Recipe.new(recipe_path)
+      recipe.resolve!
       recipe.display_info
     end
 

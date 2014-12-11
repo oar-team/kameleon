@@ -168,14 +168,15 @@ module Kameleon
       @init_microsteps = []
     end
 
-    def resolve_variables!(global)
+    def resolve_variables!(global, recipe)
       # Resolve dynamically-defined variables !!
       tmp_resolved_vars = {}
       @variables.clone.each do |key, value|
         yaml_vars = { key => value }.to_yaml.chomp
         yaml_resolved = Utils.resolve_vars(yaml_vars,
                                            @path,
-                                           tmp_resolved_vars.merge(global))
+                                           tmp_resolved_vars.merge(global),
+                                           recipe)
         tmp_resolved_vars.merge! YAML.load(yaml_resolved.chomp)
       end
       @variables.merge! tmp_resolved_vars
@@ -183,7 +184,8 @@ module Kameleon
         m.commands.each do |cmd|
           cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd,
                                               @path,
-                                              global.merge(@variables))
+                                              global.merge(@variables),
+                                              recipe)
         end
       end
     end
