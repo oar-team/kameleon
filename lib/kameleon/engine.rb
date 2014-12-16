@@ -40,7 +40,8 @@ module Kameleon
         @cache.name = @recipe.name
         @cache.mode = @options[:enable_cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
-        @cache.recipe_files = @recipe.files + @recipe.base_recipes_files# I'm passing the Pathname objects
+        # I'm passing the Pathname objects
+        @cache.recipe_files = @recipe.files + @recipe.base_recipes_files + @recipe.data
         @cache.recipe_path = @recipe.path
 
         if @recipe.global["in_context"]["proxy_cache"].nil? then

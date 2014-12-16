@@ -176,7 +176,6 @@ module Kameleon
           all_files = @recipe_files.push(@recipe_path)
           recipe_dir = Pathname.new(common_prefix(all_files))
           cached_recipe_dir = Pathname.new(File.join(@cache_dir,"recipe"))
-       #   binding.pry
           Kameleon::Utils.copy_files(recipe_dir, cached_recipe_dir, all_files)
         end
         ## Saving metadata information
