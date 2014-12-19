@@ -18,15 +18,25 @@ module Kameleon
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
       @proxy_cache = proxy_cache
-      @bashrc_file = ".kameleon_#{@context_name}_bash_rc"
-      @bash_history_file = ".kameleon_#{@context_name}_bash_history"
-      @bash_env_file = ".kameleon_#{@context_name}_bash_env"
-      @default_bashrc_file = File.join(Kameleon.source_root,
-                                       "contrib", "kameleon_bashrc.sh")
+      @bash_scripts_dir = File.join(".scripts", @context_name)
+      @bashrc_file = File.join(@bash_scripts_dir, "bash_rc")
+      @bash_history_file = File.join(@bash_scripts_dir, "bash_history")
+      @bash_env_file = File.join(@bash_scripts_dir, "bash_env")
+      @bash_status_file = File.join(@bash_scripts_dir, "bash_status")
+      @default_bashrc_file = File.join(Kameleon.source_root, "contrib", "kameleon_bashrc.sh")
+      @cmd_tpl = ERB.new(File.read(File.join(Kameleon.source_root,
+                                                     "contrib",
+                                                     "kameleon_exec_cmd.sh")))
+      @cmd_wrapper_tpl = ERB.new(File.read(File.join(Kameleon.source_root,
+                                                     "contrib",
+                                                     "kameleon_exec_cmd_wrapper.sh")))
+
       if @shell_workdir
+        @bash_scripts_dir = File.join(@shell_workdir, @bash_scripts_dir)
         @bashrc_file = File.join(@shell_workdir, @bashrc_file)
         @bash_history_file = File.join(@shell_workdir, @bash_history_file)
         @bash_env_file = File.join(@shell_workdir, @bash_env_file)
+        @bash_status_file = File.join(@shell_workdir, @bash_status_file)
       end
 
       ## Changing the default bashrc if the cache is activated
@@ -118,7 +128,7 @@ module Kameleon
         change_dir_cmd = Shellwords.escape(change_dir_cmd)
       end
       shell_cmd = "mkdir -p $(dirname #{@bashrc_file})\n"
-      shell_cmd << "echo #{bashrc} > #{@bashrc_file}\n"
+      shell_cmd << "rm $(dirname #{@bashrc_file})/*\n"
       shell_cmd << "echo #{bashrc} > #{@bashrc_file}\n"
       unless change_dir_cmd.nil?
         shell_cmd << "echo #{change_dir_cmd} >> #{@bashrc_file}\n"
@@ -130,19 +140,17 @@ module Kameleon
     end
 
     def send_command cmd
-      shell_cmd = "#{ ECHO_CMD } -n #{ cmd.begin_err } 1>&2\n"
-      shell_cmd << "#{ ECHO_CMD } -n #{ cmd.begin_out }\n"
+      shell_cmd = ""
       unless @sent_first_cmd
         shell_cmd << init_shell_cmd
         @sent_first_cmd = true
       end
-      shell_cmd << "source #{@bash_env_file} 2> /dev/null || true\n"
-      shell_cmd << "KAMELEON_LAST_COMMAND=#{Shellwords.escape(cmd.value)}\n"
-      shell_cmd << "#{ cmd.value }\nexport __exit_status__=$?\n"
-      shell_cmd << "#{ ECHO_CMD } $KAMELEON_LAST_COMMAND >> \"$HISTFILE\"\n"
-      shell_cmd << "(comm -3 <(declare | sort) <(declare -f | sort)) > #{@bash_env_file}\n"
-      shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_err } 1>&2\n"
-      shell_cmd << "#{ ECHO_CMD } -n #{ cmd.end_out }\n"
+      cmd_content = Shellwords.escape(@cmd_tpl.result(binding))
+      cmd_wrapper_content = Shellwords.escape(@cmd_wrapper_tpl.result(binding))
+      shell_cmd << "mkdir -p $(dirname #{File.join(@bash_scripts_dir, "#{cmd}.sh" )})\n"
+      shell_cmd << "echo #{cmd_content} > #{File.join(@bash_scripts_dir, "#{cmd}.sh" )}\n"
+      shell_cmd << "echo #{cmd_wrapper_content} > #{File.join(@bash_scripts_dir, "#{cmd}_wrapper.sh" )}\n"
+      shell_cmd << "bash #{File.join(@bash_scripts_dir, "#{cmd}_wrapper.sh" )}\n"
       @process.io.stdin.puts shell_cmd
       @process.io.stdin.flush
     end
@@ -222,7 +230,7 @@ module Kameleon
 
     def get_status
       var_name = "__exit_status__"
-      @process.io.stdin << "#{ ECHO_CMD } \"#{ var_name }=${#{ var_name }}\"\n"
+      @process.io.stdin << "#{ ECHO_CMD } \"#{ var_name }=$(cat #{@bash_status_file})\"\n"
       @process.io.stdin.flush
       while((line = @stdout.gets))
         if (m = %r/#{ var_name }\s*=\s*(.*)/.match line)
@@ -321,7 +329,7 @@ module Kameleon
         @value = raw.to_s.strip
         @number = self.class.counter
         @slug = Kameleon::Utils.generate_slug(@value)[0...30]
-        @id = "%d_%d_%d" % [$$, @number, rand(Time.now.usec)]
+        @id = "%d_%d_%d" % [@number, $$, rand(Time.now.usec)]
         @begin_out = "__CMD_OUT_%s_BEGIN__" % @id
         @end_out = "__CMD_OUT_%s_END__" % @id
         @begin_out_pat = %r/#{ Regexp.escape(@begin_out) }(.*)/m
@@ -331,6 +339,10 @@ module Kameleon
         @begin_err_pat = %r/#{ Regexp.escape(@begin_err) }(.*)/m
         @end_err_pat = %r/(.*)#{ Regexp.escape(@end_err) }/m
         self.class.counter += 1
+      end
+
+      def to_s
+        "%05d_#{@slug}" % @number
       end
     end
 

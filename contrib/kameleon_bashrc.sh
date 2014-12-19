@@ -8,6 +8,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 mkdir -p $(dirname <%= @bash_history_file %>) ; touch "<%= @bash_history_file %>"
 mkdir -p $(dirname <%= @bash_env_file %>) ; touch "<%= @bash_env_file %>"
+mkdir -p $(dirname <%= @bash_status_file %>) ; touch "<%= @bash_status_file %>"
 
 source /etc/bash.bashrc 2> /dev/null
 

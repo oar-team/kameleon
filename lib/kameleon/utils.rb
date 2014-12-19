@@ -48,7 +48,7 @@ module Kameleon
         value.gsub!(/\s*[^A-Za-z0-9\.]\s*/, '_')
         value.gsub!(/_+/, "_")
         value.gsub!(/\A[_\.]+|[_\.]+\z/, "")
-        value
+        value.chomp("_")
     end
 
     def self.extract_meta_var(name, content)
