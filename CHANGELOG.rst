@@ -6,9 +6,11 @@ version 2.4.0
 
 (release date to be announced)
 
+- Supported recipe attached data
+- Introduced a new shell command execution mechanism, to prevent kameleon from waiting forever if the command act weird (Fixed #39)
 - Improved the customization of steps with inheritance
-- Allow to set global variables from cli during build using ``--global key:value ..``
-- Moved repository command to the upper level ``kameleon repository``
+- Allowed to set global variables from cli during build using ``--global key:value ..``
+- Moved repository command to the upper level (``kameleon repository``)
 
 
 version 2.3.5
