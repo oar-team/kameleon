@@ -21,6 +21,8 @@ function fail {
     false
 }
 
+export -f fail
+
 ## aliases
 if [ -t 1 ] ; then
 # restore previous env
@@ -186,6 +188,8 @@ print('\n')
     fi
 }
 
+export -f __download
+
 function __find_linux_boot_device() {
     local PDEVICE=`stat -c %04D /boot`
     for file in $(find /dev -type b 2>/dev/null) ; do
@@ -197,3 +201,5 @@ function __find_linux_boot_device() {
     done
     echo "$ROOTDEVICE"
 }
+
+export -f __find_linux_boot_device
