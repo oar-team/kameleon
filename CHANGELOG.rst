@@ -4,7 +4,7 @@ Kameleon CHANGELOG
 version 2.4.0
 -------------
 
-(release date to be announced)
+Released on Dec 23rd 2014
 
 - Supported recipe attached data
 - Introduced a new shell command execution mechanism, to prevent kameleon from waiting forever if the command act weird (Fixed #39)
