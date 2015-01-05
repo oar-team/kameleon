@@ -18,7 +18,7 @@ module Kameleon
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
       @proxy_cache = proxy_cache
-      @bash_scripts_dir = File.join(".scripts", @context_name)
+      @bash_scripts_dir = File.join("kameleon_scripts", @context_name)
       @bashrc_file = File.join(@bash_scripts_dir, "bash_rc")
       @bash_history_file = File.join(@bash_scripts_dir, "bash_history")
       @bash_env_file = File.join(@bash_scripts_dir, "bash_env")
