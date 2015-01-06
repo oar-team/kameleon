@@ -19,11 +19,22 @@ own distribution. At start Kameleon is used to create custom kvm, docker,
 VirtualBox, ..., but as it is designed to be very generic you can probably do a
 lot more than that.
 
+------------
+Report a bug
+------------
+
+To report a bug please use this bug trackers:
+
+For the engine:
+    https://github.com/oar-team/kameleon/issues
+
+For the recipes and templates:
+    https://github.com/oar-team/kameleon-recipes/issues
+
 
 ------------------
 User Documentation
 ------------------
-
 
 .. toctree::
     :maxdepth: 2
