@@ -67,7 +67,6 @@ module Kameleon
     def execute(cmd, kwargs = {})
       load_shell
       cmd_with_prefix = "#{@exec_prefix} #{cmd}"
-      cmd_with_prefix.split( /\r?\n/ ).each {|m| Kameleon.ui.debug "+ #{m}" }
       log_level = kwargs.fetch(:log_level, "info")
       exit_status = @shell.execute(cmd_with_prefix, kwargs) do |out, err|
         do_log(out, log_level) unless out.nil?
