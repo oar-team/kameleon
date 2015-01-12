@@ -56,6 +56,10 @@ module Kameleon
         tell_me(msg, nil, newline) if level("info")
       end
 
+      def msg(msg, newline = nil)
+        tell_me(msg, :blue, newline) if level("info")
+      end
+
       def confirm(msg, newline = nil)
         tell_me(msg, :green, newline) if level("confirm")
       end

@@ -162,7 +162,7 @@ module Kameleon
       section.sequence do |macrostep|
         macrostep_time = Time.now.to_i
         if @cache then
-          Kameleon.ui.info("Starting proxy cache server for macrostep '#{macrostep.name}'...")
+          Kameleon.ui.debug("Starting proxy cache server for macrostep '#{macrostep.name}'...")
           # the following function start a polipo web proxy and stops a previous run
           dir_cache = @cache.create_cache_directory(macrostep.name)
           @cache.start_web_proxy_in(dir_cache)
@@ -172,19 +172,19 @@ module Kameleon
           Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
           if @enable_checkpoint
             if microstep.on_checkpoint == "skip"
-              Kameleon.ui.info("--> Skipped")
+              Kameleon.ui.msg("--> Skipped")
               next
             end
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
-              Kameleon.ui.info("--> Using checkpoint")
+              Kameleon.ui.msg("--> Using checkpoint")
             else
-              Kameleon.ui.info("--> Running the step...")
+              Kameleon.ui.msg("--> Running the step...")
               microstep.commands.each do |cmd|
                 safe_exec_cmd(cmd)
               end
               unless microstep.on_checkpoint == "redo"
                 if checkpoint_enabled?
-                  Kameleon.ui.info("--> Creating checkpoint : #{ microstep.identifier }")
+                  Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
                   create_checkpoint(microstep.identifier)
                 end
               end
