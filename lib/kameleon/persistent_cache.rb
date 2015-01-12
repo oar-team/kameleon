@@ -63,7 +63,7 @@ module Kameleon
       ports.each do |p|
         begin
           port = p
-          tmp = TCPServer.new('localhost', port)
+          tmp = TCPServer.new('127.0.0.1', port)
         rescue
           port =0
         end

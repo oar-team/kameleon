@@ -71,7 +71,7 @@ module Kameleon
 
       Kameleon.ui.debug("Building local context [local]")
       @local_context = Context.new("local", "bash", @cwd, "", @cwd,
-                                   :proxy_cache => "localhost",
+                                   :proxy_cache => "127.0.0.1",
                                    :lazyload => false,
                                    :fail_silently => false)
       Kameleon.ui.debug("Building external context [out]")
