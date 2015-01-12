@@ -200,8 +200,8 @@ module Kameleon
               breakpoint(nil)
             end
           end
-        Kameleon.ui.info("Step #{macrostep.name} took: #{Time.now.to_i-macrostep_time} secs")
         end
+        Kameleon.ui.info("Step #{macrostep.name} took: #{Time.now.to_i-macrostep_time} secs")
       end
       @cleaned_sections.push(section.name)
     end
