@@ -204,3 +204,21 @@ function __find_linux_boot_device() {
 }
 
 export -f __find_linux_boot_device
+
+function __find_free_port() {
+  local begin_port=$1
+  local end_port=$2
+
+  local port=$(shuf -i ${begin_port}-${end_port} -n 1)
+  local ret=$(nc -z 127.0.0.1 $port && echo in use || echo free)
+  while [ "$ret" == "in use" ]
+  do
+    local port=$(shuf -i ${begin_port}-${end_port} -n 1)
+    local ret=$(nc -z 127.0.0.1 $port && echo in use || echo free)
+  done
+
+  echo $port
+}
+
+export -f __find_free_port
+
