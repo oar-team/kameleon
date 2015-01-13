@@ -191,7 +191,7 @@ module Kameleon
             end
           else
             begin
-            Kameleon.ui.info("--> Running the step...")
+            Kameleon.ui.msg("--> Running the step...")
             microstep.commands.each do |cmd|
               safe_exec_cmd(cmd)
             end
