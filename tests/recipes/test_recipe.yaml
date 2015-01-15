@@ -7,6 +7,7 @@
 #===============================================================================
 ---
 # Loads some helpful aliases
+extend: ../test2/test2.yaml
 aliases: defaults.yaml
 checkpoint: test.yaml
 #== Global variables use by Kameleon engine and the steps

@@ -182,7 +182,12 @@ module Kameleon
         Kameleon.ui.info("Caching recipe")
 
         File.open("#{cache_metadata_dir}/header",'w+') do |f|
-          f.puts({:recipe_path => @recipe_path.basename.to_s}.to_yaml)
+          if recipe_dir.nil?
+            recipe_path = @recipe_path.basename
+          else
+            recipe_path = @recipe_path.relative_path_from(recipe_dir)
+          end
+          f.puts({:recipe_path => recipe_path.to_s}.to_yaml)
           f.puts({:date => Time.now.to_i}.to_yaml)
         end
 
