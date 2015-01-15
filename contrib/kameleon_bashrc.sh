@@ -209,13 +209,19 @@ function __find_free_port() {
   local begin_port=$1
   local end_port=$2
 
-  local port=$(shuf -i ${begin_port}-${end_port} -n 1)
+  local port=$begin_port
   local ret=$(nc -z 127.0.0.1 $port && echo in use || echo free)
-  while [ "$ret" == "in use" ]
+  while [ $port -le $end_port ] && [ "$ret" == "in use" ]
   do
-    local port=$(shuf -i ${begin_port}-${end_port} -n 1)
+    local port=$[$port+1]
     local ret=$(nc -z 127.0.0.1 $port && echo in use || echo free)
   done
+
+  # manage loop exits
+  if [[ $port -gt $end_port ]]
+  then
+    fail "No free port available between $begin_port and $end_port"
+  fi
 
   echo $port
 }
