@@ -62,8 +62,7 @@ module Kameleon
                                   "To see all templates, run the command "\
                                   "`kameleon template ls`"
         else
-          files2copy = tpl.base_recipes_files + tpl.files + tpl.data
-          files2copy.each do |path|
+          tpl.all_files.each do |path|
             relative_path = path.relative_path_from(Kameleon.env.repositories_path)
             dst = File.join(Kameleon.env.workspace, relative_path)
             copy_file(path, dst)
@@ -150,8 +149,7 @@ module Kameleon
                                 "To see all templates, run the command "\
                                 "`kameleon templates`"
       else
-        files2copy = tpl.base_recipes_files + tpl.files + tpl.data
-        files2copy.each do |path|
+        tpl.all_files.each do |path|
           relative_path = path.relative_path_from(Kameleon.env.repositories_path)
           dst = File.join(Kameleon.env.workspace, relative_path)
           copy_file(path, dst)

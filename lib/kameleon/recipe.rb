@@ -36,10 +36,10 @@ module Kameleon
       }
       @aliases = {}
       @checkpoint = nil
-      @files = []
+      @step_files = []
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
-      @data = []
+      @data_files = []
       @steps_dirs = []
       load! :strict => false
     end
@@ -147,7 +147,7 @@ module Kameleon
                 Kameleon.ui.debug("Loading macrostep #{macrostep_path}")
                 macrostep = load_macrostep(macrostep_path, name, args, kwargs)
                 section.macrosteps.push(macrostep)
-                @files.push(macrostep_path)
+                @step_files.push(macrostep_path)
                 Kameleon.ui.debug("Macrostep '#{name}' found in this path: " \
                                   "#{macrostep_path}")
                 loaded = true
@@ -226,7 +226,7 @@ module Kameleon
           if File.file?(path)
             Kameleon.ui.debug("Loading aliases #{path}")
             @aliases.merge!(YAML.load_file(path))
-            @files.push(path)
+            @step_files.push(path)
             return path
           end
         end
@@ -360,7 +360,7 @@ module Kameleon
         real_path = Pathname.new(File.join(dir_path, partial_path)).cleanpath
         if real_path.exist?
           Kameleon.ui.debug("Register data #{real_path}")
-          @data.push(real_path) unless @data.include? real_path
+          @data_files.push(real_path) unless @data_files.include? real_path
           return real_path
         end
         Kameleon.ui.debug("#{real_path} : nonexistent")
@@ -591,7 +591,7 @@ module Kameleon
 
     def flatten_data
       files = []
-      @data.each do |d|
+      @data_files.each do |d|
         if d.directory?
           Find.find("#{d}") do |f|
             files.push(Pathname.new(f)) unless File.directory? f
@@ -600,7 +600,7 @@ module Kameleon
           files.push(d)
         end
       end
-      @data = files.uniq
+      @data_files = files.uniq
     end
 
 
@@ -608,11 +608,11 @@ module Kameleon
       recipe_hash = {
         "name" => @name,
         "path" => @path.to_s,
-        "files" => @files.map {|p| p.to_s },
         "base_recipes_files" => @base_recipes_files.map {|p| p.to_s },
+        "step_files" => @step_files.map {|p| p.to_s },
+        "data_files" => @data_files.map {|p| p.to_s },
         "global" => @global,
         "aliases" => @aliases,
-        "data" => @data,
       }
       recipe_hash["checkpoint"] = @checkpoint unless @checkpoint.nil?
       recipe_hash["steps"] = to_array
@@ -632,11 +632,11 @@ module Kameleon
         prefix ; Kameleon.ui.info("#{base_recipe_file}")
       end
       Kameleon.ui.info("Steps:")
-      @files.each do |step|
+      @step_files.each do |step|
         prefix ; Kameleon.ui.info("#{step}")
       end
       Kameleon.ui.info("Data:")
-      @data.each do |d|
+      @data_files.each do |d|
         prefix ; Kameleon.ui.info("#{d}")
       end
       Kameleon.ui.info("Variables:")
@@ -651,6 +651,10 @@ module Kameleon
         section.to_array.each { |m|  array.push m }
       end
       return array
+    end
+
+    def all_files
+      return @base_recipes_files + @step_files + @data_files + @env_files
     end
 
   end
