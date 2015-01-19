@@ -6,7 +6,8 @@ module Kameleon
     attr_accessor :shell
     attr_accessor :name
 
-    def initialize(name, cmd, workdir, exec_prefix, local_workdir, kwargs = {})
+    def initialize(name, cmd, workdir, exec_prefix, local_workdir, env_files,
+                   kwargs = {})
       @name = name.downcase
       @cmd = cmd
       @workdir = workdir
@@ -15,11 +16,13 @@ module Kameleon
       @proxy_cache = kwargs[:proxy_cache]
       @fail_silently = kwargs.fetch(:fail_silently, true)
       @lazyload = kwargs.fetch(:lazyload, false)
+      @env_files = env_files
       @shell = Kameleon::Shell.new(@name,
                                    @cmd,
                                    @workdir,
                                    @local_workdir,
-                                   @proxy_cache)
+                                   @proxy_cache,
+                                   @env_files)
       @already_loaded = false
       Kameleon.ui.debug("Initialize new ctx (#{name})")
 
@@ -139,7 +142,8 @@ module Kameleon
                                    @cmd,
                                    @workdir,
                                    @local_workdir,
-                                   @proxy_cache)
+                                   @proxy_cache,
+                                   @env_file)
       @shell.start
     end
 

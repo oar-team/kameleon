@@ -41,7 +41,7 @@ module Kameleon
         @cache.mode = @options[:enable_cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
         # I'm passing the Pathname objects
-        @cache.recipe_files = @recipe.files + @recipe.base_recipes_files + @recipe.data
+        @cache.recipe_files = @recipe.all_files
         @cache.recipe_path = @recipe.path
 
         if @recipe.global["in_context"]["proxy_cache"].nil? then
@@ -71,6 +71,7 @@ module Kameleon
 
       Kameleon.ui.debug("Building local context [local]")
       @local_context = Context.new("local", "bash", @cwd, "", @cwd,
+                                   @recipe.env_files,
                                    :proxy_cache => "127.0.0.1",
                                    :lazyload => false,
                                    :fail_silently => false)
@@ -80,6 +81,7 @@ module Kameleon
                                  @recipe.global["out_context"]["workdir"],
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd,
+                                 @recipe.env_files,
                                  :proxy_cache => proxy_cache_out,
                                  :lazyload => lazyload,
                                  :fail_silently => fail_silently)
@@ -90,6 +92,7 @@ module Kameleon
                                 @recipe.global["in_context"]["workdir"],
                                 @recipe.global["in_context"]["exec_prefix"],
                                 @cwd,
+                                @recipe.env_files,
                                 :proxy_cache => proxy_cache_in,
                                 :lazyload => lazyload,
                                 :fail_silently => fail_silently)

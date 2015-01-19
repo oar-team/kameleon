@@ -15,7 +15,8 @@ module Kameleon
     attr_accessor :metainfo
     attr_accessor :files
     attr_accessor :base_recipes_files
-    attr_accessor :data
+    attr_accessor :data_files
+    attr_accessor :env_files
 
     def initialize(path, kwargs = {})
       @path = Pathname.new(File.expand_path(path))
@@ -40,6 +41,7 @@ module Kameleon
       Kameleon.ui.debug("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
       @data_files = []
+      @env_files = []
       @steps_dirs = []
       load! :strict => false
     end
@@ -92,6 +94,8 @@ module Kameleon
       resolved_global = @global.merge YAML.load(resolved_global)
       # Loads aliases
       load_aliases(yaml_recipe)
+      # Load env files
+      load_env_files(yaml_recipe)
       # Loads checkpoint configuration
       load_checkpoint_config(yaml_recipe)
 
@@ -191,7 +195,7 @@ module Kameleon
         end
       end
       yaml_recipe.keys.each do |key|
-        if ["aliases", "checkpoint"].include? key
+        if ["aliases", "checkpoint", "env"].include? key
           base_yaml_recipe[key] = yaml_recipe[key]
         elsif ["export", "bootstrap", "setup"].include? key
           base_section = base_yaml_recipe.fetch(key, [])
@@ -230,7 +234,7 @@ module Kameleon
             return path
           end
         end
-        fail RecipeError, "Aliases file for recipe '#{path}' does not exists"
+        fail RecipeError, "Aliases file for recipe '#{@path}' does not exists"
       end
       if yaml_recipe.keys.include? "aliases"
         aliases = yaml_recipe.fetch("aliases")
@@ -241,6 +245,34 @@ module Kameleon
         elsif aliases.kind_of? Array
           aliases.each do |aliases_file|
             load_aliases_file(aliases_file)
+          end
+        end
+      end
+    end
+
+    def load_env_files(yaml_recipe)
+      def add_env_file(env_file)
+        dir_search = @steps_dirs.map do |steps_dir|
+          File.join(steps_dir, "env")
+        end.flatten
+        dir_search.each do |dir_path|
+          path = Pathname.new(File.join(dir_path, env_file))
+          if File.file?(path)
+            Kameleon.ui.debug("Adding env file #{path}")
+            @env_files.push(path)
+            return path
+          end
+        end
+        fail RecipeError, "The env file script '#{env_file}' does not exists "\
+                          "in any of these directories: #{dir_search}"
+      end
+      if yaml_recipe.keys.include? "env"
+        env_content = yaml_recipe.fetch("env")
+        if env_content.kind_of? String
+          add_env_file(env_content)
+        elsif env_content.kind_of? Array
+          env_content.each do |env_file|
+            add_env_file(env_file)
           end
         end
       end
@@ -262,11 +294,11 @@ module Kameleon
               Kameleon.ui.debug("Loading checkpoint configuration #{path}")
               @checkpoint = YAML.load_file(path)
               @checkpoint["path"] = path.to_s
-              @files.push(path)
+              @step_files.push(path)
               break
             end
           end
-          fail RecipeError, "Checkpoint configuraiton file '#{path}' " \
+          fail RecipeError, "Checkpoint configuraiton file '#{checkpoint}' " \
                             "does not exists" if @checkpoint.nil?
         end
         (@checkpoint.keys - ["path"]).each do |key|
@@ -610,6 +642,7 @@ module Kameleon
         "path" => @path.to_s,
         "base_recipes_files" => @base_recipes_files.map {|p| p.to_s },
         "step_files" => @step_files.map {|p| p.to_s },
+        "env_files" => @env_files.map {|p| p.to_s },
         "data_files" => @data_files.map {|p| p.to_s },
         "global" => @global,
         "aliases" => @aliases,
@@ -637,6 +670,10 @@ module Kameleon
       end
       Kameleon.ui.info("Data:")
       @data_files.each do |d|
+        prefix ; Kameleon.ui.info("#{d}")
+      end
+      Kameleon.ui.info("Environment scripts:")
+      @env_files.each do |d|
         prefix ; Kameleon.ui.info("#{d}")
       end
       Kameleon.ui.info("Variables:")

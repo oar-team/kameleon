@@ -12,12 +12,14 @@ module Kameleon
     attr :process
     attr :shell_cmd
 
-    def initialize(context_name, cmd, shell_workdir, local_workdir, proxy_cache)
+    def initialize(context_name, cmd, shell_workdir, local_workdir,
+                   proxy_cache, env_files)
       @cmd = cmd.chomp
       @context_name = context_name
       @local_workdir = local_workdir
       @shell_workdir = shell_workdir
       @proxy_cache = proxy_cache
+      @env_files = env_files
       @bash_scripts_dir = File.join("kameleon_scripts", @context_name)
       @bashrc_file = File.join(@bash_scripts_dir, "bash_rc")
       @bash_history_file = File.join(@bash_scripts_dir, "bash_history")
@@ -113,12 +115,12 @@ module Kameleon
       end
       # Inject sigint handler
       bashrc_content << <<-SCRIPT
-      function save_state_handler {
-        echo "Saved ENV in #{@bash_env_file} file"
-        (comm -3 <(declare | sort) <(declare -f | sort)) > #{@bash_env_file}
-      }
-      trap save_state_handler EXIT
-      SCRIPT
+function save_state_handler {
+  echo "Saved ENV in #{@bash_env_file} file"
+  (comm -3 <(declare | sort) <(declare -f | sort)) > #{@bash_env_file}
+}
+trap save_state_handler EXIT
+SCRIPT
       bashrc = Shellwords.escape(bashrc_content)
       if @shell_workdir
         unless @shell_workdir.eql? "/"
@@ -133,8 +135,21 @@ module Kameleon
       unless change_dir_cmd.nil?
         shell_cmd << "echo #{change_dir_cmd} >> #{@bashrc_file}\n"
       end
-      shell_cmd << "source #{@bashrc_file}\n"
       shell_cmd << "export KAMELEON_WORKDIR=$PWD\n"
+      @env_files.each do |env_file|
+        env_content = <<-SCRIPT
+#====================================================
+# Begin content of user script '#{env_file.basename}'
+#====================================================
+#{File.read(env_file)}
+#====================================================
+# End content of user script '#{env_file.basename}'
+#====================================================
+SCRIPT
+        env_escaped_content = Shellwords.escape(env_content)
+        shell_cmd << "echo #{env_escaped_content} >> #{@bashrc_file}\n"
+      end
+      shell_cmd << "source #{@bashrc_file}\n"
       shell_cmd << "(comm -3 <(declare | sort) <(declare -f | sort)) > #{@bash_env_file}\n"
       shell_cmd
     end
