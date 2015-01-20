@@ -12,14 +12,13 @@ module Kameleon
     attr :process
     attr :shell_cmd
 
-    def initialize(context_name, cmd, shell_workdir, local_workdir,
-                   proxy_cache, env_files)
-      @cmd = cmd.chomp
-      @context_name = context_name
-      @local_workdir = local_workdir
-      @shell_workdir = shell_workdir
-      @proxy_cache = proxy_cache
-      @env_files = env_files
+    def initialize(context)
+      @cmd = context.cmd.chomp
+      @context_name = context.name
+      @local_workdir = context.local_workdir
+      @shell_workdir = context.workdir
+      @proxy_cache = context.proxy_cache
+      @env_files = context.env_files
       @bash_scripts_dir = File.join("kameleon_scripts", @context_name)
       @bashrc_file = File.join(@bash_scripts_dir, "bash_rc")
       @bash_history_file = File.join(@bash_scripts_dir, "bash_history")
