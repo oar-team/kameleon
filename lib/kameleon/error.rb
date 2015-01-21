@@ -23,4 +23,5 @@ module Kameleon
   class BuildError < Error; status_code(7) ; end
   class AbortError < Error; status_code(8) ; end
   class TemplateNotFound < Error; status_code(9) ; end
+  class CacheError < Error; status_code(10) ; end
 end

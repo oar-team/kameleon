@@ -17,7 +17,7 @@ module Kameleon
     attr_writer :cache_path
     attr_accessor :mode
     attr_accessor :name
-    attr_accessor :recipe_files # have to check those.
+    attr_accessor :recipe_files # FIXME have to check those.
     attr_accessor :recipe_path
 
     def initialize()
@@ -99,13 +99,20 @@ module Kameleon
       directory_name
     end
 
+    def proxy_is_running?()
+      begin
+        res = Net::HTTP.get_response(URI("http://127.0.0.1:#{@polipo_port}/polipo/status"))
+        return res.body.include? "is on line"
+      rescue
+        return false
+      end
+    end
+
     def start_web_proxy_in(directory)
-      sleep 2 # this is for assuring that the cache is correctly created
-      ## setting current step dir
-      @current_step_dir = directory
       ## This function assumes that the cache directory has already been created by the engine
-      ## Stopping first the previous proxy
-      ## have to check if polipo is running
+
+      # setting current step dir
+      @current_step_dir = directory
       Kameleon.ui.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
       @polipo_process.stop(0) unless @polipo_process.nil?
       command = ["#{@polipo_path}/polipo", "-c", "/dev/null"]
@@ -115,7 +122,12 @@ module Kameleon
       Kameleon.ui.debug("Starting process '#{command}'")
       @polipo_process = ChildProcess.build(*command)
       @polipo_process.start
-      return true
+      timeout = 0
+      while ( not(proxy_is_running?) and timeout < 5 )
+        sleep 1
+        timeout = timeout + 1
+      end
+      return (@polipo_process.alive? and proxy_is_running?)
     end
 
 

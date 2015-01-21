@@ -168,7 +168,9 @@ module Kameleon
           Kameleon.ui.debug("Starting proxy cache server for macrostep '#{macrostep.name}'...")
           # the following function start a polipo web proxy and stops a previous run
           dir_cache = @cache.create_cache_directory(macrostep.name)
-          @cache.start_web_proxy_in(dir_cache)
+          unless @cache.start_web_proxy_in(dir_cache)
+            raise CacheError, "The cache process fail to start"
+          end
         end
         macrostep.sequence do |microstep|
           step_prefix = "Step #{ microstep.order } : "
