@@ -236,11 +236,12 @@ module Kameleon
     end
 
     def get_recipe()
-      cached_recipe=Dir.mktmpdir("cache")
-      execute("tar","-xf #{@cache_path} -C #{cached_recipe} ./recipe ./metadata")
+      extract_path = File.join(Kameleon.env.build_path, File.basename(@cache_path, ".*"))
+      FileUtils.mkdir_p extract_path
+      execute("tar","-xf #{@cache_path} -C #{extract_path} ./recipe ./metadata")
       Kameleon.ui.info("Getting cached recipe")
-      recipe_header = YAML::load(File.read(File.join(cached_recipe,"metadata","header")))
-      recipe_file = File.join(cached_recipe,"recipe",recipe_header[:recipe_path])
+      recipe_header = YAML::load(File.read(File.join(extract_path,"metadata","header")))
+      recipe_file = File.join(extract_path,"recipe",recipe_header[:recipe_path])
       return recipe_file
     end
 

@@ -43,7 +43,7 @@ module Kameleon
     end
 
     class Shell
-      LEVELS = %w(silent error warn confirm info debug)
+      LEVELS = %w(silent error warn confirm info verbose debug)
 
       attr_accessor :shell
 
@@ -70,6 +70,10 @@ module Kameleon
 
       def error(msg, newline = nil)
         tell_me(msg, :red, newline) if level("error")
+      end
+
+      def verbose(msg, newline = nil)
+        tell_me("[verbose] #{msg}", nil, newline) if level("verbose")
       end
 
       def debug(msg, newline = nil)

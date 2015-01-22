@@ -38,7 +38,7 @@ module Kameleon
       @aliases = {}
       @checkpoint = nil
       @step_files = []
-      Kameleon.ui.debug("Initialize new recipe (#{path})")
+      Kameleon.ui.verbose("Initialize new recipe (#{path})")
       @base_recipes_files = [@path]
       @data_files = []
       @env_files = []
@@ -69,7 +69,7 @@ module Kameleon
 
     def load!(kwargs = {})
       # Find recipe path
-      Kameleon.ui.debug("Loading #{@path}")
+      Kameleon.ui.verbose("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe : #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load_file @path
@@ -138,7 +138,7 @@ module Kameleon
               end
             end
             if embedded_step
-              Kameleon.ui.debug("Loading embedded macrostep #{name}")
+              Kameleon.ui.verbose("Loading embedded macrostep #{name}")
               macrostep = load_macrostep(nil, name, args, kwargs)
               section.macrosteps.push(macrostep)
               next
@@ -148,16 +148,16 @@ module Kameleon
             dir_to_search.each do |dir|
               macrostep_path = Pathname.new(File.join(dir, name + '.yaml'))
               if File.file?(macrostep_path)
-                Kameleon.ui.debug("Loading macrostep #{macrostep_path}")
+                Kameleon.ui.verbose("Loading macrostep #{macrostep_path}")
                 macrostep = load_macrostep(macrostep_path, name, args, kwargs)
                 section.macrosteps.push(macrostep)
                 @step_files.push(macrostep_path)
-                Kameleon.ui.debug("Macrostep '#{name}' found in this path: " \
+                Kameleon.ui.verbose("Macrostep '#{name}' found in this path: " \
                                   "#{macrostep_path}")
                 loaded = true
                 break
               else
-                Kameleon.ui.debug("Macrostep '#{name}' not found in this path: " \
+                Kameleon.ui.verbose("Macrostep '#{name}' not found in this path: " \
                               "#{macrostep_path}")
               end
             end
@@ -165,7 +165,7 @@ module Kameleon
           end
         end
       end
-      Kameleon.ui.debug("Loading recipe metadata")
+      Kameleon.ui.verbose("Loading recipe metadata")
       @metainfo = {
         "description" => Utils.extract_meta_var("description", @recipe_content)
       }
@@ -228,7 +228,7 @@ module Kameleon
         dir_search.each do |dir_path|
           path = Pathname.new(File.join(dir_path, aliases_file))
           if File.file?(path)
-            Kameleon.ui.debug("Loading aliases #{path}")
+            Kameleon.ui.verbose("Loading aliases #{path}")
             @aliases.merge!(YAML.load_file(path))
             @step_files.push(path)
             return path
@@ -258,7 +258,7 @@ module Kameleon
         dir_search.each do |dir_path|
           path = Pathname.new(File.join(dir_path, env_file))
           if File.file?(path)
-            Kameleon.ui.debug("Adding env file #{path}")
+            Kameleon.ui.verbose("Adding env file #{path}")
             @env_files.push(path)
             return path
           end
@@ -291,7 +291,7 @@ module Kameleon
           dir_search.each do |dir_path|
             path = Pathname.new(File.join(dir_path, checkpoint))
             if File.file?(path)
-              Kameleon.ui.debug("Loading checkpoint configuration #{path}")
+              Kameleon.ui.verbose("Loading checkpoint configuration #{path}")
               @checkpoint = YAML.load_file(path)
               @checkpoint["path"] = path.to_s
               @step_files.push(path)
@@ -374,7 +374,7 @@ module Kameleon
     end
 
     def find_microstep(microstep_name, loaded_microsteps)
-      Kameleon.ui.debug("Looking for microstep #{microstep_name}")
+      Kameleon.ui.verbose("Looking for microstep #{microstep_name}")
       loaded_microsteps.each do |microstep|
         if microstep_name.eql? microstep.name
           return microstep
@@ -384,18 +384,18 @@ module Kameleon
     end
 
     def resolve_data_path(partial_path, step_path)
-      Kameleon.ui.debug("Looking for data '#{partial_path}'")
+      Kameleon.ui.verbose("Looking for data '#{partial_path}'")
       dir_search = @steps_dirs.map do |steps_dir|
           File.join(steps_dir, "data")
       end.flatten
       dir_search.each do |dir_path|
         real_path = Pathname.new(File.join(dir_path, partial_path)).cleanpath
         if real_path.exist?
-          Kameleon.ui.debug("Register data #{real_path}")
+          Kameleon.ui.verbose("Register data #{real_path}")
           @data_files.push(real_path) unless @data_files.include? real_path
           return real_path
         end
-        Kameleon.ui.debug("#{real_path} : nonexistent")
+        Kameleon.ui.verbose("#{real_path} : nonexistent")
       end
       fail RecipeError, "Cannot found data '#{partial_path}' unsed in '#{step_path}'"
     end

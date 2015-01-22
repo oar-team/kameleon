@@ -99,8 +99,10 @@ module Kameleon
 
     class_option :color, :type => :boolean, :default => Kameleon.default_values[:color],
                  :desc => "Enables colorization in output"
+    class_option :verbose, :type => :boolean, :default => Kameleon.default_values[:verbose],
+                 :desc => "Enables verbose output for kameleon users"
     class_option :debug, :type => :boolean, :default => Kameleon.default_values[:debug],
-                 :desc => "Enables debug output"
+                 :desc => "Enables debug output for kameleon developpers"
     class_option :script, :type => :boolean, :default => Kameleon.default_values[:script],
                  :desc => "Never prompts for user intervention",
                  :aliases => "-s"
@@ -174,7 +176,7 @@ module Kameleon
                   :desc => "Set custom global variables."
     method_option :from_cache, :type => :string ,
                   :default => nil,
-                  :desc => "Get info from a persistent cache tar file"
+                  :desc => "Get info from a persistent cache tar file (ignore recipe path)"
 
     def info(recipe_path=nil)
       if recipe_path.nil? && !options[:from_cache].nil?
@@ -286,7 +288,16 @@ module Kameleon
         Thor::Base.shell = Thor::Shell::Basic
       end
       Kameleon.ui = Kameleon::UI::Shell.new(self.options)
-      Kameleon.ui.level = "debug" if self.options["debug"]
+
+      if (self.options["debug"] or ENV['KAMELEON_DEBUG'])
+        Kameleon.ui.level = "debug"
+        Kameleon.env.debug = true
+      elsif self.options["verbose"]
+        Kameleon.ui.level = "verbose"
+        Kameleon.env.debug = true
+      end
+      Kameleon.ui.verbose("The level of output is set to #{Kameleon.ui.level}")
+
       opts = args[1]
       cmd_name = args[2][:current_command].name
       if opts.include? "--help" or opts.include? "-h"
