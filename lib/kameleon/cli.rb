@@ -168,11 +168,25 @@ module Kameleon
       end
     end
 
-    desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
+    desc "info [[RECIPE_PATH]]", "Display detailed information about a recipe"
     method_option :global, :type => :hash ,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
-    def info(recipe_path)
+    method_option :from_cache, :type => :string ,
+                  :default => nil,
+                  :desc => "Get info from a persistent cache tar file"
+
+    def info(recipe_path=nil)
+      if recipe_path.nil? && !options[:from_cache].nil?
+        unless File.file?(options[:from_cache])
+          raise CacheError, "The specified cache file "\
+                            "\"#{options[:from_cache]}\" do not exists"
+        end
+        Kameleon.ui.info("Using the cached recipe")
+        @cache = Kameleon::Persistent_cache.instance
+        @cache.cache_path = options[:from_cache]
+        recipe_path =  @cache.get_recipe
+      end
       recipe = Kameleon::Recipe.new(recipe_path)
       recipe.resolve!
       recipe.display_info
@@ -209,6 +223,10 @@ module Kameleon
                   :desc => "Set custom global variables."
     def build(recipe_path=nil)
       if recipe_path.nil? && !options[:from_cache].nil?
+        unless File.file?(options[:from_cache])
+          raise CacheError, "The specified cache file "\
+                            "\"#{options[:from_cache]}\" do not exists"
+        end
         Kameleon.ui.info("Using the cached recipe")
         @cache = Kameleon::Persistent_cache.instance
         @cache.cache_path = options[:from_cache]
