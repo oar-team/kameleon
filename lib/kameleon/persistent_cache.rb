@@ -1,6 +1,7 @@
 require 'childprocess'
 require 'singleton'
 require 'socket'
+require 'net/http'
 
 module Kameleon
   #This ruby class will control the execution of Polipo web proxy
