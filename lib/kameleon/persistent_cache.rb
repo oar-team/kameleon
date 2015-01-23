@@ -102,8 +102,15 @@ module Kameleon
     def proxy_is_running?()
       begin
         res = Net::HTTP.get_response(URI("http://127.0.0.1:#{@polipo_port}/polipo/status"))
-        return res.body.include? "is on line"
-      rescue
+        if not res.body.include? "is on line"
+          Kameleon.ui.debug("The proxy is running but not responding. Server response: #{res.inspect}")
+        else
+          Kameleon.ui.debug("The proxy is responding")
+          return true
+        end
+        return false
+      rescue Exception => e
+        Kameleon.ui.debug("The proxy is not responding. Server response: #{e.message}")
         return false
       end
     end
