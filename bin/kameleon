@@ -16,39 +16,43 @@ ENV["THOR_DEBUG"] = "1"
 begin
   Kameleon.init_userconf
   Kameleon::Main.start
-rescue Kameleon::Exit => e
-  exit e.status_code
-rescue Kameleon::Error => e
-  Kameleon.ui.error(e.message)
-  Kameleon.ui.trace(e)
-  exit e.status_code
-rescue Thor::UndefinedTaskError => e
-  Kameleon.ui.error(e.message)
-  Kameleon.ui.trace(e)
-  exit 15
-rescue Thor::Error => e
-  Kameleon.ui.error(e.message)
-  Kameleon.ui.trace(e)
-  exit 15
-rescue SystemExit, Interrupt => e
-  Kameleon.ui.error("Quitting...")
-  exit 1
-rescue Errno::ENOENT => e
-  Kameleon.ui.error(e.message)
-  Kameleon.ui.trace(e)
-  exit 16
-rescue Psych::SyntaxError => e
-  Kameleon.ui.error(e.message)
-  Kameleon.ui.trace(e)
-  exit 17
-rescue Exception => e
+rescue Exception  => e
   if Kameleon.env.debug
     Kameleon.ui.error("Error : #{e}")
     raise e
   else
-    msg = "Unfortunately, a fatal error has occurred : "\
-          "#{e.message}.\nUse --debug option for more details\n"
-    Kameleon.ui.error(msg)
+    begin
+      raise exit
+    rescue Kameleon::Exit => e
+      exit e.status_code
+    rescue Kameleon::Error => e
+      Kameleon.ui.error(e.message)
+      Kameleon.ui.trace(e)
+      exit e.status_code
+    rescue Thor::UndefinedTaskError => e
+      Kameleon.ui.error(e.message)
+      Kameleon.ui.trace(e)
+      exit 15
+    rescue Thor::Error => e
+      Kameleon.ui.error(e.message)
+      Kameleon.ui.trace(e)
+      exit 15
+    rescue SystemExit, Interrupt => e
+      Kameleon.ui.error("Quitting...")
+      exit 1
+    rescue Errno::ENOENT => e
+      Kameleon.ui.error(e.message)
+      Kameleon.ui.trace(e)
+      exit 16
+    rescue Psych::SyntaxError => e
+      Kameleon.ui.error(e.message)
+      Kameleon.ui.trace(e)
+      exit 17
+    rescue Exception => e
+      msg = "Unfortunately, a fatal error has occurred : "\
+              "#{e.message}.\nUse --debug option for more details\n"
+        Kameleon.ui.error(msg)
+      exit 666
+    end
   end
-  exit 666
 end

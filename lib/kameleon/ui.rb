@@ -73,7 +73,7 @@ module Kameleon
       end
 
       def verbose(msg, newline = nil)
-        tell_me("[verbose] #{msg}", nil, newline) if level("verbose")
+        tell_me("[info] #{msg}", nil, newline) if level("verbose")
       end
 
       def debug(msg, newline = nil)

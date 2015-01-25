@@ -291,10 +291,8 @@ module Kameleon
 
       if (self.options["debug"] or ENV['KAMELEON_DEBUG'])
         Kameleon.ui.level = "debug"
-        Kameleon.env.debug = true
       elsif self.options["verbose"]
         Kameleon.ui.level = "verbose"
-        Kameleon.env.debug = true
       end
       Kameleon.ui.verbose("The level of output is set to #{Kameleon.ui.level}")
 
