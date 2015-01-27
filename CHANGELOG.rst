@@ -1,6 +1,21 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.5.0
+-------------
+
+Released on Jan 27th 2015
+
+- Allowed user to get custom shell environement by adding shell script
+- Added option ``--verbose`` to allow user debugging
+- Added option ``--from-cache`` to the ``kameleon info`` subcommand
+- Enabled bash xtrace in verbose mode
+- Checked appropriate proxy cache server start
+- Fixed recipe path in proxy cache metadata
+- Forced proxy cache to use IPv4
+- Improved UI with more color and less output messages
+
+
 version 2.4.0
 -------------
 
