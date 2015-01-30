@@ -22,7 +22,7 @@ rescue Exception  => e
     raise e
   else
     begin
-      raise exit
+      raise e
     rescue Kameleon::Exit => e
       exit e.status_code
     rescue Kameleon::Error => e
