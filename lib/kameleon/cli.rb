@@ -247,29 +247,6 @@ module Kameleon
       Kameleon.ui.info("Total duration : #{total_time} secs")
     end
 
-    desc "checkpoints [RECIPE_PATH]", "Lists all availables checkpoints"
-    method_option :build_path, :type => :string ,
-                  :default => nil, :aliases => "-b",
-                  :desc => "Set the build directory path"
-    def checkpoints(recipe_path)
-      Kameleon.ui.level = "error"
-      engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
-      engine.pretty_checkpoints_list
-    end
-
-    desc "clean [RECIPE_PATH]", "Cleans all contexts and removing the checkpoints"
-    method_option :build_path, :type => :string ,
-                  :default => nil, :aliases => "-b",
-                  :desc => "Sets the build directory path"
-    def clean(recipe_path)
-      opts = Hash.new.merge options
-      opts[:lazyload] = false
-      opts[:fail_silently] = true
-      engine = Kameleon::Engine.new(Recipe.new(recipe_path), opts)
-      engine.clean(:with_checkpoint => true)
-    end
-    map %w(clear) => :clean
-
     desc "commands", "Lists all available commands", :hide => true
     def commands
       puts Main.all_commands.keys - ["commands", "completions"]
