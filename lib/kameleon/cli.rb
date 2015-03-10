@@ -208,6 +208,9 @@ module Kameleon
     method_option :enable_checkpoint, :type => :boolean ,
                   :default => false,
                   :desc => "Enables checkpoint [experimental]"
+    method_option :list_checkpoints, :type => :boolean , :aliases => "--checkpoints",
+                  :default => false,
+                  :desc => "Lists all availables checkpoints"
     method_option :enable_cache, :type => :boolean,
                   :default => false,
                   :desc => "Generates a persistent cache for the appliance."
@@ -236,15 +239,26 @@ module Kameleon
       end
       raise BuildError, "A recipe file or a persistent cache archive " \
                         "is required to run this command." if recipe_path.nil?
-      clean(recipe_path) if options[:clean]
-      engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
-      Kameleon.ui.info("Starting build recipe '#{recipe_path}'")
-      start_time = Time.now.to_i
-      engine.build
-      total_time = Time.now.to_i - start_time
-      Kameleon.ui.info("")
-      Kameleon.ui.info("Successfully built '#{recipe_path}'")
-      Kameleon.ui.info("Total duration : #{total_time} secs")
+      if options[:clean]
+        opts = Hash.new.merge options
+        opts[:lazyload] = false
+        opts[:fail_silently] = true
+        engine = Kameleon::Engine.new(Recipe.new(recipe_path), opts)
+        engine.clean(:with_checkpoint => true)
+      elsif options[:list_checkpoints]
+        Kameleon.ui.level = "error"
+        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+        engine.pretty_checkpoints_list
+      else
+        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+        Kameleon.ui.info("Starting build recipe '#{recipe_path}'")
+        start_time = Time.now.to_i
+        engine.build
+        total_time = Time.now.to_i - start_time
+        Kameleon.ui.info("")
+        Kameleon.ui.info("Successfully built '#{recipe_path}'")
+        Kameleon.ui.info("Total duration : #{total_time} secs")
+      end
     end
 
     desc "commands", "Lists all available commands", :hide => true
