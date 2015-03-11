@@ -1,6 +1,15 @@
 Kameleon CHANGELOG
 ==================
 
+version 2.6.0
+-------------
+
+(release date to be announced)
+
+- Added --list-checkpoints to ``kameleon build`` command
+- Removed ``kameleon checkpoints`` and ``kameleon clean`` commands
+- Displayed error information in normal and verbose mode
+
 version 2.5.0
 -------------
 
