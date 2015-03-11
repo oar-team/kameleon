@@ -1,0 +1,36 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: <MY RECIPE DESCRIPTION>
+#
+#==============================================================================
+
+---
+extend: debian7-g5k
+
+global:
+    # You can see the base template `debian7.yaml` to know the
+    # variables that you can override
+    g5k_user: user  # CHANGE ME
+    g5k_site: grenoble  # CHANGE ME
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - install_software:
+    - packages: >
+        g++ make taktuk openssh-server openmpi-bin openmpi-common openmpi-dev
+        build-essential gfortran fort77 gnome-applets
+  - install_atlas:
+    - repository: http://sourceforge.net/projects/math-atlas/files/Stable/
+    - version: "3.10.1"
+  - install_hpl:
+    - repository: "http://www.netlib.org/benchmark/hpl/"
+    - version: "2.1"
+    - hpl_makefile: "/tmp/Make.Linux"
+
+export:
+  - "@base"

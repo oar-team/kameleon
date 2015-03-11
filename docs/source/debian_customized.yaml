@@ -1,0 +1,28 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: <MY RECIPE DESCRIPTION>
+#
+#==============================================================================
+
+---
+extend: debian7
+
+global:
+    # You can see the base template `debian7.yaml` to know the
+    # variables that you can override
+    # g5k_user: cruizsanabria  # CHANGE ME
+    # g5k_site: grenoble  # CHANGE ME
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - install_software:
+    - packages: >
+        g++ make taktuk openssh-server openmpi-bin openmpi-common openmpi-dev
+#  - tau_install
+export:
+  - "@base"
