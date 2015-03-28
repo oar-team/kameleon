@@ -1,0 +1,107 @@
+#compdef kameleon
+
+# This is ZSH completion script based on the kameleon 2.6.0.dev API
+#
+# Author: Michael Mercier
+#
+# This was made with the help of this howto:
+# https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
+
+
+### Common pattern
+
+local -a recipe_path
+recipe_path=(/$'[^\0]##\0'/ ':file:Kameleon recipe path:_files')
+
+#local -a build_path
+#build_path=(/$'[^\0]##\0'/ '-b:Sets the build directory path:_path_files')
+
+local -a template_name
+template_name=(/$'[^\0]##\0'/ ":template:Template name:( \\
+  $(kameleon template list | tail -n +4 | cut -f1 -d'|'; kameleon list | tail -n +2) \\
+)")
+
+
+### repository Subcommand options
+
+local -a repo_add_options
+repo_add_options=(/$'[^\0]##\0'/ '::Choose a repository name:' /$'[^\0]##\0'/ '::Repository URL:_urls')
+
+local -a repo_help_options
+repo_help_options=(/$'(add|list|update)\0'/ '::subcommand:(add list update)')
+
+local -a repo_list
+repo_list=(/$'[^\0]##\0'/ ":repo_name:Kameleon repository:($(kameleon repository list))")
+
+
+### Command options
+
+local -a build_options
+build_options=("$recipe_path[@]")
+
+local -a help_options
+help_options=(/$'[^\0]##\0'/ ":cmd:Kameleon command:($(kameleon commands))")
+
+local -a info_options
+info_options=("$recipe_path[@]")
+
+local -a new_options
+new_options=("$recipe_path[@]" "$template_name[@]")
+
+local -a repo_options
+# Define repository subcommands
+_regex_words repocmds 'Repository commands' \
+  'add:Adds a new named \<name\> repository at \<url\>:$repo_add_options' \
+  'help:Describe subcommands or one specific subcommand:$repo_help_options' \
+  'list:Lists available repositories' \
+  'update:Updates a named \<name\> repository:$repo_list'
+repo_options=("$reply[@]")
+
+local -a template_options
+# Define templates subcommands
+_regex_words templatecmds 'Template commands' \
+  'help:Describe subcommands or one specific subcommand:$template_help_options' \
+  'import:Imports the given template:$template_import_options' \
+  'info:Display detailed information about a template:$template_info_options' \
+  'list:Lists available templates' \
+  'repository:Alias for "kameleon repository":$repo_options'
+template_options=("$reply[@]")
+
+
+
+### Main argument parsing
+
+# Arguments to _regex_arguments, built up in array $args.
+local -a args reply
+args=(
+	# Command word. Can be anything
+	/$'[^\0]#\0'/
+)
+
+# Define kameleon commands
+_regex_words cmds 'kameleon commands' \
+	'build:Builds the appliance from the given recipe:$build_options' \
+	'help:Describe available commands or one specific command:$help_options' \
+	'info:Display detailed information about a recipe:$info_options' \
+	'list:Lists all defined recipes in the current directory:' \
+	'new:Creates a new recipe:$new_options' \
+	'repository:Manages set of remote git repositories:$repo_options' \
+	'template:Lists and imports templates:$template_options' \
+	'version:Prints the Kameleon version information'
+args+=("$reply[@]")
+
+# Define kameleon common options
+_regex_words opts 'kameleon options' \
+	'--color:Enables colorization in output (Default)' \
+	'--no-color:Disables colorization in output' \
+	'--verbose:Enables verbose output for kameleon Users' \
+	'--no-verbose:Disables verbose output for kameleon Users (Default)' \
+	'--debug:Enables debug output for kameleon Developpers' \
+	'--no-debug:Disables debug output for kameleon Developpers (Default)' \
+	'--script:Never prompts for User intervention' \
+	'--no-script:Prompts for user intervention if necessary (Default)'
+args+=("$reply[@]" "#")
+
+# Create the "_kameleon" completion function
+_regex_arguments _kameleon "${args[@]}"
+
