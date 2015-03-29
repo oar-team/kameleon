@@ -17,9 +17,9 @@ recipe_path=(/$'[^\0]##\0'/ ':file:Kameleon recipe path:_files')
 #build_path=(/$'[^\0]##\0'/ '-b:Sets the build directory path:_path_files')
 
 local -a template_name
-template_name=(/$'[^\0]##\0'/ ":template:Template name:( \\
-  $(kameleon template list | tail -n +4 | cut -f1 -d'|'; kameleon list | tail -n +2) \\
-)")
+template_name=(/$'[^\0]##\0'/ ":template:Template name:")
+# FIXME: Do not compute template name because it is REALLY slow
+# $(kameleon template list | tail -n +4 | cut -f1 -d'|'; kameleon list | tail -n +2))")
 
 
 ### repository Subcommand options
