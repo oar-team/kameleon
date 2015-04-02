@@ -8,6 +8,99 @@
 # https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
 # and with the _git completion file
 
+# Helpers
+template_list="kameleon template list | tail -n +4 | cut -f1 -d'|'"
+
+# Repository kameleon subcommands
+_kameleon_repository () {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  _arguments -C \
+    ': :->command' \
+    '*:: :->option-or-argument' && ret=0
+
+  case $state in
+    (command)
+      declare -a commands
+
+      commands=(
+        add:'Adds a new named NAME repository at URL'
+	      help:'Describe available subcommands or one specific subcommand'
+	      list:'Lists available repositories'
+        update:'Update specified repository')
+
+      _describe -t commands command commands && ret=0
+      ;;
+    (option-or-argument)
+      curcontext=${curcontext%:*}-$line[1]:
+
+      case $line[1] in
+        (add)
+          _arguments \
+            '1:Repository local name' \
+            '2:Repository URL or local path:_urls' \
+            '(-b --branch=)'{-b,--branch=}':To checkout BRANCH' && ret=0
+          ;;
+        (help)
+          _arguments \
+            '::Repository sub command:(add list update)' && ret=0
+          ;;
+        (update)
+          _arguments \
+            ":Update the repository named NAME:($(kameleon repository list))" && ret=0
+          ;;
+      esac
+    esac
+  return ret
+}
+
+# Template kameleon subcommands
+_kameleon_template () {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  _arguments -C \
+    ': :->command' \
+    '*:: :->option-or-argument' && ret=0
+
+  case $state in
+    (command)
+      declare -a commands
+
+      commands=(
+	      help:'Describe available subcommands or one specific subcommand'
+	      import:'Imports the given template'
+	      info:'Display detailed information about a template'
+	      list:'Lists available templates'
+        repository:'alias for \"kameleon repository\"')
+
+      _describe -t commands command commands && ret=0
+      ;;
+    (option-or-argument)
+      curcontext=${curcontext%:*}-$line[1]:
+
+      case $line[1] in
+        (help)
+          _arguments \
+            '::Template sub command:(import info list repository)' && ret=0
+          ;;
+        (import)
+          _arguments \
+            ":template name:($(kameleon template list | tail -n +4 | cut -f1 -d'|'))" && ret=0
+          ;;
+        (info)
+          _arguments \
+            ":template name:($(kameleon template list | tail -n +4 | cut -f1 -d'|'))" && ret=0
+            '*'{-g,--global}':Custom global variable define as key\:value' && ret=0
+          ;;
+        (repository)
+          _kameleon_repository && ret=0
+          ;;
+      esac
+    esac
+  return ret
+}
 # TODO:
 # - add checkpoint list completion
 # - add key completion for global
@@ -86,12 +179,11 @@ _kameleon () {
               ;;
             esac
           ;;
+        (repository)
+          _kameleon_repository && ret=0
+          ;;
         (template)
-          _nothing
-          # TODO
-          #_arguments \
-          #  'add:Adds a new named NAME repository at URL:' \
-          #  && ret=0
+          _kameleon_template && ret=0
           ;;
         (*)
           _nothing
