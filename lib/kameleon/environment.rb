@@ -34,9 +34,9 @@ module Kameleon
         Kameleon.ui.debug("  @#{key} : #{options[key]}")
       end
       @debug = true if ENV['KAMELEON_DEBUG']
-
-      Dir.mkdir(@repositories_path.to_path) unless File.exists?(@repositories_path.to_path)
-
+      unless (File.exist?(@repositories_path.to_s) || File.symlink?(@repositories_path.to_s))
+        Dir.mkdir(@repositories_path.to_s)
+      end
     end
   end
 end

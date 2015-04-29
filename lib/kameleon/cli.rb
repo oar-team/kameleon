@@ -141,7 +141,7 @@ module Kameleon
 
       template_path = File.join(Kameleon.env.repositories_path, template_name)
 
-      recipe_path = Pathname.new(Kameleon.env.workspace).join(recipe_path).to_path
+      recipe_path = Pathname.new(Kameleon.env.workspace).join(recipe_path).to_s
 
       begin
         tpl = Kameleon::RecipeTemplate.new(template_path)

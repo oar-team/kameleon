@@ -77,10 +77,10 @@ module Kameleon
       recipes_hash = []
       recipes_files = get_recipes(repository_path)
       recipes_files.each do |f|
-        path = f.to_path
+        path = f.to_s
         begin
         recipe = RecipeTemplate.new(path)
-        name = path.gsub(repository_path.to_path + '/', '').chomp('.yaml')
+        name = path.gsub(repository_path.to_s + '/', '').chomp('.yaml')
         recipes_hash.push({
           "name" => name,
           "description" => recipe.metainfo['description'],
@@ -104,7 +104,7 @@ module Kameleon
       path.children.collect do |child|
         if child.file?
           if child.extname == ".yaml"
-            unless child.to_path.include? "/steps/" or child.to_path.include? "/.steps/"
+            unless child.to_s.include? "/steps/" or child.to_s.include? "/.steps/"
               child
             end
           end

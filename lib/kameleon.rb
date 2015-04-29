@@ -35,12 +35,12 @@ module Kameleon
 
     def userdir
       @userdir ||= Pathname.new(File.join('~', '.kameleon.d'))
-      Dir.mkdir(File.expand_path(@userdir.to_path)) unless File.exists?(File.expand_path(@userdir.to_path))
+      Dir.mkdir(File.expand_path(@userdir.to_s)) unless File.exists?(File.expand_path(@userdir.to_s))
       @userdir
     end
 
     def userconf_path
-      @userconf_path ||= Pathname.new(File.join(File.expand_path(userdir.to_path), 'config'))
+      @userconf_path ||= Pathname.new(File.join(File.expand_path(userdir.to_s), 'config'))
     end
 
     def init_userconf()
@@ -73,7 +73,7 @@ module Kameleon
         :debug => userconf.fetch("debug", false),
         :script => userconf.fetch("script", false),
         :repositories_path =>  userconf.fetch("repositories_path",
-                                          File.join(userdir.to_path, 'repos')),
+                                          File.join(userdir.to_s, 'repos')),
       }
     end
 

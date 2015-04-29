@@ -47,8 +47,8 @@ module Kameleon
     end
 
     def get_steps_dirs(recipe_path)
-      relative_path = recipe_path.to_path.gsub(Kameleon.env.root_dir.to_path + '/', '')
-      if relative_path.eql? recipe_path.to_path
+      relative_path = recipe_path.to_s.gsub(Kameleon.env.root_dir.to_s + '/', '')
+      if relative_path.eql? recipe_path.to_s
         subdirs = [recipe_path.dirname]
       else
         last_dir = Kameleon.env.root_dir
@@ -61,8 +61,8 @@ module Kameleon
       end
       steps_dirs = []
       subdirs.reverse_each do |p|
-        steps_dirs.push(File.expand_path(File.join(p.to_path, 'steps')))
-        steps_dirs.push(File.expand_path(File.join(p.to_path, '.steps')))
+        steps_dirs.push(File.expand_path(File.join(p.to_s, 'steps')))
+        steps_dirs.push(File.expand_path(File.join(p.to_s, '.steps')))
       end
       steps_dirs.select! { |x| File.exists? x }
     end
