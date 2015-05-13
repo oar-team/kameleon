@@ -1,10 +1,10 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.6.0.dev
------------------
+Version 2.6.0
+-------------
 
-**unreleased**
+Released on May 13th 2015
 
 - Added --list-checkpoints to ``kameleon build`` command
 - Removed ``kameleon checkpoints`` and ``kameleon clean`` commands
