@@ -298,7 +298,7 @@ module Kameleon
         raise AbortError, "Execution aborted..." if answer.nil?
         answer.chomp!
         if responses.keys.include?(answer)
-          Kameleon.ui.info("User choice : [#{answer}] #{responses[answer]}")
+          Kameleon.ui.info("User choice: [#{answer}] #{responses[answer]}")
           if ["o", "i", "l"].include?(answer)
             if answer.eql? "l"
               @local_context.start_shell
