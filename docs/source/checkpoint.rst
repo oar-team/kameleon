@@ -4,8 +4,8 @@
 Checkpoint
 ----------
 
-How to use the checkpoint
-=========================
+How to use the checkpoints
+==========================
 
 Kameleon can use a checkpointing mechanism to save the appliance build process
 bit by bit. This mechanism allows you to work with Kameleon serenely. It is
@@ -32,7 +32,7 @@ the progression is displayed::
 Every checkpoint has a unique identifier. You can list all the available
 checkpoints::
 
-    $ kameleon checkpoints my_debian7.yaml
+    $ kameleon build --checkpoints my_debian7.yaml
     The following checkpoints are available for  the recipe 'my_debian7':
     ID           | STEP
     -------------|-----------------------------------------------------
