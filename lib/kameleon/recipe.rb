@@ -17,6 +17,7 @@ module Kameleon
     attr_accessor :base_recipes_files
     attr_accessor :data_files
     attr_accessor :env_files
+    attr_accessor :cli_global
 
     def initialize(path, kwargs = {})
       @path = Pathname.new(File.expand_path(path))

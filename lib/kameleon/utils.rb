@@ -4,7 +4,7 @@ module Kameleon
 
     def self.resolve_vars(raw, yaml_path, initial_variables, recipe, kwargs = {})
       raw = resolve_data_dir_vars(raw, yaml_path, initial_variables, recipe, kwargs)
-      return resolve_simple_vars(raw, yaml_path, initial_variables, kwargs)
+      return resolve_simple_vars(raw, yaml_path, initial_variables, recipe, kwargs)
     end
 
     def self.resolve_data_dir_vars(raw, yaml_path, initial_variables, recipe, kwargs)
@@ -12,7 +12,7 @@ module Kameleon
       matches = raw.to_enum(:scan, reg).map { Regexp.last_match }
       matches.each do |m|
         unless m.nil?
-          path = resolve_simple_vars(m[1], yaml_path, initial_variables, kwargs)
+          path = resolve_simple_vars(m[1], yaml_path, initial_variables, recipe, kwargs)
           resolved_path = recipe.resolve_data_path(path, yaml_path)
           raw.gsub!(m[0], "\"#{resolved_path}\"")
         end
@@ -20,7 +20,8 @@ module Kameleon
       return raw
     end
 
-    def self.resolve_simple_vars(raw, yaml_path, initial_variables, kwargs)
+    def self.resolve_simple_vars(raw, yaml_path, initial_variables, recipe, kwargs)
+      initial_variables.merge! recipe.cli_global
       raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]+\}|\$\$[a-zA-Z0-9\-_]+/) do |var|
         # remove the dollars
         if var.include? "{"
@@ -36,7 +37,7 @@ module Kameleon
             fail RecipeError, "#{yaml_path}: variable #{var} not found in local or global"
           end
         end
-        return $` + resolve_simple_vars(value.to_s + $', yaml_path, initial_variables, kwargs)
+        return $` + resolve_simple_vars(value.to_s + $', yaml_path, initial_variables, recipe, kwargs)
       end
     end
 
