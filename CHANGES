@@ -1,10 +1,12 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.6.1.dev
------------------
+Version 2.6.1
+-------------
 
-**unreleased**
+Released on August 12th 2015
+
+- Cli global parameters overwrite all recipe key:value parameters
 
 Version 2.6.0
 -------------
