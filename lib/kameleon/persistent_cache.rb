@@ -146,15 +146,17 @@ module Kameleon
     end
 
     def pack()
-      Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar")
-      if @archive_format.eq? "gzip"
+      if @archive_format.eql? "gzip"
         env = {"GZIP" => "-9"}
+        Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar.gz")
         execute("tar","-czvf #{@name}-cache.tar.gz -C #{@cache_dir} .", @cwd, env)
-      elsif @archive_format.eq? "bz2"
+      elsif @archive_format.eql? "bz2"
         env = {"BZIP" => "-9"}
+        Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar.bz2")
         execute("tar","-cjvf #{@name}-cache.tar.bz2 -C #{@cache_dir} .", @cwd, env)
-      elsif @archive_format.eq? "xz"
+      elsif @archive_format.eql? "xz"
         env = {"XZ_OPT" => "-9"}
+        Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar.xz")
         execute("tar","-cJf #{@name}-cache.tar.xz -C #{@cache_dir} .", @cwd, env)
       end
 

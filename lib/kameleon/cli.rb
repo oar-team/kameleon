@@ -221,7 +221,7 @@ module Kameleon
                   :default => nil,
                   :desc => "Uses a persistent cache tar file to build the image."
     method_option :cache_archive_compression, :type => :string ,
-                  :enum => ["gzip", "xz", "bz2"]
+                  :enum => ["gzip", "xz", "bz2"],
                   :default => "gz",
                   :desc => "Uses a persistent cache tar file to build the image."
     method_option :proxy_path, :type => :string ,
