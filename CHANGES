@@ -1,10 +1,14 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.6.2.dev
------------------
+Version 2.6.2
+-------------
 
-**unreleased**
+Released on August 25th 2015
+
+- Added ``cache_archive_compression`` option to choose compression tool
+- Tried using curl before wget
+
 
 Version 2.6.1
 -------------
