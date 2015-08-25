@@ -20,6 +20,7 @@ module Kameleon
     attr_accessor :name
     attr_accessor :recipe_files # FIXME have to check those.
     attr_accessor :recipe_path
+    attr_accessor :archive_format
 
     def initialize()
       ## we must configure Polipo to be execute for the in and out context
@@ -146,7 +147,17 @@ module Kameleon
 
     def pack()
       Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar")
-      execute("tar","-cf #{@name}-cache.tar -C #{@cache_dir} .",@cwd)
+      if @archive_format.eq? "gzip"
+        env = {"GZIP" => "-9"}
+        execute("tar","-czvf #{@name}-cache.tar.gz -C #{@cache_dir} .", @cwd, env)
+      elsif @archive_format.eq? "bz2"
+        env = {"BZIP" => "-9"}
+        execute("tar","-cjvf #{@name}-cache.tar.bz2 -C #{@cache_dir} .", @cwd, env)
+      elsif @archive_format.eq? "xz"
+        env = {"XZ_OPT" => "-9"}
+        execute("tar","-cJf #{@name}-cache.tar.xz -C #{@cache_dir} .", @cwd, env)
+      end
+
     end
 
     def unpack(cache_path)
@@ -253,10 +264,13 @@ module Kameleon
       return recipe_file
     end
 
-    def execute(cmd,args,dir=nil)
+    def execute(cmd,args, dir=nil, environment={})
       command = [cmd ] + args.split(" ")
       process = ChildProcess.build(*command)
       process.cwd = dir unless dir.nil?
+      environment.each do |key, value|
+        process.environment[key] = value
+      end
       process.start
       process.wait
     end

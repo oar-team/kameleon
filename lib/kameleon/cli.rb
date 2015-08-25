@@ -220,6 +220,10 @@ module Kameleon
     method_option :from_cache, :type => :string ,
                   :default => nil,
                   :desc => "Uses a persistent cache tar file to build the image."
+    method_option :cache_archive_compression, :type => :string ,
+                  :enum => ["gzip", "xz", "bz2"]
+                  :default => "gz",
+                  :desc => "Uses a persistent cache tar file to build the image."
     method_option :proxy_path, :type => :string ,
                   :default => nil,
                   :desc => "Full path of the proxy binary to use for the persistent cache."

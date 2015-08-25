@@ -43,6 +43,7 @@ module Kameleon
         # I'm passing the Pathname objects
         @cache.recipe_files = @recipe.all_files
         @cache.recipe_path = @recipe.path
+        @cache.archive_format = @options[:cache_archive_compression]
 
         if @recipe.global["in_context"]["proxy_cache"].nil? then
           raise BuildError, "Missing varible for in context 'proxy_cache' when using the option --cache"
