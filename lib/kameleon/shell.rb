@@ -191,10 +191,13 @@ SCRIPT
                 }
       while true
         if @process.exited?
-          raise ShellError, "Process '#{@cmd}' exited..."
+          raise ShellExited, "Process '#{@cmd}' exited..."
         end
         iodata.each do |_, iodat|
           if iodat[:end] and not iodat[:begin]
+            if @process.exited?
+              raise ShellExited, "Process '#{@cmd}' exited..."
+            end
             raise ShellError, "Cannot read #{iodat[:begin]} from shell"
           end
         end
@@ -230,6 +233,9 @@ SCRIPT
             end
           end
         end
+      end
+      if @process.exited?
+        raise ShellExited, "Process '#{@cmd}' exited..."
       end
       iodata = nil
       return get_status

@@ -82,6 +82,8 @@ module Kameleon
     rescue ShellError, Errno::EPIPE  => e
       Kameleon.ui.verbose("Shell cmd failed to launch: #{@shell.shell_cmd}")
       raise ExecError, e.message + ". The '#{@name}_context' is inaccessible."
+    rescue ShellExited
+      raise ContextClosed, "The ctx '#{name}' was closed"
     end
 
     def pipe(cmd, other_cmd, other_ctx)

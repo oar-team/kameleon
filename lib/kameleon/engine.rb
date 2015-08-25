@@ -1,7 +1,8 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
 require 'kameleon/persistent_cache'
-# require 'pry'
+
+
 module Kameleon
 
   class Engine
@@ -216,6 +217,9 @@ module Kameleon
       finished = false
       begin
         exec_cmd(cmd, kwargs)
+        finished = true
+      rescue ContextClosed => e
+        Kameleon.ui.warn("#{e.message}")
         finished = true
       rescue SystemExit, Interrupt, ExecError
         reload_contexts
