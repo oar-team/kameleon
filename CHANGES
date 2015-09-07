@@ -1,10 +1,12 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.6.4.dev
------------------
+Version 2.6.4
+-------------
 
-**unreleased**
+Released on September 07th 2015
+
+- Fixed kameleon data variables resolution
 
 Version 2.6.3
 -------------
