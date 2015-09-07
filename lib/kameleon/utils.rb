@@ -13,8 +13,8 @@ module Kameleon
       matches.each do |m|
         unless m.nil?
           path = resolve_simple_vars(m[1], yaml_path, initial_variables, recipe, kwargs)
-          resolved_path = recipe.resolve_data_path(path, yaml_path)
-          raw.gsub!(m[0], "\"#{resolved_path}\"")
+          resolved_path = recipe.resolve_data_path(path.chomp('"'), yaml_path)
+          raw.gsub!(m[0].chomp('"'), "#{resolved_path}")
         end
       end
       return raw
