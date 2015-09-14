@@ -224,9 +224,9 @@ module Kameleon
                   :enum => ["gzip", "xz", "bz2"],
                   :default => "gz",
                   :desc => "Uses a persistent cache tar file to build the image."
-    method_option :proxy_path, :type => :string ,
+    method_option :polipo_path, :type => :string ,
                   :default => nil,
-                  :desc => "Full path of the proxy binary to use for the persistent cache."
+                  :desc => "Full path of the polipo binary to use for the persistent cache."
     method_option :global, :type => :hash,
                   :default => {}, :aliases => "-g",
                   :desc => "Set custom global variables."

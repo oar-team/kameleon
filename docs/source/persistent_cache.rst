@@ -17,7 +17,7 @@ under a debian distribution you can install it using the package manager::
    sudo apt-get install polipo
 
 You can as well build it from sources and then specify the path of the
-generated binary using the option ``--proxy_path``.
+generated binary using the option ``--polipo-path``.
 Before using it you have to declare the variable proxy_cache, for example
 
 .. code-block:: yaml
@@ -44,7 +44,7 @@ For example::
 
 This will create a tar file in the build directory ``/tmp/kameleon`` called
 ``my_recipe-cache.tar``.  In order to use this generated cache file in
-another build, we have just to use the options ``--from_cache`` as follows::
+another build, we have just to use the options ``--from-cache`` as follows::
 
    kameleon build my_recipe.yaml -b /tmp/kameleon/ --from_cache /tmp/my_recipe-cache.tar
 

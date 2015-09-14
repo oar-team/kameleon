@@ -37,7 +37,7 @@ module Kameleon
       if @options[:enable_cache] || @options[:from_cache] then
         @cache = Kameleon::Persistent_cache.instance
         @cache.cwd = @cwd
-        @cache.polipo_path = @options[:proxy_path]
+        @cache.polipo_path = @options[:polipo_path]
         @cache.name = @recipe.name
         @cache.mode = @options[:enable_cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
