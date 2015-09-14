@@ -29,14 +29,18 @@ module Kameleon
       @polipo_process = nil
       @polipo_port = find_unused_port
 
+                             # :idleTime => "1",
       @polipo_cmd_options = {:diskCacheRoot => "",
-                             :idleTime => "1",
-                             :chunkHighMark => "425165824",
+                             :maxDiskCacheEntrySize => "-1",
+                             :disableIndexing => "false",
+                             :disableServersList => "false",
+                             :allowedClients => "0.0.0.0/0",
                              :proxyPort => @polipo_port,
                              :relaxTransparency =>"true",
                              :daemonise => false,
                              :proxyAddress => "0.0.0.0",
-                             :logFile => File.join(Kameleon.env.build_path, 'polipo.log')
+                             :logFile => File.join(Kameleon.env.build_path, 'polipo.log'),
+                             :logLevel => "4",
                             }
 
       @activated = false
@@ -192,7 +196,11 @@ module Kameleon
     end
 
     def stop()
-      @polipo_process.stop
+      begin
+        @polipo_process.poll_for_exit(120)
+      rescue ChildProcess::TimeoutError
+        @polipo_process.stop # tries increasingly harsher methods to kill the process.
+      end
       Kameleon.ui.info("Stopping web proxy polipo")
       Kameleon.ui.info("Finishing persistent cache with last files")
       cache_metadata_dir = File.join(@cache_dir,"metadata")
