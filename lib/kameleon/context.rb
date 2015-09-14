@@ -8,7 +8,7 @@ module Kameleon
     attr_accessor :cmd
     attr_accessor :workdir
     attr_accessor :local_workdir
-    attr_accessor :proxy_cache
+    attr_accessor :proxy
     attr_accessor :env_files
 
 
@@ -19,7 +19,7 @@ module Kameleon
       @workdir = workdir
       @exec_prefix = exec_prefix
       @local_workdir = local_workdir
-      @proxy_cache = kwargs[:proxy_cache]
+      @proxy = kwargs[:proxy]
       @fail_silently = kwargs.fetch(:fail_silently, true)
       @lazyload = kwargs.fetch(:lazyload, false)
       @env_files = env_files

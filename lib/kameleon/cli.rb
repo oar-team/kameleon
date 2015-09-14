@@ -227,6 +227,13 @@ module Kameleon
     method_option :polipo_path, :type => :string ,
                   :default => nil,
                   :desc => "Full path of the polipo binary to use for the persistent cache."
+    method_option :proxy, :type => :string, :default => "",
+                  :desc => "Specifies the hostname and port number of an HTTP " \
+                           "proxy; it should have the form 'host:port'"
+    method_option :proxy_credentials, :type => :string, :default => "",
+                  :desc => "Specifies the username and password if the parent "\
+                           "proxy requires authorisation it should have the "\
+                           "form 'username:password'"
     method_option :global, :type => :hash,
                   :default => {}, :aliases => "-g",
                   :desc => "Set custom global variables."

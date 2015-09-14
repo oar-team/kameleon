@@ -17,7 +17,7 @@ module Kameleon
       @context_name = context.name
       @local_workdir = context.local_workdir
       @shell_workdir = context.workdir
-      @proxy_cache = context.proxy_cache
+      @proxy = context.proxy
       @env_files = context.env_files
       @bash_scripts_dir = File.join("kameleon_scripts", @context_name)
       @bashrc_file = File.join(@bash_scripts_dir, "bash_rc")
@@ -103,13 +103,9 @@ module Kameleon
       if File.file?(@default_bashrc_file)
         tpl = ERB.new(File.read(@default_bashrc_file))
         bashrc_content = tpl.result(binding)
-        if @cache.activated? then
-          if @proxy_cache.nil? then
-            Kameleon.ui.warn("Variable 'proxy_cache' not defined for this context, persistent cache will not be generated")
-          else
-            tpl = ERB.new(File.read(@cache.polipo_env))
-            bashrc_content << "\n" + ERB.new(File.read(@cache.polipo_env)).result(binding)
-          end
+        if @proxy != "" then
+          tpl = ERB.new(File.read(File.join(Kameleon.source_root, "contrib", "proxy_env.sh")))
+          bashrc_content << "\n" + tpl.result(binding)
         end
       end
       # Inject sigint handler

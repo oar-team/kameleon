@@ -32,10 +32,16 @@ module Kameleon
         fail BuildError, "Checkpoint is unavailable for this recipe"
       end
 
-      @recipe.resolve!
-
       if @options[:enable_cache] || @options[:from_cache] then
+        if @recipe.global["in_context"]["proxy_cache"].nil? then
+          raise BuildError, "Missing varible for in context 'proxy_cache' when using the option --cache"
+        end
+
+        if @recipe.global["out_context"]["proxy_cache"].nil? then
+          raise BuildError, "Missing varible for out context 'proxy_cache' when using the option --cache"
+        end
         @cache = Kameleon::Persistent_cache.instance
+
         @cache.cwd = @cwd
         @cache.polipo_path = @options[:polipo_path]
         @cache.name = @recipe.name
@@ -45,15 +51,26 @@ module Kameleon
         @cache.recipe_files = @recipe.all_files
         @cache.recipe_path = @recipe.path
         @cache.archive_format = @options[:cache_archive_compression]
-
-        if @recipe.global["in_context"]["proxy_cache"].nil? then
-          raise BuildError, "Missing varible for in context 'proxy_cache' when using the option --cache"
+        if @options[:proxy] != ""
+          @cache.polipo_cmd_options['parentProxy'] = @options[:proxy]
+        end
+        if @options[:proxy_credentials] != ""
+          @cache.polipo_cmd_options['parentAuthCredentials'] = @options[:proxy_credentials]
         end
 
-        if @recipe.global["out_context"]["proxy_cache"].nil? then
-          raise BuildError, "Missing varible for out context 'proxy_cache' when using the option --cache"
+        @recipe.global["proxy_local"] = "127.0.0.1:#{@cache.polipo_port}"
+        @recipe.global["proxy_out"] = "#{@recipe.global['out_context']['proxy_cache']}:#{@cache.polipo_port}"
+        @recipe.global["proxy_in"] = "#{@recipe.global['in_context']['proxy_cache']}:#{@cache.polipo_port}"
+      elsif @options[:proxy] != ""
+        if @options[:proxy_credentials] != ""
+          proxy_url = "#{@options[:proxy_credentials]}@#{@options[:proxy]}"
+        else
+          proxy_url = "#{@options[:proxy]}"
         end
+        @recipe.global["proxy_local"] = @recipe.global["proxy_out"] = @recipe.global["proxy_in"] = proxy_url
       end
+
+      @recipe.resolve!
 
       begin
         Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
@@ -84,7 +101,7 @@ module Kameleon
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd,
                                  @recipe.env_files,
-                                 :proxy_cache => proxy_cache_out,
+                                 :proxy => @recipe.global["proxy_out"],
                                  :lazyload => lazyload,
                                  :fail_silently => fail_silently)
 
@@ -95,7 +112,7 @@ module Kameleon
                                 @recipe.global["in_context"]["exec_prefix"],
                                 @cwd,
                                 @recipe.env_files,
-                                :proxy_cache => proxy_cache_in,
+                                :proxy => @recipe.global["proxy_in"],
                                 :lazyload => lazyload,
                                 :fail_silently => fail_silently)
     end

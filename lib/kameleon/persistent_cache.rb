@@ -8,7 +8,6 @@ module Kameleon
   class Persistent_cache
 
     include Singleton
-    attr_reader :polipo_env
     attr_reader :cache_dir
     attr_reader :polipo_port
     attr_writer :activated
@@ -21,14 +20,11 @@ module Kameleon
     attr_accessor :recipe_files # FIXME have to check those.
     attr_accessor :recipe_path
     attr_accessor :archive_format
+    attr_accessor :polipo_cmd_options
 
     def initialize()
       ## we must configure Polipo to be execute for the in and out context
       ## we have to start polipo in the out context for debootstrap step
-
-      @polipo_env = File.join(Kameleon.source_root,
-                              "contrib",
-                              "polipo_env.sh")
 
       @polipo_process = nil
       @polipo_port = find_unused_port
