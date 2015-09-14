@@ -33,8 +33,11 @@ module Kameleon
         "kameleon_recipe_name" => @name,
         "kameleon_recipe_dir" => File.dirname(@path),
         "kameleon_cwd" => File.join(Kameleon.env.build_path, @name),
-        "in_context" => {"cmd" => "/bin/bash", "proxy_cache" => "localhost"},
-        "out_context" => {"cmd" => "/bin/bash", "proxy_cache" => "localhost"}
+        "in_context" => {"cmd" => "/bin/bash", "proxy_cache" => "127.0.0.1"},
+        "out_context" => {"cmd" => "/bin/bash", "proxy_cache" => "127.0.0.1"},
+        "proxy_local" => "",
+        "proxy_out" => "",
+        "proxy_in" => "",
       }
       @aliases = {}
       @checkpoint = nil
