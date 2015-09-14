@@ -136,11 +136,12 @@ SCRIPT
       end
       shell_cmd << "export KAMELEON_WORKDIR=$PWD\n"
       @env_files.each do |env_file|
+        resolved_erb = "\n" + ERB.new(File.read(env_file)).result(binding)
         env_content = <<-SCRIPT
 #====================================================
 # Begin content of user script '#{env_file.basename}'
 #====================================================
-#{File.read(env_file)}
+#{resolved_erb}
 #====================================================
 # End content of user script '#{env_file.basename}'
 #====================================================
