@@ -1,10 +1,12 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.6.6.dev
------------------
+Version 2.6.6
+-------------
 
-**unreleased**
+Released on September 14th 2015
+
+- Fixed default ``cache_archive_compression`` to gzip
 
 Version 2.6.5
 -------------
