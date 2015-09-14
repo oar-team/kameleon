@@ -1,10 +1,16 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.6.5.dev
------------------
+Version 2.6.5
+-------------
 
-**unreleased**
+Released on September 14th 2015
+
+- Fixed the proxy-cache to allow big files
+- Added ``--proxy`` and ``--proxy-credentials`` options to set a global proxy for kameleon
+- Added ``proxy_local``, ``proxy_out`` and ``proxy_in`` kameleon recipe variables to get proxy address from recipe
+- Enabled ERB templating in the user environement files
+- Renamed ``--proxy-path`` option to ``--polipo-path``
 
 Version 2.6.4
 -------------
