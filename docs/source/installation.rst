@@ -16,7 +16,7 @@ Debian/Ubuntu
 
 ::
 
-    apt-get install ruby-dev ruby-childprocess polipo
+    apt-get install ruby-dev ruby-childprocess polipo libguestfs-tools
     gem install --no-ri --no-rdoc kameleon-builder
 
 Centos/Fedora
@@ -24,7 +24,7 @@ Centos/Fedora
 
 ::
 
-    yum install rubygem-childprocess polipo
+    yum install rubygem-childprocess polipo libguestfs-tools
     gem install --no-ri --no-rdoc kameleon-builder
 
 
@@ -33,7 +33,7 @@ Archlinux
 
 ::
 
-    pacman -S ruby polipo
+    pacman -S ruby polipo libguestfs
     gem install --no-ri --no-rdoc kameleon-builder
 
 
