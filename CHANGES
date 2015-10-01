@@ -1,10 +1,14 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.6.7.dev
------------------
+Version 2.6.7
+-------------
 
-**unreleased**
+Released on October 01st 2015
+
+- Decreased polipo exit timeout (120 to 5s)
+- Passed only recipe files (not directories) to the cache to fixed persistant cache crash 
+
 
 Version 2.6.6
 -------------
