@@ -65,7 +65,7 @@ singlehtml:
 	@echo "Build finished. The HTML page is in $(BUILDDIR)/singlehtml."
 
 publish: html
-	rsync -avh --exclude 'pkg' -e "ssh" $(BUILDDIR)/html/ kameleon.website:~/www
+	rsync -avh --exclude 'pkg' -e "ssh" $(BUILDDIR)/html/ oar-www.website:/var/www/kameleon.imag.fr
 
 
 pickle:
