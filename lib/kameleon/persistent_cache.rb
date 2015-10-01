@@ -199,7 +199,7 @@ module Kameleon
 
     def stop()
       begin
-        @polipo_process.poll_for_exit(120)
+        @polipo_process.poll_for_exit(5)
       rescue ChildProcess::TimeoutError
         @polipo_process.stop # tries increasingly harsher methods to kill the process.
       end
