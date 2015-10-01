@@ -47,8 +47,6 @@ module Kameleon
         @cache.name = @recipe.name
         @cache.mode = @options[:enable_cache] ? :build : :from
         @cache.cache_path = @options[:from_cache]
-        # I'm passing the Pathname objects
-        @cache.recipe_files = @recipe.all_files
         @cache.recipe_path = @recipe.path
         @cache.archive_format = @options[:cache_archive_compression]
         if @options[:proxy] != ""
@@ -71,6 +69,10 @@ module Kameleon
       end
 
       @recipe.resolve!
+
+      if @options[:enable_cache] || @options[:from_cache] then
+        @cache.recipe_files = @recipe.all_files
+      end
 
       begin
         Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
