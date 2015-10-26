@@ -144,8 +144,43 @@ Global variables
 
 Global variables are defined in the ``global`` dictionary of the recipe.
 Kameleon use some global variables to enable the appliance build. See
-:ref:`context` and `Steps path`_ for more details
+:ref:`context` and `Steps path`_ for more details.
 
+You can also override a variable using inheritance mechanism or CLI
+``--global`` option. For Example:
+
+.. code-block:: bash
+
+  kameleon build --global my_package:'vim git' --global user_name:myself myrecipe.yaml
+
+Or in your recipe:
+
+.. code-block:: yaml
+
+  global:
+    # kameleon is too long to type!
+    user_name: myself
+
+
+.. versionadded:: 2.7.0
+
+You can even overload variable (adding content to existing value) using the
+same syntax as bash:
+
+.. code-block:: bash
+
+  kameleon build --global setup_packages:'$$setup_packages git emacs' myrecipe.yaml
+
+Or in your recipe:
+
+.. code-block:: yaml
+
+  global:
+    # I need these tools
+    setup_packages: $$setup_packages git emacs
+
+For more information about inheritance variable see here:
+:ref:`inheritance_variables`
 
 Step local variables
 ~~~~~~~~~~~~~~~~~~~~

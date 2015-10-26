@@ -45,6 +45,8 @@ steps. On the contrary, the absence of the keyword ``@base`` is used to ignore
 the parent steps in the new recipe.
 
 
+.. _`inheritance_variables`:
+
 Inheritance and variables
 -------------------------
 
@@ -62,6 +64,8 @@ the appliance according to your needs:
       arch: i386             ## instead of 'x64_86'
       image_size: 20G        ## instead of '10G'
       filesystem_type: ext3  ## instead of 'ext4'
+      ## NEW in 2.7.0
+      setup_packages: $$setup_packages git
 
     bootstrap:
       - "@base"
