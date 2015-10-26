@@ -4,7 +4,7 @@ module Kameleon
 
     def self.resolve_vars(raw, yaml_path, initial_variables, recipe, kwargs = {})
       raw = resolve_data_dir_vars(raw, yaml_path, initial_variables, recipe, kwargs)
-      return resolve_simple_vars(raw, yaml_path, initial_variables, recipe, kwargs)
+      return resolve_simple_vars(raw, yaml_path, initial_variables, kwargs)
     end
 
     def self.resolve_data_dir_vars(raw, yaml_path, initial_variables, recipe, kwargs)
@@ -12,7 +12,7 @@ module Kameleon
       matches = raw.to_enum(:scan, reg).map { Regexp.last_match }
       matches.each do |m|
         unless m.nil?
-          path = resolve_simple_vars(m[1], yaml_path, initial_variables, recipe, kwargs)
+          path = resolve_simple_vars(m[1], yaml_path, initial_variables, kwargs)
           resolved_path = recipe.resolve_data_path(path.chomp('"'), yaml_path)
           raw.gsub!(m[0].chomp('"'), "#{resolved_path}")
         end
@@ -20,8 +20,41 @@ module Kameleon
       return raw
     end
 
-    def self.resolve_simple_vars(raw, yaml_path, initial_variables, recipe, kwargs)
-      initial_variables.merge! recipe.cli_global
+    def self.resolve_simple_vars_once(raw, initial_variables)
+      raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]+\}|\$\$[a-zA-Z0-9\-_]+/) do |var|
+        # remove the dollars
+        if var.include? "{"
+          strip_var = var[3,(var.length - 4)]
+        else
+          strip_var = var[2,(var.length - 2)]
+        end
+        # check in local vars
+        if initial_variables.has_key? strip_var
+          value = initial_variables[strip_var]
+        end
+        return $` + value.to_s + $'
+      end
+    end
+
+
+    # Variables are replaced correctly for recursive variable overload of
+    # the parent by the child:
+    # For example:
+    #   Parent={var: 10}
+    #   Child={var: $$var 11}
+    #   => {var: 10 11}
+    def self.overload_merge(parent_dict, child_dict)
+      parent_dict.merge(child_dict){ |key, old_value, new_value|
+        if new_value.to_s.include?("$$" + key.to_s) or new_value.to_s.include?("$${" + key.to_s + "}")
+          Utils.resolve_simple_vars_once(new_value, {key => old_value})
+        else
+          new_value
+        end
+      }
+    end
+
+
+    def self.resolve_simple_vars(raw, yaml_path, initial_variables, kwargs)
       raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]+\}|\$\$[a-zA-Z0-9\-_]+/) do |var|
         # remove the dollars
         if var.include? "{"
@@ -37,7 +70,7 @@ module Kameleon
             fail RecipeError, "#{yaml_path}: variable #{var} not found in local or global"
           end
         end
-        return $` + resolve_simple_vars(value.to_s + $', yaml_path, initial_variables, recipe, kwargs)
+        return $` + resolve_simple_vars(value.to_s + $', yaml_path, initial_variables, kwargs)
       end
     end
 

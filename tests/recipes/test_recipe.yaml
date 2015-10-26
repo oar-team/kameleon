@@ -16,6 +16,9 @@ global:
   user_name: kameleon
   user_password: $$user_name
 
+  # test overload
+  toto: $$toto tata
+
   # Distribution
   distrib: linux
 

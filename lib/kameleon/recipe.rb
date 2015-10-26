@@ -92,9 +92,10 @@ module Kameleon
 
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
-      @global.merge!(@cli_global)
+      # merge cli variable with recursive variable overload
+      @global = Utils.overload_merge(@global, @cli_global)
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self, kwargs)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, kwargs)
       resolved_global = @global.merge YAML.load(resolved_global)
       # Loads aliases
       load_aliases(yaml_recipe)
@@ -217,7 +218,8 @@ module Kameleon
           base_section = {} if base_section.nil?
           recipe_section = yaml_recipe[key]
           recipe_section = {} if recipe_section.nil?
-          base_yaml_recipe[key] = base_section.merge(recipe_section)
+          # manage recursive variable overload
+          base_yaml_recipe[key] = Utils.overload_merge(base_section, recipe_section)
         end
       end
       @base_recipes_files.push(Pathname.new(File.expand_path(base_recipe_path)))
@@ -682,6 +684,7 @@ module Kameleon
       end
       Kameleon.ui.info("Variables:")
       @global.each do |key, value|
+        value = "\n" if value.to_s.empty?
         prefix ; Kameleon.ui.info("#{key}: #{value}")
       end
     end

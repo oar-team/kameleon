@@ -1,2 +1,3 @@
+extend: ./test3.yaml
 global:
-  toto: tata
+  toto: $$toto test $$user_name
