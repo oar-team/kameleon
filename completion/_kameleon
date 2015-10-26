@@ -147,6 +147,7 @@ _kameleon () {
           _arguments -C \
             '(--from-cache)1:Kameleon recipe path:_files' \
             '(1)--from-cache=:Persistent cache tar file to build the image:_files' \
+            '--cache-archive-compression=:Select the persistent cache compression:(gzip xz bz2)' \
             '(-b --build-path)'{-b,--build-path=}':Build directory path:_directories' \
             '--clean[Runs the command `kameleon clean` first]' \
             '--from-checkpoint=:Specify checkpoint to build the image' \
@@ -154,6 +155,8 @@ _kameleon () {
             {--checkpoints,--list-checkpoints}'[Lists all availables checkpoints]' \
             '--enable-cache[Generates a persistent cache for the appliance]' \
             '--cache-path=:Cache directory path:_directories' \
+            '--proxy=:Specifies the hostname and port number of the parent HTTP proxy define as host\:port' \
+            '--proxy-credentials=:Specifies the username and password if the parent proxy requires authorisation define as username\:password' \
             '*'{-g,--global}':Custom global variable define as key\:value' && ret=0
           ;;
         (help)
