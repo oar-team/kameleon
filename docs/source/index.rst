@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Kameleon's documentation!
-====================================
+Kameleon documentation
+======================
 
 .. image:: _static/kameleon-long.png
      :align: right
