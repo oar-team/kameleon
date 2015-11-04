@@ -45,3 +45,18 @@ From Source
     git clone https://github.com/oar-team/kameleon.git && cd kameleon
     gem build kameleon-builder.gemspec
     gem install kameleon-builder-*.gem
+
+Completion
+----------
+
+You can enable Bash or Zsh completion of Kameleon CLI using files in the
+``completion`` folder within the source repository:
+
+.. code-block:: bash
+
+  # for Zsh
+  cp ./completion/_kameleon /usr/share/zsh/functions/Completion/Unix/
+  # for Bash
+  cp ./completion/kameleon.bash /etc/bash_completion.d/
+
+
