@@ -60,7 +60,7 @@ module Kameleon
         rescue
           raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                   "To see all templates, run the command "\
-                                  "`kameleon template ls`"
+                                  "`kameleon template list`"
         else
           tpl.all_files.each do |path|
             relative_path = path.relative_path_from(Kameleon.env.repositories_path)
@@ -149,7 +149,7 @@ module Kameleon
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\
-                                "`kameleon templates`"
+                                "`kameleon template list`"
       else
         tpl.all_files.each do |path|
           relative_path = path.relative_path_from(Kameleon.env.repositories_path)
