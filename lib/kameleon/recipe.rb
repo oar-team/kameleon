@@ -95,7 +95,7 @@ module Kameleon
       # merge cli variable with recursive variable overload
       @global = Utils.overload_merge(@global, @cli_global)
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, kwargs)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self, kwargs)
       resolved_global = @global.merge YAML.load(resolved_global)
       # Loads aliases
       load_aliases(yaml_recipe)
