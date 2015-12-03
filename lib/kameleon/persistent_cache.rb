@@ -39,7 +39,7 @@ module Kameleon
                              :relaxTransparency =>"true",
                              :daemonise => false,
                              :proxyAddress => "0.0.0.0",
-                             :logFile => File.join(Kameleon.env.build_path, 'polipo.log'),
+                             :logFile => File.join(Kameleon.env.build_path, "polipo-#{ENV['USER']}.log"),
                              :logLevel => "4",
                             }
 
