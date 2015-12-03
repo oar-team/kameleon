@@ -184,6 +184,7 @@ module Kameleon
     def do_steps(section_name)
       section = @recipe.sections.fetch(section_name)
       section.sequence do |macrostep|
+        checkpointed = false
         macrostep_time = Time.now.to_i
         if @cache then
           Kameleon.ui.debug("Starting proxy cache server for macrostep '#{macrostep.name}'...")
@@ -209,9 +210,12 @@ module Kameleon
                 safe_exec_cmd(cmd)
               end
               unless microstep.on_checkpoint == "redo"
-                if checkpoint_enabled?
-                  Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
-                  create_checkpoint(microstep.identifier)
+                unless checkpointed
+                  if checkpoint_enabled?
+                    Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
+                    create_checkpoint(microstep.identifier)
+                    checkpointed = true
+                  end
                 end
               end
             end
