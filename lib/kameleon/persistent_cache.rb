@@ -141,8 +141,17 @@ module Kameleon
 
 
     def stop_web_proxy
-      @polipo_process.stop
+      # http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/manual/Stopping.html
       Kameleon.ui.info("Stopping web proxy polipo")
+      unless (@polipo_process.nil? || @polipo_process.exited?)
+        Process.kill("USR2", @polipo_process.pid)  # will write out all the in-memory data to disk and discard as much of the memory cache as possible
+        Process.kill("SIGINT", @polipo_process.pid)  # will shut down cleanly
+        begin
+          @polipo_process.poll_for_exit(10)
+        rescue ChildProcess::TimeoutError
+          @polipo_process.stop # tries increasingly harsher methods to kill the process.
+        end
+      end
     end
 
     def pack()
@@ -198,12 +207,7 @@ module Kameleon
     end
 
     def stop()
-      begin
-        @polipo_process.poll_for_exit(5)
-      rescue ChildProcess::TimeoutError
-        @polipo_process.stop # tries increasingly harsher methods to kill the process.
-      end
-      Kameleon.ui.info("Stopping web proxy polipo")
+      stop_web_proxy
       Kameleon.ui.info("Finishing persistent cache with last files")
       cache_metadata_dir = File.join(@cache_dir,"metadata")
       if @mode == :build then
