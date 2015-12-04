@@ -146,7 +146,7 @@ module Kameleon
       # http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/manual/Stopping.html
       Kameleon.ui.info("Stopping web proxy polipo")
       unless (@polipo_process.nil? || @polipo_process.exited?)
-        Process.kill("USR2", @polipo_process.pid)  # will write out all the in-memory data to disk and discard as much of the memory cache as possible
+        Process.kill("USR1", @polipo_process.pid)  # will write out all the in-memory data to disk
         Process.kill("SIGINT", @polipo_process.pid)  # will shut down cleanly
         begin
           @polipo_process.poll_for_exit(10)
