@@ -29,18 +29,15 @@ module Kameleon
       @polipo_process = nil
       @polipo_port = find_unused_port
 
-                             # :idleTime => "1",
       @polipo_cmd_options = {:diskCacheRoot => "",
                              :maxDiskCacheEntrySize => "-1",
-                             :disableIndexing => "false",
-                             :disableServersList => "false",
+                             :idleTime => "1",
                              :allowedClients => "0.0.0.0/0",
                              :proxyPort => @polipo_port,
-                             :relaxTransparency =>"true",
                              :daemonise => false,
                              :proxyAddress => "0.0.0.0",
                              :logFile => File.join(Kameleon.env.build_path, "polipo-#{ENV['USER']}.log"),
-                             :logLevel => "4",
+                             :logLevel => "0xFF",
                             }
 
       @activated = false
