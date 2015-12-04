@@ -234,6 +234,9 @@ module Kameleon
                   :desc => "Specifies the username and password if the parent "\
                            "proxy requires authorisation it should have the "\
                            "form 'username:password'"
+    method_option :proxy_offline, :type => :boolean ,
+                  :default => false, :aliases => "--offline",
+                  :desc => "Prevents Polipo from contacting remote servers"
     method_option :global, :type => :hash,
                   :default => {}, :aliases => "-g",
                   :desc => "Set custom global variables."

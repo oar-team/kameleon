@@ -21,6 +21,7 @@ module Kameleon
     attr_accessor :recipe_path
     attr_accessor :archive_format
     attr_accessor :polipo_cmd_options
+    attr_accessor :offline
 
     def initialize()
       ## we must configure Polipo to be execute for the in and out context
@@ -53,6 +54,7 @@ module Kameleon
       @recipe_file = nil
       @steps_files = []
       @cached_recipe_dir = nil
+      @offline = false
     end
 
     def find_unused_port
@@ -101,13 +103,16 @@ module Kameleon
     def proxy_is_running?()
       begin
         res = Net::HTTP.get_response(URI("http://127.0.0.1:#{@polipo_port}/polipo/status"))
-        if not res.body.include? "is on line"
-          Kameleon.ui.debug("The proxy is running but not responding. Server response: #{res.inspect}")
-        else
-          Kameleon.ui.debug("The proxy is responding")
-          return true
+        if not @offline
+          if not res.body.include? "is on line"
+            Kameleon.ui.debug("The proxy is running but not responding. Server response: #{res.inspect}")
+            return false
+          else
+            Kameleon.ui.debug("The proxy is responding")
+            return true
+          end
         end
-        return false
+        return true
       rescue Exception => e
         Kameleon.ui.debug("The proxy is not responding. Server response: #{e.message}")
         return false
@@ -261,6 +266,7 @@ module Kameleon
       FileUtils.mkdir_p File.join(@cache_dir,"recipe")
       FileUtils.mkdir_p File.join(@cache_dir,"DATA")
       FileUtils.mkdir_p File.join(@cache_dir,"metadata")
+      @polipo_cmd_options[:proxyOffline] = @offline
     end
 
     def get_recipe()

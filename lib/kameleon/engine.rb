@@ -46,6 +46,7 @@ module Kameleon
         @cache.polipo_path = @options[:polipo_path]
         @cache.name = @recipe.name
         @cache.mode = @options[:enable_cache] ? :build : :from
+        @cache.offline = @options[:proxy_offline]
         @cache.cache_path = @options[:from_cache]
         @cache.recipe_path = @recipe.path
         @cache.archive_format = @options[:cache_archive_compression]
