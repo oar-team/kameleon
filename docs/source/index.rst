@@ -52,6 +52,7 @@ User Documentation
     aliases.rst
     faq.rst
     grid5000_tutorial.rst
+    grid5000_admin_tutorial.rst
 
 Indices and tables
 ==================
