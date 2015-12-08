@@ -301,11 +301,29 @@ module Kameleon
 
       global_hash = {}
       if yaml_include.kind_of? String
-        global_hash.merge!(load_global_file(yaml_include, recipe_path))
+        list_files = [yaml_include]
       elsif yaml_include.kind_of? Array
-        global_hash = {}
-        yaml_include.each do |includes_file|
-          global_hash.merge!(load_global_file(includes_file, recipe_path))
+        list_files = []
+        yaml_include.each do |value|
+          if value.kind_of? String
+            list_files.push(value)
+          end
+        end
+      else
+        return global_hash
+      end
+      list_files.each do |includes_file|
+        filename = includes_file
+        if includes_file.start_with?("-")
+          filename = includes_file[1..-1]
+        end
+        begin
+          new_global = load_global_file(filename, recipe_path)
+          global_hash.merge!(new_global)
+        rescue
+          unless includes_file.start_with?("-")
+            raise
+          end
         end
       end
       return global_hash
