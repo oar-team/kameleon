@@ -50,6 +50,13 @@ module Kameleon
       load! :strict => false
     end
 
+    def update_steps_dirs()
+      # Where we can find steps
+      @steps_dirs = @base_recipes_files.map do |recipe_path|
+        get_steps_dirs(recipe_path)
+      end.flatten!
+    end
+
     def get_steps_dirs(recipe_path)
       relative_path = recipe_path.to_s.gsub(Kameleon.env.root_dir.to_s + '/', '')
       if relative_path.eql? recipe_path.to_s
@@ -80,6 +87,9 @@ module Kameleon
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml error : #{@path}"
       end
+
+      update_steps_dirs()
+
       # Load entended recipe variables
       yaml_recipe = load_base_recipe(yaml_recipe, @path)
       yaml_recipe.delete("extend")
@@ -177,6 +187,7 @@ module Kameleon
     end
 
     def load_base_recipe(yaml_recipe, path)
+
       base_recipe_name = yaml_recipe.fetch("extend", "")
       return yaml_recipe if base_recipe_name.empty?
 
@@ -186,6 +197,9 @@ module Kameleon
 
       ## check that the recipe has not already been loaded
       return yaml_recipe if @base_recipes_files.include? base_recipe_path
+
+      @base_recipes_files.push(Pathname.new(File.expand_path(base_recipe_path)))
+      update_steps_dirs()
 
       base_recipe_path << ".yaml" unless base_recipe_path.end_with? ".yaml"
       fail RecipeError, "Could not find this following recipe : #{@recipe_path}" \
@@ -214,16 +228,87 @@ module Kameleon
           end
           base_yaml_recipe[key] = recipe_section
         elsif ["global"].include? key
-          base_section = base_yaml_recipe.fetch(key, {})
-          base_section = {} if base_section.nil?
-          recipe_section = yaml_recipe[key]
-          recipe_section = {} if recipe_section.nil?
+          base_section = load_global(base_yaml_recipe, base_recipe_path)
+          recipe_section = load_global(yaml_recipe, path)
           # manage recursive variable overload
           base_yaml_recipe[key] = Utils.overload_merge(base_section, recipe_section)
         end
       end
-      @base_recipes_files.push(Pathname.new(File.expand_path(base_recipe_path)))
       return load_base_recipe(base_yaml_recipe, base_recipe_path)
+    end
+
+    def load_global(yaml_recipe, recipe_path)
+      global = {}
+      if yaml_recipe.keys.include? "global"
+        global_loaded = yaml_recipe.fetch("global", {})
+        global_loaded = {} if global_loaded.nil?
+        if global_loaded.kind_of? Hash
+          global_loaded.each do |key, value|
+            if key.eql? "include"
+              global_to_include = load_include_global(value, recipe_path)
+              global.merge!(global_to_include)
+            else
+              global[key] = value
+            end
+          end
+        end
+      end
+      return global
+    end
+
+    def load_include_global(yaml_include, recipe_path)
+      def load_global_file(global_file, recipe_path)
+        def try_to_load(absolute_path)
+          if File.file?(absolute_path)
+            global_to_include = YAML.load_file(absolute_path)
+            if global_to_include.kind_of? Hash
+              @step_files.push(absolute_path)
+              return global_to_include
+            else
+              fail RecipeError, "Global should be a Hash. (check #{absolute_path})"
+            end
+          end
+        end
+        ## check that the recipe has not already been loaded
+        global_file << ".yaml" unless global_file.end_with? ".yaml"
+
+        dir_search = @steps_dirs.map do |steps_dir|
+          File.join(steps_dir, "global")
+        end.flatten
+        dir_search.unshift(File.join(File.dirname(recipe_path)))
+        # try relative/absolute path
+        if Pathname.new(global_file).absolute?
+          global_to_include = try_to_load(global_file)
+          unless global_to_include.nil?
+            return global_to_include
+          else
+            fail RecipeError, "File '#{global_file}' not found"
+          end
+        else
+          dir_search.each do |dir_path|
+            absolute_path = Pathname.new(File.join(dir_path, global_file))
+            global_to_include = try_to_load(absolute_path)
+            unless global_to_include.nil?
+              return global_to_include
+            end
+          end
+        end
+        rel_dir_search = dir_search.map do |steps_dir|
+          relative_path = Pathname.new(steps_dir).relative_path_from(Pathname(Dir.pwd)).to_s
+        end.flatten
+        fail RecipeError, "File '#{global_file}' not found here #{rel_dir_search}"
+      end
+
+      global_hash = {}
+      if yaml_include.kind_of? String
+        global_hash.merge!(load_global_file(yaml_include, recipe_path))
+      elsif yaml_include.kind_of? Array
+        global_hash = {}
+        yaml_include.each do |includes_file|
+          global_hash.merge!(load_global_file(includes_file, recipe_path))
+        end
+      end
+      return global_hash
     end
 
     def load_aliases(yaml_recipe)
