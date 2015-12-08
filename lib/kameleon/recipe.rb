@@ -683,7 +683,7 @@ module Kameleon
         prefix ; Kameleon.ui.info("#{d}")
       end
       Kameleon.ui.info("Variables:")
-      @global.each do |key, value|
+      @global.sort.map do |key, value|
         value = "\n" if value.to_s.empty?
         prefix ; Kameleon.ui.info("#{key}: #{value}")
       end
