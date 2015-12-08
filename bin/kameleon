@@ -26,26 +26,21 @@ rescue Exception  => e
     rescue Kameleon::Exit => e
       exit e.status_code
     rescue Kameleon::Error => e
-      Kameleon.ui.error(e.message)
       Kameleon.ui.trace(e)
       exit e.status_code
     rescue Thor::UndefinedTaskError => e
-      Kameleon.ui.error(e.message)
       Kameleon.ui.trace(e)
       exit 15
     rescue Thor::Error => e
-      Kameleon.ui.error(e.message)
       Kameleon.ui.trace(e)
       exit 15
     rescue SystemExit, Interrupt => e
       Kameleon.ui.error("Quitting...")
       exit 1
     rescue Errno::ENOENT => e
-      Kameleon.ui.error(e.message)
       Kameleon.ui.trace(e)
       exit 16
     rescue Psych::SyntaxError => e
-      Kameleon.ui.error(e.message)
       Kameleon.ui.trace(e)
       exit 17
     rescue Exception => e
