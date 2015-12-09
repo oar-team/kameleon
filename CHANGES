@@ -1,10 +1,23 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.7.0.dev
------------------
+Version 2.7.0
+-------------
 
-**unreleased**
+Released on December 09th 2015
+
+- Fixed variables overload when using inheritance
+- Added support for including global options from a separate file (#57)
+- Allowed kameleon to fail silently if some error occured during include
+- Marked all bash variables for export
+- Sorted variables in ``kameleon info`` dump
+- Removed duplicate error messages
+- Shutdown polipo cleanly (#54)
+- Added offline mode to prevent Polipo from contacting remote servers
+- Fixed polipo default options to avoid "206 partial responses" (#54)
+- Made only one checkpoint per macrostep to improve performance
+- Made polipo log file unique for each user to avoid "Permission denied" error
+- Added new keyword in ZSH completion
 
 Version 2.6.7
 -------------
