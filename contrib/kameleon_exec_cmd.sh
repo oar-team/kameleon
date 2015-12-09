@@ -2,6 +2,7 @@
 
 set -o errexit
 set -o pipefail
+set -o allexport
 
 __ROOT_DIRECTORY__=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
 
