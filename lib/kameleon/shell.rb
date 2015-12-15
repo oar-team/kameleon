@@ -14,6 +14,7 @@ module Kameleon
 
     def initialize(context)
       @cmd = context.cmd.chomp
+      @interactive_cmd = context.interactive_cmd.chomp
       @context_name = context.name
       @local_workdir = context.local_workdir
       @shell_workdir = context.workdir
@@ -45,6 +46,9 @@ module Kameleon
 
       @shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
                    "#{@cmd} --rcfile #{@bashrc_file}"
+      @interactive_shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
+                   "#{@interactive_cmd} --rcfile #{@bashrc_file}"
+
       Kameleon.ui.debug("Initialize shell (#{self})")
       # Injecting all variables of the options and assign the variables
       instance_variables.each do |v|
@@ -238,8 +242,8 @@ SCRIPT
       return get_status
     end
 
-    def fork_and_wait
-      process, _, _ = fork("inherit")
+    def start_interactive
+      process, _, _ = fork("interactive")
       process.wait()
     end
 
@@ -285,8 +289,13 @@ SCRIPT
     end
 
     def fork(io)
-      command = ["bash", "-c", @shell_cmd]
-      Kameleon.ui.info("Starting process: #{@cmd.inspect}")
+      if io.eql? "interactive"
+        command = ["bash", "-c", @interactive_shell_cmd]
+        Kameleon.ui.info("Starting interactive command: #{@interactive_shell_cmd.inspect}")
+      else
+        command = ["bash", "-c", @shell_cmd]
+        Kameleon.ui.info("Starting command: #{@cmd.inspect}")
+      end
       Kameleon.ui.debug("Starting shell process: #{ command.inspect}")
       ChildProcess.posix_spawn = true
       process = ChildProcess.build(*command)
@@ -299,7 +308,7 @@ SCRIPT
         process.io.stderr = stderr_writer
         # sets up pipe so process.io.stdin will be available after .start
         process.duplex = true
-      elsif io.eql? "inherit"
+      elsif io.eql? "interactive"
         process.io.inherit!
       end
 

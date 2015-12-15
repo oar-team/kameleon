@@ -6,16 +6,18 @@ module Kameleon
     attr_accessor :shell
     attr_accessor :name
     attr_accessor :cmd
+    attr_accessor :interactive_cmd
     attr_accessor :workdir
     attr_accessor :local_workdir
     attr_accessor :proxy
     attr_accessor :env_files
 
 
-    def initialize(name, cmd, workdir, exec_prefix, local_workdir, env_files,
-                   kwargs = {})
+    def initialize(name, cmd, interactive_cmd, workdir, exec_prefix,
+                   local_workdir, env_files, kwargs = {})
       @name = name.downcase
       @cmd = cmd
+      @interactive_cmd = interactive_cmd
       @workdir = workdir
       @exec_prefix = exec_prefix
       @local_workdir = local_workdir
@@ -128,7 +130,7 @@ module Kameleon
       #TODO: Load env and history
       load_shell
       Kameleon.ui.info("Starting interactive shell")
-      @shell.fork_and_wait
+      @shell.start_interactive
     rescue ShellError => e
       e.message.split( /\r?\n/ ).each {|m| Kameleon.ui.error m }
     end
