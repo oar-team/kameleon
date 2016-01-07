@@ -109,11 +109,11 @@ module Kameleon
           yaml_recipe["global"][context_name] = {}
         end
         @global[context_name].merge!(yaml_recipe["global"][context_name])
+        yaml_recipe["global"][context_name] = @global[context_name]
         unless yaml_recipe["global"][context_name].keys.include? "interactive_cmd"
           yaml_recipe["global"][context_name]["interactive_cmd"] = yaml_recipe["global"][context_name]['cmd'] 
         end
       end
-
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
       # merge cli variable with recursive variable overload
