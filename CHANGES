@@ -8,6 +8,11 @@ Version 2.8.0.dev
 
 - Added ``interactive_cmd`` option to set a more apropriate interactive shell command
 
+Version 2.7.1
+-------------
+
+- Non-strictly template variable resolution (Fixed #67)
+
 Version 2.7.0
 -------------
 

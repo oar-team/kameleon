@@ -145,7 +145,7 @@ module Kameleon
 
       begin
         tpl = Kameleon::RecipeTemplate.new(template_path)
-        tpl.resolve!
+        tpl.resolve! :strict => false
       rescue
         raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                 "To see all templates, run the command "\

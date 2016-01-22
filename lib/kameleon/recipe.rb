@@ -523,14 +523,14 @@ module Kameleon
       fail RecipeError, "Cannot found data '#{partial_path}' used in '#{step_path}'"
     end
 
-    def resolve!
+    def resolve!(kwargs = {})
       unless @global.keys.include? "kameleon_uuid"
         kameleon_id = SecureRandom.uuid
         @global["kameleon_uuid"] = kameleon_id
         @global["kameleon_short_uuid"] = kameleon_id.split("-").last
       end
       # Resolve dynamically-defined variables !!
-      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self)
+      resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self, kwargs)
       @global.merge! YAML.load(resolved_global)
 
       consistency_check
