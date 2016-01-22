@@ -1,9 +1,10 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.7.1.dev
------------------
+Version 2.7.1
+-------------
 
+- Non-strictly template variable resolution (Fixed #67)
 
 Version 2.7.0
 -------------
