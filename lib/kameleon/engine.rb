@@ -92,7 +92,7 @@ module Kameleon
       proxy_cache_in = @recipe.global["in_context"]["proxy_cache"]
 
       Kameleon.ui.debug("Building local context [local]")
-      @local_context = Context.new("local", "bash", @cwd, "", @cwd,
+      @local_context = Context.new("local", "bash", "bash", @cwd, "", @cwd,
                                    @recipe.env_files,
                                    :proxy => @recipe.global["proxy_local"],
                                    :lazyload => lazyload,
@@ -100,6 +100,7 @@ module Kameleon
       Kameleon.ui.debug("Building external context [out]")
       @out_context = Context.new("out",
                                  @recipe.global["out_context"]["cmd"],
+                                 @recipe.global["out_context"]["interactive_cmd"],
                                  @recipe.global["out_context"]["workdir"],
                                  @recipe.global["out_context"]["exec_prefix"],
                                  @cwd,
@@ -111,6 +112,7 @@ module Kameleon
       Kameleon.ui.debug("Building internal context [in]")
       @in_context = Context.new("in",
                                 @recipe.global["in_context"]["cmd"],
+                                @recipe.global["in_context"]["interactive_cmd"],
                                 @recipe.global["in_context"]["workdir"],
                                 @recipe.global["in_context"]["exec_prefix"],
                                 @cwd,

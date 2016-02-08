@@ -6,6 +6,7 @@ Version 2.7.2.dev
 
 **unreleased**
 
+- Added ``interactive_cmd`` option to set a more apropriate interactive shell command
 
 Version 2.7.1
 -------------

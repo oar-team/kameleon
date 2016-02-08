@@ -56,7 +56,7 @@ module Kameleon
         end
         begin
           tpl = RecipeTemplate.new(template_path)
-          tpl.resolve!
+          tpl.resolve! :strict => false
         rescue
           raise TemplateNotFound, "Template '#{template_name}' not found. " \
                                   "To see all templates, run the command "\
@@ -81,7 +81,7 @@ module Kameleon
           template_path = template_path + '.yaml'
         end
         tpl = RecipeTemplate.new(template_path)
-        tpl.resolve!
+        tpl.resolve! :strict => false
         tpl.display_info
       end
       map %w(-h --help) => :help

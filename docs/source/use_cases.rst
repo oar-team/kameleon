@@ -32,9 +32,9 @@ You can directly use the templates that provide a desktop. However, here is an
 example of adding desktop capability to the ``debian8`` template. First create
 a new recipe from this template::
 
-     kameleon new debian8-dektop -t debian8
+     kameleon new debian8-desktop -t debian8
 
-Then edit the recipe file ``debian8-dektop.yaml`` and add ``gnome-core`` and ``xorg``
+Then edit the recipe file ``debian8-desktop.yaml`` and add ``gnome-core`` and ``xorg``
 packages to the install list::
 
     setup:
