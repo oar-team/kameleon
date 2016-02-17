@@ -1,12 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.7.2.dev
------------------
+Version 2.7.2
+-------------
 
-**unreleased**
+Released on February 17th 2016
 
 - Added ``interactive_cmd`` option to set a more apropriate interactive shell command
+- Removed bash errexit flag to force bash to trap interruption
 
 Version 2.7.1
 -------------
