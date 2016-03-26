@@ -407,10 +407,11 @@ module Kameleon
     def dry_run_build
       ["bootstrap", "setup", "export"].each do |section_name|
         section = @recipe.sections.fetch(section_name)
+        Kameleon.ui.info("Section #{section.name}")
         section.sequence do |macrostep|
+          Kameleon.ui.info("  Macrostep #{macrostep.name} (#{ macrostep.path })")
           macrostep.sequence do |microstep|
-            step_prefix = "Step #{ microstep.order } : "
-            Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
+            Kameleon.ui.info("    Microstep ##{ microstep.order } #{ microstep.name }")
           end
         end
       end
