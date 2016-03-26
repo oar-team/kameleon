@@ -74,15 +74,16 @@ module Kameleon
       if @options[:enable_cache] || @options[:from_cache] then
         @cache.recipe_files = @recipe.all_files
       end
-
-      begin
-        Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
-        FileUtils.mkdir_p @cwd
-      rescue
-        raise BuildError, "Failed to create build directory #{@cwd}"
+      unless @options[:dry_run]
+        begin
+          Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
+          FileUtils.mkdir_p @cwd
+        rescue
+          raise BuildError, "Failed to create build directory #{@cwd}"
+        end
+        @cache.start if @cache
+        build_contexts
       end
-      @cache.start if @cache
-      build_contexts
     end
 
     def build_contexts
@@ -401,6 +402,18 @@ module Kameleon
         end
       end
       @cache.stop_web_proxy if @options[:enable_cache] ## stopping polipo
+    end
+
+    def dry_run_build
+      ["bootstrap", "setup", "export"].each do |section_name|
+        section = @recipe.sections.fetch(section_name)
+        section.sequence do |macrostep|
+          macrostep.sequence do |microstep|
+            step_prefix = "Step #{ microstep.order } : "
+            Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
+          end
+        end
+      end
     end
 
     def build

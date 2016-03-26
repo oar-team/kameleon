@@ -240,6 +240,9 @@ module Kameleon
     method_option :global, :type => :hash,
                   :default => {}, :aliases => "-g",
                   :desc => "Set custom global variables."
+    method_option :dry_run, :type => :boolean,
+                  :default => false,
+                  :desc => "Do not actually build, just show what would be done instead"
     def build(recipe_path=nil)
       if recipe_path.nil? && !options[:from_cache].nil?
         unless File.file?(options[:from_cache])
@@ -263,6 +266,10 @@ module Kameleon
         Kameleon.ui.level = "error"
         engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
         engine.pretty_checkpoints_list
+      elsif options[:dry_run]
+        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+        Kameleon.ui.info("Dry run build for recipe '#{recipe_path}'")
+        engine.dry_run_build
       else
         engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
         Kameleon.ui.info("Starting build recipe '#{recipe_path}'")
