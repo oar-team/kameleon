@@ -183,12 +183,15 @@ module Kameleon
     method_option :dag, :type => :boolean ,
                   :default => false,
                   :desc => "Show a DAG of the build sequence"
+    method_option :file, :type => :string ,
+                  :default => "/tmp/kameleon.png",
+                  :desc => "Output file for the DAG (with extension)"
     method_option :relative, :type => :boolean ,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
 
-    def info(recipe_path=nil)
-      if recipe_path.nil? && !options[:from_cache].nil?
+    def info(*recipe_paths)
+      if recipe_paths.length == 0 && !options[:from_cache].nil?
         unless File.file?(options[:from_cache])
           raise CacheError, "The specified cache file "\
                             "\"#{options[:from_cache]}\" do not exists"
@@ -198,16 +201,21 @@ module Kameleon
         @cache.cache_path = options[:from_cache]
         recipe_path =  @cache.get_recipe
       end
-      recipe = Kameleon::Recipe.new(recipe_path)
-      recipe.resolve!
-      if options[:dryrun]
-        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
-        engine.dryrun
-      elsif options[:dag]
-        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
-        engine.dag
-      else
-        recipe.display_info(options[:relative])
+      dag = nil
+      color = 0
+      recipe_paths.each do |path|
+        recipe = Kameleon::Recipe.new(path)
+        if options[:dryrun]
+          Kameleon::Engine.new(recipe, options).dryrun
+        elsif options[:dag]
+          dag = Kameleon::Engine.new(recipe, options).dag(dag, color)
+          color += 1
+        else
+          recipe.display_info(options[:relative])
+        end
+      end
+      if options[:dag]
+        dag.output( :png => options[:file] )
       end
     end
 

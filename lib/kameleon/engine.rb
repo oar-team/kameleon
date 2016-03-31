@@ -434,35 +434,53 @@ module Kameleon
           end
         end
       end
+      Kameleon.ui.shell.say ""
     end
 
-    def dag
-      g =  GraphViz::new( "G" )
-      n = nil
+    def dag(graph, color)
+      if graph.nil?
+        graph =  GraphViz::new( "G" )
+      end
+      recipe_path = @recipe.path.relative_path_from(Pathname(Dir.pwd)).to_s
+      colorscheme = "set18"
+      color = (color % 8 + 1).to_s
+      n_start = graph.add_nodes(recipe_path)
+      n_start['label'] = recipe_path
+      n_start['shape'] = 'Mdiamond'
+      n_start['colorscheme'] = colorscheme
+      n_start['color'] = color
+      n_prev = n_start
+      g_edge = graph 
       ["bootstrap", "setup", "export"].each do |section_name|
         section = @recipe.sections.fetch(section_name)
-        g_section = g.add_graph( section_name )
-        g_section['label'] = section_name
-        g_section['style'] = 'filled'
-        g_section['color'] = 'red'
+        g_section = graph.add_graph( "cluster S:#{ section_name }" )
+        g_section['label'] = section_name.capitalize
         section.sequence do |macrostep|
-          g_macrostep = g_section.add_graph( macrostep.name )
+          g_macrostep = g_section.add_graph( "cluster M:#{ macrostep.name }")
           g_macrostep['label'] = macrostep.name
           g_macrostep['style'] = 'filled'
-          g_macrostep['color'] = 'blue'
+          g_macrostep['color'] = 'gray'
           macrostep.sequence do |microstep|
-            n_microstep = g_macrostep.add_nodes("#{macrostep.name}/#{microstep.name}")
+            n_microstep = g_section.add_nodes("m:#{macrostep.name}/#{microstep.name}")
             n_microstep['label'] = microstep.name
             n_microstep['style'] = 'filled'
-            n_microstep['color'] = 'green'
-            if n
-              g.add_edges(n, n_microstep)
-            end
-            n = n_microstep
+            n_microstep['color'] = 'white'
+            edge = g_edge.add_edges(n_prev,  n_microstep)
+            edge['colorscheme'] = colorscheme
+            edge['color'] = color
+            g_edge = g_macrostep
+            n_prev = n_microstep
           end
         end
       end
-      g.output( :png => "/tmp/#{ @recipe.name }.png" )
+      n_end = graph.add_nodes('end')
+      n_end['label'] = 'END'
+      n_end['shape'] = 'Msquare'
+      edge = graph.add_edges(n_prev, n_end)
+      edge['colorscheme'] = colorscheme
+      edge['color'] = color
+      Kameleon.ui.info "=> Drawn DAG for #{recipe_path}"
+      return graph
     end
 
     def build
