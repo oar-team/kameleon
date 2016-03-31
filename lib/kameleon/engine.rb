@@ -479,7 +479,7 @@ module Kameleon
       edge = graph.add_edges(n_prev, n_end)
       edge['colorscheme'] = colorscheme
       edge['color'] = color
-      Kameleon.ui.info "=> Drawn DAG for #{recipe_path}"
+      Kameleon.ui.info "-> Drawn DAG for #{recipe_path}"
       return graph
     end
 

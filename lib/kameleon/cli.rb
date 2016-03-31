@@ -216,6 +216,7 @@ module Kameleon
       end
       if options[:dag]
         dag.output( :png => options[:file] )
+        Kameleon.ui.info("=> #{options[:file]} is generated")
       end
     end
 
