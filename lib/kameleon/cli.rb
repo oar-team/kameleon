@@ -177,6 +177,12 @@ module Kameleon
     method_option :from_cache, :type => :string ,
                   :default => nil,
                   :desc => "Get info from a persistent cache tar file (ignore recipe path)"
+    method_option :dryrun, :type => :boolean ,
+                  :default => false,
+                  :desc => "Show the build sequence but do not actually build"
+    method_option :dag, :type => :boolean ,
+                  :default => false,
+                  :desc => "Show a DAG of the build sequence"
     method_option :relative, :type => :boolean ,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
@@ -194,7 +200,15 @@ module Kameleon
       end
       recipe = Kameleon::Recipe.new(recipe_path)
       recipe.resolve!
-      recipe.display_info(options[:relative])
+      if options[:dryrun]
+        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+        engine.dryrun
+      elsif options[:dag]
+        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
+        engine.dag
+      else
+        recipe.display_info(options[:relative])
+      end
     end
 
     desc "build [RECIPE_PATH]", "Builds the appliance from the given recipe"

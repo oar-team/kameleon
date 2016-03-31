@@ -1,6 +1,7 @@
 require 'kameleon/recipe'
 require 'kameleon/context'
 require 'kameleon/persistent_cache'
+require 'graphviz'
 
 
 module Kameleon
@@ -74,7 +75,7 @@ module Kameleon
       if @options[:enable_cache] || @options[:from_cache] then
         @cache.recipe_files = @recipe.all_files
       end
-      unless @options[:dry_run]
+      unless @options[:dryrun] or @options[:dag]
         begin
           Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
           FileUtils.mkdir_p @cwd
@@ -404,17 +405,64 @@ module Kameleon
       @cache.stop_web_proxy if @options[:enable_cache] ## stopping polipo
     end
 
-    def dry_run_build
+    def dryrun
+      def relative_or_absolute_path(path)
+        if @options[:relative]
+          return path.relative_path_from(Pathname(Dir.pwd))
+        else
+          return path
+        end
+      end
+      Kameleon.ui.shell.say ""
+      Kameleon.ui.shell.say "#{ @recipe.name } ", :bold
+      Kameleon.ui.shell.say "(#{ relative_or_absolute_path(@recipe.path) })", :cyan
       ["bootstrap", "setup", "export"].each do |section_name|
         section = @recipe.sections.fetch(section_name)
-        Kameleon.ui.info("Section #{section.name}")
+        Kameleon.ui.shell.say "[" << section.name.capitalize << "]", :red
         section.sequence do |macrostep|
-          Kameleon.ui.info("  Macrostep #{macrostep.name} (#{ macrostep.path })")
+          Kameleon.ui.shell.say "  "
+          Kameleon.ui.shell.say "#{macrostep.name} ", :bold
+          if macrostep.path
+            Kameleon.ui.shell.say "(#{ relative_or_absolute_path(macrostep.path) })", :cyan
+          else
+            Kameleon.ui.shell.say "(internal)", :cyan
+          end
           macrostep.sequence do |microstep|
-            Kameleon.ui.info("    Microstep ##{ microstep.order } #{ microstep.name }")
+            Kameleon.ui.shell.say "  --> ", :magenta
+            Kameleon.ui.shell.say "#{ microstep.order } ", :green
+            Kameleon.ui.shell.say "#{ microstep.name }", :yellow
           end
         end
       end
+    end
+
+    def dag
+      g =  GraphViz::new( "G" )
+      n = nil
+      ["bootstrap", "setup", "export"].each do |section_name|
+        section = @recipe.sections.fetch(section_name)
+        g_section = g.add_graph( section_name )
+        g_section['label'] = section_name
+        g_section['style'] = 'filled'
+        g_section['color'] = 'red'
+        section.sequence do |macrostep|
+          g_macrostep = g_section.add_graph( macrostep.name )
+          g_macrostep['label'] = macrostep.name
+          g_macrostep['style'] = 'filled'
+          g_macrostep['color'] = 'blue'
+          macrostep.sequence do |microstep|
+            n_microstep = g_macrostep.add_nodes("#{macrostep.name}/#{microstep.name}")
+            n_microstep['label'] = microstep.name
+            n_microstep['style'] = 'filled'
+            n_microstep['color'] = 'green'
+            if n
+              g.add_edges(n, n_microstep)
+            end
+            n = n_microstep
+          end
+        end
+      end
+      g.output( :png => "/tmp/#{ @recipe.name }.png" )
     end
 
     def build
