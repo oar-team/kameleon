@@ -775,34 +775,45 @@ module Kameleon
       return recipe_hash
     end
 
-    def display_info
+    def display_info(do_relative_path)
       def prefix
-        Kameleon.ui.shell.say " -> ", :blue
+        Kameleon.ui.shell.say " -> ", :magenta
       end
-      Kameleon.ui.info("Description:")
-      prefix ; Kameleon.ui.info("#{@metainfo['description']}")
-      Kameleon.ui.info("Path:")
-      prefix ; Kameleon.ui.info("#{@path}")
-      Kameleon.ui.info("Parent recipes:")
+      def relative_or_absolute_path(do_relative_path, path)
+        if do_relative_path
+          return path.relative_path_from(Pathname(Dir.pwd))
+        else
+          return path
+        end
+      end
+      Kameleon.ui.shell.say
+      Kameleon.ui.shell.say "[Name]", :red
+      prefix ; Kameleon.ui.shell.say "#{@name}"
+      Kameleon.ui.shell.say "[Path]", :red
+      prefix ; Kameleon.ui.shell.say relative_or_absolute_path(do_relative_path, @path), :cyan
+      Kameleon.ui.shell.say "[Description]", :red
+      prefix ; Kameleon.ui.shell.say "#{@metainfo['description']}"
+      Kameleon.ui.shell.say "[Parent recipes]", :red
       (@base_recipes_files - [@path]).each do |base_recipe_file|
-        prefix ; Kameleon.ui.info("#{base_recipe_file}")
+        prefix ; Kameleon.ui.shell.say relative_or_absolute_path(do_relative_path, base_recipe_file), :cyan
       end
-      Kameleon.ui.info("Steps:")
+      Kameleon.ui.shell.say "[Steps]", :red
       @step_files.each do |step|
-        prefix ; Kameleon.ui.info("#{step}")
+        prefix ; Kameleon.ui.shell.say relative_or_absolute_path(do_relative_path, step), :cyan
       end
-      Kameleon.ui.info("Data:")
+      Kameleon.ui.shell.say "[Data]", :red
       @data_files.each do |d|
-        prefix ; Kameleon.ui.info("#{d}")
+        prefix ; Kameleon.ui.shell.say relative_or_absolute_path(do_relative_path, d), :cyan
       end
-      Kameleon.ui.info("Environment scripts:")
+      Kameleon.ui.shell.say "[Environment scripts]", :red
       @env_files.each do |d|
-        prefix ; Kameleon.ui.info("#{d}")
+        prefix ; Kameleon.ui.shell.say relative_or_absolute_path(do_relative_path, d), :cyan
       end
-      Kameleon.ui.info("Variables:")
+      Kameleon.ui.shell.say "[Variables]", :red
       @global.sort.map do |key, value|
         value = "\n" if value.to_s.empty?
-        prefix ; Kameleon.ui.info("#{key}: #{value}")
+        prefix ; Kameleon.ui.shell.say "#{key}: ", :yellow
+        Kameleon.ui.shell.say "#{value}"
       end
     end
 

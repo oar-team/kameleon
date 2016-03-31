@@ -82,7 +82,7 @@ module Kameleon
         end
         tpl = RecipeTemplate.new(template_path)
         tpl.resolve! :strict => false
-        tpl.display_info
+        tpl.display_info(false)
       end
       map %w(-h --help) => :help
       map %w(ls) => :list
@@ -170,13 +170,16 @@ module Kameleon
       end
     end
 
-    desc "info [[RECIPE_PATH]]", "Display detailed information about a recipe"
+    desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
     method_option :global, :type => :hash ,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
     method_option :from_cache, :type => :string ,
                   :default => nil,
                   :desc => "Get info from a persistent cache tar file (ignore recipe path)"
+    method_option :relative, :type => :boolean ,
+                  :default => false,
+                  :desc => "Make pathnames relative to the current working directory"
 
     def info(recipe_path=nil)
       if recipe_path.nil? && !options[:from_cache].nil?
@@ -191,10 +194,10 @@ module Kameleon
       end
       recipe = Kameleon::Recipe.new(recipe_path)
       recipe.resolve!
-      recipe.display_info
+      recipe.display_info(options[:relative])
     end
 
-    desc "build [[RECIPE_PATH]]", "Builds the appliance from the given recipe"
+    desc "build [RECIPE_PATH]", "Builds the appliance from the given recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Sets the build directory path"
@@ -240,9 +243,6 @@ module Kameleon
     method_option :global, :type => :hash,
                   :default => {}, :aliases => "-g",
                   :desc => "Set custom global variables."
-    method_option :dry_run, :type => :boolean,
-                  :default => false,
-                  :desc => "Do not actually build, just show what would be done instead"
     def build(recipe_path=nil)
       if recipe_path.nil? && !options[:from_cache].nil?
         unless File.file?(options[:from_cache])
@@ -266,10 +266,6 @@ module Kameleon
         Kameleon.ui.level = "error"
         engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
         engine.pretty_checkpoints_list
-      elsif options[:dry_run]
-        engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
-        Kameleon.ui.info("Dry run build for recipe '#{recipe_path}'")
-        engine.dry_run_build
       else
         engine = Kameleon::Engine.new(Recipe.new(recipe_path), options)
         Kameleon.ui.info("Starting build recipe '#{recipe_path}'")
