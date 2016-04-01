@@ -37,6 +37,7 @@ module Kameleon
 
     def value
       if @value.nil?
+        Kameleon.ui.debug("Parsed string = #{@string_cmd}")
         object = YAML.load(@string_cmd)
         if object.kind_of? Command
           @value = object
@@ -58,10 +59,9 @@ module Kameleon
       end
       @value
     rescue
-      lines = YAML.dump(object).gsub("---", "").strip
-      lines = lines.split( /\r?\n/ ).map {|l| "> #{l}" }
-      fail RecipeError, "Syntax error for microstep #{@microstep_name} : \n"\
-                        "#{ lines.join "\n"}"
+      fail RecipeError, "Syntax error after variable resolution for microstep #{@microstep_name}, parsed string =\n"\
+                        "#{@string_cmd}\n"\
+                        "Maybe you should remove trailing newline from variable using '>-' or '|-'"
     end
 
     def to_array
