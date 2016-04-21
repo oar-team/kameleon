@@ -446,12 +446,19 @@ module Kameleon
       color = (color % 8 + 1).to_s
       g_recipes = graph.add_graph( "cluster R:recipes" )
       g_recipes['label'] = 'Recipes'
-      n_start = g_recipes.add_nodes(recipe_path)
-      n_start['label'] = recipe_path
-      n_start['shape'] = 'Mdiamond'
-      n_start['colorscheme'] = colorscheme
-      n_start['color'] = color
-      n_prev = n_start
+      g_recipes['style'] = 'dashed'
+      n_recipe = g_recipes.add_nodes(recipe_path)
+      n_recipe['label'] = recipe_path
+      n_recipe['shape'] = 'Mdiamond'
+      n_recipe['colorscheme'] = colorscheme
+      n_recipe['color'] = color
+      (@recipe.base_recipes_files - [@recipe.path]).uniq.each do |base_recipe_path|
+          n_base_recipe = g_recipes.add_nodes(base_recipe_path.relative_path_from(Pathname(Dir.pwd)).to_s)
+          n_base_recipe['shape'] = 'Mdiamond'
+          edge = g_recipes.add_edges(n_base_recipe, n_recipe)
+          edge['style'] = 'dashed'
+      end
+      n_prev = n_recipe
       ["bootstrap", "setup", "export"].each do |section_name|
         section = @recipe.sections.fetch(section_name)
         g_section = graph.add_graph( "cluster S:#{ section_name }" )
