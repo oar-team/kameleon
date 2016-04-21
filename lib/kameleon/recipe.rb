@@ -90,7 +90,7 @@ module Kameleon
 
       update_steps_dirs()
 
-      # Load entended recipe variables
+      # Load extended recipe variables
       yaml_recipe = load_base_recipe(yaml_recipe, @path)
       yaml_recipe.delete("extend")
 
