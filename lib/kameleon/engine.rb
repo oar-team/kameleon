@@ -444,13 +444,14 @@ module Kameleon
       recipe_path = @recipe.path.relative_path_from(Pathname(Dir.pwd)).to_s
       colorscheme = "set18"
       color = (color % 8 + 1).to_s
-      n_start = graph.add_nodes(recipe_path)
+      g_recipes = graph.add_graph( "cluster R:recipes" )
+      g_recipes['label'] = 'Recipes'
+      n_start = g_recipes.add_nodes(recipe_path)
       n_start['label'] = recipe_path
       n_start['shape'] = 'Mdiamond'
       n_start['colorscheme'] = colorscheme
       n_start['color'] = color
       n_prev = n_start
-      g_edge = graph 
       ["bootstrap", "setup", "export"].each do |section_name|
         section = @recipe.sections.fetch(section_name)
         g_section = graph.add_graph( "cluster S:#{ section_name }" )
@@ -465,10 +466,9 @@ module Kameleon
             n_microstep['label'] = microstep.name
             n_microstep['style'] = 'filled'
             n_microstep['color'] = 'white'
-            edge = g_edge.add_edges(n_prev,  n_microstep)
+            edge = g_macrostep.add_edges(n_prev, n_microstep)
             edge['colorscheme'] = colorscheme
             edge['color'] = color
-            g_edge = g_macrostep
             n_prev = n_microstep
           end
         end
