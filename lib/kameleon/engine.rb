@@ -465,16 +465,18 @@ module Kameleon
         g_section['label'] = section_name.capitalize
         section.sequence do |macrostep|
           if macrostep.path.nil?
-              macrostep_path = macrostep.name
+              macrostep_name = macrostep.name
           else
-              macrostep_path = macrostep.path.relative_path_from(Pathname(Dir.pwd)).to_s
+              macrostep_name = macrostep.path.relative_path_from(Pathname(Dir.pwd)).to_s
+              macrostep_name.chomp!(".yaml")
+              macrostep_name.sub!(/^steps\//, "")
           end
-          g_macrostep = g_section.add_graph( "cluster M:#{ macrostep_path }")
-          g_macrostep['label'] = macrostep_path
+          g_macrostep = g_section.add_graph( "cluster M:#{ macrostep_name }")
+          g_macrostep['label'] = macrostep_name
           g_macrostep['style'] = 'filled'
           g_macrostep['color'] = 'gray'
           macrostep.sequence do |microstep|
-            n_microstep = g_section.add_nodes("m:#{macrostep_path}/#{microstep.name}")
+            n_microstep = g_section.add_nodes("m:#{macrostep_name}/#{microstep.name}")
             n_microstep['label'] = microstep.name
             n_microstep['style'] = 'filled'
             n_microstep['color'] = 'white'
