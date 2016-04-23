@@ -1,6 +1,8 @@
 require 'kameleon/engine'
 require 'kameleon/recipe'
 require 'kameleon/utils'
+require 'tempfile'
+require 'graphviz'
 
 module Kameleon
 
@@ -184,8 +186,10 @@ module Kameleon
                   :default => false,
                   :desc => "Show a DAG of the build sequence"
     method_option :file, :type => :string ,
-                  :default => "/tmp/kameleon.png",
-                  :desc => "Output file for the DAG (with extension)"
+                  :default => "/tmp/kameleon.dag",
+                  :desc => "DAG output filename"
+    method_option :format, :type => :string ,
+                  :desc => "DAG GraphViz format"
     method_option :relative, :type => :boolean ,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
@@ -215,9 +219,22 @@ module Kameleon
         end
       end
       if options[:dag]
-        dag.output( :png => options[:file] )
-        dag.output( :dot => "#{options[:file]}.dot" )
-        Kameleon.ui.info("=> #{options[:file]} is generated")
+        format = "canon"
+        if options[:format]
+          if GraphViz::Constants::FORMATS.include?(options[:format])
+            format = options[:format]
+          else
+            Kameleon.ui.warn("Unknown GraphViz format #{options[:format]}, fall back to #{format}")
+          end
+        else
+          options[:file].match(/^.+\.([^\.]+)$/) do |f|
+            if GraphViz::Constants::FORMATS.include?(f[1])
+              format = f[1]
+            end
+          end
+        end
+        dag.output( :"#{format}" => options[:file] )
+        Kameleon.ui.info("Generated GraphViz #{format} file: #{options[:file]}")
       end
     end
 
