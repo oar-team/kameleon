@@ -455,7 +455,7 @@ module Kameleon
       (@recipe.base_recipes_files - [@recipe.path]).uniq.each do |base_recipe_path|
           n_base_recipe = g_recipes.add_nodes(base_recipe_path.relative_path_from(Pathname(Dir.pwd)).to_s)
           n_base_recipe['shape'] = 'Mdiamond'
-          edge = g_recipes.add_edges(n_base_recipe, n_recipe)
+          edge = graph.add_edges(n_base_recipe, n_recipe)
           edge['style'] = 'dashed'
       end
       n_prev = n_recipe
@@ -476,11 +476,11 @@ module Kameleon
           g_macrostep['style'] = 'filled'
           g_macrostep['color'] = 'gray'
           macrostep.sequence do |microstep|
-            n_microstep = g_section.add_nodes("m:#{macrostep_name}/#{microstep.name}")
+            n_microstep = g_macrostep.add_nodes("m:#{macrostep_name}/#{microstep.name}")
             n_microstep['label'] = microstep.name
             n_microstep['style'] = 'filled'
             n_microstep['color'] = 'white'
-            edge = g_macrostep.add_edges(n_prev, n_microstep)
+            edge = graph.add_edges(n_prev, n_microstep)
             edge['colorscheme'] = colorscheme
             edge['color'] = color
             n_prev = n_microstep
