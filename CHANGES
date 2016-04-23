@@ -6,6 +6,11 @@ Version 2.7.3.dev
 
 **unreleased**
 
+- The info command can now handle multiple recipes
+- Colorized the output of the info command
+- Added the dryrun option to the info command
+- Added the dag option to the info command: draw a GraphViz dag for recipes
+
 Version 2.7.2
 -------------
 
