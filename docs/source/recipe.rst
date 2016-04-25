@@ -227,6 +227,11 @@ kameleon_recipe_name
 kameleon_recipe_dir
     Directory where the recipe is located (eg. ~/recipes)
 
+kameleon_data_dir
+    Directory the is watch by the cache mechanism: Each local file that
+    is used during the build should be located here. See Data_ for more
+    information.
+
 kameleon_cwd
     Current recipe of Kameleon during the build (eg. ~/recipes/build/my_debian7)
 
@@ -238,3 +243,40 @@ kameleon_short_uuid
 
 persistent_cache
     'true' if the user enabled the cache, otherwise 'false'
+
+.. _data:
+
+Data
+----
+
+File that are stored in ``steps/data/`` of your recipe, or of a recipe
+it extends, can be access with the built-in variable
+``$$kameleon_data_dir``. The advantage of this mechanism over a simple copy
+from one context to an other is twofold:
+
+* All the artefact used to produce your recipe are stored inside you
+  Kameleon workspace and the persistent cache is caching everything that is
+  located on these directories.
+* You can override any artifacts inherited from a parent recipe by
+  providing an other file that as the same name in the ``steps/data/``
+  folder of the child recipe.
+
+.. warning:: You **MUST** use this directory if you want to cache any data
+   that is not coming from the web.
+
+An example is better than long sentences, so here is an example:
+
+By default, some Kameleon recipes gives you a ``.bashrc`` file that
+customize you prompt and add some aliases, but you have your own
+built-over-the-years bash configuration file and you want all your images
+to have it. To do so, just override the ``skel/.bashrc`` that is used by
+the ``kameleon_customization.yaml`` step in your data folder:
+
+.. code-block:: bash
+
+   # where your recipe is:
+   mkdir -p steps/data
+   cp ~/.bashrc steps/data
+
+And that's it! When you will build your recipe all your aliases and pretty
+prompt colors will be there :)
