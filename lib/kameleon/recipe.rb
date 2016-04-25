@@ -21,6 +21,9 @@ module Kameleon
 
     def initialize(path, kwargs = {})
       @path = Pathname.new(File.expand_path(path))
+      if not @path.exist? and @path.extname != ".yaml"
+        @path = Pathname.new(File.expand_path(path + ".yaml"))
+      end
       @name = (@path.basename ".yaml").to_s
       @recipe_content = File.open(@path, 'r') { |f| f.read }
       @sections = {
