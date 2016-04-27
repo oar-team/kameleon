@@ -1,6 +1,14 @@
 module Kameleon
   module Utils
 
+    @@warned_vars = Array.new
+    def self.warn_var(var)
+      if ! @@warned_vars.include?(var)
+        Kameleon.ui.warn("Warning : variable $$#{var[0]} is not enclosed with braces, which may cause errors. Please prefer using $${#{var[0]}}.")
+        @@warned_vars.push(var)
+      end
+    end
+
 
     def self.resolve_vars(raw, yaml_path, initial_variables, recipe, kwargs = {})
       raw = resolve_data_dir_vars(raw, yaml_path, initial_variables, recipe, kwargs)
@@ -8,6 +16,9 @@ module Kameleon
     end
 
     def self.resolve_data_dir_vars(raw, yaml_path, initial_variables, recipe, kwargs)
+      raw.to_s.scan(/\$\$kameleon\_data\_dir\/(.*)/) do |var|
+        warn_var(var)
+      end
       reg = %r/\$\$kameleon\_data\_dir\/(.*)|\$\${kameleon\_data\_dir}\/(.*)/
       matches = raw.to_enum(:scan, reg).map { Regexp.last_match }
       matches.each do |m|
@@ -21,6 +32,9 @@ module Kameleon
     end
 
     def self.resolve_simple_vars_once(raw, initial_variables)
+      raw.to_s.scan(/\$\$([a-zA-Z0-9\-_]+)/) do |var|
+        warn_var(var)
+      end
       raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]+\}|\$\$[a-zA-Z0-9\-_]+/) do |var|
         # remove the dollars
         if var.include? "{"
@@ -55,6 +69,9 @@ module Kameleon
 
 
     def self.resolve_simple_vars(raw, yaml_path, initial_variables, kwargs)
+      raw.to_s.scan(/\$\$([a-zA-Z0-9\-_]+)/) do |var|
+        warn_var(var)
+      end
       raw.to_s.gsub(/\$\$\{[a-zA-Z0-9\-_]+\}|\$\$[a-zA-Z0-9\-_]+/) do |var|
         # remove the dollars
         if var.include? "{"

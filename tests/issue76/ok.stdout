@@ -1,0 +1,19 @@
+Starting recipe consistency check
+Resolving variables
+Creating kameleon build directory : /home/neyron/scm/OAR/kameleon/tests/issue76/build/ok
+Starting build recipe 'ok.yaml'
+Step _init_bootstrap took: 0 secs
+Step 1 : bootstrap/testbootstrap/step
+--> Running the step...
+Starting command: "bash"
+[local] The local_context has been initialized
+[local] 
+Step testbootstrap took: 0 secs
+Step _clean_bootstrap took: 0 secs
+Step _init_setup took: 0 secs
+Step _clean_setup took: 0 secs
+Step _init_export took: 0 secs
+Step _clean_export took: 0 secs
+
+Successfully built 'ok.yaml'
+Total duration : 0 secs

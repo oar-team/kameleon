@@ -1,0 +1,9 @@
+global:
+    arch: x86_64
+    iso_arch: $$arch
+    iso_filename: debian-jessie-$${iso_arch}-live.iso 
+
+bootstrap:
+    - testbootstrap:
+      - step:
+        - exec_local: echo $iso_filename

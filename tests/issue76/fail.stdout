@@ -1,0 +1,3 @@
+Warning : variable $$arch is not enclosed with braces, which may cause errors. Please prefer using $${arch}.
+Warning : variable $$arch-live is not enclosed with braces, which may cause errors. Please prefer using $${arch-live}.
+Error : /home/neyron/scm/OAR/kameleon/tests/issue76/fail.yaml: variable $$arch-live not found in local or global
