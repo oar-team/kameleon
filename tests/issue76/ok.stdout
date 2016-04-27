@@ -1,5 +1,8 @@
 Starting recipe consistency check
 Resolving variables
+Warning : variable $$iso_filename is not enclosed with braces, which may cause errors. Please prefer using $${iso_filename}.
+Warning : variable $$toto is not enclosed with braces, which may cause errors. Please prefer using $${toto}.
+Warning : variable $$titi is not enclosed with braces, which may cause errors. Please prefer using $${titi}.
 Creating kameleon build directory : /home/neyron/scm/OAR/kameleon/tests/issue76/build/ok
 Starting build recipe 'ok.yaml'
 Step _init_bootstrap took: 0 secs
@@ -7,8 +10,12 @@ Step 1 : bootstrap/testbootstrap/step
 --> Running the step...
 Starting command: "bash"
 [local] The local_context has been initialized
-[local] 
-Step testbootstrap took: 0 secs
+[local] debian-jessie-x86_64-live.iso x86_64-toto
+Step testbootstrap took: 1 secs
+Step 2 : bootstrap/testbootstrapinline/step
+--> Running the step...
+[local] debian-jessie-x86_64-live.iso
+Step testbootstrapinline took: 0 secs
 Step _clean_bootstrap took: 0 secs
 Step _init_setup took: 0 secs
 Step _clean_setup took: 0 secs
@@ -16,4 +23,4 @@ Step _init_export took: 0 secs
 Step _clean_export took: 0 secs
 
 Successfully built 'ok.yaml'
-Total duration : 0 secs
+Total duration : 1 secs
