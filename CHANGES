@@ -1,10 +1,10 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.7.3.dev
------------------
+Version 2.7.3
+-------------
 
-**unreleased**
+Released on June 20th 2016
 
 - The info command can now handle multiple recipes
 - Colorized the output of the info command
