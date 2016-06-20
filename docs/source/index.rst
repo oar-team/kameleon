@@ -13,11 +13,18 @@ Kameleon documentation
 About
 -----
 
-Kameleon is a simple but powerful tool to generate customized appliances. With
-Kameleon, you make your recipe that describes how to create step by step your
-own distribution. At start Kameleon is used to create custom kvm, docker,
-VirtualBox, ..., but as it is designed to be very generic you can probably do a
-lot more than that.
+Kameleon is a simple but powerful tool to generate customized software
+appliances. A software appliances is a complete operating system image
+with your tools and libraries indside. With Kameleon, you can make a recipe
+that describes how to create step by step your own OS distribution, or you
+can extend a template to only add a few packages to a standard Linux
+distribution. Kameleon can then generate an image in any format from the
+same recipe build: Docker, VirtualBox, KVM, Grid'5000,...  Kameleon is made
+to improve reproducibility in computer science and engineering by giving
+you tool that achieve complete *reconstructability* of your appliances with
+ease using cache, checkpointing and interactive breakpoint.
+
+Have a look to the :doc:`getting_started` to start using Kameleon.
 
 ------------
 Report a bug
