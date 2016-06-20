@@ -1,0 +1,3 @@
+- my_distrib: $${version}-$${variant}
+- show_variables:
+  - exec_local: "echo This is the distrib variable: $${my_distrib}"

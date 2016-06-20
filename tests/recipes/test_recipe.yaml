@@ -13,7 +13,7 @@ checkpoint: test.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
   ## User varibales : used by the recipe
-  user_name: kameleon
+  user_name: kameleon_user
   user_password: $$user_name
 
   # test overload
@@ -29,7 +29,10 @@ global:
 
   bootstrap_packages: >
     less vim python
+    sl sudo
 
+  version: 12.2
+  variant: toto-tata
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - enable_something
@@ -38,6 +41,18 @@ bootstrap:
 
 setup:
   - software_install
+  - inline_step:
+    - do_something:
+      - exec_local: >
+          echo $${toto} ;\
+            echo titi
+    - do_something_else:
+      - exec_local: |
+          echo $$toto $$user_name
+    - test_data:
+      - exec_local: cat $$kameleon_data_dir/mydata.txt
+  - local_variables
+
 
 export:
   - save_appliance:

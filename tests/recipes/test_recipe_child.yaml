@@ -1,0 +1,13 @@
+extend: test_recipe
+
+global:
+  mo: mi
+  test_override: $${user_name}-override
+
+setup:
+  - inline_step:
+    - do_something_else:
+      - exec_local: |
+          echo $$toto $$user_name
+          echo $$test_override
+
