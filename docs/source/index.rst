@@ -26,6 +26,31 @@ ease using cache, checkpointing and interactive breakpoint.
 
 Have a look to the :doc:`getting_started` to start using Kameleon.
 
+-------------------
+Kameleon in science
+-------------------
+
+Kameleon was made to make experiments in computer science reproducible. If
+you use it in you experiment process, please cite the last publication
+about Kameleon that can be found on the HAL open archive:
+
+https://hal.inria.fr/hal-01334135
+
+
+------------------
+External resources
+------------------
+
+This repository is made for the user to share their recipes and steps:
+
+https://github.com/oar-team/kameleon-contrib
+
+Your are strongly invited to encouraged to share your steps in this repo
+and to complete the wiki with links to your own Kameleon recipes:
+
+https://github.com/oar-team/kameleon-contrib/wiki
+
+
 ------------
 Report a bug
 ------------
