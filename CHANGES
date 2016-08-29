@@ -1,6 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.7.4
+-------------
+
+Released on August 29th 2016
+
+- Fix Kameleon_data_dir is not rendering correctly with {} (#85)
+
 Version 2.7.3
 -------------
 
