@@ -10,9 +10,11 @@ Then for the actual releasing:
 
   python2 ./scripts/bumpversion.py newversion minor  # 2.6.7 -> 2.7.0.dev
 
-2) [work/commit]
+2) [work/commit] 
+3) **Warning:** Be sure that there is no dirty file (not committed) before
+   doing this.
 
-3) Releasing a new version::
+   Releasing a new version::
 
   python2 ./scripts/bumpversion.py release  # 2.7.0.dev -> 2.7.0 + git tag + changelog
   gem build kameleon-builder.gemspec
