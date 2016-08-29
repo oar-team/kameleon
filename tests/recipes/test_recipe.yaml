@@ -50,6 +50,7 @@ setup:
       - exec_local: |
           echo $$toto $$user_name
     - test_data:
+      - exec_local: cat $${kameleon_data_dir}/mydata.txt
       - exec_local: cat $$kameleon_data_dir/mydata.txt
   - local_variables
 
