@@ -33,6 +33,11 @@ global:
 
   version: 12.2
   variant: toto-tata
+
+  uuid: $${kameleon_uuid}
+
+  appliance_filename: $${kameleon_recipe_name}_$${kameleon_short_uuid}
+
 #== Bootstrap the new system and create the 'in_context'
 bootstrap:
   - enable_something
@@ -54,6 +59,14 @@ setup:
       - exec_local: cat $$kameleon_data_dir/mydata.txt
   - local_variables
 
+  - test_uuid_resolve:
+    - show_uuid:
+      - exec_local: echo toto_$${kameleon_uuid}
+      - exec_local: echo $${kameleon_short_uuid}
+      - exec_local: |
+          echo "global uuid: $${toto}_$${kameleon_uuid}"
+      - exec_local: echo $${appliance_filename}
+  - test_uuid_step
 
 export:
   - save_appliance:

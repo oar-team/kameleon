@@ -25,6 +25,8 @@ module Kameleon
         unless m.nil?
           path = resolve_simple_vars(m[1], yaml_path, initial_variables, kwargs)
           resolved_path = recipe.resolve_data_path(path.chomp('"'), yaml_path)
+          require 'pry'
+          binding.pry
           raw.gsub!(m[0].chomp('"'), "#{resolved_path}")
         end
       end
