@@ -19,14 +19,14 @@ module Kameleon
       raw.to_s.scan(/\$\$kameleon\_data\_dir\/(.*)/) do |var|
         warn_var(var)
       end
-      reg = %r/\$\$kameleon\_data\_dir|\$\${kameleon\_data\_dir}(.*)/
+      reg = %r/(\$\$kameleon\_data\_dir|\$\${kameleon\_data\_dir})(.*)/
       matches = raw.to_enum(:scan, reg).map { Regexp.last_match }
       matches.each do |m|
         unless m.nil?
-          path = resolve_simple_vars(m[1], yaml_path, initial_variables, kwargs)
+          path = resolve_simple_vars(m[2], yaml_path, initial_variables, kwargs)
           resolved_path = recipe.resolve_data_path(path.chomp('"'), yaml_path)
-          require 'pry'
-          binding.pry
+          #require 'pry'
+          #binding.pry
           raw.gsub!(m[0].chomp('"'), "#{resolved_path}")
         end
       end
