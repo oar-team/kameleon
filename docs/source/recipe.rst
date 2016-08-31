@@ -275,8 +275,8 @@ the ``kameleon_customization.yaml`` step in your data folder:
 .. code-block:: bash
 
    # where your recipe is:
-   mkdir -p steps/data
-   cp ~/.bashrc steps/data
+   mkdir -p steps/data/skel
+   cp ~/.bashrc steps/data/skel
 
 And that's it! When you will build your recipe all your aliases and pretty
 prompt colors will be there :)
