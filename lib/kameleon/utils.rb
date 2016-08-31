@@ -25,8 +25,6 @@ module Kameleon
         unless m.nil?
           path = resolve_simple_vars(m[2], yaml_path, initial_variables, kwargs)
           resolved_path = recipe.resolve_data_path(path.chomp('"'), yaml_path)
-          #require 'pry'
-          #binding.pry
           raw.gsub!(m[0].chomp('"'), "#{resolved_path}")
         end
       end
@@ -84,6 +82,7 @@ module Kameleon
         # check in local vars
         if initial_variables.has_key? strip_var
           value = initial_variables[strip_var]
+          Kameleon.ui.debug("Resolved variable = #{strip_var}: #{value}")
         else
           if kwargs.fetch(:strict, true)
             fail RecipeError, "#{yaml_path}: variable #{var} not found in local or global"

@@ -490,12 +490,6 @@ module Kameleon
           loaded_microsteps = strip_microsteps
         end
       end
-      # Resolved neested variables earlier
-      local_variables.each do |k, v|
-        if v.kind_of? String
-          local_variables[k] = Utils.resolve_vars(v, @path, @global, self, kwargs)
-        end
-      end
       return Macrostep.new(name, loaded_microsteps, local_variables, step_path)
     end
 

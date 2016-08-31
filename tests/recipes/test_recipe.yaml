@@ -59,14 +59,8 @@ setup:
       - exec_local: cat $$kameleon_data_dir/mydata.txt
   - local_variables
 
-  - test_uuid_resolve:
-    - show_uuid:
-      - exec_local: echo toto_$${kameleon_uuid}
-      - exec_local: echo $${kameleon_short_uuid}
-      - exec_local: |
-          echo "global uuid: $${toto}_$${kameleon_uuid}"
-      - exec_local: echo $${appliance_filename}
-  - test_uuid_step
+  - test_uuid_step:
+    - my_uuid: $${kameleon_uuid}_$${kameleon_recipe_name}
 
 export:
   - save_appliance:
