@@ -50,12 +50,15 @@ Completion
 ----------
 
 You can enable Bash or Zsh completion of Kameleon CLI using files in the
-``completion`` folder within the source repository:
+``completion`` folder within the source repository or directly from the
+Gem:
 
 .. code-block:: bash
 
+  # Go to source code folder
+  # for example: /var/lib/gems/2.1.0/gems/kameleon-builder-2.7.6/
   # for Zsh
-  cp ./completion/_kameleon /usr/share/zsh/functions/Completion/Unix/
+  cp /completion/_kameleon /usr/share/zsh/functions/Completion/Unix/
   # for Bash
   cp ./completion/kameleon.bash /etc/bash_completion.d/
 
