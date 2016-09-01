@@ -203,7 +203,6 @@ module Kameleon
         Kameleon.ui.info("Using the cached recipe")
         @cache = Kameleon::Persistent_cache.instance
         @cache.cache_path = options[:from_cache]
-        recipe_path =  @cache.get_recipe
       end
       dag = nil
       color = 0
@@ -215,6 +214,7 @@ module Kameleon
           dag = Kameleon::Engine.new(recipe, options).dag(dag, color)
           color += 1
         else
+          recipe.resolve!
           recipe.display_info(options[:relative])
         end
       end

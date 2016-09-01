@@ -529,6 +529,7 @@ module Kameleon
     end
 
     def resolve!(kwargs = {})
+      Kameleon.ui.verbose("Resolving recipe...")
       unless @global.keys.include? "kameleon_uuid"
         kameleon_id = SecureRandom.uuid
         @global["kameleon_uuid"] = kameleon_id
@@ -541,6 +542,7 @@ module Kameleon
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
+      Kameleon.ui.verbose("Resolving variables")
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
           # First pass : resolve aliases
@@ -557,7 +559,7 @@ module Kameleon
         end
       end
 
-      Kameleon.ui.info("Resolving variables")
+      Kameleon.ui.verbose("Resolving variables")
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
           macrostep.resolve_variables!(@global, self)
@@ -588,6 +590,8 @@ module Kameleon
       end
       calculate_step_identifiers
       flatten_data
+
+      Kameleon.ui.verbose("Recipe is resolved")
     end
 
     def consistency_check()
@@ -601,7 +605,7 @@ module Kameleon
           end
         end
       end
-      Kameleon.ui.info("Starting recipe consistency check")
+      Kameleon.ui.verbose("Starting recipe consistency check")
       # check context args
       required_args = %w(cmd)
       missings = []
@@ -791,7 +795,7 @@ module Kameleon
           return path
         end
       end
-      Kameleon.ui.shell.say
+      Kameleon.ui.shell.say "--------------------"
       Kameleon.ui.shell.say "[Name]", :red
       prefix ; Kameleon.ui.shell.say "#{@name}"
       Kameleon.ui.shell.say "[Path]", :red
