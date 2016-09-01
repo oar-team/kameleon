@@ -1,10 +1,12 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.7.7.dev
------------------
+Version 2.7.7
+-------------
 
-**unreleased**
+Released on September 01st 2016
+
+- Add some warning to avoid global CLI option misuse
 
 Version 2.7.6
 -------------
