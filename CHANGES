@@ -1,8 +1,8 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.7.8.dev
------------------
+Version 2.7.8
+-------------
 
 - Fix info data resolution (fix #78)
 
