@@ -35,11 +35,11 @@ module Kameleon
 
       if @options[:enable_cache] || @options[:from_cache] then
         if @recipe.global["in_context"]["proxy_cache"].nil? then
-          raise BuildError, "Missing varible for in context 'proxy_cache' when using the option --cache"
+          raise BuildError, "Missing variable for in context 'proxy_cache' when using the option --cache"
         end
 
         if @recipe.global["out_context"]["proxy_cache"].nil? then
-          raise BuildError, "Missing varible for out context 'proxy_cache' when using the option --cache"
+          raise BuildError, "Missing variable for out context 'proxy_cache' when using the option --cache"
         end
         @cache = Kameleon::Persistent_cache.instance
 
@@ -90,8 +90,6 @@ module Kameleon
     def build_contexts
       lazyload = @options.fetch(:lazyload, true)
       fail_silently = @options.fetch(:fail_silently, false)
-      proxy_cache_out = @recipe.global["out_context"]["proxy_cache"]
-      proxy_cache_in = @recipe.global["in_context"]["proxy_cache"]
 
       Kameleon.ui.debug("Building local context [local]")
       @local_context = Context.new("local", "bash", "bash", @cwd, "", @cwd,

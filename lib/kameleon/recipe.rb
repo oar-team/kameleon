@@ -32,6 +32,10 @@ module Kameleon
         "export" => Section.new("export"),
       }
       @cli_global = Kameleon.env.global.clone
+      @cli_global.each do |k,v|
+        Kameleon.ui.warn("CLI Global variable override: #{k} => #{v}")
+      end
+
       @global = {
         "kameleon_recipe_name" => @name,
         "kameleon_recipe_dir" => File.dirname(@path),
@@ -114,34 +118,38 @@ module Kameleon
         @global[context_name].merge!(yaml_recipe["global"][context_name])
         yaml_recipe["global"][context_name] = @global[context_name]
         unless yaml_recipe["global"][context_name].keys.include? "interactive_cmd"
-          yaml_recipe["global"][context_name]["interactive_cmd"] = yaml_recipe["global"][context_name]['cmd'] 
+          yaml_recipe["global"][context_name]["interactive_cmd"] = yaml_recipe["global"][context_name]['cmd']
         end
       end
       # Load Global variables
       @global.merge!(yaml_recipe.fetch("global", {}))
       # merge cli variable with recursive variable overload
       @global = Utils.overload_merge(@global, @cli_global)
+
       # Resolve dynamically-defined variables !!
       resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self, kwargs)
       resolved_global = @global.merge YAML.load(resolved_global)
+      Kameleon.ui.debug("Resolved_global: #{resolved_global}")
       # Loads aliases
       load_aliases(yaml_recipe)
       # Load env files
       load_env_files(yaml_recipe)
       # Loads checkpoint configuration
       load_checkpoint_config(yaml_recipe)
-
-      resolved_global['include_steps'] ||= []
-      resolved_global['include_steps'].push ''
-      resolved_global['include_steps'].flatten!
-      resolved_global['include_steps'].compact!
+      include_steps = resolved_global['include_steps']
+      include_steps ||= []
+      include_steps.push ''
+      include_steps.flatten!
+      include_steps.compact!
+      Kameleon.ui.debug("include steps: #{include_steps}")
       @sections.values.each do |section|
         dir_to_search = @steps_dirs.map do |steps_dir|
-          resolved_global['include_steps'].map do |path|
+          include_steps.map do |path|
             [File.join(steps_dir, section.name, path),
               File.join(steps_dir, path)]
           end
         end.flatten.select { |x| File.exists? x }
+        Kameleon.ui.debug("Directory to search for steps:  #{dir_to_search}")
 
         if yaml_recipe.key? section.name
           yaml_section = yaml_recipe.fetch(section.name)
@@ -311,7 +319,7 @@ module Kameleon
           end
         end
         rel_dir_search = dir_search.map do |steps_dir|
-          relative_path = Pathname.new(steps_dir).relative_path_from(Pathname(Dir.pwd)).to_s
+          Pathname.new(steps_dir).relative_path_from(Pathname(Dir.pwd)).to_s
         end.flatten
         fail RecipeError, "File '#{global_file}' not found here #{rel_dir_search}"
       end

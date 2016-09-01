@@ -8,6 +8,6 @@ setup:
   - inline_step:
     - do_something_else:
       - exec_local: |
-          echo $$toto $$user_name
-          echo $$test_override
+          echo $${toto} $${user_name}
+          echo $${test_override}
 

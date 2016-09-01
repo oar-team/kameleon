@@ -12,12 +12,16 @@ aliases: defaults.yaml
 checkpoint: test.yaml
 #== Global variables use by Kameleon engine and the steps
 global:
+
+  include_steps:
+    - $${distrib}
+
   ## User varibales : used by the recipe
   user_name: kameleon_user
-  user_password: $$user_name
+  user_password: $${user_name}
 
   # test overload
-  toto: $$toto tata
+  toto: $${toto} tata
 
   # Distribution
   distrib: linux
@@ -25,7 +29,7 @@ global:
   ## System variables. Required by kameleon engine
   # Include specific steps
   include_steps:
-    - $$distrib
+    - $${distrib}
 
   bootstrap_packages: >
     less vim python
@@ -42,7 +46,7 @@ global:
 bootstrap:
   - enable_something
   - bootstrap:
-    - include_pkg: $$bootstrap_packages
+    - include_pkg: $${bootstrap_packages}
 
 setup:
   - software_install
@@ -53,10 +57,10 @@ setup:
             echo titi
     - do_something_else:
       - exec_local: |
-          echo $$toto $$user_name
+          echo $${toto} $${user_name}
     - test_data:
       - exec_local: cat $${kameleon_data_dir}/mydata.txt
-      - exec_local: cat $$kameleon_data_dir/mydata.txt
+      - exec_local: cat $${kameleon_data_dir}/mydata.txt
   - local_variables
 
   - test_uuid_step:

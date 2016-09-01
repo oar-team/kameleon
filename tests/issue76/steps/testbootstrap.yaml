@@ -1,3 +1,3 @@
 - toto: $${arch}-toto
 - step:
-  - exec_local: echo $$iso_filename $$toto
+  - exec_local: echo $${iso_filename} $${toto}

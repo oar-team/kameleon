@@ -4,4 +4,4 @@ setup:
   - "@base"
   - test_data:
     - do_test:
-      - exec_local: cat $$kameleon_data_dir/mydata.txt
+      - exec_local: cat $${kameleon_data_dir}/mydata.txt

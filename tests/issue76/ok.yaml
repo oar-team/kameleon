@@ -8,4 +8,4 @@ bootstrap:
     - testbootstrapinline:
       - titi: $arch
       - step:
-        - exec_local: echo $$iso_filename $$titi
+        - exec_local: echo $${iso_filename} $${titi}
