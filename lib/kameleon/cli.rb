@@ -60,9 +60,10 @@ module Kameleon
           tpl = RecipeTemplate.new(template_path)
           tpl.resolve! :strict => false
         rescue
-          raise TemplateNotFound, "Template '#{template_name}' not found. " \
-                                  "To see all templates, run the command "\
-                                  "`kameleon template list`"
+          raise if Kameleon.ui.level("verbose")
+          raise TemplateNotFound, "Template '#{template_name}' invalid (try" \
+              " --verbose) or not found. To see all templates, run the command "\
+              "`kameleon template list`"
         else
           tpl.all_files.each do |path|
             relative_path = path.relative_path_from(Kameleon.env.repositories_path)
