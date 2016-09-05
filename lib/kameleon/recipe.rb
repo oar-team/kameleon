@@ -216,6 +216,10 @@ module Kameleon
       base_recipe_name = yaml_recipe.fetch("extend", "")
       return yaml_recipe if base_recipe_name.empty?
 
+      # resolve variable in extends to permit backend selection
+      base_recipe_name = Utils.resolve_simple_vars_once(
+          base_recipe_name, Utils.overload_merge(load_global(yaml_recipe, path), @cli_global))
+
       ## check that the recipe has not already been loaded
       base_recipe_name << ".yaml" unless base_recipe_name.end_with? ".yaml"
       base_recipe_path = File.join(File.dirname(path), base_recipe_name)
