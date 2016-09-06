@@ -1,10 +1,12 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.8.2.dev
------------------
+Version 2.8.2
+-------------
 
-**unreleased**
+Released on September 06th 2016
+
+- Make kameleon new and template import works
 
 Version 2.8.1
 -------------
