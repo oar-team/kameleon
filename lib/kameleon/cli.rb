@@ -33,6 +33,7 @@ module Kameleon
       map %w(ls) => :list
     end
 
+
     class Template < Thor
       include Thor::Actions
 
@@ -50,11 +51,18 @@ module Kameleon
       end
 
       desc "import [TEMPLATE_NAME]", "Imports the given template"
+      method_option :global, :type => :hash ,
+                    :default => {},  :aliases => "-g",
+                    :desc => "Set custom global variables."
       def import(template_name)
         Kameleon.env.root_dir = Kameleon.env.repositories_path
         template_path = File.join(Kameleon.env.repositories_path, template_name)
         unless template_name.end_with? '.yaml'
           template_path = template_path + '.yaml'
+        end
+        # Manage global as it is not passed to env by default
+        if options[:global]
+           Kameleon.env.global.merge!(options[:global])
         end
         begin
           tpl = RecipeTemplate.new(template_path)
@@ -82,6 +90,10 @@ module Kameleon
         template_path = File.join(Kameleon.env.repositories_path, template_name)
         unless template_name.end_with? '.yaml'
           template_path = template_path + '.yaml'
+        end
+        # Manage global as it is not passed to env by default
+        if options[:global]
+           Kameleon.env.global.merge!(options[:global])
         end
         tpl = RecipeTemplate.new(template_path)
         tpl.resolve! :strict => false
@@ -128,31 +140,36 @@ module Kameleon
     map %w(ls) => :list
 
     desc "new [RECIPE_PATH] [TEMPLATE_NAME]", "Creates a new recipe"
-    def new(recipe_path, template_name)
+    method_option :global, :type => :hash ,
+                  :default => {},  :aliases => "-g",
+                  :desc => "Set custom global variables."
+    def new(recipe_name, template_name)
       Kameleon.env.root_dir = Kameleon.env.repositories_path
       unless template_name.end_with? '.yaml'
         template_name = template_name + '.yaml'
       end
 
-      unless recipe_path.end_with? '.yaml'
-        recipe_path = recipe_path + '.yaml'
+      unless recipe_name.end_with? '.yaml'
+        recipe_name = recipe_name + '.yaml'
       end
 
-      if recipe_path == template_name
+      if recipe_name == template_name
         fail RecipeError, "Recipe path should be different from template name"
       end
 
       template_path = File.join(Kameleon.env.repositories_path, template_name)
 
-      recipe_path = Pathname.new(Kameleon.env.workspace).join(recipe_path).to_s
+      recipe_path = Pathname.new(Kameleon.env.workspace).join(recipe_name).to_s
 
       begin
         tpl = Kameleon::RecipeTemplate.new(template_path)
         tpl.resolve! :strict => false
       rescue
-        raise TemplateNotFound, "Template '#{template_name}' not found. " \
-                                "To see all templates, run the command "\
-                                "`kameleon template list`"
+          raise if Kameleon.ui.level("verbose")
+          raise TemplateNotFound, "Template '#{template_name}' invalid (try" \
+              " --verbose) or not found. To see all templates, run the command "\
+              "`kameleon template list`"
+
       else
         tpl.all_files.each do |path|
           relative_path = path.relative_path_from(Kameleon.env.repositories_path)
