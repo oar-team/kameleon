@@ -9,33 +9,37 @@ idea, through examples, of how Kameleon is useful for.
 
 Distribute an environnement to your co-workers/students/friends/...
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Whit Kameleon you can easily export your environnement in any format. The
+Whit Kameleon you can easily export your environment in any format. The
 export section of the recipe is made for this. For example, if you would like
-to export your image in vdi format to use VirtualBox you just have to uncomment
-the right line. Like in the debian7 template::
+to export your image in VDI format to use VirtualBox you just have to set
+the export format wirh using the ``appliance_formats`` option either in
+your recipe or whit the CLI:
 
-    #== Export the generated appliance in the format of your choice
-    export:
-      - save_appliance_from_nbd:
-        - mountdir: $$rootfs
-        - filename: "$${kameleon_recipe_name}"
-        - save_as_qcow2
-        # - save_as_qed
-        # - save_as_tgz
-        # - save_as_raw
-        # - save_as_vmdk
-        - save_as_vdi
+.. code-block:: yaml
+
+  global:
+    appliance_formats: vdi
+
+And that's it! Whatever the backend you choose kameleon default recipes are
+able to export it in any supported format:
+Allowed formats are: tar.gz, tar.bz2, tar.xz, tar.lzo, qcow, qcow2, qed,
+vdi, raw, vmdk
+
 
 Make a Linux virtual machine with graphical support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 You can directly use the templates that provide a desktop. However, here is an
 example of adding desktop capability to the ``debian8`` template. First create
-a new recipe from this template::
+a new recipe from this template:
 
-     kameleon new debian8-desktop -t debian8
+.. code-block:: bash
+
+     kameleon new debian8-desktop default/from_image/debian8
 
 Then edit the recipe file ``debian8-desktop.yaml`` and add ``gnome-core`` and ``xorg``
-packages to the install list::
+packages to the install list:
+
+.. code-block:: yaml
 
     setup:
         # Install
@@ -45,20 +49,25 @@ packages to the install list::
               gnome-core xorg
 
 These packages take some extra space, so add some space on the disk. 4G should
-be enough::
+be enough:
 
-    bootstrap:
+.. code-block:: yaml
+
+    global:
         ...
-        - create_disk_nbd:
-            - image_size: 4G
+        image_size: 10G
 
-Build your recipe::
+Build your recipe:
 
-    sudo kameleon build debian8-desktop
+.. code-block:: bash
 
-When the build has finished, you can try you image with Qemu::
+    kameleon build debian8-desktop
 
-    sudo qemu-system-x86_64 -m 1024 --enable-kvm -vga std \
+When the build has finished, you can try you image with Qemu:
+
+.. code-block:: bash
+
+    qemu-system-x86_64 -m 1024 --enable-kvm \
         builds/debian8-desktop/debian8-desktop.qcow2
 
 Alternatively, you could use ``virt-manager`` that provide a good GUI to manage
@@ -71,10 +80,22 @@ your virtual machines.
 
 Create a fully reproducible experimental environement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You should use the :ref:`persistent_cache` feature.
 
-.. todo::
-    Give a complete use case.
+To be sure that your image can be fully reproduce, you should use the
+:ref:`persistent_cache` feature. It creates a cache compress tarball that
+contains everything that was downloaded during the build and allows to
+recreate your image from it directly using:
+
+.. code-block:: bash
+
+    kameleon build --from-cache my_recipe-cache.tar.gz
+
+You can even use the ``--offline`` mode to be sure that your recipe is
+built without accessing to the web.
+
+To find a compete example refer to this repository that was made for a
+reproducible set of experiments:
+https://github.com/oar-team/batsim-env-recipes
 
 Create a persistent live USB key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

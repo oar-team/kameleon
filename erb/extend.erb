@@ -9,13 +9,15 @@
 extend: <%= tpl.relative_path_from_recipe(recipe_path) %>
 
 global:
-<% if Kameleon.env.global["backend"] %>
   # This is the backend you have imported to switch to an other backend BCKD do:
   #
   #   kameleon template import <%= tpl.relative_path_from_recipe(recipe_path) %> --global backend:BCKB
   #
-  # and update the following variable.
+  # Then, uncomment and update the following variable.
+<% if Kameleon.env.global["backend"] %>
   backend: <%= Kameleon.env.global["backend"] %>
+<% else %>
+  # backend: qemu
 <% end %>
   # To see the variables that you can override, use the following command:
   #

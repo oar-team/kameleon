@@ -19,7 +19,7 @@ imports such as :ref:`aliases` and :ref:`checkpoint`.
 
 Here is an example of a recipe:
 
-.. literalinclude:: debian7.yaml
+.. literalinclude:: _static/base.yaml
    :language: yaml
 
 Section
@@ -44,10 +44,10 @@ export
 Step and microstep
 ------------------
 
-Each step contains a list of microsteps itself containing a list of :ref:`commands` 
-written in one YAML file. To be found by Kameleon,
-this file must be named by the step name plus the YAML extension ``.yaml``.
-For example the ``software_install.yaml`` step file looks like this:
+Each step contains a list of microsteps itself containing a list of :ref:`commands`
+written in one YAML file. To be found by Kameleon, this file must be named
+by the step name plus the YAML extension ``.yaml``.  For example the
+``software_install.yaml`` step file looks like this:
 
 .. code-block:: yaml
 
@@ -147,11 +147,11 @@ Kameleon use some global variables to enable the appliance build. See
 :ref:`context` and `Steps path`_ for more details.
 
 You can also override a variable using inheritance mechanism or CLI
-``--global`` option. For Example:
+``--global`` option with one or more key:values. For Example:
 
 .. code-block:: bash
 
-  kameleon build --global my_package:'vim git' --global user_name:myself myrecipe.yaml
+  kameleon build --global my_package:'vim git' user_name:myself myrecipe.yaml
 
 Or in your recipe:
 
@@ -169,7 +169,7 @@ same syntax as bash:
 
 .. code-block:: bash
 
-  kameleon build --global setup_packages:'$$setup_packages git emacs' myrecipe.yaml
+  kameleon build --global setup_packages:'$${setup_packages} git emacs' myrecipe.yaml
 
 Or in your recipe:
 
@@ -177,7 +177,7 @@ Or in your recipe:
 
   global:
     # I need these tools
-    setup_packages: $$setup_packages git emacs
+    setup_packages: $${setup_packages} git emacs
 
 For more information about inheritance variable see here:
 :ref:`inheritance_variables`
@@ -212,7 +212,7 @@ variable value:
         foo: bar
     setup:
         - my_step:
-            - foo: $$foo
+            - foo: $${foo}
 
 Kameleon variables
 ~~~~~~~~~~~~~~~~~~
@@ -222,7 +222,7 @@ They are used to contextualize the execution of a recipe in a given
 environment.
 
 kameleon_recipe_name
-    The recipe name (eg. my_debian7)
+    The recipe name (eg. my_debian8)
 
 kameleon_recipe_dir
     Directory where the recipe is located (eg. ~/recipes)
@@ -233,16 +233,16 @@ kameleon_data_dir
     information.
 
 kameleon_cwd
-    Current recipe of Kameleon during the build (eg. ~/recipes/build/my_debian7)
+    Current recipe of Kameleon during the build (eg. ~/recipes/build/my_debian8)
 
 kameleon_uuid
     Unique identifier of a Kameleon build. (eg. 33fb8999-bbd3-4bc5-badd-93983b14555d)
 
 kameleon_short_uuid
-    Shorter version of the identifier (eg. 93983b14555d)
+    Shorter version of the identifier, basically the end of the uuid.  (eg. 93983b14555d)
 
 persistent_cache
-    'true' if the user enabled the cache, otherwise 'false'
+    'true' if the user enabled the cache, otherwise 'false'.
 
 .. _data:
 
@@ -251,7 +251,7 @@ Data
 
 File that are stored in ``steps/data/`` of your recipe, or of a recipe
 it extends, can be access with the built-in variable
-``$$kameleon_data_dir``. The advantage of this mechanism over a simple copy
+``$${kameleon_data_dir}``. The advantage of this mechanism over a simple copy
 from one context to an other is twofold:
 
 * All the artefact used to produce your recipe are stored inside you
