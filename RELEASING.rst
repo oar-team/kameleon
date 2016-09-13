@@ -21,3 +21,9 @@ Then for the actual releasing:
   gem push kameleon-builder-2.7.0.gem
 
 You need a rubygem account and I have to give you permissions so that you can push.
+To do so, create an account on https://rubygems.org/ and ask an owner to do
+the following command::
+
+  gem owner kameleon-builder -a your@email.com
+
+And that's all :)
