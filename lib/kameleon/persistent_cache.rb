@@ -168,8 +168,9 @@ module Kameleon
       elsif @archive_format.eql? "xz"
         env = {"XZ_OPT" => "-9"}
         Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar.xz")
-        execute("tar","-cJf #{@name}-cache.tar.xz -C #{@cache_dir} .", @cwd, env)
+        execute("tar","-cJvf #{@name}-cache.tar.xz -C #{@cache_dir} .", @cwd, env)
       else
+        env = {}
         Kameleon.ui.info("Packing up the generated cache in #{@cwd}/#{@name}-cache.tar")
         execute("tar","-cvf #{@name}-cache.tar -C #{@cache_dir} .", @cwd, env)
       end
