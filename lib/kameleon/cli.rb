@@ -283,7 +283,7 @@ module Kameleon
                   :default => nil,
                   :desc => "Uses a persistent cache tar file to build the image."
     method_option :cache_archive_compression, :type => :string ,
-                  :enum => ["gzip", "xz", "bz2"],
+                  :enum => ["none", "gzip", "bz2", "xz"],
                   :default => "gzip",
                   :desc => "Set the persistent cache tar file compression."
     method_option :polipo_path, :type => :string ,
