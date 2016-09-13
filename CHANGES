@@ -1,6 +1,11 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.8.4.dev
+-----------------
+
+- fix kameleon build usage message and cache compression options
+
 Version 2.8.3
 -------------
 
