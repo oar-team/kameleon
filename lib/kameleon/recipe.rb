@@ -529,7 +529,7 @@ module Kameleon
         end
         Kameleon.ui.verbose("#{real_path} : nonexistent")
       end
-      fail RecipeError, "Cannot found data '#{partial_path}' used in '#{step_path}'"
+      fail RecipeError, "Cannot find data '#{partial_path}' used in '#{step_path}'"
     end
 
     def resolve!(kwargs = {})
