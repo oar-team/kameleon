@@ -302,9 +302,9 @@ module Kameleon
         begin
           exec_cmd(first_cmd)
         rescue ExecError
-          exec_cmd(third_cmd) unless third_cmd.nil?
+          safe_exec_cmd(third_cmd) unless third_cmd.nil?
         else
-          exec_cmd(second_cmd)
+          safe_exec_cmd(second_cmd)
         end
       else
         Kameleon.ui.warn("Unknown command : #{cmd.key}")
