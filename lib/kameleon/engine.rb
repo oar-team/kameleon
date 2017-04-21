@@ -306,6 +306,11 @@ module Kameleon
         else
           safe_exec_cmd(second_cmd)
         end
+      when "group"
+         cmds = cmd.value
+         cmds.each do |cmd|
+           safe_exec_cmd(cmd)
+         end
       else
         Kameleon.ui.warn("Unknown command : #{cmd.key}")
       end
