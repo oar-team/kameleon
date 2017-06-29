@@ -6,6 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
+PUBLISHSRV    = docmaster@kameleon.lig:kameleon-doc/
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -65,7 +66,7 @@ singlehtml:
 	@echo "Build finished. The HTML page is in $(BUILDDIR)/singlehtml."
 
 publish: html
-	rsync -avh --exclude 'pkg' -e "ssh" $(BUILDDIR)/html/ oar-docmaster.website:~/kameleon-doc
+	rsync -avh --exclude 'pkg' -e "ssh" $(BUILDDIR)/html/ $(PUBLISHSRV)/
 
 pickle:
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) $(BUILDDIR)/pickle
