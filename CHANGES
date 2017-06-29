@@ -1,8 +1,8 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.8.4.dev
------------------
+Version 2.8.4
+-------------
 
 - fix the build usage message 
 - fix the cache compression options: allow no compression
