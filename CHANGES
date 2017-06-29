@@ -1,22 +1,25 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.9.0.dev
------------------
+Version 2.9.0
+-------------
 
-**unreleased**
+Released on June 29th 2017
+
+- Bump to a new minor version due to the addition of the test and group commands
+- Refresh documentation
 
 Version 2.8.4
 -------------
 
-- fix the build usage message 
-- fix the cache compression options: allow no compression
-- add the test and group commands for microsteps
+- Fix the build usage message 
+- Fix the cache compression options: allow no compression
+- Add the test and group commands for microsteps
 
 Version 2.8.3
 -------------
 
-- patch the doc and the default new recipe template
+- Patch the doc and the default new recipe template
 
 Version 2.8.2
 -------------
