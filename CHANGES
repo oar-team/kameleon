@@ -4,7 +4,9 @@ Kameleon CHANGELOG
 Version 2.8.4.dev
 -----------------
 
-- fix kameleon build usage message and cache compression options
+- fix the build usage message 
+- fix the cache compression options: allow no compression
+- add the test and group commands for microsteps
 
 Version 2.8.3
 -------------
