@@ -22,6 +22,7 @@ MANIFEST=$1
 INCOMING=~/incoming
 BUILDS=~/builds
 KEEP=2
+PREFIX="${MANIFEST%_*}_"
 echo "Received build: $MANIFEST"
 if [ -e $BUILDS/$MANIFEST ]; then
   echo "Error: $MANIFEST already exists." 1>&2
@@ -31,12 +32,12 @@ for f in $(< $MANIFEST); do
   mv -v $f $BUILDS/
 done
 mv -v $MANIFEST $BUILDS/
+cd $BUILDS
+ln -sf $MANIFEST ${PREFIX}latest.manifest
 
 # House keeping: only keep $KEEP builds for recipe
-cd $BUILDS
-PREFIX="${MANIFEST%_*}_"
-for i in $(find $BUILDS/ -name "$PREFIX*.manifest" | sed "s@^$BUILDS/$PREFIX@@" | sort -nr | tail -n+$((KEEP+1)) ); do
-  manifest=$BUILDS/$PREFIX$i
+for m in $(ls -t $PREFIX*.manifest | grep -v latest.manifest | tail -n+$((KEEP))); do
+  manifest=$PREFIX$i
   for f in $(< $manifest); do
     rm -v $f
   done
