@@ -30,16 +30,23 @@ if [ -e $BUILDS/$MANIFEST ]; then
 fi
 for f in $(< $MANIFEST); do
   mv -v $f $BUILDS/
+  if [[ ${f##*.} =~ sha[[:digit:]]+sum ]]; then
+    gpg --output $BUILDS/$f.sign --detach-sign $BUILDS/$f
+  fi
 done
 mv -v $MANIFEST $BUILDS/
 cd $BUILDS
+gpg --output $MANIFEST.sign --detach-sign $MANIFEST
 ln -sf $MANIFEST ${PREFIX}latest.manifest
+ln -sf $MANIFEST.sign ${PREFIX}latest.manifest.sign
 
 # House keeping: only keep $KEEP builds for recipe
-for m in $(ls -t $PREFIX*.manifest | grep -v latest.manifest | tail -n+$((KEEP))); do
-  manifest=$PREFIX$i
-  for f in $(< $manifest); do
+for m in $(ls -t $PREFIX*.manifest | grep -v latest.manifest | tail -n+$((KEEP+1))); do
+  for f in $(< $m); do
     rm -v $f
+    if [[ ${f##*.} =~ sha[[:digit:]]+sum ]]; then
+       rm -v $f.sign
+    fi
   done
-  rm -v $manifest
+  rm -v $m $m.sign
 done
