@@ -96,8 +96,8 @@ Example:
 Hooks
 ~~~~~
 
-The ``hook`` commands are designed to defer some initialization or clean-up actions. It
-takes a list of as arguments. Hooks are named as follows:
+The hook commands are designed to defer some initialization or clean-up actions. They
+take a list of as arguments. Hook commands are named as follows:
 ``on_[section]_init`` and ``on_[section]_clean``.
 
 The section inside the command name defines which section the action will be
@@ -111,3 +111,5 @@ you can add anywhere in a step:
 
     - on_setup_clean:
         - exec_in: rm -rf /tmp/mytemp
+
+NB: ``on_[section]_clean`` hooks are executed in the reverse order of their declarations: first declared in the recipe is last executed.

@@ -46,6 +46,7 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  publish    to publish doc to the server
 
 clean:
 	rm -rf $(BUILDDIR)/*
