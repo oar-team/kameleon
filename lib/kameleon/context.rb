@@ -88,7 +88,7 @@ module Kameleon
       raise ContextClosed, "The ctx '#{name}' was closed"
     end
 
-    def pipe(cmd, other_cmd, other_ctx)
+    def pipe(cmd, other_cmd, other_ctx, kwargs = {})
       if @cache.mode == :from then
         Kameleon.ui.info("Redirecting pipe into cache")
         tmp = @cache.get_cache_cmd(cmd)
@@ -96,7 +96,7 @@ module Kameleon
         tmp = Tempfile.new("pipe-#{ Kameleon::Utils.generate_slug(cmd)[0..20] }")
         Kameleon.ui.verbose("Running piped commands")
         Kameleon.ui.verbose("Saving STDOUT from #{@name}_ctx to local file #{tmp.path}")
-        execute(cmd, :stdout => tmp)
+        execute(cmd, kwargs.merge({:stdout => tmp}))
         tmp.close
       end
       ## Saving one side of the pipe into the cache
@@ -108,7 +108,7 @@ module Kameleon
       dest_pipe_path = "${KAMELEON_WORKDIR}/pipe-#{ Kameleon::Utils.generate_slug(other_cmd)[0..20] }"
       other_ctx.send_file(tmp.path, dest_pipe_path)
       other_cmd_with_pipe = "cat #{dest_pipe_path} | #{other_cmd} && rm #{dest_pipe_path}"
-      other_ctx.execute(other_cmd_with_pipe)
+      other_ctx.execute(other_cmd_with_pipe, kwargs)
     end
 
     def load_shell()

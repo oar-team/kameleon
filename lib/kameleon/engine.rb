@@ -270,46 +270,59 @@ module Kameleon
         else
           map[context].reload
         end
-      when "exec_in"
-        @in_context.execute(cmd.value, kwargs)
-      when "exec_out"
-        @out_context.execute(cmd.value, kwargs)
-      when "exec_local"
-        @local_context.execute(cmd.value, kwargs)
+      when "exec_in", "exec_out", "exec_local"
+        if kwargs[:only_with_context] and map[cmd.key].closed?
+          Kameleon.ui.debug("Not executing #{cmd.key} command (context closed): #{cmd.value}")
+        else
+          map[cmd.key].execute(cmd.value, kwargs)
+        end
       when "pipe"
         first_cmd, second_cmd = cmd.value
         expected_cmds = ["exec_in", "exec_out", "exec_local"]
+        execute = true
         [first_cmd.key, second_cmd.key].each do |key|
           unless expected_cmds.include?(key)
             Kameleon.ui.error("Invalid pipe arguments. Expected : "\
                               "#{expected_cmds}")
             fail ExecError
           end
+          if kwargs[:only_with_context] and map[key].closed?
+            Kameleon.ui.debug("Not executing pipe command (context closed sub command #{key})")
+            execute = false
+          end
         end
-        first_context = map[first_cmd.key]
-        second_context = map[second_cmd.key]
-        @cache.cache_cmd_raw(cmd.raw_cmd_id) if @cache
-        first_context.pipe(first_cmd.value, second_cmd.value, second_context)
+        if execute
+          first_context = map[first_cmd.key]
+          second_context = map[second_cmd.key]
+          @cache.cache_cmd_raw(cmd.raw_cmd_id) if @cache
+          first_context.pipe(first_cmd.value, second_cmd.value, second_context, kwargs)
+        end
       when "rescue"
         first_cmd, second_cmd = cmd.value
         begin
-          exec_cmd(first_cmd)
+          exec_cmd(first_cmd, kwargs)
         rescue ExecError
-          safe_exec_cmd(second_cmd)
+          safe_exec_cmd(second_cmd, kwargs)
         end
       when "test"
         first_cmd, second_cmd, third_cmd = cmd.value
         begin
-          exec_cmd(first_cmd)
+          Kameleon.ui.debug("Execute test condition")
+          # Drop any :only_with_context flag, so that "if" fails if a closed
+          # context exception occurs. In that case, the "else" statement must
+          # be executed rather than the "then" statement.
+          exec_cmd(first_cmd, kwargs.reject {|k| k == :only_with_context})
         rescue ExecError
-          safe_exec_cmd(third_cmd) unless third_cmd.nil?
+          Kameleon.ui.debug("Execute test 'else' statment'")
+          exec_cmd(third_cmd, kwargs) unless third_cmd.nil?
         else
-          safe_exec_cmd(second_cmd)
+          Kameleon.ui.debug("Execute test 'then' statment'")
+          exec_cmd(second_cmd, kwargs)
         end
       when "group"
          cmds = cmd.value
          cmds.each do |cmd|
-           safe_exec_cmd(cmd)
+           exec_cmd(cmd, kwargs)
          end
       else
         Kameleon.ui.warn("Unknown command : #{cmd.key}")
@@ -379,18 +392,14 @@ module Kameleon
     end
 
     def clean(kwargs = {})
-      map = {"exec_in" => @in_context,
-             "exec_out" => @out_context,
-             "exec_local" => @local_context}
+      kwargs = kwargs.merge({:only_with_context => true})
       if kwargs.fetch(:with_checkpoint, false)
         Kameleon.ui.info("Removing all checkpoints")
         @recipe.checkpoint["clear"].each do |cmd|
-          if map.keys.include? cmd.key
-            begin
-              exec_cmd(cmd) unless map[cmd.key].closed?
-            rescue
-              Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
-            end
+          begin
+            exec_cmd(cmd, kwargs)
+          rescue
+            Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
           end
         end
       end
@@ -404,12 +413,10 @@ module Kameleon
             end
           end
           microstep.commands.each do |cmd|
-            if map.keys.include? cmd.key
-              begin
-                exec_cmd(cmd) unless map[cmd.key].closed?
-              rescue
-                Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
-              end
+            begin
+              exec_cmd(cmd, kwargs)
+            rescue
+              Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
             end
           end
         end
