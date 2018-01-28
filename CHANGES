@@ -1,6 +1,11 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.9.1.dev
+-----------------
+
+- Make the test and group command work in the cleaning steps.
+
 Version 2.9.0
 -------------
 
