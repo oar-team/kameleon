@@ -66,7 +66,7 @@ by the step name plus the YAML extension ``.yaml``.  For example the
     # default packages
     - packages: "ntp sudo"
     - install_extra_packages:
-      - exec_in: apt-get -y --force-yes install $$packages
+      - exec_in: apt-get -y --force-yes install $${packages}
 
 
 A step will be called like a function in the recipe. You should provide a set

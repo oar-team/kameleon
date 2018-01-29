@@ -65,7 +65,7 @@ the appliance according to your needs:
       image_size: 20G        ## instead of '10G'
       filesystem_type: ext3  ## instead of 'ext4'
       ## NEW in 2.7.0
-      setup_packages: $$setup_packages git
+      setup_packages: $${setup_packages} git
 
     bootstrap:
       - "@base"

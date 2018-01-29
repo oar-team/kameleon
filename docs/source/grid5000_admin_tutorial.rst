@@ -153,8 +153,8 @@ the parent recipe ``tutorial/debian7/chroot.yaml``.
     export:
       - disable_checkpoint
       - qemu_save_appliance:
-        - input: $(readlink $$image_disk)
-        - output: $$kameleon_cwd/$$kameleon_recipe_name
+        - input: $(readlink $${image_disk})
+        - output: $${kameleon_cwd}/$${kameleon_recipe_name}
         - save_as_qcow2
         - save_as_tar_gz
         # - save_as_qed
@@ -186,27 +186,27 @@ extend the recipe created earlier.
     export:
       - disable_checkpoint
       - qemu_save_appliance:
-        - input: $(readlink $$image_disk)
-        - output: $$kameleon_cwd/$$kameleon_recipe_name
+        - input: $(readlink $${image_disk})
+        - output: $${kameleon_cwd}/$${kameleon_recipe_name}
         - save_as_tar_gz
 
       - g5k_custom:
         - kadeploy_file:
           - write_local:
-            - $$kameleon_cwd/$$kameleon_recipe_name.yaml
+            - $${kameleon_cwd}/$${kameleon_recipe_name}.yaml
             - |
               #
               # Kameleon generated based on kadeploy description file
               #
               ---
-              name: $$kameleon_recipe_name
+              name: $${kameleon_recipe_name}
 
               version: 1
 
               os: linux
 
               image:
-                file: $$kameleon_recipe_name.tar.gz
+                file: $${kameleon_recipe_name}.tar.gz
                 kind: tar
                 compression: gzip
 
@@ -219,7 +219,7 @@ extend the recipe created earlier.
                 kernel: /vmlinuz
                 initrd: /initrd.img
 
-              filesystem: $$filesystem_type
+              filesystem: $${filesystem_type}
 
 
 This recipe will generate in the build directory a tar.gz image and a

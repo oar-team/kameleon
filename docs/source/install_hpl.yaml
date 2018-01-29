@@ -2,20 +2,20 @@
 - download_tarball:
     - exec_local: |
                cd /tmp/
-               wget -q $$repository/hpl-$$version.tar.gz
+               wget -q $${repository}/hpl-$${version}.tar.gz
     - local2in:
-        - /tmp/hpl-$$version.tar.gz
-        - /root/hpl-$$version.tar.gz
+        - /tmp/hpl-$${version}.tar.gz
+        - /root/hpl-$${version}.tar.gz
 
 
 - install:
     - exec_in: cd /root/
     - exec_in: |
-               tar -xvf hpl-$$version.tar.gz
-               mv hpl-$$version hpl
+               tar -xvf hpl-$${version}.tar.gz
+               mv hpl-$${version} hpl
 
     - local2in:
-        - $$hpl_makefile
+        - $${hpl_makefile}
         - /root/hpl/Make.Linux
 
     - exec_in: |

@@ -24,14 +24,14 @@ Before using it you have to declare the variable proxy_cache, for example
 
     out_context:
       cmd: bash
-      workdir: $$kameleon_cwd
+      workdir: $${kameleon_cwd}
       proxy_cache: 127.0.0.1
 
     # Shell session that allows us to connect to the building machine in order to
     # configure it and setup additional programs
-    ssh_config_file: $$kameleon_cwd/ssh_config
+    ssh_config_file: $${kameleon_cwd}/ssh_config
     in_context:
-      cmd: LC_ALL=POSIX ssh -F $$ssh_config_file $$kameleon_recipe_name -t /bin/bash
+      cmd: LC_ALL=POSIX ssh -F $${ssh_config_file} $${kameleon_recipe_name} -t /bin/bash
       workdir: /
       proxy_cache: 10.0.2.2
 

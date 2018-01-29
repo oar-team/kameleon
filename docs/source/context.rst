@@ -33,7 +33,7 @@ in a bash shell with this configuration:
 
     out_context:
         cmd: /bin/bash
-        workdir: $$kameleon_cwd
+        workdir: $${kameleon_cwd}
 
     in_context:
         cmd: ssh my_user@localhost -p 2222 /bin/bash

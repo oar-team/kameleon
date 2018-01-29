@@ -68,6 +68,7 @@ singlehtml:
 
 publish: html
 	rsync -avh --exclude 'pkg' -e "ssh" $(BUILDDIR)/html/ $(PUBLISHSRV)/
+	git tag -f -s -m "Published doc to $(PUBLISHSRV)" doc_published
 
 pickle:
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) $(BUILDDIR)/pickle
