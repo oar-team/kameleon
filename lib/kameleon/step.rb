@@ -73,13 +73,24 @@ module Kameleon
       end
     end
 
+    def string_cmd=(str)
+      Kameleon.ui.debug("Set string_cmd to '#{str}' and clear cached value")
+      @string_cmd = str
+      @value = nil
+    end
+
+    def remaster_string_cmd_from_value!
+      self.string_cmd = YAML.dump(to_array).gsub("---", "").strip
+      return self
+    end
+
     def gsub!(arg1, arg2)
       if value.kind_of? Array
         value.each { |cmd| cmd.gsub!(arg1, arg2) }
       else
         @value.gsub!(arg1, arg2)
       end
-      @string_cmd = YAML.dump(to_array).gsub("---", "").strip
+      remaster_string_cmd_from_value!
       return self
     end
 

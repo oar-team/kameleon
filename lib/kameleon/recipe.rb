@@ -546,20 +546,18 @@ module Kameleon
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
 
-      Kameleon.ui.verbose("Resolving variables")
+      Kameleon.ui.verbose("Resolving aliases")
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
           # First pass : resolve aliases
           Kameleon.ui.debug("Resolving aliases for macrostep '#{macrostep.name}'")
           macrostep.microsteps.each do |microstep|
             microstep.commands.map! do |cmd|
-              # resolve alias
-              @aliases.keys.include?(cmd.key) ? resolve_alias(cmd) : cmd
+              resolve_alias(cmd)
             end
+            # flatten for multiple-command alias + variables
+            microstep.commands.flatten!
           end
-          # flatten for multiple-command alias + variables
-          Kameleon.ui.debug("Resolving check statements for macrostep '#{macrostep.name}'")
-          macrostep.microsteps.each { |microstep| microstep.commands.flatten! }
         end
       end
 
@@ -641,26 +639,36 @@ module Kameleon
 
     def resolve_alias(cmd)
       name = cmd.key
-      aliases_cmd = @aliases.fetch(name).clone
-      aliases_cmd_str = aliases_cmd.to_yaml
-      args = YAML.load(cmd.string_cmd)[name]
-      args = [].push(args).flatten  # convert args to array
-      expected_args_number = aliases_cmd_str.scan(/@\d+/).uniq.count
-      if expected_args_number != args.count
-        if args.length == 0
-          msg = "#{name} takes no arguments (#{args.count} given)"
-        else
-          msg = "#{name} takes exactly #{expected_args_number} arguments"
-                " (#{args.count} given)"
+      if @aliases.keys.include?(name) 
+        Kameleon.ui.debug("Resolving alias '#{name}'")
+        aliases_cmd = @aliases.fetch(name).clone
+        aliases_cmd_str = aliases_cmd.to_yaml
+        args = YAML.load(cmd.string_cmd)[name]
+        args = [].push(args).flatten  # convert args to array
+        expected_args_number = aliases_cmd_str.scan(/@\d+/).uniq.count
+        if expected_args_number != args.count
+          if args.length == 0
+            msg = "#{name} takes no arguments (#{args.count} given)"
+          else
+            msg = "#{name} takes exactly #{expected_args_number} arguments"
+                  " (#{args.count} given)"
+          end
+          raise RecipeError, msg
         end
-        raise RecipeError, msg
-      end
-      microstep = Microstep.new({cmd.microstep_name => aliases_cmd})
-      args.each_with_index do |arg, i|
-        microstep.gsub!("@#{i+1}", arg)
-      end
-      microstep.commands.map do |escaped_cmd|
-        Command.new(YAML.load(escaped_cmd.string_cmd), cmd.microstep_name)
+        aliases_cmd.map do |c|
+          nc = Command.new(c, cmd.microstep_name)
+          args.each_with_index do |arg, i|
+            nc.gsub!("@#{i+1}", arg)
+          end
+          resolve_alias(nc)
+        end 
+      elsif cmd.value.kind_of?(Array)
+        Kameleon.ui.debug("Search for aliases in the sub-commands of '#{name}'")
+        cmd.value.map!{ |cmd| resolve_alias(cmd) }.flatten!
+        cmd.remaster_string_cmd_from_value!
+      else
+        Kameleon.ui.debug("Leaf command '#{name}' is not an alias")
+        cmd
       end
     end
 
@@ -669,10 +677,10 @@ module Kameleon
       if (cmd.key =~ /on_(.*)clean/ || cmd.key =~ /on_(.*)init/)
         cmds = []
         if cmd.value.kind_of?(Array)
-          cmds = cmd.value.map do |c|
-            @aliases.keys.include?(c.key) ? resolve_alias(c) : c
+          cmds = cmd.value.map do |cmd|
+            resolve_alias(cmd)
           end
-          cmds = cmds.flatten
+          cmds.flatten!
         else
           fail RecipeError, "Invalid #{cmd.key} arguments"
         end
