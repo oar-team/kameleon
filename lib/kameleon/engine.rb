@@ -298,6 +298,10 @@ module Kameleon
           first_context.pipe(first_cmd.value, second_cmd.value, second_context, kwargs)
         end
       when "rescue"
+        unless cmd.value.length == 2
+          Kameleon.ui.error("Invalid 'rescue' command arguments. Expecting 2 sub commands")
+          fail ExecError
+        end
         first_cmd, second_cmd = cmd.value
         begin
           exec_cmd(first_cmd, kwargs)
@@ -305,6 +309,10 @@ module Kameleon
           safe_exec_cmd(second_cmd, kwargs)
         end
       when "test"
+        unless cmd.value.length == 2 or cmd.value.length == 3
+          Kameleon.ui.error("Invalid 'test' command arguments. Expecting 2 or 3 sub commands")
+          fail ExecError
+        end
         first_cmd, second_cmd, third_cmd = cmd.value
         begin
           Kameleon.ui.debug("Execute test condition")
@@ -313,8 +321,10 @@ module Kameleon
           # be executed rather than the "then" statement.
           exec_cmd(first_cmd, kwargs.reject {|k| k == :only_with_context})
         rescue ExecError
-          Kameleon.ui.debug("Execute test 'else' statment'")
-          exec_cmd(third_cmd, kwargs) unless third_cmd.nil?
+          unless third_cmd.nil?
+            Kameleon.ui.debug("Execute test 'else' statment'")
+            exec_cmd(third_cmd, kwargs)
+          end
         else
           Kameleon.ui.debug("Execute test 'then' statment'")
           exec_cmd(second_cmd, kwargs)
