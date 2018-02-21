@@ -1,13 +1,18 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.9.2.dev
------------------
+Version 2.9.2
+-------------
 
-**unreleased**
+Released on February 21st 2018
+
+- Enforce the number of sub commands for the rescue and test commands
+- Support nested aliases
 
 Version 2.9.1
 -------------
+
+Released on January 28st 2018
 
 - Make the test and group command work in the cleaning steps.
 
