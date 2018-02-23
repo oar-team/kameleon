@@ -124,7 +124,7 @@ module Kameleon
 
       # setting current step dir
       @current_step_dir = directory
-      Kameleon.ui.debug("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
+      Kameleon.ui.info("Starting web proxy Polipo in directory #{directory} using port: #{@polipo_port}")
       @polipo_process.stop(0) unless @polipo_process.nil?
       command = ["#{@polipo_path}/polipo", "-c", "/dev/null"]
       @polipo_cmd_options[:diskCacheRoot] = directory
