@@ -48,7 +48,7 @@ packages to the install list:
               debian-keyring ntp zip unzip rsync sudo less vim bash-completion
               gnome-core xorg
 
-These packages take some extra space, so add some space on the disk. 4G should
+These packages take some extra space, so add some space on the disk. 10G should
 be enough:
 
 .. code-block:: yaml
