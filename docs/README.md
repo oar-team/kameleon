@@ -14,4 +14,4 @@ firefox ./build/html/index.html
 ```
 
 An online version of this documentation can be found at this adresse:
-<http://kameleon.readthedocs.org>
+<http://kameleon.imag.fr/>
