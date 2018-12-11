@@ -1,3 +1,5 @@
+require 'digest'
+
 module Kameleon
 
   class Command
