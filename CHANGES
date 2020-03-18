@@ -1,10 +1,24 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.9.3.dev
------------------
+Version 2.10.0
+-------------
 
-**unreleased**
+Released on March 19th 2020
+
+- Rework usage (cosmetic fixes)
+- Drop the `kameleon template repository` action (same as `kameleon repository`)
+- Make `kameleon dag` and `kameleon dryrun` standalone actions instead of `kameleon info` options
+- Add the `kameleon export` action
+
+Version 2.9.4
+-------------
+
+Released on December 12th 2018
+
+- Minor fixes
+- NB: the 2.9.3 version was lost in space...
+
 
 Version 2.9.2
 -------------
