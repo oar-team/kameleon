@@ -272,8 +272,46 @@ module Kameleon
       end
     end
 
+    desc "export <RECIPE_PATH> <EXPORT_PATH>", "Export the given recipe with its steps and data to a given directory"
+    method_option :global, :type => :hash ,
+                  :default => {},  :aliases => "-g",
+                  :desc => "Set custom global variables."
+    method_option :add, :type => :boolean ,
+                  :default => false,  :aliases => "-A",
+                  :desc => "export recipe and steps to an existing directory (this may overwrite some existing files)"
+    def export(recipe_path,dest_path)
+      unless recipe_path.end_with? '.yaml'
+        recipe_path = recipe_path + '.yaml'
+      end
+      # Manage global as it is not passed to env by default
+      if options[:global]
+         Kameleon.env.global.merge!(options[:global])
+      end
+      recipe = Recipe.new(recipe_path)
+      recipe.resolve! :strict => false
+      recipe.all_files.uniq.each do |path|
+        relative_path = path.relative_path_from(Kameleon.env.workspace)
+          if relative_path.fnmatch("../*")
+            raise if Kameleon.ui.level("verbose")
+            raise ExportError, "Recipe '#{recipe_path}' depends on a file" \
+                " outside of the current directory: '#{relative_path.to_s}'"
           end
+      end
+      Kameleon.ui.info("Export recipe #{recipe_path} to directory: #{dest_path}")
+      if File.exists?(dest_path)
+        unless options[:add]
+          raise if Kameleon.ui.level("verbose")
+          raise ExportError, "Target export directory '#{dest_path}' already "\
+              "exists, use the --add option if you really want to export the "\
+              "recipe files to it (this may overwrite some existing files)"
         end
+      else
+        FileUtils.mkdir_p(dest_path)
+      end
+      recipe.all_files.uniq.each do |path|
+        relative_path = path.relative_path_from(Kameleon.env.workspace)
+        dst = File.join(dest_path, relative_path)
+        copy_file(path, dst)
       end
     end
 
