@@ -11,10 +11,10 @@ module Kameleon
     class Repository < Thor
       include Thor::Actions
 
-      desc "add [NAME] [URL]", "Adds a new named <name> repository at <url>."
+      desc "add <NAME> <GIT_URL>", "Adds a new repository named <NAME> cloned from at <GIT_URL>."
       method_option :branch, :type => :string ,
                     :default => nil,
-                    :desc => "checkout <branch>",
+                    :desc => "checkout <BRANCH>",
                     :aliases => "-b"
       def add(name, url)
         Kameleon::Repository.add(name, url, options)
@@ -25,7 +25,7 @@ module Kameleon
         Kameleon::Repository.list
       end
 
-      desc "update [NAME]", "Updates a named <name> repository"
+      desc "update <NAME>", "Updates repository named <NAME> repository"
       def update(name)
         Kameleon::Repository.update(name)
       end
@@ -50,7 +50,7 @@ module Kameleon
         Utils.list_recipes(Kameleon.env.repositories_path)
       end
 
-      desc "import [TEMPLATE_NAME]", "Imports the given template"
+      desc "import <TEMPLATE_NAME>", "Imports the given template"
       method_option :global, :type => :hash ,
                     :default => {},  :aliases => "-g",
                     :desc => "Set custom global variables."
@@ -81,7 +81,7 @@ module Kameleon
         end
       end
 
-      desc "info [TEMPLATE_NAME]", "Display detailed information about a template"
+      desc "info <TEMPLATE_NAME>", "Display detailed information about a template"
       method_option :global, :type => :hash ,
                     :default => {},  :aliases => "-g",
                     :desc => "Set custom global variables."
@@ -108,7 +108,7 @@ module Kameleon
   class Main < Thor
     include Thor::Actions
 
-    register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
+    register CLI::Repository, 'repository', 'repository', 'Manages repositories of recipes'
     # register CLI::Recipe, 'recipe', 'recipe', 'Manages the local recipes'
     register CLI::Template, 'template', 'template', 'Lists and imports templates'
 
@@ -139,7 +139,7 @@ module Kameleon
     end
     map %w(ls) => :list
 
-    desc "new [RECIPE_PATH] [TEMPLATE_NAME]", "Creates a new recipe"
+    desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Creates a new recipe from template <TEMPLATE_NAME>"
     method_option :global, :type => :hash ,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
@@ -190,7 +190,7 @@ module Kameleon
       end
     end
 
-    desc "info [RECIPE_PATH]", "Display detailed information about a recipe"
+    desc "info <RECIPE_PATH>", "Display detailed information about a recipe"
     method_option :global, :type => :hash ,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
@@ -256,7 +256,7 @@ module Kameleon
       end
     end
 
-    desc "build [RECIPE_PATH]", "Builds the appliance from the given recipe"
+    desc "build <RECIPE_PATH>", "Builds the appliance from the given recipe"
     method_option :build_path, :type => :string ,
                   :default => nil, :aliases => "-b",
                   :desc => "Sets the build directory path"
