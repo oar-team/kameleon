@@ -482,17 +482,20 @@ module Kameleon
       n_recipe['colorscheme'] = colorscheme
       n_recipe['color'] = color
       (@recipe.base_recipes_files - [@recipe.path]).uniq.each do |base_recipe_path|
-          n_base_recipe = g_recipes.add_nodes(base_recipe_path.relative_path_from(Pathname(Dir.pwd)).to_s)
-          n_base_recipe['shape'] = 'Mdiamond'
-          edge = graph.add_edges(n_base_recipe, n_recipe)
-          edge['style'] = 'dashed'
+        Kameleon.ui.debug("Dag add node #{base_recipe_path}")
+        n_base_recipe = g_recipes.add_nodes(base_recipe_path.relative_path_from(Pathname(Dir.pwd)).to_s)
+        n_base_recipe['shape'] = 'Mdiamond'
+        edge = graph.add_edges(n_base_recipe, n_recipe)
+        edge['style'] = 'dashed'
       end
       n_prev = n_recipe
       ["bootstrap", "setup", "export"].each do |section_name|
+        Kameleon.ui.debug("Dag add section #{section_name}")
         section = @recipe.sections.fetch(section_name)
         g_section = graph.add_graph( "cluster S:#{ section_name }" )
         g_section['label'] = section_name.capitalize
         section.sequence do |macrostep|
+          Kameleon.ui.debug("Dag add macrostep #{macrostep.name}")
           if macrostep.path.nil?
               macrostep_name = macrostep.name
           else
@@ -505,6 +508,7 @@ module Kameleon
           g_macrostep['style'] = 'filled'
           g_macrostep['color'] = 'gray'
           macrostep.sequence do |microstep|
+            Kameleon.ui.debug("Dag add microstep #{microstep.name}")
             n_microstep = g_macrostep.add_nodes("m:#{macrostep_name}/#{microstep.name}")
             n_microstep['label'] = microstep.name
             n_microstep['style'] = 'filled'
