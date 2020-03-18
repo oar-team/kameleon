@@ -200,18 +200,9 @@ module Kameleon
     method_option :dryrun, :type => :boolean ,
                   :default => false,
                   :desc => "Show the build sequence but do not actually build"
-    method_option :dag, :type => :boolean ,
-                  :default => false,
-                  :desc => "Show a DAG of the build sequence"
-    method_option :file, :type => :string ,
-                  :default => "/tmp/kameleon.dag",
-                  :desc => "DAG output filename"
-    method_option :format, :type => :string ,
-                  :desc => "DAG GraphViz format"
     method_option :relative, :type => :boolean ,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
-
     def info(*recipe_paths)
       if recipe_paths.length == 0 && !options[:from_cache].nil?
         unless File.file?(options[:from_cache])
@@ -222,37 +213,67 @@ module Kameleon
         @cache = Kameleon::Persistent_cache.instance
         @cache.cache_path = options[:from_cache]
       end
-      dag = nil
-      color = 0
       recipe_paths.each do |path|
         recipe = Kameleon::Recipe.new(path)
-        if options[:dryrun]
-          Kameleon::Engine.new(recipe, options).dryrun
-        elsif options[:dag]
-          dag = Kameleon::Engine.new(recipe, options).dag(dag, color)
-          color += 1
+        recipe.resolve!
+        recipe.display_info(options[:relative])
+      end
+    end
+
+    desc "dag <RECIPE_PATH> [<RECIPE_PATH> [<...>]]", "Draw a DAG of the steps to build one or more recipes"
+    method_option :global, :type => :hash ,
+                  :default => {},  :aliases => "-g",
+                  :desc => "Set custom global variables."
+    method_option :file, :type => :string ,
+                  :default => "/tmp/kameleon.dag",
+                  :desc => "DAG output filename"
+    method_option :format, :type => :string ,
+                  :desc => "DAG GraphViz format"
+    method_option :relative, :type => :boolean ,
+                  :default => false,
+                  :desc => "Make pathnames relative to the current working directory"
+    def dag(*recipe_paths)
+      color = 0
+      recipes_dag = nil
+      recipe_paths.each do |path|
+        recipe = Kameleon::Recipe.new(path)
+        recipes_dag = Kameleon::Engine.new(recipe, options).dag(recipes_dag, color)
+        color += 1
+      end
+      format = "canon"
+      if options[:format]
+        if GraphViz::Constants::FORMATS.include?(options[:format])
+          format = options[:format]
         else
-          recipe.resolve!
-          recipe.display_info(options[:relative])
+          Kameleon.ui.warn("Unknown GraphViz format #{options[:format]}, fall back to #{format}")
+        end
+      else
+        options[:file].match(/^.+\.([^\.]+)$/) do |f|
+          if GraphViz::Constants::FORMATS.include?(f[1])
+            format = f[1]
+          end
         end
       end
-      if options[:dag]
-        format = "canon"
-        if options[:format]
-          if GraphViz::Constants::FORMATS.include?(options[:format])
-            format = options[:format]
-          else
-            Kameleon.ui.warn("Unknown GraphViz format #{options[:format]}, fall back to #{format}")
-          end
-        else
-          options[:file].match(/^.+\.([^\.]+)$/) do |f|
-            if GraphViz::Constants::FORMATS.include?(f[1])
-              format = f[1]
-            end
+      recipes_dag.output( :"#{format}" => options[:file] )
+      Kameleon.ui.info("Generated GraphViz #{format} file: #{options[:file]}")
+    end
+
+    desc "dryrun <RECIPE_PATH>", "Show the steps the build would process"
+    method_option :global, :type => :hash ,
+                  :default => {},  :aliases => "-g",
+                  :desc => "Set custom global variables."
+    method_option :relative, :type => :boolean ,
+                  :default => false,
+                  :desc => "Make pathnames relative to the current working directory"
+    def dryrun(*recipe_paths)
+      recipe_paths.each do |path|
+        recipe = Kameleon::Recipe.new(path)
+        Kameleon::Engine.new(recipe, options).dryrun
+      end
+    end
+
           end
         end
-        dag.output( :"#{format}" => options[:file] )
-        Kameleon.ui.info("Generated GraphViz #{format} file: #{options[:file]}")
       end
     end
 
