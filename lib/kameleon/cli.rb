@@ -37,7 +37,7 @@ module Kameleon
     class Template < Thor
       include Thor::Actions
 
-      register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
+#      register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
 
       def self.source_root
         Kameleon.env.repositories_path
