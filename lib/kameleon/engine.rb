@@ -75,7 +75,7 @@ module Kameleon
       if @options[:enable_cache] || @options[:from_cache] then
         @cache.recipe_files = @recipe.all_files
       end
-      if @options[:create_build_dir]
+      unless @options[:no_create_build_dir]
         begin
           Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
           FileUtils.mkdir_p @cwd
