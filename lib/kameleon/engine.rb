@@ -536,7 +536,7 @@ module Kameleon
         edge['colorscheme'] = colorscheme
         edge['color'] = color
       end
-      Kameleon.ui.info "-> Drawn DAG for #{recipe_path}"
+      Kameleon.ui.info "-> Draw DAG for #{recipe_path}"
       return graph
     end
 
