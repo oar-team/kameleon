@@ -204,19 +204,24 @@ module Kameleon
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
     def info(*recipe_paths)
-      if recipe_paths.length == 0 && !options[:from_cache].nil?
-        unless File.file?(options[:from_cache])
-          raise CacheError, "The specified cache file "\
-                            "\"#{options[:from_cache]}\" do not exists"
+      if recipe_paths.empty?
+        if options[:from_cache].nil?
+          raise ArgumentError
+        else
+          unless File.file?(options[:from_cache])
+            raise CacheError, "The specified cache file "\
+                              "\"#{options[:from_cache]}\" do not exists"
+          end
+          Kameleon.ui.info("Using the cached recipe")
+          @cache = Kameleon::Persistent_cache.instance
+          @cache.cache_path = options[:from_cache]
         end
-        Kameleon.ui.info("Using the cached recipe")
-        @cache = Kameleon::Persistent_cache.instance
-        @cache.cache_path = options[:from_cache]
-      end
-      recipe_paths.each do |path|
-        recipe = Kameleon::Recipe.new(path)
-        recipe.resolve!
-        recipe.display_info(options[:relative])
+      else
+        recipe_paths.each do |path|
+          recipe = Kameleon::Recipe.new(path)
+          recipe.resolve!
+          recipe.display_info(options[:relative])
+        end
       end
     end
 
@@ -233,6 +238,7 @@ module Kameleon
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
     def dag(*recipe_paths)
+      raise ArgumentError if recipe_paths.empty?
       color = 0
       recipes_dag = nil
       recipe_paths.each do |path|
@@ -266,6 +272,7 @@ module Kameleon
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
     def dryrun(*recipe_paths)
+      raise ArgumentError if recipe_paths.empty?
       recipe_paths.each do |path|
         recipe = Kameleon::Recipe.new(path)
         Kameleon::Engine.new(recipe, options).dryrun
