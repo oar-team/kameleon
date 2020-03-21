@@ -243,7 +243,7 @@ module Kameleon
       recipes_dag = nil
       recipe_paths.each do |path|
         recipe = Kameleon::Recipe.new(path)
-        recipes_dag = Kameleon::Engine.new(recipe, options).dag(recipes_dag, color)
+        recipes_dag = Kameleon::Engine.new(recipe, options.dup.merge({create_build_dir: false}).freeze).dag(recipes_dag, color, options[:recipes_only])
         color += 1
       end
       format = "canon"
@@ -275,7 +275,7 @@ module Kameleon
       raise ArgumentError if recipe_paths.empty?
       recipe_paths.each do |path|
         recipe = Kameleon::Recipe.new(path)
-        Kameleon::Engine.new(recipe, options).dryrun
+        Kameleon::Engine.new(recipe, options.dup.merge({create_build_dir: false}).freeze).dryrun
       end
     end
 
