@@ -466,7 +466,7 @@ module Kameleon
       Kameleon.ui.shell.say ""
     end
 
-    def dag(graph, color)
+    def dag(graph, color, recipes_only)
       if graph.nil?
         graph =  GraphViz::new( "G" )
       end
@@ -495,43 +495,47 @@ module Kameleon
         end
       end
       n_prev = n_recipe
-      ["bootstrap", "setup", "export"].each do |section_name|
-        Kameleon.ui.debug("Dag add section #{section_name}")
-        section = @recipe.sections.fetch(section_name)
-        g_section = graph.add_graph( "cluster S:#{ section_name }" )
-        g_section['label'] = section_name.capitalize
-        section.sequence do |macrostep|
-          Kameleon.ui.debug("Dag add macrostep #{macrostep.name}")
-          if macrostep.path.nil?
-              macrostep_name = macrostep.name
-          else
-              macrostep_name = macrostep.path.relative_path_from(Pathname(Dir.pwd)).to_s
-              macrostep_name.chomp!(".yaml")
-              macrostep_name.sub!(/^steps\//, "")
-          end
-          g_macrostep = g_section.add_graph( "cluster M:#{ macrostep_name }")
-          g_macrostep['label'] = macrostep_name
-          g_macrostep['style'] = 'filled'
-          g_macrostep['color'] = 'gray'
-          macrostep.sequence do |microstep|
-            Kameleon.ui.debug("Dag add microstep #{microstep.name}")
-            n_microstep = g_macrostep.add_nodes("m:#{macrostep_name}/#{microstep.name}")
-            n_microstep['label'] = microstep.name
-            n_microstep['style'] = 'filled'
-            n_microstep['color'] = 'white'
-            edge = graph.add_edges(n_prev, n_microstep)
-            edge['colorscheme'] = colorscheme
-            edge['color'] = color
-            n_prev = n_microstep
+      if recipes_only
+        Kameleon.ui.debug("As requested, only show recipes")
+      else
+        ["bootstrap", "setup", "export"].each do |section_name|
+          Kameleon.ui.debug("Dag add section #{section_name}")
+          section = @recipe.sections.fetch(section_name)
+          g_section = graph.add_graph( "cluster S:#{ section_name }" )
+          g_section['label'] = section_name.capitalize
+          section.sequence do |macrostep|
+            Kameleon.ui.debug("Dag add macrostep #{macrostep.name}")
+            if macrostep.path.nil?
+                macrostep_name = macrostep.name
+            else
+                macrostep_name = macrostep.path.relative_path_from(Pathname(Dir.pwd)).to_s
+                macrostep_name.chomp!(".yaml")
+                macrostep_name.sub!(/^steps\//, "")
+            end
+            g_macrostep = g_section.add_graph( "cluster M:#{ macrostep_name }")
+            g_macrostep['label'] = macrostep_name
+            g_macrostep['style'] = 'filled'
+            g_macrostep['color'] = 'gray'
+            macrostep.sequence do |microstep|
+              Kameleon.ui.debug("Dag add microstep #{microstep.name}")
+              n_microstep = g_macrostep.add_nodes("m:#{macrostep_name}/#{microstep.name}")
+              n_microstep['label'] = microstep.name
+              n_microstep['style'] = 'filled'
+              n_microstep['color'] = 'white'
+              edge = graph.add_edges(n_prev, n_microstep)
+              edge['colorscheme'] = colorscheme
+              edge['color'] = color
+              n_prev = n_microstep
+            end
           end
         end
+        n_end = graph.add_nodes('end')
+        n_end['label'] = 'END'
+        n_end['shape'] = 'Msquare'
+        edge = graph.add_edges(n_prev, n_end)
+        edge['colorscheme'] = colorscheme
+        edge['color'] = color
       end
-      n_end = graph.add_nodes('end')
-      n_end['label'] = 'END'
-      n_end['shape'] = 'Msquare'
-      edge = graph.add_edges(n_prev, n_end)
-      edge['colorscheme'] = colorscheme
-      edge['color'] = color
       Kameleon.ui.info "-> Drawn DAG for #{recipe_path}"
       return graph
     end

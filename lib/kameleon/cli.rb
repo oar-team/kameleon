@@ -237,6 +237,9 @@ module Kameleon
     method_option :relative, :type => :boolean ,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
+    method_option :recipes_only, :type => :boolean ,
+                  :default => false,
+                  :desc => "Show recipes only (mostly useful to display multiple recipes inheritance)"
     def dag(*recipe_paths)
       raise ArgumentError if recipe_paths.empty?
       color = 0
