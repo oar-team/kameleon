@@ -1,10 +1,17 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.1
+-------------
+
+Released on March 21th 2020
+
+- Fix regression in 2.10.0 with the build directory creation
+
 Version 2.10.0
 -------------
 
-Released on March 19th 2020
+Released on March 21th 2020
 
 - Rework usage (cosmetic fixes)
 - Drop the `kameleon template repository` action (same as `kameleon repository`)
