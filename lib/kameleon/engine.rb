@@ -486,7 +486,13 @@ module Kameleon
         n_base_recipe = g_recipes.add_nodes(base_recipe_path.relative_path_from(Pathname(Dir.pwd)).to_s)
         n_base_recipe['shape'] = 'Mdiamond'
         edge = graph.add_edges(n_base_recipe, n_recipe)
-        edge['style'] = 'dashed'
+        if base_recipe_path == @recipe.extended_recipe_file
+          Kameleon.ui.debug("This is the extended recipe")
+          edge['colorscheme'] = colorscheme
+          edge['color'] = color
+        else
+          edge['style'] = 'dashed'
+        end
       end
       n_prev = n_recipe
       ["bootstrap", "setup", "export"].each do |section_name|
