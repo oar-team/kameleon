@@ -14,6 +14,7 @@ module Kameleon
     attr_accessor :checkpoint_path
     attr_accessor :metainfo
     attr_accessor :files
+    attr_accessor :extended_recipe_file
     attr_accessor :base_recipes_files
     attr_accessor :data_files
     attr_accessor :env_files
@@ -96,6 +97,12 @@ module Kameleon
       end
 
       update_steps_dirs()
+
+      extended_recipe_name = yaml_recipe.fetch("extend", "")
+      unless extended_recipe_name.nil?
+        extended_recipe_name << ".yaml" unless extended_recipe_name.end_with? ".yaml"
+        @extended_recipe_file = Pathname.new(File.expand_path(File.join(File.dirname(path), extended_recipe_name)))
+      end
 
       # Load extended recipe variables
       yaml_recipe = load_base_recipe(yaml_recipe, @path)
