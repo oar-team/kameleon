@@ -52,7 +52,7 @@ Kameleon is delivered without any template by default::
 
 To begin, a recipe repository has to be added::
 
-    $ kameleon template repo add tutorial https://github.com/oar-team/kameleon-g5k-tutorial.git
+    $ kameleon repository add tutorial https://github.com/oar-team/kameleon-g5k-tutorial.git
     $ kameleon template list
 
 Now, you should see the template list prefixed by the repository name, called "tutorial".
@@ -277,8 +277,8 @@ with git
 
 **User**::
 
-    $ kameleon template repository add grid5000 git@grid5000-recipes
-    $ kameleon template repository update grid5000
+    $ kameleon repository add grid5000 git@grid5000-recipes
+    $ kameleon repository update grid5000
     $ kameleon template list|info|import...
 
 
@@ -308,6 +308,6 @@ e.g.
 
 ::
 
-    kameleon template repo add <username> root@genepi-9.grenoble.grid5000.fr:/root/my_recipes/.git
+    kameleon repository add <username> root@genepi-9.grenoble.grid5000.fr:/root/my_recipes/.git
     or
     git clone root@genepi-9.grenoble.grid5000.fr:/root/my_recipes/.git <username>

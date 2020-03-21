@@ -24,7 +24,7 @@ To begin, a recipe repository has to be added:
 
 .. code-block:: bash
 
-    kameleon template repo add default https://github.com/oar-team/kameleon-recipes.git
+    kameleon repository add default https://github.com/oar-team/kameleon-recipes.git
     kameleon template list
 
 Now, you should see the template list prefixed by the repository name, called
@@ -270,8 +270,24 @@ output that shows you every information about on or several recipes. For example
      -> user_name: kameleon
      -> user_password: kameleon
 
-You can also use the ``--dryrun`` option to list all steps that will be
-executed.
+You can also inspect the steps involed in your recipe using either the
+``kameleon dryrun`` command or the ``kameleon dag`` command. The ``kameleon
+dag`` command draws a direct acyclic graph for one or possibly many recipes.
+The DAG can be converted to a image or pdf file when using either the
+``--file`` or ``--format`` option.
+
+.. code-block:: bash
+
+    # Assuming we have recipes for many Debian version in the workspace, draw a DAG of their builds, showing inheritance and common steps...
+    kameleon dag --file dag.png debian-*.yaml
+    -> Draw DAG for debian-base.yaml
+    -> Draw DAG for debian-buster.yaml
+    -> Draw DAG for debian-jessie.yaml
+    -> Draw DAG for debian-stretch.yaml
+    -> Draw DAG for debian-testing.yaml
+    -> Draw DAG for debian-wheezy.yaml
+    Generated GraphViz png file: dag.png
+
 
 .. note:: Don't hesitate to use the ``help`` option for each command to see
    the available options. For example: ``kameleon help info``
@@ -416,6 +432,18 @@ Then build again your recipe and run it like before to see that your timestamp
 has been truly added.
 To get more information about step definition and the use of default
 variable and microstep selection, see :ref:`step`.
+
+Export a recipe
+~~~~~~~~~~~~~~~
+
+Assuming you have created or imported many recipes in your workspace, you can export one of the recipes with the required steps to another directory thanks to the ``kameleon export`` command.
+
+.. code-block:: bash
+
+    kameleon export my_debian8.yaml /tmp/exported_recipe/
+
+Use the ``--add`` option to export additional recipes with their steps to the same directory. But mind that if you export recipes from different workspaces, overwritten files may break previously exported recipes.
+
 
 Advanced Features
 ~~~~~~~~~~~~~~~~~
