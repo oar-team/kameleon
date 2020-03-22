@@ -173,8 +173,13 @@ The new recipe ``my_debian8.yaml`` inherits the base recipe
 This recipe inherits from the parent recipe thanks to the keyword ``"@base"``.
 See :ref:`inheritance` for more details.
 
-An other very useful command is ``kameleon info`` it show a nice colorful
-output that shows you every information about on or several recipes. For example:
+Inspect recipes
+~~~~~~~~~~~~~~~
+
+Kameleon provides some commands to inspect recipes before building them.
+
+The first command is ``kameleon info``, which shows a colorful
+output with every information about one or possibly several recipes. For instance:
 
 .. code-block:: bash
 
@@ -270,11 +275,12 @@ output that shows you every information about on or several recipes. For example
      -> user_name: kameleon
      -> user_password: kameleon
 
-You can also inspect the steps involed in your recipe using either the
-``kameleon dryrun`` command or the ``kameleon dag`` command. The ``kameleon
-dag`` command draws a direct acyclic graph for one or possibly many recipes.
-The DAG can be converted to a image or pdf file when using either the
-``--file`` or ``--format`` option.
+You can also inspect the steps involed in your recipe using either 
+``kameleon dryrun``, or ``kameleon dag``.
+
+``kameleon dryrun`` run through the sections and steps that the ``kameleon build`` will actually execute.
+
+``kameleon dag`` draws a direct acyclic graph of a recipe inheritance and steps for one or possibly many recipes all at once. The DAG can be converted to a image or pdf file when using either the ``--file`` or ``--format`` option.
 
 .. code-block:: bash
 
