@@ -83,8 +83,7 @@ User Documentation
     inheritance.rst
     aliases.rst
     faq.rst
-    grid5000_tutorial.rst
-    grid5000_admin_tutorial.rst
+    other.rst
 
 Indices and tables
 ==================

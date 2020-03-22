@@ -2,6 +2,10 @@
 Grid'5000 Admin Tutorial
 ========================
 
+.. note::
+
+    WARNING: This document is **deprecated**.
+
 The tutorial will focus on the three following activities:
 
 * Create and customize G5k appliance as a simple end-user
@@ -11,7 +15,7 @@ The tutorial will focus on the three following activities:
 Introduction: What is Kameleon?
 --------------------------------
 
-.. figure:: _static/Kameleon_architecture.png
+.. figure:: ../_static/Kameleon_architecture.png
    :align: center
    :alt: Kameleon Architecture
 
@@ -22,7 +26,7 @@ Kameleon can be seen as a shell sequencer which will boost your shell scripts.
 It is based on the execution of shell scripts but it also provides some syntax sugar
 that makes working with shell scripts less painful.
 
-.. figure:: _static/Kameleon_hierarchy.png
+.. figure:: ../_static/Kameleon_hierarchy.png
    :align: center
    :alt: Kameleon recipe hierarchy
 
@@ -148,7 +152,7 @@ the parent recipe ``tutorial/debian7/chroot.yaml``.
 
 .. code-block:: yaml
    :linenos:
-   :emphasize-lines: 6,7,15
+   :emphasize-lines: 6,7
 
     export:
       - disable_checkpoint
@@ -255,7 +259,7 @@ Manage a recipe repository and share it
 One key principle that it is essential to know in Kameleon
 is the difference between a workspace and a template repository.
 
-.. image:: _static/kameleon-repository.png
+.. image:: ../_static/kameleon-repository.png
      :align: center
 
 To ``convert`` a workspace into a repository, all you need to do is publish it

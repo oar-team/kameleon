@@ -2,6 +2,10 @@
 Grid'5000 Tutorial
 ==================
 
+.. note::
+
+    WARNING: This document is **deprecated**.
+
 This tutorial will introduce Kameleon, a tool to build software appliances.
 With Kameleon it is possible to generate appliances that can be deployed on different virtualization hypervisors or on baremetal.
 It targets an important activity in Grid'5000 which is the customization of the experimental environments.
