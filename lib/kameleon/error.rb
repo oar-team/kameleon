@@ -27,4 +27,5 @@ module Kameleon
   class TemplateNotFound < Error; status_code(9) ; end
   class CacheError < Error; status_code(10) ; end
   class ExportError < Error; status_code(11) ; end
+  class RepositoryError < Error; status_code(12) ; end
 end

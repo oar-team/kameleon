@@ -28,12 +28,20 @@ module Kameleon
         Kameleon::Repository.list(options)
       end
 
-      desc "update <NAME>", "Updates repository named <NAME> repository"
+      desc "update <NAME>", "Updates repository named <NAME> from git"
       def update(name)
         Kameleon::Repository.update(name)
       end
       map %w(-h --help) => :help
       map %w(ls) => :list
+
+      desc "remove <NAME>", "Remove repository named <NAME>"
+      def remove(name)
+        Kameleon::Repository.remove(name)
+      end
+      map %w(-h --help) => :help
+      map %w(ls) => :list
+      map %w(rm) => :remove
     end
 
 
