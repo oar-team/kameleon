@@ -37,9 +37,36 @@ module Kameleon
       process.stop
     end
 
-    def self.list
+    def self.list(kwargs = {})
       Dir["#{Kameleon.env.repositories_path}/*"].each do |repo_path|
-        Kameleon.ui.info File.basename("#{repo_path}")
+        if kwargs[:git]
+          cmd = ["git", "remote", "-v"]
+          r, w = IO.pipe
+          process = ChildProcess.build(*cmd)
+          process.io.stdout = w
+          process.cwd = repo_path
+          process.start
+          w.close
+          url = r.readline.split[1]
+          process.wait
+          process.stop
+          cmd = ["git", "rev-parse", "--abbrev-ref", "HEAD"]
+          r, w = IO.pipe
+          process = ChildProcess.build(*cmd)
+          process.io.stdout = w
+          process.cwd = repo_path
+          process.start
+          w.close
+          branch = r.readline.chomp
+          process.wait
+          process.stop
+          Kameleon.ui.shell.say "#{File.basename("#{repo_path}")}", nil, false
+          Kameleon.ui.shell.say " <-", :magenta, false
+          Kameleon.ui.shell.say " #{url}", :cyan, false
+          Kameleon.ui.shell.say " (#{branch})", :yellow
+        else
+          Kameleon.ui.info File.basename(repo_path)
+        end
       end
     end
   end

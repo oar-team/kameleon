@@ -21,8 +21,11 @@ module Kameleon
       end
 
       desc "list", "Lists available repositories."
+      method_option :git, :type => :boolean,
+                    :default => true,
+                    :desc => "show the git repository and branch each repository comes from"
       def list
-        Kameleon::Repository.list
+        Kameleon::Repository.list(options)
       end
 
       desc "update <NAME>", "Updates repository named <NAME> repository"
