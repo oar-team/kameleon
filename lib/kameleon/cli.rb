@@ -108,9 +108,10 @@ module Kameleon
   class Main < Thor
     include Thor::Actions
 
-    register CLI::Repository, 'repository', 'repository', 'Manages repositories of recipes'
-    # register CLI::Recipe, 'recipe', 'recipe', 'Manages the local recipes'
-    register CLI::Template, 'template', 'template', 'Lists and imports templates'
+    desc 'repository <SUBCOMMAND>', 'Manages repositories of recipes'
+    subcommand 'repository', CLI::Repository
+    desc 'template <SUBCOMMAND>', 'Lists and imports templates'
+    subcommand 'template', CLI::Template
 
     class_option :color, :type => :boolean, :default => Kameleon.default_values[:color],
                  :desc => "Enables colorization in output"
@@ -431,13 +432,6 @@ module Kameleon
         Kameleon.ui.level = "verbose"
       end
       Kameleon.ui.verbose("The level of output is set to #{Kameleon.ui.level}")
-
-      opts = args[1]
-      cmd_name = args[2][:current_command].name
-      if opts.include? "--help" or opts.include? "-h"
-        Main.command_help(Kameleon.ui.shell, cmd_name)
-        raise Kameleon::Exit
-      end
     end
 
     def self.start(*)
