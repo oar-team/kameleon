@@ -17,7 +17,7 @@ begin
   Kameleon.init_userconf
   Kameleon::Main.start
 rescue Exception  => e
-  Kameleon.ui.error("Error : #{e}")
+  Kameleon.ui.error("Error: #{e}")
   if Kameleon.env.debug
     raise e
   else

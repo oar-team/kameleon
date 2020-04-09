@@ -93,7 +93,7 @@ module Kameleon
          unless File.file? @path
       yaml_recipe = YAML.load_file @path
       unless yaml_recipe.kind_of? Hash
-        fail RecipeError, "Invalid yaml error : #{@path}"
+        fail RecipeError, "Invalid yaml: #{@path}"
       end
 
       update_steps_dirs()
@@ -242,7 +242,7 @@ module Kameleon
          unless File.file? path
       base_yaml_recipe = YAML.load_file base_recipe_path
       unless yaml_recipe.kind_of? Hash
-        fail RecipeError, "Invalid yaml error : #{base_yaml_recipe}"
+        fail RecipeError, "Invalid yaml: #{base_yaml_recipe}"
       end
       base_yaml_recipe.keys.each do |key|
         if ["export", "bootstrap", "setup"].include? key
