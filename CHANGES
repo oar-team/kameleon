@@ -5,6 +5,9 @@ Version 2.10.2.dev
 ------------------
 
 **unreleased**
+- Fix cli help for the repository and template sub-commands
+- Add the git remote url and branch to kameleon repo list
+- Add the 'kameleon repository remove' command
 
 Version 2.10.1
 -------------
