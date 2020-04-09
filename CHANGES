@@ -1,10 +1,10 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.10.2.dev
-------------------
+Version 2.10.2
+--------------
 
-**unreleased**
+Released on April 09th 2020
 - Fix cli help for the repository and template sub-commands
 - Add the git remote url and branch to kameleon repo list
 - Add the 'kameleon repository remove' command
