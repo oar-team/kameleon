@@ -37,8 +37,15 @@ module Kameleon
       def remove(name)
         Kameleon::Repository.remove(name)
       end
+
+      desc "commands", "Lists all available commands", :hide => true
+      def commands
+        puts Repository.all_commands.keys - ["commands"]
+      end
+
       map %w(ls) => :list
       map %w(rm) => :remove
+      map %w(completions) => :commands
     end
 
 
@@ -105,7 +112,14 @@ module Kameleon
         tpl.resolve! :strict => false
         tpl.display_info(false)
       end
+
+      desc "commands", "Lists all available commands", :hide => true
+      def commands
+        puts Template.all_commands.keys - ["commands"]
+      end
+
       map %w(ls) => :list
+      map %w(completions) => :commands
     end
   end
 
@@ -421,8 +435,16 @@ module Kameleon
     end
 
     desc "commands", "Lists all available commands", :hide => true
-    def commands
-      puts Main.all_commands.keys - ["commands", "completions"]
+    def commands(context="main")
+      Kameleon.ui.debug("Commands for '#{context}':")
+      case context
+      when "main"
+        puts Main.all_commands.keys - ["commands"]
+      when "repository"
+        invoke CLI::Repository, "commands", [], []
+      when "template"
+        invoke CLI::Template, "commands", [], []
+      end
     end
 
     desc "source_root", "Prints the kameleon directory path", :hide => true
@@ -432,6 +454,8 @@ module Kameleon
 
     map %w(-v --version) => :version
     map %w(ls) => :list
+    map %w(completions) => :commands
+
     def initialize(*args)
       super
       self.options ||= {}
