@@ -57,10 +57,13 @@ module Kameleon
       end
 
       desc "list", "Lists all available templates"
+      method_option :progress, :type => :boolean, :default => true,
+                    :desc => "Show progress bar while resolving templates",
+                    :aliases => "-p"
       def list
-        Kameleon.ui.info "The following templates are available in " \
-                         "#{ Kameleon.env.repositories_path }:"
-        Utils.list_recipes(Kameleon.env.repositories_path)
+        Kameleon.ui.shell.say "Recipe templates available in: ", :red, false
+        Kameleon.ui.shell.say Kameleon.env.repositories_path.to_s, :yellow
+        Utils.list_recipes(Kameleon.env.repositories_path, options[:progress], true)
       end
 
       desc "import <TEMPLATE_NAME>", "Imports the given template"
@@ -152,8 +155,12 @@ module Kameleon
     end
 
     desc "list", "Lists all defined recipes in the current directory"
+    method_option :progress, :type => :boolean, :default => false,
+                  :desc => "Show progress bar while resolving templates",
+                  :aliases => "-p"
     def list
-      Utils.list_recipes(Kameleon.env.workspace)
+      Kameleon.ui.shell.say "Workspace recipes:", :red
+      Utils.list_recipes(Kameleon.env.workspace, options[:progress])
     end
 
     desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Creates a new recipe from template <TEMPLATE_NAME>"

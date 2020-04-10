@@ -1,3 +1,5 @@
+require 'progressbar'
+
 module Kameleon
   module Utils
 
@@ -123,33 +125,63 @@ module Kameleon
       end
     end
 
-    def self.list_recipes(repository_path, kwargs = {})
-      Kameleon.env.root_dir = repository_path
+    def self.list_recipes(recipes_path, do_progressbar = false, is_repository = false, kwargs = {})
+      Kameleon.env.root_dir = recipes_path
       catch_exception = kwargs.fetch(:catch_exception, true)
       recipes_hash = []
-      recipes_files = get_recipes(repository_path)
+      recipes_files = get_recipes(recipes_path)
+      if recipes_files.empty?
+        Kameleon.ui.shell.say "  <None>", :cyan
+        return
+      end
+      if do_progressbar
+        progressbar = ProgressBar.create(:format         => '%t (%p%%) %bᗧ%i',
+                                         :title          => 'Resolving ' + if is_repository; 'templates' else  'recipes' end,
+                                         :progress_mark  => '.',
+                                         :remainder_mark => '･',
+                                         :total          => recipes_files.size + 10,
+                                         :starting_at    => 10)
+      end
       recipes_files.each do |f|
         path = f.to_s
         begin
         recipe = RecipeTemplate.new(path)
-        name = path.gsub(repository_path.to_s + '/', '').chomp('.yaml')
+        name = path.gsub(recipes_path.to_s + '/', '').chomp('.yaml')
         recipes_hash.push({
           "name" => name,
           "description" => recipe.metainfo['description'],
         })
+        progressbar.increment if do_progressbar
         rescue => e
           raise e if Kameleon.env.debug or not catch_exception
         end
       end
       unless recipes_hash.empty?
-        recipes_hash = recipes_hash.sort_by{ |k| k["name"] }
         name_width = recipes_hash.map { |k| k['name'].size }.max
         desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
         desc_width = (80 - name_width - 3) if desc_width < 0
       end
-      tp(recipes_hash,
-        {"name" => {:width => name_width}},
-        { "description" => {:width => desc_width}})
+      repo_str_old = nil
+      recipes_hash.sort_by{ |k| k["name"] }.each do |r|
+        if is_repository
+          repo_str,recipe_dir_str,recipe_str = r["name"].match(%r{^([^/]+/)(.+/)?([^/]+)$}).to_a[1..3].map{|m| m.to_s}
+        else
+          repo_str,recipe_dir_str,recipe_str = r["name"].match(%r{^()(.+/)?([^/]+)$}).to_a[1..3].map{|m| m.to_s}
+        end
+        if not repo_str_old.nil? and repo_str_old != repo_str
+          Kameleon.ui.shell.say "#{'-' * name_width} | #{'-' * desc_width}"
+        end
+        repo_str_old = repo_str
+        Kameleon.ui.debug("#{r["name"]} -> repo=#{repo_str}, recipe_dir=#{recipe_dir_str}, recipee=#{recipe_str}")
+        Kameleon.ui.shell.say "#{repo_str}", :yellow, false
+        Kameleon.ui.shell.say "#{recipe_dir_str}", :cyan, false
+        Kameleon.ui.shell.say sprintf("%-#{name_width - repo_str.length - recipe_dir_str.length}s", recipe_str), :magenta, false
+        Kameleon.ui.shell.say " | ", nil, false
+        if r["description"].to_s.length > desc_width - 4
+          r["description"] = r["description"][0..(desc_width - 4)] + "..."
+        end
+        Kameleon.ui.shell.say sprintf("%-#{desc_width}s", r["description"]), :blue
+      end
     end
 
     def self.get_recipes(path)
