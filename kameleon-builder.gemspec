@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
                      'pierre.neyron@imag.fr',
                      'bruno.bzeznik@imag.fr']
   s.description   = %q{The mindful appliance builder}
-  s.summary       = %q{Kameleon is a tool to build virtual machines from scratch}
+  s.summary       = %q{Kameleon is a tool to build system appliances from scratch}
   s.homepage      = 'http://kameleon.imag.fr/'
   s.license       = 'GPL-2.0'
 
@@ -33,6 +33,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'table_print', '~> 1.5'
   s.add_dependency 'psych', '~> 2.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2'
+  s.add_dependency 'progressbar', '~> 1'
 
   s.requirements = ['polipo 1.0.3, or greater', 'graphviz 2.38.0 or greater']
 end
