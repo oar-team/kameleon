@@ -1,10 +1,15 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.10.3.dev
-------------------
+Version 2.10.3
+--------------
 
-**unreleased**
+Released on April 10th 2020
+
+- Rework kameleon template list: add color add progress bar
+- Make bash completion understand the subcommands
+- Fix the command help ->  `kameleon <command> -h`
+- Add support for custom extend erb templates
 
 Version 2.10.2
 --------------
