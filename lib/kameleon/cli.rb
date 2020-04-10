@@ -192,7 +192,18 @@ module Kameleon
           recipe_temp = File.join(tmp_dir, File.basename(recipe_path))
           ## copying recipe
           File.open(recipe_temp, 'w+') do |file|
-            extend_erb_tpl = File.join(Kameleon.erb_dirpath, "extend.erb")
+            message="Use extend ERB template: "
+            extend_erb_tpl = [
+              Kameleon.env.repositories_path.join(template_name + ".erb"),
+              Pathname.new(template_name).dirname.ascend.to_a.push(Pathname.new("")).map do |p|
+                Kameleon.env.repositories_path.join(p, ".kameleon-extend.yaml.erb")
+              end,
+              Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb")
+            ].flatten.find do |f|
+              Kameleon.ui.verbose(message + f.to_s)
+              message = "-> Not found, fallback: "
+              File.readable?(f)
+            end 
             erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
             result = erb.result(binding)
             file.write(result)

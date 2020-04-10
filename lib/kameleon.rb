@@ -46,7 +46,7 @@ module Kameleon
     def init_userconf()
       if not File.exists?(Kameleon.userconf_path) or File.zero?(Kameleon.userconf_path)
         File.open(Kameleon.userconf_path, 'w+') do |file|
-          userconf_erb = File.join(Kameleon.erb_dirpath, "userconf.erb")
+          userconf_erb = File.join(Kameleon.erb_dirpath, "userconf.yaml.erb")
           erb = ERB.new(File.open(userconf_erb, 'rb') { |f| f.read })
           result = erb.result(binding)
           file.write(result)
