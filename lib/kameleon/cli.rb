@@ -225,9 +225,6 @@ module Kameleon
     method_option :from_cache, :type => :string ,
                   :default => nil,
                   :desc => "Get info from a persistent cache tar file (ignore recipe path)"
-    method_option :dryrun, :type => :boolean ,
-                  :default => false,
-                  :desc => "Show the build sequence but do not actually build"
     method_option :relative, :type => :boolean ,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
