@@ -32,14 +32,11 @@ module Kameleon
       def update(name)
         Kameleon::Repository.update(name)
       end
-      map %w(-h --help) => :help
-      map %w(ls) => :list
 
       desc "remove <NAME>", "Remove repository named <NAME>"
       def remove(name)
         Kameleon::Repository.remove(name)
       end
-      map %w(-h --help) => :help
       map %w(ls) => :list
       map %w(rm) => :remove
     end
@@ -47,8 +44,6 @@ module Kameleon
 
     class Template < Thor
       include Thor::Actions
-
-#      register CLI::Repository, 'repository', 'repository', 'Manages set of remote git repositories'
 
       def self.source_root
         Kameleon.env.repositories_path
@@ -110,7 +105,6 @@ module Kameleon
         tpl.resolve! :strict => false
         tpl.display_info(false)
       end
-      map %w(-h --help) => :help
       map %w(ls) => :list
     end
   end
@@ -133,13 +127,11 @@ module Kameleon
     class_option :script, :type => :boolean, :default => Kameleon.default_values[:script],
                  :desc => "Never prompts for user intervention",
                  :aliases => "-s"
-    map %w(-h --help) => :help
 
     desc "version", "Prints the Kameleon's version information"
     def version
       puts "Kameleon version #{Kameleon::VERSION}"
     end
-    map %w(-v --version) => :version
 
     def self.source_root
       Kameleon.env.repositories_path
@@ -149,7 +141,6 @@ module Kameleon
     def list
       Utils.list_recipes(Kameleon.env.workspace)
     end
-    map %w(ls) => :list
 
     desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Creates a new recipe from template <TEMPLATE_NAME>"
     method_option :global, :type => :hash ,
@@ -439,6 +430,8 @@ module Kameleon
       puts Kameleon.source_root
     end
 
+    map %w(-v --version) => :version
+    map %w(ls) => :list
     def initialize(*args)
       super
       self.options ||= {}
@@ -456,7 +449,17 @@ module Kameleon
       Kameleon.ui.verbose("The level of output is set to #{Kameleon.ui.level}")
     end
 
-    def self.start(*)
+    def self.start(*args)
+      # `kameleon build -h` does not work without the following, except for subcommands...
+      # Ref: https://stackoverflow.com/a/49044225/6431461
+      if (Thor::HELP_MAPPINGS & ARGV).any? and subcommands.grep(/^#{ARGV[0]}/).empty?
+        Kameleon.ui.debug("Apply workaround to handle the help command in #{ARGV}")
+        Thor::HELP_MAPPINGS.each do |cmd|
+          if match = ARGV.delete(cmd)
+            ARGV.unshift match
+          end
+        end
+      end
       super
     rescue Exception => e
       Kameleon.ui = Kameleon::UI::Shell.new
