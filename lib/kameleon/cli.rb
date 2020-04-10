@@ -11,7 +11,7 @@ module Kameleon
     class Repository < Thor
       include Thor::Actions
 
-      desc "add <NAME> <GIT_URL>", "Adds a new repository named <NAME> cloned from at <GIT_URL>."
+      desc "add <NAME> <GIT_URL>", "Adds a new repository named <NAME> cloned from <GIT_URL>."
       method_option :branch, :type => :string ,
                     :default => nil,
                     :desc => "checkout <BRANCH>",
