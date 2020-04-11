@@ -116,6 +116,19 @@ module Kameleon
         tpl.display_info(false)
       end
 
+      desc "erb <PATH>", "Create a extend recipe ERB"
+      def info(path)
+        if File.directory?(path)
+          erb_file = Pathname.new(path).join(Kameleon.default_values[:extend_yaml_erb])
+        elsif File.file?(path.chomp('.yaml')+'.yaml')
+          erb_file = Pathname.new("." + path.chomp('.yaml') + Kameleon.default_values[:extend_yaml_erb])
+        else
+          fail KameleonError, "Could not find the given recipe file or recipe dirctory '#{path}'"
+        end
+        Kameleon.ui.verbose("Create extend recipe ERB '#{erb_file}'")
+        copy_file(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"), erb_file)
+      end
+
       desc "commands", "Lists all available commands", :hide => true
       def commands
         puts Template.all_commands.keys - ["commands"]
