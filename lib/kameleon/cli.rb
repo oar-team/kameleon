@@ -163,13 +163,13 @@ module Kameleon
       Utils.list_recipes(Kameleon.env.workspace, options[:progress])
     end
 
-    desc "new <RECIPE_PATH>", "Creates a new recipe"
+    desc "new <RECIPE_PATH> [<TEMPLATE_PATH>]", "Creates a new recipe"
     method_option :global, :type => :hash ,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
     method_option :extend, :type => :string,
-                  :default => "",
-                  :desc => "Create a new recipe from a template"
+                  :default => "", :banner => "TEMPLATE_PATH",
+                  :desc => "Create a new recipe extending TEMPLATE_PATH "
     method_option :erb, :type => :boolean,
                   :default => false,
                   :desc => "Do not create a recipe but a recipe ERB for the given recipe or directory of recipes"
@@ -179,7 +179,7 @@ module Kameleon
     def new(name, template_name=nil)
       # Handle options
       if not template_name.nil? and not options[:extend].empty?
-        fail KameleonError, "Template to extend was given twice"
+        fail KameleonError, "TEMPLATE_PATH was given twice"
       elsif not options[:extend].empty?
         # Template can be given either using --extend <file> or as a second parameter for backward compatibiliy
         template_name = options[:extend].empty?
@@ -201,7 +201,7 @@ module Kameleon
         else
           fail KameleonError, "Could not find the given recipe file or recipe dirctory '#{name}'"
         end
-        Kameleon.ui.verbose("Create recipe recipe ERB '#{erb_file}'")
+        Kameleon.ui.verbose("Create recipe ERB '#{erb_file}'")
         copy_file(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"), erb_file)
         # we are done, exiting
       else
@@ -222,9 +222,9 @@ module Kameleon
           unless template_name.end_with? '.yaml'
             template_name = template_name + '.yaml'
           end
-          Kameleon.ui.verbose("Create new recipe '#{name}' extending '#{template_name}'")
+          Kameleon.ui.verbose("Create a new recipe '#{name}' extending '#{template_name}'")
           if name == template_name
-            fail KameleonError, "Recipe path should be different from template name"
+            fail KameleonError, "Recipe name should be different from template name"
           end
           template_path = File.join(Kameleon.env.repositories_path, template_name)
           begin
