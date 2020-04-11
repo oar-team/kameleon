@@ -197,7 +197,7 @@ module Kameleon
         if File.directory?(name)
           erb_file = Pathname.new(name).join(Kameleon.default_values[:extend_yaml_erb])
         elsif File.file?(name.chomp('.yaml')+'.yaml')
-          erb_file = Pathname.new("." + name.chomp('.yaml') + default_values[:extend_yaml_erb])
+          erb_file = Pathname.new("." + name.chomp('.yaml') + Kameleon.default_values[:extend_yaml_erb])
         else
           fail KameleonError, "Could not find the given recipe file or recipe dirctory '#{name}'"
         end
