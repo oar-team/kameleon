@@ -163,7 +163,7 @@ module Kameleon
       Utils.list_recipes(Kameleon.env.workspace, options[:progress])
     end
 
-    desc "new <RECIPE_PATH> [<TEMPLATE_PATH>]", "Creates a new recipe"
+    desc "create <RECIPE_PATH> [<TEMPLATE_PATH>]", "Creates a new recipe"
     method_option :global, :type => :hash ,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
@@ -176,7 +176,7 @@ module Kameleon
     method_option :step, :type => :boolean,
                   :default => false,
                   :desc => "Do not create a recipe but an step file"
-    def new(name, template_name=nil)
+    def create(name, template_name=nil)
       # Handle options
       if not template_name.nil? and not options[:extend].empty?
         fail KameleonError, "TEMPLATE_PATH was given twice"
@@ -501,6 +501,7 @@ module Kameleon
 
     map %w(-v --version) => :version
     map %w(ls) => :list
+    map %w(new) => :create
     map %w(completions) => :commands
 
     def initialize(*args)
