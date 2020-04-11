@@ -163,65 +163,92 @@ module Kameleon
       Utils.list_recipes(Kameleon.env.workspace, options[:progress])
     end
 
-    desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Creates a new recipe from template <TEMPLATE_NAME>"
+    desc "new <RECIPE_PATH>", "Creates a new recipe"
     method_option :global, :type => :hash ,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
-    def new(recipe_name, template_name)
-      Kameleon.env.root_dir = Kameleon.env.repositories_path
-      unless template_name.end_with? '.yaml'
-        template_name = template_name + '.yaml'
+    method_option :extend, :type => :string,
+                  :default => "",
+                  :desc => "Create a new recipe from a template"
+    method_option :extend_erb, :type => :boolean,
+                  :default => false,
+                  :desc => "Create an extend ERB for a recipe or a directory of recipes"
+    def new(recipe_name, template_name=nil)
+      if not template_name.nil? and not options[:extend].empty?
+        fail RecipeError, "Template to extend was given twice"
+      elsif not options[:extend].empty?
+        template_name = options[:extend].empty?
       end
 
-      unless recipe_name.end_with? '.yaml'
-        recipe_name = recipe_name + '.yaml'
+      if template_name.nil? and options[:extend_erb]
+        # Create an extend ERB
+        if File.directory?(recipe_name)
+          erb_file = Pathname.new(recipe_name).join(Kameleon.default_values[:extend_yaml_erb])
+        elsif File.file?(recipe_name.chomp('.yaml')+'.yaml')
+          erb_file = Pathname.new("." + recipe_name.chomp('.yaml') + default_values[:extend_yaml_erb])
+        else
+          fail RecipeError, "Could not find the given recipe file or recipe dirctory '#{recipe_name}'"
+        end
+        Kameleon.ui.verbose("Create recipe extend ERB '#{erb_file}'")
+        copy_file(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"), erb_file)
+        # we are done, exiting
+        return
       end
-
-      if recipe_name == template_name
-        fail RecipeError, "Recipe path should be different from template name"
-      end
-
-      template_path = File.join(Kameleon.env.repositories_path, template_name)
-
+      # Create a new recipe
+      recipe_name = recipe_name.chomp('.yaml') + '.yaml'
       recipe_path = Pathname.new(Kameleon.env.workspace).join(recipe_name).to_s
-
-      begin
-        tpl = Kameleon::RecipeTemplate.new(template_path)
-        tpl.resolve! :strict => false
-      rescue
-          raise if Kameleon.ui.level("verbose")
-          raise TemplateNotFound, "Template '#{template_name}' invalid (try" \
-              " --verbose) or not found. To see all templates, run the command "\
-              "`kameleon template list`"
-
+      if template_name.nil?
+        # Create a bar recipe
+        Kameleon.ui.verbose("Create a bar new recipe '#{recipe_name}'")
+        erb = Pathname.new(Kameleon.erb_dirpath).join("bar.yaml.erb")
       else
-        tpl.all_files.each do |path|
-          relative_path = path.relative_path_from(Kameleon.env.repositories_path)
-          dst = File.join(Kameleon.env.workspace, relative_path)
-          copy_file(path, dst)
+        # Extend a template
+        Kameleon.env.root_dir = Kameleon.env.repositories_path
+        unless template_name.end_with? '.yaml'
+          template_name = template_name + '.yaml'
         end
-        Dir::mktmpdir do |tmp_dir|
-          recipe_temp = File.join(tmp_dir, File.basename(recipe_path))
-          ## copying recipe
-          File.open(recipe_temp, 'w+') do |file|
-            message="Try and use extend ERB: "
-            extend_yaml_erb_list = [
-              (template_name.gsub(%r{^(.+?/)?([^/]+?)(\.yaml)?$},'\1.\2')),
-              Pathname.new(template_name).dirname.ascend,
-              Pathname.new("")
-            ].flattern.map { |p| Kameleon.env.repositories_path.join(p, Kameleon.default_values[:extend_yaml_erb]) }
-            extend_yaml_erb_list.push(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"))
-            extend_yaml_erb = extend_yaml_erb_list.find do |f|
-              Kameleon.ui.verbose(message + f.to_s)
-              message = "-> Not found, fallback: "
-              File.readable?(f)
-            end 
-            erb = ERB.new(File.open(extend_yaml_erb, 'rb') { |f| f.read })
-            result = erb.result(binding)
-            file.write(result)
+        Kameleon.ui.verbose("Create new recipe '#{recipe_name}' extending '#{template_name}'")
+        if recipe_name == template_name
+          fail RecipeError, "Recipe path should be different from template name"
+        end
+        template_path = File.join(Kameleon.env.repositories_path, template_name)
+        begin
+          tpl = Kameleon::RecipeTemplate.new(template_path)
+          tpl.resolve! :strict => false
+        rescue
+            raise if Kameleon.ui.level("verbose")
+            raise TemplateNotFound, "Template '#{template_name}' invalid (try" \
+                " --verbose) or not found. To see all templates, run the command "\
+                "`kameleon template list`"
+        else
+          tpl.all_files.each do |path|
+            relative_path = path.relative_path_from(Kameleon.env.repositories_path)
+            dst = File.join(Kameleon.env.workspace, relative_path)
+            copy_file(path, dst)
           end
-          copy_file(recipe_temp, recipe_path)
         end
+        message="Try and use extend ERB: "
+        erb_list = [
+          (template_name.gsub(%r{^(.+?/)?([^/]+?)(\.yaml)?$},'\1.\2')),
+          Pathname.new(template_name).dirname.ascend,
+          Pathname.new("")
+        ].flattern.map { |p| Kameleon.env.repositories_path.join(p, Kameleon.default_values[:extend_yaml_erb]) }
+        erb_list.push(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"))
+        erb = erb_list.find do |f|
+          Kameleon.ui.verbose(message + f.to_s)
+          message = "-> Not found, fallback: "
+          File.readable?(f)
+        end 
+      end
+      Dir::mktmpdir do |tmp_dir|
+        recipe_temp = File.join(tmp_dir, File.basename(recipe_path))
+        ## copying recipe
+        File.open(recipe_temp, 'w+') do |file|
+          Kameleon.ui.debug("Open ERB file: '#{erb}'")
+          result = ERB.new(File.open(erb, 'rb') { |f| f.read }).result(binding)
+          file.write(result)
+        end
+        copy_file(recipe_temp, recipe_path)
       end
     end
 
