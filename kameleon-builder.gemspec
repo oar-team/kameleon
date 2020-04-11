@@ -12,9 +12,9 @@ Gem::Specification.new do |s|
                      'Cristan Ruiz',
                      'Pierre Neyron',
                      'Bruno Bzeznik']
-  s.email         = ['salem.harrache@inria.fr',
-                     'michael.mercier@inria.fr',
-                     'cristian.ruiz@imag.fr',
+  s.email         = ['salem@harrache.info',
+                     'michael.mercier@libr.fr',
+                     'camilo1729@gmail.com',
                      'pierre.neyron@imag.fr',
                      'bruno.bzeznik@imag.fr']
   s.description   = %q{The mindful appliance builder}
