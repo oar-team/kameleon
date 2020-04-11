@@ -73,7 +73,8 @@ module Kameleon
         :debug => userconf.fetch("debug", false),
         :script => userconf.fetch("script", false),
         :repositories_path =>  userconf.fetch("repositories_path",
-                                          File.join(userdir.to_s, 'repos')),
+                                              File.join(userdir.to_s, 'repos')),
+        :extend_yaml_erb => userconf.fetch("extend_yaml_erb", ".extend.yaml.erb")
       }
     end
 

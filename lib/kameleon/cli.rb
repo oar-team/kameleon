@@ -204,20 +204,19 @@ module Kameleon
           recipe_temp = File.join(tmp_dir, File.basename(recipe_path))
           ## copying recipe
           File.open(recipe_temp, 'w+') do |file|
-            message="Use extend ERB template: "
-            extend_erb_tpl = [
-              Kameleon.env.repositories_path.join(template_name + ".erb"),
-              Pathname.new(template_name).dirname.ascend.to_a.push(Pathname.new("")).map do |p|
-                Kameleon.env.repositories_path.join(p, ".kameleon-extend.yaml.erb")
-              end,
-              Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb")
-            ].flatten.find do |f|
+            message="Try and use extend recipe ERB: "
+            extend_yaml_erb_list = Pathname.new(template_name).dirname.ascend.to_a.map do |p|
+              Kameleon.env.repositories_path.join(p, Kameleon.default_values[:extend_yaml_erb])
+            end
+            extend_yaml_erb_list.unshift(Kameleon.env.repositories_path.join(template_name.gsub(%r{^(.+?/)?([^/]+?)(\.yaml)?$},'\1.\2') + Kameleon.default_values[:extend_yaml_erb]))
+            extend_yaml_erb_list.push(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"))
+            extend_yaml_erb = extend_yaml_erb_list.find do |f|
               Kameleon.ui.verbose(message + f.to_s)
               message = "-> Not found, fallback: "
               File.readable?(f)
             end 
-            erb = ERB.new(File.open(extend_erb_tpl, 'rb') { |f| f.read })
-            result = erb.result(binding)
+            Kameleon.ui.debug("Open ERB file: '#{extend_yaml_erb}'")
+            result = ERB.new(File.open(extend_yaml_erb, 'rb') { |f| f.read }).result(binding)
             file.write(result)
           end
           copy_file(recipe_temp, recipe_path)
