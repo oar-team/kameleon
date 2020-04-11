@@ -185,11 +185,11 @@ module Kameleon
         template_name = options[:extend].empty?
       end
       if not template_name.nil? and options[:erb]
-        fail KameleonError, "Cannot extend a recipe and create a recipe ERB at a same time"
-      elsif not template_name.nil? and options[:erb]
-        fail KameleonError, "Cannot extend a recipe and create a step a same time"
+        fail KameleonError, "Cannot use --extend and --erb at a same time."
+      elsif not template_name.nil? and options[:step]
+        fail KameleonError, "Cannot use --extend and --step at a same time."
       elsif options[:erb] and options[:step]
-        fail KameleonError, "Cannot create a recipe ERB and a step at a same time"
+        fail KameleonError, "Cannot use --erb and --step at a same time."
       end
 
       if options[:erb]
@@ -210,11 +210,11 @@ module Kameleon
         recipe_path = Pathname.new(Kameleon.env.workspace).join(name).to_s
         if options[:step]
           # Create a bar step
-          Kameleon.ui.verbose("Create a bar new step '#{name}'")
+          Kameleon.ui.verbose("Create a a new step '#{name}'")
           erb = Pathname.new(Kameleon.erb_dirpath).join("step.yaml.erb")
         elsif template_name.nil?
           # Create a bar recipe
-          Kameleon.ui.verbose("Create a bar new recipe '#{name}'")
+          Kameleon.ui.verbose("Create a a new recipe '#{name}'")
           erb = Pathname.new(Kameleon.erb_dirpath).join("recipe.yaml.erb")
         else
           # Extend a template
