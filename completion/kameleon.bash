@@ -14,8 +14,8 @@ _kameleon() {
         ((i++))
     done
     if [ "$COMP_CWORD" -eq $((i+1)) ] && kameleon commands | grep -q "${COMP_WORDS[$i]}" ; then
-        if wordlist=$(kameleon ${COMP_WORDS[$i]} commands); then
-            local commands="$(compgen -W "$wordlist" -- "${COMP_WORDS[$((i+1))]}")"
+        if kameleon help | grep -qe "^  kameleon ${COMP_WORDS[$i]}[a-z]* <SUBCOMMAND>"; then
+            local commands="$(compgen -W "$(kameleon ${COMP_WORDS[$i]} commands)" -- "${COMP_WORDS[$((i+1))]}")"
             COMPREPLY=( $commands $projects )
         fi
     fi
