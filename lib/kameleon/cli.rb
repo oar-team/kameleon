@@ -203,21 +203,17 @@ module Kameleon
         end
         Kameleon.ui.verbose("Create recipe ERB '#{erb_file}'")
         copy_file(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"), erb_file)
-        # we are done, exiting
       else
-        # Create a new recipe
         name = name.chomp('.yaml') + '.yaml'
         recipe_path = Pathname.new(Kameleon.env.workspace).join(name).to_s
         if options[:step]
-          # Create a bar step
-          Kameleon.ui.verbose("Create a a new step '#{name}'")
+          step_name = name
+          Kameleon.ui.verbose("Create a a new step '#{step_name}'")
           erb = Pathname.new(Kameleon.erb_dirpath).join("step.yaml.erb")
         elsif template_name.nil?
-          # Create a bar recipe
-          Kameleon.ui.verbose("Create a a new recipe '#{name}'")
+          Kameleon.ui.verbose("Create a a new recipe '#{recipe_name}'")
           erb = Pathname.new(Kameleon.erb_dirpath).join("recipe.yaml.erb")
         else
-          # Extend a template
           Kameleon.env.root_dir = Kameleon.env.repositories_path
           unless template_name.end_with? '.yaml'
             template_name = template_name + '.yaml'
