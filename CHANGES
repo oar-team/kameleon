@@ -1,10 +1,11 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.10.4.dev
-------------------
+Version 2.10.4
+--------------
 
-**unreleased**
+Released on May 11th 2020
+
 - Fix support for extend ERB
 - Add the `kameleon template erb` command
 - Fix bash completion
@@ -24,6 +25,7 @@ Version 2.10.2
 --------------
 
 Released on April 09th 2020
+
 - Fix cli help for the repository and template sub-commands
 - Add the git remote url and branch to kameleon repo list
 - Add the 'kameleon repository remove' command
