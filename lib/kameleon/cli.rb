@@ -21,6 +21,7 @@ module Kameleon
       end
 
       desc "list", "Lists available repositories."
+      map %w(ls) => :list
       method_option :git, :type => :boolean,
                     :default => true,
                     :desc => "show the git repository and branch each repository comes from"
@@ -28,24 +29,16 @@ module Kameleon
         Kameleon::Repository.list(options)
       end
 
-      desc "update <NAME>", "Updates repository named <NAME> from git"
-      def update(name)
+      desc "update [<NAME>]", "Updates repository named <NAME> from git. <NAME> is optional when only 1 repository exists"
+      def update(name=nil)
         Kameleon::Repository.update(name)
       end
 
       desc "remove <NAME>", "Remove repository named <NAME>"
+      map %w(rm) => :remove
       def remove(name)
         Kameleon::Repository.remove(name)
       end
-
-      desc "commands", "Lists all available commands", :hide => true
-      def commands
-        puts Repository.all_commands.keys - ["commands"]
-      end
-
-      map %w(ls) => :list
-      map %w(rm) => :remove
-      map %w(completions) => :commands
     end
 
 
@@ -57,6 +50,7 @@ module Kameleon
       end
 
       desc "list", "Lists all available templates"
+      map %w(ls) => :list
       method_option :progress, :type => :boolean, :default => true,
                     :desc => "Show progress bar while resolving templates",
                     :aliases => "-p"
@@ -128,14 +122,6 @@ module Kameleon
         Kameleon.ui.verbose("Create extend recipe ERB '#{erb_file}'")
         copy_file(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"), erb_file)
       end
-
-      desc "commands", "Lists all available commands", :hide => true
-      def commands
-        puts Template.all_commands.keys - ["commands"]
-      end
-
-      map %w(ls) => :list
-      map %w(completions) => :commands
     end
   end
 
@@ -159,6 +145,7 @@ module Kameleon
                  :aliases => "-s"
 
     desc "version", "Prints the Kameleon's version information"
+    map %w(-v --version) => :version
     def version
       puts "Kameleon version #{Kameleon::VERSION}"
     end
@@ -168,6 +155,7 @@ module Kameleon
     end
 
     desc "list", "Lists all defined recipes in the current directory"
+    map %w(ls) => :list
     method_option :progress, :type => :boolean, :default => false,
                   :desc => "Show progress bar while resolving templates",
                   :aliases => "-p"
@@ -180,6 +168,7 @@ module Kameleon
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables."
+TODO: set the global in the generated recipe
     def new(recipe_name, template_name)
       Kameleon.env.root_dir = Kameleon.env.repositories_path
       unless template_name.end_with? '.yaml'
@@ -285,6 +274,7 @@ module Kameleon
                   :default => false,
                   :desc => "Show recipes only (mostly useful to display multiple recipes inheritance)"
     def dag(*recipe_paths)
+      binding.pry
       raise ArgumentError if recipe_paths.empty?
       color = 0
       recipes_dag = nil
@@ -450,10 +440,16 @@ module Kameleon
       end
     end
 
-    desc "commands", "Lists all available commands", :hide => true
-    def commands(context="main")
-      Kameleon.ui.debug("Commands for '#{context}':")
-      case context
+    desc "completions", "Lists all available completion", :hide => true
+    def completions(command="main")
+      Kameleon.ui.debug("Completions for '#{command}':")
+      subcommand = subcommands_classes.find{|k,v| k == command}
+      if subcommand.nil?
+      else
+      end
+require 'pry'
+binding.pry
+      case command
       when "main"
         puts Main.all_commands.keys - ["commands"]
       when "repository"
@@ -467,10 +463,6 @@ module Kameleon
     def source_root
       puts Kameleon.source_root
     end
-
-    map %w(-v --version) => :version
-    map %w(ls) => :list
-    map %w(completions) => :commands
 
     def initialize(*args)
       super

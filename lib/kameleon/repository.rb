@@ -25,12 +25,18 @@ module Kameleon
       process.stop
     end
 
-    def self.update(name)
+    def self.update(name=nil)
+      repo_list = Dir["#{Kameleon.env.repositories_path}/*"]
+      raise RepositoryError, "No repository defined" if repo_list.empty?
+      if name.nil?
+        raise RepositoryError, "More than one repository, select one of " + repo_list.join(", ") if repo_list.size > 1
+        name = Dir["#{Kameleon.env.repositories_path}/*"].first
+      end
       check_git_binary
       git_repo = File.join(Kameleon.env.repositories_path, name)
       raise RepositoryError, "Repository not found '#{name}'" if not File.directory?(git_repo)
       cmd = ["git", "--git-dir", File.join(git_repo, ".git"), "--work-tree",
-             git_repo, "pull", "--verbose"]
+             git_repo, "pull", "--verbose", "--ff-only"]
       process = ChildProcess.build(*cmd)
       process.io.inherit!
       process.start
