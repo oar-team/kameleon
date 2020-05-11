@@ -5,6 +5,10 @@ Version 2.10.4.dev
 ------------------
 
 **unreleased**
+- Fix support for extend ERB
+- Add the `kameleon template erb` command
+- Fix bash completion
+- Cosmetic code fixes
 
 Version 2.10.3
 --------------
