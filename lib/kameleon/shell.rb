@@ -25,12 +25,17 @@ module Kameleon
       @bash_history_file = File.join(@bash_scripts_dir, "bash_history")
       @bash_env_file = File.join(@bash_scripts_dir, "bash_env")
       @bash_status_file = File.join(@bash_scripts_dir, "bash_status")
-      @default_bashrc_file = File.join(Kameleon.source_root, "contrib", "kameleon_bashrc.sh")
-      @cmd_tpl = ERB.new(File.read(File.join(Kameleon.source_root,
-                                                     "contrib",
+      if File::directory?(f = File.join(Kameleon.source_root, "contrib"))
+        @contrib_dir = f
+      elsif File::directory?(f = '/usr/share/kameleon/contrib')
+        @contrib_dir = f
+      else
+        raise "Could not find contrib dir"
+      end
+      @default_bashrc_file =  File.join(@contrib_dir, 'kameleon_bashrc.sh')
+      @cmd_tpl = ERB.new(File.read(File.join(@contrib_dir,
                                                      "kameleon_exec_cmd.sh")))
-      @cmd_wrapper_tpl = ERB.new(File.read(File.join(Kameleon.source_root,
-                                                     "contrib",
+      @cmd_wrapper_tpl = ERB.new(File.read(File.join(@contrib_dir,
                                                      "kameleon_exec_cmd_wrapper.sh")))
 
       if @shell_workdir
