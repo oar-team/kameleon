@@ -1,4 +1,3 @@
 module Kameleon
-  VERSION = File.read(
-    File.expand_path("../../../version.txt", __FILE__)).chomp
+  VERSION = '2.10.5.dev'
 end
