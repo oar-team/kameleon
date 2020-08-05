@@ -30,7 +30,12 @@ module Kameleon
     end
 
     def erb_dirpath
-      File.join(Kameleon.source_root, 'erb')
+      d = File.join(Kameleon.source_root, 'erb')
+      if File::directory?(d)
+        return d
+      elsif File::directory?(d = '/usr/share/kameleon/erb')
+        return d
+      end
     end
 
     def userdir
