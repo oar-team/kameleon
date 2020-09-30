@@ -28,7 +28,7 @@ import datetime
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.todo']
-AUTHORS = "Michael Mercier, Salem Harrache"
+AUTHORS = "Michael Mercier, Salem Harrache, Pierre Neyron"
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
