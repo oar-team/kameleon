@@ -1,0 +1,38 @@
+Source: kameleon
+Section: ruby
+Priority: optional
+Maintainer: Lucas Nussbaum <lucas@debian.org>
+Build-Depends: debhelper (>= 11~),
+               debhelper-compat (= 11),
+               gem2deb,
+               ruby-childprocess,
+               ruby-graphviz,
+               ruby-progressbar,
+               ruby-psych,
+               ruby-table-print,
+               ruby-thor
+Standards-Version: 4.3.0
+Homepage: http://kameleon.imag.fr/
+Testsuite: autopkgtest-pkg-ruby
+XS-Ruby-Versions: all
+Rules-Requires-Root: no
+
+Package: kameleon
+Architecture: all
+XB-Ruby-Versions: ${ruby:Versions}
+Depends: cpu-checker,
+         libguestfs-tools,
+         qemu-system,
+         qemu-utils,
+         ruby | ruby-interpreter,
+         ruby-childprocess,
+         ruby-graphviz,
+         ruby-progressbar,
+         ruby-psych,
+         ruby-table-print,
+         ruby-thor,
+         socat,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Description: Kameleon is a tool to build system appliances from scratch
+ The mindful appliance builder

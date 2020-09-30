@@ -1,0 +1,5 @@
+kameleon (2.10.5.dev) unstable; urgency=medium
+
+  * Initial packaging.
+
+ -- Lucas Nussbaum <lucas@debian.org>  Wed, 05 Aug 2020 15:31:45 +0000
