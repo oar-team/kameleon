@@ -14,6 +14,7 @@
 
 import os
 import datetime
+import re
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -50,9 +51,15 @@ copyright = u'%s, Inria.fr' % datetime.datetime.now().year
 # built documents.
 #
 # The short X.Y version.
-with open(os.path.join(os.path.dirname(__file__), '..', '..',
-          'version.txt')) as init_py:
-    release = init_py.read().strip()
+release = ""
+with open(os.path.join(os.path.dirname(__file__), '..', '..', 'lib', 'kameleon',
+          'version.rb')) as version_file:
+    for line in version_file:
+        m = re.search("^\s+VERSION\s+=\s+'(.+)'\s$", line) 
+        if m:
+            release = m.group(1)
+if release == "":
+    raise Exception("No release version found")
 # The short X.Y version.
 version = release.rstrip('.dev')
 
