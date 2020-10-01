@@ -3,7 +3,7 @@ Section: ruby
 Priority: optional
 Maintainer: Pierre Neyron <pierre.neyron@free.fr>
 Uploaders: Lucas Nussbaum <lucas@debian.org>
-Build-Depends: debhelper-compat (= 13),
+Build-Depends: debhelper-compat (= 11),
                gem2deb (>= 1),
                ruby,
                ruby-childprocess,
