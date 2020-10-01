@@ -1,0 +1,32 @@
+Source: kameleon-builder
+Section: FIXME
+Priority: optional
+Maintainer: Debian Ruby Team <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
+Uploaders: <>
+Build-Depends: debhelper-compat (= 13),
+               gem2deb (>= 1),
+               ruby,
+               ruby-childprocess (>= 0.3.0),
+               ruby-childprocess (>= 0.5.3),
+               ruby-graphviz (>= 1.2),
+               ruby-progressbar (>= 1),
+               ruby-psych (>= 2.0),
+               ruby-table-print (>= 1.5),
+               ruby-thor (>= 0.15.0),
+               ruby-thor (>= 0.19)
+Standards-Version: 4.5.0
+Vcs-Git: https://salsa.debian.org/ruby-team/kameleon-builder.git
+Vcs-Browser: https://salsa.debian.org/ruby-team/kameleon-builder
+Homepage: http://kameleon.imag.fr/
+Testsuite: autopkgtest-pkg-ruby
+XS-Ruby-Versions: all
+Rules-Requires-Root: no
+
+Package: kameleon-builder
+Architecture: all
+XB-Ruby-Versions: ${ruby:Versions}
+Depends: ${misc:Depends},
+         ${ruby:Depends},
+         ${shlibs:Depends}
+Description: Kameleon is a tool to build system appliances from scratch
+ The mindful appliance builder
