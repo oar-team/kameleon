@@ -1,0 +1,10 @@
+# # Dummy Save Appliance
+- save_as_raw:
+  - exec_local: echo save_as_raw
+  - exec_out: echo save_as_raw
+  - exec_in: echo save_as_raw
+
+- save_as_tgz:
+  - exec_local: echo save_as_tgz
+  - exec_out: echo save_as_tgz
+  - exec_in: echo save_as_tgz

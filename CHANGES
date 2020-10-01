@@ -1,0 +1,567 @@
+Kameleon CHANGELOG
+==================
+
+Version 2.10.4
+--------------
+
+Released on May 11th 2020
+
+- Fix support for extend ERB
+- Add the `kameleon template erb` command
+- Fix bash completion
+- Cosmetic code fixes
+
+Version 2.10.3
+--------------
+
+Released on April 10th 2020
+
+- Rework kameleon template list: add color add progress bar
+- Make bash completion understand the subcommands
+- Fix the command help ->  `kameleon <command> -h`
+- Add support for custom extend erb templates
+
+Version 2.10.2
+--------------
+
+Released on April 09th 2020
+
+- Fix cli help for the repository and template sub-commands
+- Add the git remote url and branch to kameleon repo list
+- Add the 'kameleon repository remove' command
+
+Version 2.10.1
+-------------
+
+Released on March 21th 2020
+
+- Fix regression in 2.10.0 with the build directory creation
+
+Version 2.10.0
+-------------
+
+Released on March 21th 2020
+
+- Rework usage (cosmetic fixes)
+- Drop the `kameleon template repository` action (same as `kameleon repository`)
+- Make `kameleon dag` and `kameleon dryrun` standalone actions instead of `kameleon info` options
+- Add the `kamelon dag --recipes-only`
+- Make `kameleon dag` show distincly the extended recipe among the ancestors
+- Add the `kameleon export` action
+
+Version 2.9.4
+-------------
+
+Released on December 12th 2018
+
+- Minor fixes
+- NB: the 2.9.3 version was lost in space...
+
+
+Version 2.9.2
+-------------
+
+Released on February 21st 2018
+
+- Enforce the number of sub commands for the rescue and test commands
+- Support nested aliases
+
+Version 2.9.1
+-------------
+
+Released on January 28st 2018
+
+- Make the test and group command work in the cleaning steps.
+
+Version 2.9.0
+-------------
+
+Released on June 29th 2017
+
+- Bump to a new minor version due to the addition of the test and group commands
+- Refresh documentation
+
+Version 2.8.4
+-------------
+
+- Fix the build usage message 
+- Fix the cache compression options: allow no compression
+- Add the test and group commands for microsteps
+
+Version 2.8.3
+-------------
+
+- Patch the doc and the default new recipe template
+
+Version 2.8.2
+-------------
+
+Released on September 06th 2016
+
+- Make kameleon new and template import works
+
+Version 2.8.1
+-------------
+
+- Manage problem with gem update
+
+Version 2.8.0
+-------------
+
+Released on September 05th 2016
+
+- Add the possibility to overload extend with backend
+
+Version 2.7.8
+-------------
+
+- Fix info data resolution (fix #78)
+
+Version 2.7.7
+-------------
+
+Released on September 01st 2016
+
+- Add some warning to avoid global CLI option misuse
+
+Version 2.7.6
+-------------
+
+Released on August 31st 2016
+
+- Fix step variable resolution for composed variable (#79), and containing
+  uuid (#90).
+
+Version 2.7.5
+-------------
+
+Released on August 31st 2016
+
+- Fix last problem with Kameleon_data_dir (again)
+
+Version 2.7.4
+-------------
+
+Released on August 29th 2016
+
+- Fix Kameleon_data_dir is not rendering correctly with {} (#85)
+
+Version 2.7.3
+-------------
+
+Released on June 20th 2016
+
+- The info command can now handle multiple recipes
+- Colorized the output of the info command
+- Added the dryrun option to the info command
+- Added the dag option to the info command: draw a GraphViz dag for recipes
+
+Version 2.7.2
+-------------
+
+Released on February 17th 2016
+
+- Added ``interactive_cmd`` option to set a more apropriate interactive shell command
+- Removed bash errexit flag to force bash to trap interruption
+
+Version 2.7.1
+-------------
+
+- Non-strictly template variable resolution (Fixed #67)
+
+Version 2.7.0
+-------------
+
+Released on December 09th 2015
+
+- Fixed variables overload when using inheritance
+- Added support for including global options from a separate file (#57)
+- Allowed kameleon to fail silently if some error occured during include
+- Marked all bash variables for export
+- Sorted variables in ``kameleon info`` dump
+- Removed duplicate error messages
+- Shutdown polipo cleanly (#54)
+- Added offline mode to prevent Polipo from contacting remote servers
+- Fixed polipo default options to avoid "206 partial responses" (#54)
+- Made only one checkpoint per macrostep to improve performance
+- Made polipo log file unique for each user to avoid "Permission denied" error
+- Added new keyword in ZSH completion
+
+Version 2.6.7
+-------------
+
+Released on October 01st 2015
+
+- Decreased polipo exit timeout (120 to 5s)
+- Passed only recipe files (not directories) to the cache to fixed persistant cache crash 
+
+
+Version 2.6.6
+-------------
+
+Released on September 14th 2015
+
+- set default ``cache_archive_compression`` to gzip
+
+Version 2.6.5
+-------------
+
+Released on September 14th 2015
+
+- Fixed the proxy-cache to allow big files
+- Added ``--proxy`` and ``--proxy-credentials`` options to set a global proxy for kameleon
+- Added ``proxy_local``, ``proxy_out`` and ``proxy_in`` kameleon recipe variables to get proxy address from recipe
+- Enabled ERB templating in the user environement files
+- Renamed ``--proxy-path`` option to ``--polipo-path``
+
+Version 2.6.4
+-------------
+
+Released on September 07th 2015
+
+- Fixed kameleon data variables resolution
+
+Version 2.6.3
+-------------
+
+Released on August 25th 2015
+
+- Don't fail now if a context was closed
+
+Version 2.6.2
+-------------
+
+Released on August 25th 2015
+
+- Added ``cache_archive_compression`` option to choose compression tool
+- Tried using curl before wget
+
+
+Version 2.6.1
+-------------
+
+Released on August 12th 2015
+
+- Cli global parameters overwrite all recipe key:value parameters
+
+Version 2.6.0
+-------------
+
+Released on May 13th 2015
+
+- Added --list-checkpoints to ``kameleon build`` command
+- Removed ``kameleon checkpoints`` and ``kameleon clean`` commands
+- Displayed error information in normal and verbose mode
+- Fixed ruby 1.8.7 compatibility
+- Added Zsh completion (See completion)
+
+Version 2.5.0
+-------------
+
+Released on Jan 27th 2015
+
+- Allowed user to get custom shell environement by adding shell script
+- Added option ``--verbose`` to allow user debugging
+- Added option ``--from-cache`` to the ``kameleon info`` subcommand
+- Enabled bash xtrace in verbose mode
+- Checked appropriate proxy cache server start
+- Fixed recipe path in proxy cache metadata
+- Forced proxy cache to use IPv4
+- Improved UI with more color and less output messages
+
+
+Version 2.4.0
+-------------
+
+Released on Dec 23rd 2014
+
+- Supported recipe attached data
+- Introduced a new shell command execution mechanism, to prevent kameleon from waiting forever if the command act weird (Fixed #39)
+- Improved the customization of steps with inheritance
+- Allowed to set global variables from cli during build using ``--global key:value ..``
+- Moved repository command to the upper level (``kameleon repository``)
+
+
+Version 2.3.5
+-------------
+
+Released on Dec 2nd 2014
+
+- Fixed kameleon 2.3.4 regressions about ``kameleon build``
+
+
+Version 2.3.4
+-------------
+
+Released on Nov 26th 2014
+
+- Fixed kameleon 2.3.3 regressions about the template import
+
+
+Version 2.3.3
+-------------
+
+Released on Nov 26th 2014
+
+- Minor improvements
+- Fixed issue with listing the templates avaiable in a repository
+
+Version 2.3.2
+-------------
+
+Released on Nov 20th 2014
+
+- Search steps directories in the workspace first.
+
+Version 2.3.1
+-------------
+
+Released on Nov 5th 2014
+
+- ``--from-checkpoint`` option automatically enable the checkpoint process.
+- ``--from-checkpoint`` could take a special value "last" to refer to the last valid checkpoint.
+
+Version 2.3.0
+-------------
+
+Released on Oct 16th 2014
+
+- Handled Ctrl-C to make a breakpoint instead of quitting. (Fixed #29)
+- Stored kameleon user configuration file in ``~/.kameleon.d/config`` (Fixed #24)
+- Fixed ``kameleon new`` to take an absolute or relative path and place the recipe in a subdir (Fixed #22)
+- Moved builtin recipes to an external repository : See [http://kameleon.imag.fr/repository.html](Docs) (Fixed #24)
+- Renamed ``--cache`` option to ``--enable-cache``
+- Renamed ``--checkpoint`` option to ``--enable-checkpoint``
+- Removed ``kameleon import`` command
+- Removed ``kameleon templates`` command
+- Added ``kameleon info`` to display detailed information about a recipe
+- Added ``kameleon list`` to list all defined recipes in the current directory
+- Added ``kameleon template info`` to display detailed information about a template
+- Added ``kameleon template import`` to import a template
+- Added ``kameleon template list`` to list all available templates
+- Added ``kameleon template repository`` to manage external git recipes repositories
+
+
+Version 2.2.5
+-------------
+
+Released on Sep 19th 2014
+
+ - [template] Customized vm memory size before vagrant export
+ - [template] Configured virtualbox to use ``82540EM`` driver for ethX interfaces
+ - [template][debian] installed man-db and net-tools with debootstrap
+ - [template][centos] Removed traces of mac address from network configuration
+ - [template][centos] installed man package
+ - [template][centos] Set OS type to ``Redhat_64`` in virtualbox
+ - [template][debian] Added security and backports repository
+ - [template][debian] Added debian security and backports repositories
+ - [template][debian] Removed ntp from all debian recipes
+ - [template][centos] Added ``single-request-reopen`` option to network config (centos)
+ - [template][centos] Fixed corrupted rpm database
+
+
+
+Version 2.2.4
+-------------
+
+Released on Sep 2nd 2014
+
+- [template] Added the ``-cpu host`` option to qemu to improve performances
+- [template] Made centos image as close as possible as default Centos installation
+- [template] Configured SELinux for Fedora and Centos
+- [template] Fixed Grid'5000 export step
+- [template] Extended vagrant recipes from virtualbox recipes
+- [core] Adding the step elapsed time to the Kamelon output
+- [proxy cache] Restructured persistent cache and improved caching of pipes
+- [proxy cache] Added ``ProxyAdrres`` paramter to polipo to take into account all the host network interfaces
+
+Version 2.2.3
+-------------
+Released on Aug 19th 2014
+
+- [template] The extlinux MBR path has changed because jessie is not frozen (Fix #17)
+
+Version 2.2.2
+-------------
+
+Released on July 23rd 2014
+
+- [core] Added ``-h`` CLI option to print help
+- [core] Added ``--templates-path`` CLI option to set different templates directory
+- [core] Fixed regression about recipe ancestors loading
+
+Version 2.2.1
+-------------
+
+Released on July 22nd 2014
+
+- [core] Switch to default yaml parser (psych) and removed syck from dependencies
+- [core] Loaded a recipe with all ancestors
+
+Version 2.2.0
+-------------
+
+Released on July 20th 2014
+
+- [proxy cache] Added ``proxy_cache`` recipe option to context_in/out to enable
+  persistant cache for every context
+- [proxy cache] Added ``--cache-path`` CLI option to set different cache directory
+- [proxy cache] Shared cache directory between recipes by default
+- [proxy cache] No more internal cache for debootstrap
+- [proxy_cache] Polipo does not use default config file anymore
+- [proxy_cache] Recipe is now stored in cache at the end
+- [package] Removed diffy from dependencies
+- [package] Removed log4r-color from dependencies
+- [core] Rewrote checkpoint mechanism. (allow to run multiple commands)
+- [core] Added ``--script`` CLI option to enable non-interactive mode
+- [core] Added ``reload_context`` command that reloads the context from the recipe
+- [core] From now on, Kameleon tries to clean all contexts without blocking the shell
+- [core] Improved cleaning contexts upon interruption
+- [core] If microstep is marked as ``redo`` or ``skip`` (on checkpoint), the ID will be independent from other steps
+- [template] Grouped templates by virtualization tools
+- [template] Removed extlinux timeout for debian
+- [template] Configured apt to install recommended packages by default
+- [template] Added architecture type in templates description
+- [template] Forced killing qemu with sigterm signal
+- [template] Removed ssh ControlPath option
+- [template] Used parted tool in script mode
+- [template] Added a timeout during startup and shutdown VMs
+- [template] Restored eth0 as default interface in Fedora (net.ifnames=0 biosdevname=0)
+- [template] Ensured that the checkpoint was disabled at the beginning of the recipe
+- [template] Make sure that qemu is stopped at the end
+- [template] Replaced netcat by socat
+- [template] Removed duplicated ubuntu repository (restricted)
+- [template] Used a debian-jessie iso to bootstrap the out_context with a minimal linux system
+- [template] Hide default kameleon state files
+- [template] Enabled debug mode with ``KAMELEON_DEBUG=1`` environment variable
+- [template] Added ``download_file`` alias that uses curl/wget or python to download files
+- [template] Enabled kvm only if available
+- [template] Do not run qemu with nohup (Use ``-daemonize`` instead)
+- [template] Improved context_out/in log readability
+- [template] Removed fedora-rawhide templates
+- [template] Added new templates :
+
+  - qemu/archlinux-desktop-i686
+  - qemu/archlinux-i686
+  - qemu/centos6.5-x86_64
+  - qemu/centos7-x86_64
+  - qemu/debian8-amd64
+  - vagrant/debian7-amd64
+  - virtualbox/archlinux-desktop-i686
+  - virtualbox/archlinux-desktop-x86_64
+  - virtualbox/archlinux-i686
+  - virtualbox/archlinux-x86_64
+  - virtualbox/centos6.5-i386
+  - virtualbox/centos6.5-x86_64
+  - virtualbox/centos7-x86_64
+  - virtualbox/debian7-amd64
+  - virtualbox/debian7-desktop-amd64
+  - virtualbox/debian7-i386
+  - virtualbox/debian7-kameleon-amd64
+  - virtualbox/debian7-oar-amd64
+  - virtualbox/debian8-amd64
+  - virtualbox/debian8-i386
+  - virtualbox/fedora20-x86_64
+  - virtualbox/ubuntu-12.04-amd64
+  - virtualbox/ubuntu-12.04-desktop-amd64
+  - virtualbox/ubuntu-14.04-amd64
+  - virtualbox/ubuntu-14.04-desktop-amd64
+
+
+Version 2.1.3
+-------------
+
+Released on June 16th 2014
+
+ - [core] Loading dependent gems based on the users ruby version
+ - [core] Getting back compatibility with ruby 1.8.7
+ - [core] Don't fail if context is not ready
+ - [core] Minor bug fixes
+ - [template] Set a small timeout with netcat
+ - [template] Added new debian 7 appliance with kameleon.
+
+Version 2.1.0
+-------------
+
+Released on June 12th 2014
+
+- [core] Fixed psych yaml parsing (#1)
+- [core] Changed option ``--no-no-color`` to ``--color``
+- [core] Saved the contexts state files in their WORKDIR (#3)
+- [core] Set context in/out/local cmd to /bin/bash by default (#5)
+- [core] Made global section non mandatory
+- [core] Made writing embedded step in recipe possible (#12)
+- [core] Improved the readability of logs and the progress bar
+- [core] Moved aliases and checkpoints folders to steps
+- [core] Removed the ``recipes`` folder and the ``workspace`` (#2)
+- [core] Make a safe copy with ``kameleon new`` command
+- [core] Added a simple extend recipe feature (#11)
+- [core] Introduced the keyword "@base" in the extended recipes (#11)
+- [core] Don't log identifier of microstep during build process
+- [core] Added ``kameleon import`` command (#11)
+- [core] Added ``--clean`` option to ``kameleon build`` command
+- [core] Added the lazy context initialization (#10)
+- [core] Set the variable ``KAMELEON_WORKDIR`` for all contexts
+- [core] Used ``KAMELEON_WORKDIR`` when working with PIPE
+- [core] Added persistent cache feature to Kameleon, So far it is caching just packages comming from the network using Polipo
+- [template] Added new templates :
+
+  - archlinux
+  - archlinux-desktop
+  - debian-testing
+  - debian7
+  - debian7-desktop
+  - debian7-oar-dev
+  - fedora-rawhide
+  - fedora20
+  - fedora20-desktop
+  - ubuntu-12.04
+  - ubuntu-12.04-desktop
+  - ubuntu-14.04
+  - ubuntu-14.04-desktop
+  - vagrant-debian7
+- [template] Installed the extlinux bootloader depending on distributions
+- [template] New way to bootstrap fedora using Liveos image
+- [template] Installed linux kernel and extlinux bootloader from bootstrap section
+- [template] Used parted instead of sfdisk
+- [template] Added save_as_qed step
+- [template] Removed insecure ssh key before any export
+- [template] Added shell auto-completion for bash, zsh and fish shell
+- [template] Default user group is sudo
+- [template] Added a new qemu/kvm template with full-snapshot support
+- [template] Ability to add user in multiple groups (with usermod -G)
+- [template] Improved I/O performance with qemu/kvm
+- [template] Removed force-unsafe-io for dpkg to avoid corrupted filesystem
+- [template] Used qemu by default instead of chroot
+- [template] Added option to disable debootstrap cache
+- [template] Refactor qcow2 backing file checkpoints
+- [template] Make QEMU checkpoint more robust and avoid disk corruption
+- [template] Major revision of steps to make it easier to use in different templates
+- [template] Rename steps for more semantic consistency
+- [template] Making the 'save_appliance' step not dependent on the state of the machine
+- [template] Enabled cache for arch_bootstrap
+- [template] Added openssh in arch-bootstrap and enabled sshd.service/dhcp.service
+- [template] Added user 'nobody' to allow sshd  to run in the archlinux virtual machine
+- [template] Enabled checkpoints (backing-file) only in the "setup" stage
+- [template] Fixed .ssh and authorized_keys permissions
+- [template] Avoid crash of in_context when we send a shutdown command to the virtual machine
+- [template] Exclude special files with rsync (proc/dev...) when copying rootfs to the disk
+- [template] Force stop qemu if still running
+- [template] Make debian-chroot depreciated
+- [template] Refactor archlinux template to use it with qemu/kvm
+- [template] Improved the LiveOS fedora bootstrap step to get the system running with qemu/kvm
+- [template] Refactor fedora20/debian8 templates to use them with qemu/kvm
+- [template] Set timezone to UTC by default
+- [template] Used ProxyCommand to improve the debian7-g5k recipe
+- [aliases] Updated write_file and append_file aliases to support double quotes
+- [aliases] Defined new aliases for unmounting devices
+- [docs] More documentation
+
+
+Version 2.0.0
+-------------
+
+Released on February 17th 2014
+
+Initial public release of kameleon 2
+

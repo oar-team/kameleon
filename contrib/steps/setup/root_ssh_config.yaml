@@ -1,0 +1,18 @@
+# # Root Ssh Config
+- ssh_key_create:
+  - exec_in: mkdir -p /root/.ssh
+  - exec_in: ssh-keygen -t rsa -f /root/.ssh/id_rsa -C "root@$$network_hostname" -N ''
+  - exec_in: ssh-keygen -t dsa -f /root/.ssh/id_dsa -C "root@$$network_hostname" -N ''
+- copy_key_to_auth_file:
+  - exec_in: cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+- copy_key_to_auth2_file:
+  - exec_in: cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys2
+- root_ssh_config:
+  - append_in:
+    - /root/.ssh/config
+    - |
+      Host *
+        PasswordAuthentication yes
+        RSAAuthentication yes
+        StrictHostKeyChecking no
+        NoHostAuthenticationForLocalhost yes

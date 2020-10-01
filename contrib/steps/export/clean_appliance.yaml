@@ -1,0 +1,9 @@
+# # Clean Appliance
+- clean_udev:
+  - on_setup_clean:
+    - exec_in: rm -f /etc/udev/rules.d/*persistent-net.rules*
+
+- clean_tmp:
+  - on_setup_clean:
+    - exec_in: rm -rf /tmp/* || true
+    - exec_in: rm -rf /var/tmp/* || true

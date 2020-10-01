@@ -1,0 +1,3 @@
+- bootstrap:
+  - exec_local: echo BSD
+  - exec_out: echo $include_pkg 

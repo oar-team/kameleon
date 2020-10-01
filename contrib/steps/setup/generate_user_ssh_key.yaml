@@ -1,0 +1,15 @@
+# # Generate User Ssh Key
+- generate_keys:
+  - exec_in: |
+      mkdir -p /home/$$user_name/.ssh
+      ssh-keygen -t rsa -C "$$user_name@$$network_hostname" -N "" -f home/$$user_name/.ssh/id_rsa
+      #fix permissions
+      chmod 700 /home/$$user_name/.ssh
+      chmod 644 /home/$$user_name/.ssh/id_rsa.pub
+      chmod 600 /home/$$user_name/.ssh/id_rsa
+  - exec_in: chown -R $$user_name:$$user_group home/$$user_name/.ssh
+- save_public_key:
+  - in2local:
+    - /home/$$user_name/.ssh/id_rsa.pub
+    - $$generated_rsa_pub_dir
+

@@ -1,0 +1,2 @@
+- enable_something:
+   - exec_local: echo enable_something
