@@ -1,7 +1,7 @@
 ---
-Archive: GitHub (FIXME)
-Bug-Database: http://kameleon.imag.fr//issues
-Bug-Submit: http://kameleon.imag.fr//issues
-Changelog: http://kameleon.imag.fr//tags
-Repository: http://kameleon.imag.fr/.git
-Repository-Browse: http://kameleon.imag.fr/
+Archive: GitHub
+Bug-Database: https://github.com/oar-team/kameleon/issues
+Bug-Submit: https://github.com/oar-team/kameleon/issues
+Changelog: https://github.com/oar-team/kameleon/tags
+Repository: https://github.com/oar-team/kameleon.git
+Repository-Browse: https://github.com/oar-team/kameleon/
