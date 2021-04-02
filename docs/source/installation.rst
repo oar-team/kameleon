@@ -17,7 +17,7 @@ Debian/Ubuntu
 ::
 
     apt-get install ruby-dev ruby-childprocess polipo libguestfs-tools
-    gem install --no-ri --no-rdoc kameleon-builder
+    gem install --no-document kameleon-builder
 
 Centos/Fedora
 -------------
@@ -25,7 +25,7 @@ Centos/Fedora
 ::
 
     yum install rubygem-childprocess polipo libguestfs-tools
-    gem install --no-ri --no-rdoc kameleon-builder
+    gem install --no-document kameleon-builder
 
 
 Archlinux
@@ -36,7 +36,7 @@ Archlinux
     # install libguestfs from AUR by yourself ;)
     pacman -S ruby polipo
     # Be sure that your gem PATH is set correctly
-    gem install --no-ri --no-rdoc kameleon-builder
+    gem install --no-document kameleon-builder
 
 
 From Source
