@@ -1,10 +1,15 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.10.5.dev
-------------------
+Version 2.10.5
+--------------
 
-**unreleased**
+Released on July 29th 2021
+
+- Remove polipo from the software dependencies as it is not maintained anymore. This breaks the caching feature.
+- Some changes to allow a debian packaging.
+- Update authors.
+- Change the version information file and update scripts accordingly.
 
 Version 2.10.4
 --------------
