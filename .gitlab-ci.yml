@@ -110,8 +110,8 @@ push-package:
   # tags must be 'packages' so that we use the runner on packages.grid5000.fr
   tags:
     - grid5000-packages
-  only:
-    - master
+#  only:
+#    - master
   when: manual
   script:
     - g5k-deploy-files --only-if-tag --files 'stretch/*.deb' --directory deb/kameleon/stretch
