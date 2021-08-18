@@ -30,6 +30,8 @@ rubocop:
     - apt-get update && apt-get -y --no-install-recommends install rubygems build-essential ruby-dev
     - gem install rubocop
     - rubocop -l
+  except:
+     - tags
 
 .build: &build
   stage: build
