@@ -34,7 +34,8 @@ Depends: cpu-checker,
          ruby-table-print,
          ruby-thor,
          socat,
-         python-future,
+         python3,
+         python3-yaml,
          ${misc:Depends},
          ${shlibs:Depends}
 Description: Kameleon is a tool to build system appliances from scratch

@@ -1,3 +1,9 @@
+kameleon (2.10.5.4) unstable; urgency=medium
+
+  * Make depend on python3, forget python2
+
+ -- Pierre Neyron <pierre.neyron@free.fr>  Thu, 26 Aug 2021 17:16:21 +0200
+
 kameleon (2.10.5.3) unstable; urgency=medium
 
   * Do not depends on qemu-system but specific qemu-system-<arch> to save space 
