@@ -1,3 +1,10 @@
+kameleon (2.10.5.3) unstable; urgency=medium
+
+  * Do not depends on qemu-system but specific qemu-system-<arch> to save space 
+  * Move to architecture specific packages due to the specific depenencies
+
+ -- Pierre Neyron <pierre.neyron@free.fr>  Thu, 26 Aug 2021 11:20:51 +0200
+
 kameleon (2.10.5.2) unstable; urgency=medium
 
   * Add python-future to deps

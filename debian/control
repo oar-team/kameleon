@@ -18,12 +18,14 @@ XS-Ruby-Versions: all
 Rules-Requires-Root: no
 
 Package: kameleon
-Architecture: all
+Architecture: any
 XB-Ruby-Versions: ${ruby:Versions}
 Depends: cpu-checker,
          libguestfs-tools,
-         qemu-system,
          qemu-utils,
+         qemu-system-x86 [amd64],
+         qemu-system-ppc [ppc64le],
+         qemu-system-arm [arm64],
          ruby | ruby-interpreter,
          ruby-childprocess,
          ruby-graphviz,
