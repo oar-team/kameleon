@@ -1,3 +1,3 @@
 module Kameleon
-  VERSION = '2.11.0.dev'
+  VERSION = '3.0.0.dev'
 end
