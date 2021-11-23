@@ -4,7 +4,10 @@ Kameleon CHANGELOG
 Version 2.10.6.dev
 ------------------
 
-**unreleased**
+Released on November 24th 2021
+
+- Fix perms when importing templates
+- Add the filter option to templates and recipes listings
 
 Version 2.10.5
 --------------
