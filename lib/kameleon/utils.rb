@@ -125,11 +125,11 @@ module Kameleon
       end
     end
 
-    def self.list_recipes(recipes_path, do_progressbar = false, is_repository = false, kwargs = {})
+    def self.list_recipes(recipes_path, filter = ".*", do_progressbar = false, is_repository = false, kwargs = {})
       Kameleon.env.root_dir = recipes_path
       catch_exception = kwargs.fetch(:catch_exception, true)
       recipes_hash = []
-      recipes_files = get_recipes(recipes_path)
+      recipes_files = get_recipes(recipes_path).select { |f| Regexp.new(filter).match(f.to_s.gsub(recipes_path.to_s + '/', '').chomp('.yaml')) }
       if recipes_files.empty?
         Kameleon.ui.shell.say "  <None>", :cyan
         return
