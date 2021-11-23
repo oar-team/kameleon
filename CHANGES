@@ -1,10 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.10.6.dev
-------------------
+Version 2.10.6
+--------------
 
-**unreleased**
+Released on November 24th 2021
+
+- Add the option filter for the template and recipe listings
+- Preserve permission of files when importing template
 
 Version 2.10.5
 --------------
