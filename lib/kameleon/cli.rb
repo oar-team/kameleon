@@ -93,6 +93,7 @@ module Kameleon
             relative_path = path.relative_path_from(Kameleon.env.repositories_path)
             dst = File.join(Kameleon.env.workspace, relative_path)
             copy_file(path, dst)
+            chmod(dst, File.stat(path).mode, {:verbose=>false})
           end
         end
       end
@@ -212,6 +213,7 @@ module Kameleon
           relative_path = path.relative_path_from(Kameleon.env.repositories_path)
           dst = File.join(Kameleon.env.workspace, relative_path)
           copy_file(path, dst)
+          chmod(dst, File.stat(path).mode, {:verbose=>false})
         end
         Dir::mktmpdir do |tmp_dir|
           recipe_temp = File.join(tmp_dir, File.basename(recipe_path))
