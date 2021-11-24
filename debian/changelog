@@ -1,3 +1,9 @@
+kameleon (2.10.6.1) unstable; urgency=medium
+
+  * Merge upstream master: new upstream version (2.10.6)
+
+ -- Pierre Neyron <pierre.neyron@free.fr>  Wed, 24 Nov 2021 01:04:35 +0100
+
 kameleon (2.10.5.5) unstable; urgency=medium
 
   * Merge upstream master: fix upstream version (2.10.5)
