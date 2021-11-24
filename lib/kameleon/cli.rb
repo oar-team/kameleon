@@ -60,10 +60,13 @@ module Kameleon
       method_option :progress, :type => :boolean, :default => true,
                     :desc => "Show progress bar while resolving templates",
                     :aliases => "-p"
+      method_option :filter, :type => :string, :default => '',
+                    :desc => "Filter templates with the given regexp",
+                    :aliases => "-f"
       def list
         Kameleon.ui.shell.say "Recipe templates available in: ", :red, false
         Kameleon.ui.shell.say Kameleon.env.repositories_path.to_s, :yellow
-        Utils.list_recipes(Kameleon.env.repositories_path, options[:progress], true)
+        Utils.list_recipes(Kameleon.env.repositories_path, options[:filter], options[:progress], true)
       end
 
       desc "import <TEMPLATE_NAME>", "Imports the given template"
@@ -93,6 +96,7 @@ module Kameleon
             relative_path = path.relative_path_from(Kameleon.env.repositories_path)
             dst = File.join(Kameleon.env.workspace, relative_path)
             copy_file(path, dst)
+            chmod(dst, File.stat(path).mode, {:verbose=>false})
           end
         end
       end
@@ -169,11 +173,14 @@ module Kameleon
 
     desc "list", "Lists all defined recipes in the current directory"
     method_option :progress, :type => :boolean, :default => false,
-                  :desc => "Show progress bar while resolving templates",
+                  :desc => "Show progress bar while resolving recipes",
                   :aliases => "-p"
+    method_option :filter, :type => :string, :default => '',
+                  :desc => "Filter recipes with the given regexp",
+                  :aliases => "-f"
     def list
       Kameleon.ui.shell.say "Workspace recipes:", :red
-      Utils.list_recipes(Kameleon.env.workspace, options[:progress])
+      Utils.list_recipes(Kameleon.env.workspace, options[:filter], options[:progress])
     end
 
     desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Creates a new recipe from template <TEMPLATE_NAME>"
@@ -212,6 +219,7 @@ module Kameleon
           relative_path = path.relative_path_from(Kameleon.env.repositories_path)
           dst = File.join(Kameleon.env.workspace, relative_path)
           copy_file(path, dst)
+          chmod(dst, File.stat(path).mode, {:verbose=>false})
         end
         Dir::mktmpdir do |tmp_dir|
           recipe_temp = File.join(tmp_dir, File.basename(recipe_path))
