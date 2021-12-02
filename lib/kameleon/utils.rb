@@ -125,11 +125,11 @@ module Kameleon
       end
     end
 
-    def self.list_recipes(recipes_path, filter = '', do_progressbar = false, is_repository = false, kwargs = {})
+    def self.list_recipes(recipes_path, filter, do_progressbar = false, is_repository = false, kwargs = {})
       Kameleon.env.root_dir = recipes_path
       catch_exception = kwargs.fetch(:catch_exception, true)
       recipes_hash = []
-      recipes_files = get_recipes(recipes_path).select { |f| Regexp.new(filter).match(f.to_s.gsub(recipes_path.to_s + '/', '').chomp('.yaml')) }
+      recipes_files = get_recipes(recipes_path, filter)
       if recipes_files.empty?
         Kameleon.ui.shell.say "  <None>", :cyan
         return
@@ -162,7 +162,7 @@ module Kameleon
         desc_width = (80 - name_width - 3) if desc_width < 0
       end
       repo_str_old = nil
-      recipes_hash.sort_by{ |k| k["name"] }.each do |r|
+      recipes_hash.each do |r|
         if is_repository
           repo_str,recipe_dir_str,recipe_str = r["name"].match(%r{^([^/]+/)(.+/)?([^/]+)$}).to_a[1..3].map{|m| m.to_s}
         else
@@ -184,18 +184,28 @@ module Kameleon
       end
     end
 
-    def self.get_recipes(path)
-      path.children.collect do |child|
-        if child.file?
-          if child.extname == ".yaml"
-            unless child.to_s.include? "/steps/" or child.to_s.include? "/.steps/"
-              child
-            end
-          end
-        elsif child.directory?
-          get_recipes(child)
+    def self.get_recipes(path, filter = nil, base = nil)
+      base = path if base.nil?
+      if filter.nil?
+        begin
+          filter = File.read(File.join(path, "/.filter")).chomp
+          Kameleon.ui.verbose("Found filter #{filter} in #{path}")
+          base = path
+        rescue
         end
-      end.select { |x| x }.flatten(1)
+      end
+      recipes = path.children.select{|child| child.file? and child.extname == ".yaml"}.map do |child|
+        recipe = child.to_s.gsub(base.to_s + '/', '').chomp('.yaml')
+        if filter.nil? or Regexp.new(filter).match(recipe)
+          child
+        else
+          Kameleon.ui.verbose("Filters out #{recipe}, does not match #{filter}")
+          nil
+        end
+      end.select { |x| x }.flatten(1).sort{|a,b| a.to_s <=> b.to_s}
+      recipes + path.children.select{|child| child.directory? and child.basename.to_s != "steps" and child.basename.to_s != ".steps"}.sort{|a,b| a.to_s <=> b.to_s}.map do |child|
+        get_recipes(child, filter, base)
+      end.flatten(1)
     end
 
     def self.which(cmd)

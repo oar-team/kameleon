@@ -60,7 +60,7 @@ module Kameleon
       method_option :progress, :type => :boolean, :default => true,
                     :desc => "Show progress bar while resolving templates",
                     :aliases => "-p"
-      method_option :filter, :type => :string, :default => '',
+      method_option :filter, :type => :string, :default => nil,
                     :desc => "Filter templates with the given regexp",
                     :aliases => "-f"
       def list
@@ -175,7 +175,7 @@ module Kameleon
     method_option :progress, :type => :boolean, :default => false,
                   :desc => "Show progress bar while resolving recipes",
                   :aliases => "-p"
-    method_option :filter, :type => :string, :default => '',
+    method_option :filter, :type => :string, :default => nil,
                   :desc => "Filter recipes with the given regexp",
                   :aliases => "-f"
     def list

@@ -1,6 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.7
+--------------
+
+Released on December 02nd 2021
+
+- Add support for the .filter file to filter recipes/template lists
+
 Version 2.10.6
 --------------
 
