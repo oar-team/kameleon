@@ -6,6 +6,8 @@ Version 2.10.8.dev
 
 **unreleased**
 
+- Avoid git warning when running kameleon repo update: use git pull --ff-only
+
 Version 2.10.7
 --------------
 

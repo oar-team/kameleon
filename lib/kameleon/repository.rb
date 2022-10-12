@@ -30,7 +30,7 @@ module Kameleon
       git_repo = File.join(Kameleon.env.repositories_path, name)
       raise RepositoryError, "Repository not found '#{name}'" if not File.directory?(git_repo)
       cmd = ["git", "--git-dir", File.join(git_repo, ".git"), "--work-tree",
-             git_repo, "pull", "--verbose"]
+             git_repo, "pull", "--ff-only"]
       process = ChildProcess.build(*cmd)
       process.io.inherit!
       process.start
