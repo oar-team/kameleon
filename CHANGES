@@ -6,6 +6,7 @@ Version 2.10.8.dev
 
 **unreleased**
 
+- Fix a fatal error with the pipe command: make sure the destination context is started.
 - Avoid git warning when running kameleon repo update: use git pull --ff-only
 
 Version 2.10.7
