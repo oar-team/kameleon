@@ -177,7 +177,7 @@ SCRIPT
 
     def execute(cmd, kwargs = {})
       cmd_obj = Command.new(cmd)
-      send_command cmd_obj = Command.new(cmd)
+      send_command(cmd_obj)
       iodata = {:stderr => { :io        => @stderr,
                              :name      => 'stderr',
                              :begin     => false,
