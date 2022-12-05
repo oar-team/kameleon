@@ -21,7 +21,7 @@ module Kameleon
       raw.to_s.scan(/\$\$kameleon\_data\_dir\/(.*)/) do |var|
         warn_var(var)
       end
-      reg = %r/(\$\$kameleon\_data\_dir|\$\${kameleon\_data\_dir})(.*)/
+      reg = %r/(\$\$kameleon\_data\_dir|\$\${kameleon\_data\_dir})((\S|\\\s)*)/
       matches = raw.to_enum(:scan, reg).map { Regexp.last_match }
       matches.each do |m|
         unless m.nil?
