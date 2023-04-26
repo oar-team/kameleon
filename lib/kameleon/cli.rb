@@ -390,7 +390,11 @@ module Kameleon
                            "Default value is the last checkpoint."
     method_option :enable_checkpoint, :type => :boolean,
                   :default => false,
-                  :desc => "Enables checkpoint [experimental]"
+                  :desc => "Enables checkpointing"
+    method_option :microstep_checkpoint, :type => :string,
+                  :enum => ["first", "all"],
+                  :default => "first",
+                  :desc => "Create checkpoint of the first microstep only, or all"
     method_option :list_checkpoints, :type => :boolean, :aliases => "--checkpoints",
                   :default => false,
                   :desc => "Lists all availables checkpoints"

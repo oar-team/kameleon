@@ -28,6 +28,7 @@ module Kameleon
       end
       @enable_checkpoint = @options[:enable_checkpoint]
       @enable_checkpoint = true unless @options[:from_checkpoint].nil?
+      @microstep_checkpoint = @options[:microstep_checkpoint]
       # Check if the recipe have checkpoint entry
       if @enable_checkpoint && @recipe.checkpoint.nil?
         fail BuildError, "Checkpoint is unavailable for this recipe"
@@ -213,7 +214,7 @@ module Kameleon
                 safe_exec_cmd(cmd)
               end
               unless microstep.on_checkpoint == "redo"
-                unless checkpointed
+                unless checkpointed and @microstep_checkpoint == "first"
                   if checkpoint_enabled?
                     Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
                     create_checkpoint(microstep.identifier)
