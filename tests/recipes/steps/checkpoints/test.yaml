@@ -8,6 +8,7 @@ apply:
   - exec_local: echo @microstep_id
 
 list:
+  - exec_local: touch $KAMELEON_WORKDIR/list_checkpoint.txt
   - exec_local: cat $KAMELEON_WORKDIR/list_checkpoint.txt
 
 clear:
