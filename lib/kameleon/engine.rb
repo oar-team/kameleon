@@ -213,7 +213,7 @@ module Kameleon
                 safe_exec_cmd(cmd)
               end
               unless microstep.on_checkpoint == "redo"
-                unless checkpointed
+                unless checkpointed and @enable_checkpoint == "first-microstep"
                   if checkpoint_enabled?
                     Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
                     create_checkpoint(microstep.identifier)

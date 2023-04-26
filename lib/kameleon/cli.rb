@@ -388,9 +388,10 @@ module Kameleon
                   :default => nil,
                   :desc => "Uses specific checkpoint to build the image. " \
                            "Default value is the last checkpoint."
-    method_option :enable_checkpoint, :type => :boolean,
-                  :default => false,
-                  :desc => "Enables checkpoint [experimental]"
+    method_option :enable_checkpoint, :type => :string,
+                  :enum => ["first-microstep", "all-microsteps"],
+                  :default => "first-microstep",
+                  :desc => "Enables checkpointing"
     method_option :list_checkpoints, :type => :boolean, :aliases => "--checkpoints",
                   :default => false,
                   :desc => "Lists all availables checkpoints"
