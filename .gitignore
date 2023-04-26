@@ -24,3 +24,7 @@ coverage
 *.log
 bin/*
 build
+share/python-wheels
+lib/python*
+pyvenv.cfg
+.envrc
