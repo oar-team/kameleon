@@ -189,6 +189,7 @@ module Kameleon
       section.sequence do |macrostep|
         checkpointed = false
         macrostep_time = Time.now.to_i
+        macrostep_checkpoint_duration = 0
         if @cache then
           Kameleon.ui.debug("Starting proxy cache server for macrostep '#{macrostep.name}'...")
           # the following function start a polipo web proxy and stops a previous run
@@ -198,6 +199,8 @@ module Kameleon
           end
         end
         macrostep.sequence do |microstep|
+          microstep_time = Time.now.to_i
+          microstep_checkpoint_duration = 0
           step_prefix = "Step #{ microstep.order } : "
           Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
           if @enable_checkpoint
@@ -215,9 +218,13 @@ module Kameleon
               unless microstep.on_checkpoint == "redo"
                 unless checkpointed and @enable_checkpoint == "first-microstep"
                   if checkpoint_enabled?
+                    microstep_checkpoint_time = Time.now.to_i
                     Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
                     create_checkpoint(microstep.identifier)
                     checkpointed = true
+                    microstep_checkpoint_duration = Time.now.to_i - microstep_checkpoint_time
+                    macrostep_checkpoint_duration += microstep_checkpoint_duration
+                    Kameleon.ui.info("MicroStep #{microstep.name} checkpoint creation took: #{microstep_checkpoint_duration} secs")
                   end
                 end
               end
@@ -233,8 +240,9 @@ module Kameleon
               breakpoint(nil)
             end
           end
+          Kameleon.ui.info("MicroStep #{microstep.name} took: #{Time.now.to_i - microstep_time - microstep_checkpoint_duration} secs")
         end
-        Kameleon.ui.info("Step #{macrostep.name} took: #{Time.now.to_i-macrostep_time} secs")
+        Kameleon.ui.info("Step #{macrostep.name} took: #{Time.now.to_i - macrostep_time - macrostep_checkpoint_duration} secs")
       end
       @cleaned_sections.push(section.name)
     end
