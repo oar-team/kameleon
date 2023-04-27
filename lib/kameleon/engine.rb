@@ -212,9 +212,14 @@ module Kameleon
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
               Kameleon.ui.msg("--> Using checkpoint")
             else
+              begin
               Kameleon.ui.msg("--> Running the step...")
               microstep.commands.each do |cmd|
                 safe_exec_cmd(cmd)
+              end
+              rescue SystemExit, Interrupt
+                reload_contexts
+                breakpoint(nil)
               end
               unless microstep.on_checkpoint == "redo"
                 unless checkpointed and @microstep_checkpoint == "first"
