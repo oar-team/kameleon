@@ -1,6 +1,16 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.9
+--------------
+
+Released on April 27th 2023
+
+- Add the --microstep-checkpoint option to enable creating checkpoint on all microsteps.
+- Add timing info for microsteps and microstep checkpoints in verbose mode.
+- Minor fixes.
+- Enable using a python venv for bumpversion (.gitignore, .envrc)
+
 Version 2.10.8
 --------------
 
