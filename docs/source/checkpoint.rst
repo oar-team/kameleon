@@ -7,13 +7,14 @@ Checkpoint
 How to use the checkpoints
 ==========================
 
-Kameleon can use a checkpointing mechanism to save the appliance build process
-bit by bit. This mechanism allows you to work with Kameleon serenely. It is
-crucial to use it when beginning to write a new recipe from scratch (without
-any template).
+Kameleon can use a checkpointing mechanism to save the build progress step
+after step. This mechanism allows to work with Kameleon more serenely as it
+avoids the need to build from scratch everytime, which is expecially useful
+when some steps last very long. Build can restart from a later step. This is
+very useful when writing a new recipe that involves a lot of trials and errors.
 
-To use these checkpoints, the checkpointing mechanism must be enabled
-explicitely during the build:
+The checkpointing mechanism is disabled by default. It must be enabled
+explicitely when building:
 
     kameleon build my_debian7.yaml --enable-checkpoint
 
@@ -21,8 +22,8 @@ explicitely during the build:
     it is also possible to combine the persistent cache and the checkpoints by
     adding ``--enable-cache``
 
-At every step, a message indicating that a checkpoint has been created to save
-the progression is displayed::
+Then, for every step, a message indicates that a checkpoint has been created to save
+the progression::
 
     ...
     [out] I: Configuring initramfs-tools...
@@ -66,9 +67,9 @@ checkpoints::
     fe6db526b96b | setup/_clean_setup/_clean_2_update_repositories
     03a61dc909b8 | setup/_clean_setup/_clean_1_prepare_sshd
 
-You can relaunch the build from a precise checkpoint. If we want to resume the
-build from the step ``setup/configure_network/network_interfaces``, then we
-launch the build from the previous checkpoint.
+You can relaunch the build starting from a specific checkpoint. For instance,
+to resume the build from the ``setup/configure_network/network_interfaces``
+step, we launch the build from the previous checkpoint.
 
 .. code-block:: bash
    :emphasize-lines: 1
@@ -114,11 +115,11 @@ launch the build from the previous checkpoint.
     Total duration : 33 secs
 
 
-As you can see, Kameleon has used the checkpoint cache for each step and it
-took just 24 seconds to build the recipe again. Actually, the recipe
-did not change so there is no real challenge to build it so fast. Let's change
-the user name for example. Open the ``my_debian.yaml`` recipe file and in the
-global section change the user name as shown below::
+As you can see, Kameleon used the checkpoint cache for each step and it took
+only 24 seconds to rebuild from the recipe. Actually, the recipe did not change
+so there is no real challenge to build it so fast. Let's change the user name
+for example. Open the ``my_debian.yaml`` recipe file and in the global section
+change the user name as shown below::
 
     user_name: my_user
 
@@ -145,41 +146,64 @@ That is why all steps before this one (the 34 in our case) are using the
 cache but all the steps after are built again, to prevent side effects of
 this change, even if they are not using the ``add_user`` value.
 
-Your own checkpoint mechanism
-=============================
+Define how steps handle checkpoints in recipes
+==============================================
+For every microstep, the checkpoint action can be defined with the ``on_checkpoint`` key, using the following values:
 
-Kameleon provides a modular checkpoint mechanism. Indeed, Kameleon give you the
-possibility to implement your own checkpoint mechanism, using for example the
-snapshot feature of your underneath filesystem. To do so, you have to fill in a
-YAML file, located in the ``steps/checkpoints`` directory and define these
-commands:
+use_cache
+    The microstep will use a previous checkpoint if it exists. This is the default.
+
+redo
+    The microstep will not be checkpointed, it will be done (or redone) every time.
+
+skip
+    The microstep will not be run when checkpointing is enabled (even when not step was ever checkpointed).
+
+Please also note that the ``kameleon build`` command provides an option named ``--microstep-checkpoint`` that allows to limit the checkpoint creation to the first microstep of every macrostep.
+
+Develop your own checkpoint mechanism
+=====================================
+
+While some checkpointing mechanisms are already available in the default
+Kameleon recipes, Kameleon actually allows to implement custom checkpointing
+mechanisms, using for instance the snapshoting features of any filesystem or
+VM/container engine.
+
+Kameleon checkpointing mechanisms are actually defined as part of the recipe
+files, in the ``steps/checkpoints`` directory.
+
+A checkpointing mechanism must provide serveral hooks that are actually defined
+using the recipe step syntax. Hooks are the following:
 
 enabled?
-    Indicates whether the system is ready to make list_checkpoints
+    Check whether the build process is ready to create/use checkpoints at the current step.
 
 create
-    The checkpoint first creation command
+    Define the steps to create a checkpoint.
 
 apply
-    The command applies a previous checkpoint state before starting the build
+    Define the step to apply a checkpoint and continue the build from it.
 
 clear
-    Removes all checkpoints
+    Remove all checkpoints.
 
 list
-    Lists the available checkpoints
+    List the available checkpoints and associated steps.
 
-You can use the Kameleon current microstep id in your command with
-``@microstep_id``. The checkpoint is selected in the recipe with a key/value
-couple where the value is the checkpoint yaml file name: ``checkpoint:
-my_checkpoint_file.yaml``
+The current microstep identifier can be used in your hooks, using the
+``@microstep_id`` keyword.
 
+Then the Kameleon recipe defines the checkpoint mechanism to use using the
+``checkpoint`` key in the main recipe file.  Value to set is the file name of
+the YAML file which defines mechanism. For instance:: ``checkpoint:
+custom_checkpoint.yaml`` if the custom checkpointing mechanism is defined in
+``steps/checkpoints/custom_checkpoint.yaml``.
 
 The following example is a very simple checkpoint implementation:
 
 .. code-block:: yaml
 
-    enabled:
+    enabled?:
       - exec_local: test -f $KAMELEON_WORKDIR/list_checkpoints.txt
 
     create:
