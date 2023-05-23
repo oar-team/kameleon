@@ -393,7 +393,7 @@ module Kameleon
                   :desc => "Enables checkpointing"
     method_option :microstep_checkpoint, :type => :string,
                   :enum => ["first", "all"],
-                  :default => "first",
+                  :default => "all",
                   :desc => "Create checkpoint of the first microstep only, or all"
     method_option :list_checkpoints, :type => :boolean, :aliases => "--checkpoints",
                   :default => false,

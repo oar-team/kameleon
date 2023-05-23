@@ -222,7 +222,7 @@ module Kameleon
                 breakpoint(nil)
               end
               unless microstep.on_checkpoint == "redo"
-                unless checkpointed and @microstep_checkpoint == "first"
+                if @microstep_checkpoint == "all" or not checkpointed
                   if checkpoint_enabled?
                     microstep_checkpoint_time = Time.now.to_i
                     Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
