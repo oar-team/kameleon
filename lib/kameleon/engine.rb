@@ -206,11 +206,11 @@ module Kameleon
           Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
           if @checkpointing
             if microstep.on_checkpoint == "skip"
-              Kameleon.ui.msg("--> Skipped")
+              Kameleon.ui.msg("--> Skipped because checkpointing is enabled")
               next
             end
             if microstep.in_cache && microstep.on_checkpoint == "use_cache"
-              Kameleon.ui.msg("--> Using checkpoint")
+              Kameleon.ui.msg("--> Checkpoint ahead, do nothing")
             else
               begin
               Kameleon.ui.msg("--> Running the step...")
@@ -236,14 +236,19 @@ module Kameleon
               end
             end
           else
-            begin
-            Kameleon.ui.msg("--> Running the step...")
-            microstep.commands.each do |cmd|
-              safe_exec_cmd(cmd)
-            end
-            rescue SystemExit, Interrupt
-              reload_contexts
-              breakpoint(nil)
+            if microstep.on_checkpoint == "only"
+              Kameleon.ui.msg("--> Skipped because checkpointing is not enabled")
+              next
+            else
+              begin
+              Kameleon.ui.msg("--> Running the step...")
+              microstep.commands.each do |cmd|
+                safe_exec_cmd(cmd)
+              end
+              rescue SystemExit, Interrupt
+                reload_contexts
+                breakpoint(nil)
+              end
             end
           end
           Kameleon.ui.verbose("MicroStep #{microstep.name} took: #{Time.now.to_i - microstep_time - microstep_checkpoint_duration} secs")
@@ -433,6 +438,10 @@ module Kameleon
         section.clean_macrostep.sequence do |microstep|
           if @checkpointing
             if microstep.on_checkpoint == "skip"
+              next
+            end
+          else
+            if microstep.on_checkpoint == "only"
               next
             end
           end

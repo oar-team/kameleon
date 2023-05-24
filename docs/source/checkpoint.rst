@@ -159,6 +159,9 @@ redo
 skip
     The microstep will not be run when checkpointing is enabled (even when not step was ever checkpointed).
 
+only
+    The microstep will not be run when checkpointing is not enabled.
+
 Please also note that the ``kameleon build`` command provides an option named ``--microstep-checkpoint`` that allows to limit the checkpoint creation to the first microstep of every macrostep.
 
 Develop your own checkpoint mechanism
