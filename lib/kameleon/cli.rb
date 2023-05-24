@@ -11,7 +11,7 @@ module Kameleon
     class Repository < Thor
       include Thor::Actions
 
-      desc "add <NAME> <GIT_URL>", "Adds a new repository named <NAME> cloned from <GIT_URL>."
+      desc "add <NAME> <GIT_URL>", "Add a new repository named <NAME> cloned from <GIT_URL>"
       method_option :branch, :type => :string,
                     :default => nil,
                     :desc => "checkout <BRANCH>",
@@ -20,7 +20,7 @@ module Kameleon
         Kameleon::Repository.add(name, url, options)
       end
 
-      desc "list", "Lists available repositories."
+      desc "list", "List available repositories"
       method_option :git, :type => :boolean,
                     :default => true,
                     :desc => "show the git repository and branch each repository comes from"
@@ -28,7 +28,7 @@ module Kameleon
         Kameleon::Repository.list(options)
       end
 
-      desc "update <NAME>", "Updates repository named <NAME> from git"
+      desc "update <NAME>", "Update repository named <NAME> from git"
       def update(name)
         Kameleon::Repository.update(name)
       end
@@ -38,7 +38,7 @@ module Kameleon
         Kameleon::Repository.remove(name)
       end
 
-      desc "commands", "Lists all available commands", :hide => true
+      desc "commands", "List all available commands", :hide => true
       def commands
         puts Repository.all_commands.keys - ["commands"]
       end
@@ -56,7 +56,7 @@ module Kameleon
         Kameleon.env.repositories_path
       end
 
-      desc "list", "Lists all available templates"
+      desc "list", "List all available templates"
       method_option :progress, :type => :boolean, :default => true,
                     :desc => "Show progress bar while resolving templates",
                     :aliases => "-p"
@@ -69,7 +69,7 @@ module Kameleon
         Utils.list_recipes(Kameleon.env.repositories_path, options[:filter], options[:progress], true)
       end
 
-      desc "import <TEMPLATE_NAME>", "Imports the given template"
+      desc "import <TEMPLATE_NAME>", "Import the given template"
       method_option :global, :type => :hash,
                     :default => {},  :aliases => "-g",
                     :desc => "Set custom global variables"
@@ -133,7 +133,7 @@ module Kameleon
         copy_file(Pathname.new(Kameleon.erb_dirpath).join("extend.yaml.erb"), erb_file)
       end
 
-      desc "commands", "Lists all available commands", :hide => true
+      desc "commands", "List all available commands", :hide => true
       def commands
         puts Template.all_commands.keys - ["commands"]
       end
@@ -147,22 +147,22 @@ module Kameleon
   class Main < Thor
     include Thor::Actions
 
-    desc 'repository <SUBCOMMAND>', 'Manages repositories of recipes'
+    desc 'repository <SUBCOMMAND>', 'Manage repositories of recipes'
     subcommand 'repository', CLI::Repository
-    desc 'template <SUBCOMMAND>', 'Lists and imports templates'
+    desc 'template <SUBCOMMAND>', 'List and import templates'
     subcommand 'template', CLI::Template
 
     class_option :color, :type => :boolean, :default => Kameleon.default_values[:color],
-                 :desc => "Enables colorization in output"
+                 :desc => "Enable colorization in output"
     class_option :verbose, :type => :boolean, :default => Kameleon.default_values[:verbose],
-                 :desc => "Enables verbose output for kameleon users"
+                 :desc => "Enable verbose output for kameleon users"
     class_option :debug, :type => :boolean, :default => Kameleon.default_values[:debug],
-                 :desc => "Enables debug output for kameleon developpers"
+                 :desc => "Enable debug output for kameleon developpers"
     class_option :script, :type => :boolean, :default => Kameleon.default_values[:script],
-                 :desc => "Never prompts for user intervention",
+                 :desc => "Never prompt for user intervention",
                  :aliases => "-s"
 
-    desc "version", "Prints the Kameleon's version information"
+    desc "version", "Print the Kameleon's version information"
     def version
       puts "Kameleon version #{Kameleon::VERSION}"
     end
@@ -171,7 +171,7 @@ module Kameleon
       Kameleon.env.repositories_path
     end
 
-    desc "list", "Lists all defined recipes in the current directory"
+    desc "list", "List all defined recipes in the current directory"
     method_option :progress, :type => :boolean, :default => false,
                   :desc => "Show progress bar while resolving recipes",
                   :aliases => "-p"
@@ -183,7 +183,7 @@ module Kameleon
       Utils.list_recipes(Kameleon.env.workspace, options[:filter], options[:progress])
     end
 
-    desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Creates a new recipe from template <TEMPLATE_NAME>"
+    desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Create a new recipe from template <TEMPLATE_NAME>"
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
                   :desc => "Set custom global variables"
@@ -377,13 +377,13 @@ module Kameleon
       end
     end
 
-    desc "build <RECIPE_PATH>", "Builds the appliance from the given recipe"
+    desc "build <RECIPE_PATH>", "Build the appliance from the given recipe"
     method_option :build_path, :type => :string,
                   :default => nil, :aliases => "-b",
-                  :desc => "Sets the build directory path"
+                  :desc => "Set the build directory path"
     method_option :clean, :type => :boolean,
                   :default => false,
-                  :desc => "Runs the command `kameleon clean` first"
+                  :desc => "Run the command `kameleon clean` first"
     method_option :from_checkpoint, :type => :string,
                   :default => nil,
                   :desc => "Restart a build from a specific checkpoint, instead of the latest one"
@@ -396,16 +396,16 @@ module Kameleon
                   :desc => "Create checkpoint of the first microstep only, or all"
     method_option :list_checkpoints, :type => :boolean, :aliases => "-l",
                   :default => false,
-                  :desc => "Lists all availables checkpoints"
+                  :desc => "List all availables checkpoints"
     method_option :enable_cache, :type => :boolean, :aliases => "-C",
                   :default => false,
-                  :desc => "Generates a persistent cache for the appliance."
+                  :desc => "Generate a persistent cache for the appliance"
     method_option :cache_path, :type => :string,
                   :default => nil,
-                  :desc => "Sets the cache directory path."
+                  :desc => "Set the cache directory path"
     method_option :from_cache, :type => :string,
                   :default => nil,
-                  :desc => "Uses a persistent cache tar file to build the image."
+                  :desc => "Use a persistent cache tar file to build the image"
     method_option :cache_archive_compression, :type => :string,
                   :enum => ["none", "gzip", "bz2", "xz"],
                   :default => "gzip",
@@ -419,7 +419,7 @@ module Kameleon
                   :desc => "Username and password if required by the parent proxy (expected format is username:password)"
     method_option :proxy_offline, :type => :boolean,
                   :default => false,
-                  :desc => "Prevents Polipo from contacting remote servers."
+                  :desc => "Prevent Polipo from contacting remote servers"
     method_option :global, :type => :hash,
                   :default => {}, :aliases => "-g",
                   :desc => "Set custom global variables"
@@ -458,7 +458,7 @@ module Kameleon
       end
     end
 
-    desc "commands", "Lists all available commands", :hide => true
+    desc "commands", "List all available commands", :hide => true
     def commands(context="main")
       Kameleon.ui.debug("Commands for '#{context}':")
       case context
@@ -471,7 +471,7 @@ module Kameleon
       end
     end
 
-    desc "source_root", "Prints the kameleon directory path", :hide => true
+    desc "source_root", "Print the kameleon directory path", :hide => true
     def source_root
       puts Kameleon.source_root
     end
