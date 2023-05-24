@@ -26,11 +26,11 @@ module Kameleon
           @recipe.global[key] = build_recipe["global"][key]
         end
       end
-      @enable_checkpoint = @options[:enable_checkpoint]
-      @enable_checkpoint = true unless @options[:from_checkpoint].nil?
-      @microstep_checkpoint = @options[:microstep_checkpoint]
+      @checkpointing = @options[:enable_checkpointing]
+      @checkpointing = true unless @options[:from_checkpoint].nil?
+      @microstep_checkpoint = @options[:microstep_checkpoints]
       # Check if the recipe have checkpoint entry
-      if @enable_checkpoint && @recipe.checkpoint.nil?
+      if @checkpointing && @recipe.checkpoint.nil?
         fail BuildError, "Checkpoint is unavailable for this recipe"
       end
 
@@ -204,7 +204,7 @@ module Kameleon
           microstep_checkpoint_duration = 0
           step_prefix = "Step #{ microstep.order } : "
           Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
-          if @enable_checkpoint
+          if @checkpointing
             if microstep.on_checkpoint == "skip"
               Kameleon.ui.msg("--> Skipped")
               next
@@ -431,7 +431,7 @@ module Kameleon
         next if @cleaned_sections.include?(section.name)
         Kameleon.ui.info("Cleaning #{section.name} section")
         section.clean_macrostep.sequence do |microstep|
-          if @enable_checkpoint
+          if @checkpointing
             if microstep.on_checkpoint == "skip"
               next
             end
@@ -555,7 +555,7 @@ module Kameleon
     end
 
     def build
-      if @enable_checkpoint
+      if @checkpointing
         @from_checkpoint = @options[:from_checkpoint]
         if @from_checkpoint.nil? || @from_checkpoint == "last"
           @from_checkpoint = list_checkpoints.last

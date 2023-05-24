@@ -16,7 +16,7 @@ very useful when writing a new recipe that involves a lot of trials and errors.
 The checkpointing mechanism is disabled by default. It must be enabled
 explicitely when building:
 
-    kameleon build my_debian7.yaml --enable-checkpoint
+    kameleon build my_debian7.yaml --enable-checkpointing
 
 .. note::
     it is also possible to combine the persistent cache and the checkpoints by

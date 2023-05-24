@@ -72,7 +72,7 @@ module Kameleon
       desc "import <TEMPLATE_NAME>", "Imports the given template"
       method_option :global, :type => :hash,
                     :default => {},  :aliases => "-g",
-                    :desc => "Set custom global variables."
+                    :desc => "Set custom global variables"
       def import(template_name)
         Kameleon.env.root_dir = Kameleon.env.repositories_path
         template_path = File.join(Kameleon.env.repositories_path, template_name)
@@ -104,7 +104,7 @@ module Kameleon
       desc "info <TEMPLATE_NAME>", "Display detailed information about a template"
       method_option :global, :type => :hash,
                     :default => {},  :aliases => "-g",
-                    :desc => "Set custom global variables."
+                    :desc => "Set custom global variables"
       def info(template_name)
         Kameleon.env.root_dir = Kameleon.env.repositories_path
         template_path = File.join(Kameleon.env.repositories_path, template_name)
@@ -186,7 +186,7 @@ module Kameleon
     desc "new <RECIPE_PATH> <TEMPLATE_NAME>", "Creates a new recipe from template <TEMPLATE_NAME>"
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
-                  :desc => "Set custom global variables."
+                  :desc => "Set custom global variables"
     def new(recipe_name, template_name)
       Kameleon.env.root_dir = Kameleon.env.repositories_path
       unless template_name.end_with? '.yaml'
@@ -248,7 +248,7 @@ module Kameleon
     desc "info <RECIPE_PATH>", "Display detailed information about a recipe"
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
-                  :desc => "Set custom global variables."
+                  :desc => "Set custom global variables"
     method_option :from_cache, :type => :string,
                   :default => nil,
                   :desc => "Get info from a persistent cache tar file (ignore recipe path)"
@@ -280,7 +280,7 @@ module Kameleon
     desc "dag <RECIPE_PATH> [<RECIPE_PATH> [<...>]]", "Draw a DAG of the steps to build one or more recipes"
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
-                  :desc => "Set custom global variables."
+                  :desc => "Set custom global variables"
     method_option :file, :type => :string,
                   :default => "/tmp/kameleon.dag",
                   :desc => "DAG output filename"
@@ -322,7 +322,7 @@ module Kameleon
     desc "dryrun <RECIPE_PATH>", "Show the steps the build would process"
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
-                  :desc => "Set custom global variables."
+                  :desc => "Set custom global variables"
     method_option :relative, :type => :boolean,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
@@ -337,7 +337,7 @@ module Kameleon
     desc "export <RECIPE_PATH> <EXPORT_PATH>", "Export the given recipe with its steps and data to a given directory"
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
-                  :desc => "Set custom global variables."
+                  :desc => "Set custom global variables"
     method_option :add, :type => :boolean,
                   :default => false,  :aliases => "-A",
                   :desc => "export recipe and steps to an existing directory (this may overwrite some existing files)"
@@ -386,47 +386,43 @@ module Kameleon
                   :desc => "Runs the command `kameleon clean` first"
     method_option :from_checkpoint, :type => :string,
                   :default => nil,
-                  :desc => "Uses specific checkpoint to build the image. " \
-                           "Default value is the last checkpoint."
-    method_option :enable_checkpoint, :type => :boolean,
+                  :desc => "Restart a build from a specific checkpoint, instead of the latest one"
+    method_option :enable_checkpointing, :type => :boolean, :aliases => "-c",
                   :default => false,
-                  :desc => "Enables checkpointing"
-    method_option :microstep_checkpoint, :type => :string,
+                  :desc => "Enable creating and using checkpoints"
+    method_option :microstep_checkpoints, :type => :string,
                   :enum => ["first", "all"],
                   :default => "all",
                   :desc => "Create checkpoint of the first microstep only, or all"
-    method_option :list_checkpoints, :type => :boolean, :aliases => "--checkpoints",
+    method_option :list_checkpoints, :type => :boolean, :aliases => "-l",
                   :default => false,
                   :desc => "Lists all availables checkpoints"
-    method_option :enable_cache, :type => :boolean,
+    method_option :enable_cache, :type => :boolean, :aliases => "-C",
                   :default => false,
                   :desc => "Generates a persistent cache for the appliance."
     method_option :cache_path, :type => :string,
                   :default => nil,
-                  :desc => "Sets the cache directory path"
+                  :desc => "Sets the cache directory path."
     method_option :from_cache, :type => :string,
                   :default => nil,
                   :desc => "Uses a persistent cache tar file to build the image."
     method_option :cache_archive_compression, :type => :string,
                   :enum => ["none", "gzip", "bz2", "xz"],
                   :default => "gzip",
-                  :desc => "Set the persistent cache tar file compression."
+                  :desc => "Set the persistent cache tar file compression"
     method_option :polipo_path, :type => :string,
                   :default => nil,
-                  :desc => "Full path of the polipo binary to use for the persistent cache."
+                  :desc => "Full path of the polipo binary to use for the persistent cache"
     method_option :proxy, :type => :string, :default => "",
-                  :desc => "Specifies the hostname and port number of an HTTP " \
-                           "proxy; it should have the form 'host:port'"
+                  :desc => "HTTP proxy address and port (expected format is hostname:port)"
     method_option :proxy_credentials, :type => :string, :default => "",
-                  :desc => "Specifies the username and password if the parent "\
-                           "proxy requires authorisation it should have the "\
-                           "form 'username:password'"
+                  :desc => "Username and password if required by the parent proxy (expected format is username:password)"
     method_option :proxy_offline, :type => :boolean,
-                  :default => false, :aliases => "--offline",
-                  :desc => "Prevents Polipo from contacting remote servers"
+                  :default => false,
+                  :desc => "Prevents Polipo from contacting remote servers."
     method_option :global, :type => :hash,
                   :default => {}, :aliases => "-g",
-                  :desc => "Set custom global variables."
+                  :desc => "Set custom global variables"
     def build(recipe_path=nil)
       if recipe_path.nil? && !options[:from_cache].nil?
         unless File.file?(options[:from_cache])
