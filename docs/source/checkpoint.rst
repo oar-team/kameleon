@@ -151,7 +151,7 @@ Define how steps handle checkpoints in recipes
 For every microstep, the checkpoint action can be defined with the ``on_checkpoint`` key, using the following values:
 
 use_cache
-    The microstep will use a previous checkpoint if it exists. This is the default.
+    The microstep will use the checkpoint, if it exists, of its previous successful execution. This is the default.
 
 redo
     The microstep will not be checkpointed, it will be done (or redone) every time.
@@ -162,7 +162,9 @@ skip
 only
     The microstep will not be run when checkpointing is not enabled.
 
-Please also note that the ``kameleon build`` command provides an option named ``--microstep-checkpoint`` that allows to limit the checkpoint creation to the first microstep of every macrostep.
+Additionaly, the ``$${checkpointing_enabled}`` global variable is set to ``"true"`` or ``"false"``, whether the Kameleon build command enables checkpointing or not. It can be use in recipe steps.
+
+Please also note that the Kameleon build command provides an option named ``--microstep-checkpoint`` that allows to limit the checkpoint creation to the first microstep of every macrostep.
 
 Develop your own checkpoint mechanism
 =====================================

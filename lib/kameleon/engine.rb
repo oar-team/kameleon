@@ -17,6 +17,7 @@ module Kameleon
       @cwd = @recipe.global["kameleon_cwd"]
       @build_recipe_path = File.join(@cwd, ".build_recipe")
 
+      @recipe.global["checkpointing_enabled"] = @options[:enable_checkpointing] ? "true" : "false"
       @recipe.global["persistent_cache"] = @options[:enable_cache] ? "true" : "false"
 
       build_recipe = load_build_recipe
