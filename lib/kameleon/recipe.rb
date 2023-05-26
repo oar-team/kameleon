@@ -46,6 +46,8 @@ module Kameleon
         "proxy_local" => "",
         "proxy_out" => "",
         "proxy_in" => "",
+        "checkpointing_enabled" => "false",
+        "persistent_cache" => "false",
       }
       @aliases = {}
       @checkpoint = nil

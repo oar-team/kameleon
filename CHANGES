@@ -11,6 +11,7 @@ Unreleased
 - Rework the kameleon build options.
 - Add the on_checkpoint=only keywork, allowing a step to be run only when checkpoint is activated
 - Add the $${checkpointing_enabled} global variable, value is "true" or "false" whether checkpointing is enabled or not
+- Fix error in kameleon info: variable not found $${checkpointing_enabled} / $${persistent_cache}
 
 Version 2.10.9
 --------------
