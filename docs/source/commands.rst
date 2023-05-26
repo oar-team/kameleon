@@ -23,6 +23,11 @@ within the workdir of the *in* context:
 
     - exec_in: echo "Hello world!" > hello.txt
 
+Whenever an exec command fails, it will trigger a breakpoint, unless Kameleon is run in script mode (`kameleon build --script ...`).
+
+Beware that an execution in a usual Kameleon contexts (e.g. a bash shell) only fails if the latest command of a shell sequence fails. So make sure to handle errors correctly if executing a sequence of shell commands (or use `set -e` for instance).
+
+
 Pipe
 ~~~~
 

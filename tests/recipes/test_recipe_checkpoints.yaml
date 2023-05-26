@@ -52,7 +52,7 @@ setup:
       - exec_local: echo "MicroStepA1 ($${checkpointing_enabled}, $${persistent_cache})"
   - MB:
     - MB1:
-      - exec_local: echo MicroStepB1
+      - exec_local: echo MicroStepB1; cp; echo coucou
     - MB2:
       - on_checkpoint: skip
       - exec_local: echo MicroStepB2
