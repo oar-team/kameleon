@@ -296,10 +296,10 @@ SCRIPT
     def fork(io)
       if io.eql? "interactive"
         command = ["bash", "-c", @interactive_shell_cmd]
-        Kameleon.ui.info("Starting interactive command: #{@interactive_shell_cmd.inspect}")
+        Kameleon.ui.verbose("Starting interactive command: #{@interactive_shell_cmd.inspect}")
       else
         command = ["bash", "-c", @shell_cmd]
-        Kameleon.ui.info("Starting command: #{@cmd.inspect}")
+        Kameleon.ui.verbose("Starting command: #{@cmd.inspect}")
       end
       Kameleon.ui.debug("Starting shell process: #{ command.inspect}")
       ChildProcess.posix_spawn = true
