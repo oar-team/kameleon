@@ -146,7 +146,7 @@ module Kameleon
 
     def create_checkpoint(microstep_id)
       @recipe.checkpoint["create"].each do |cmd|
-        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id))
+        safe_exec_cmd(cmd.dup.gsub!("@microstep_id", microstep_id), :log_level => "warn")
       end
     end
 
@@ -210,7 +210,7 @@ module Kameleon
               Kameleon.ui.msg("--> Skipped because checkpointing is enabled")
               next
             end
-            if microstep.in_cache && microstep.on_checkpoint == "use_cache"
+            if microstep.in_cache and microstep.on_checkpoint != "redo"
               Kameleon.ui.msg("--> Checkpoint ahead, do nothing")
             else
               begin
@@ -222,17 +222,21 @@ module Kameleon
                 reload_contexts
                 breakpoint(nil)
               end
-              unless microstep.on_checkpoint == "redo"
-                if @microstep_checkpoint == "all" or not checkpointed
-                  if checkpoint_enabled?
-                    microstep_checkpoint_time = Time.now.to_i
-                    Kameleon.ui.msg("--> Creating checkpoint: #{ microstep.identifier }")
-                    create_checkpoint(microstep.identifier)
-                    checkpointed = true
-                    microstep_checkpoint_duration = Time.now.to_i - microstep_checkpoint_time
-                    macrostep_checkpoint_duration += microstep_checkpoint_duration
-                    Kameleon.ui.verbose("Checkpoint creation for MicroStep #{microstep.name} took: #{microstep_checkpoint_duration} secs")
-                  end
+              if checkpoint_enabled?
+                if (@microstep_checkpoint == "first" and checkpointed)
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: macrostep was already checkpointed once")
+                elsif microstep.on_checkpoint == "redo"
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: it must be redone everytime")
+                elsif microstep.on_checkpoint == "disabled"
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: it is disabled")
+                else
+                  microstep_checkpoint_time = Time.now.to_i
+                  Kameleon.ui.msg("--> Creating checkpoint: #{ microstep.identifier }")
+                  create_checkpoint(microstep.identifier)
+                  checkpointed = true
+                  microstep_checkpoint_duration = Time.now.to_i - microstep_checkpoint_time
+                  macrostep_checkpoint_duration += microstep_checkpoint_duration
+                  Kameleon.ui.verbose("Checkpoint creation for MicroStep #{microstep.name} took: #{microstep_checkpoint_duration} secs")
                 end
               end
             end
