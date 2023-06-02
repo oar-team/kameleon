@@ -6,13 +6,15 @@ Version 2.10.10
 
 Unreleased
 
-- Set kameleon build --microstep-checkpoint option to all by default.
+- Set kameleon build --microstep-checkpoint option to "all" by default.
 - Rework the kameleon checkpoint documentation and more.
 - Rework the kameleon build options.
-- Add the on_checkpoint=only keywork, allowing a step to be run only when checkpoint is activated.
+- Add the on_checkpoint=only keyword, allowing a step to be run only when checkpoint is activated.
+- Add the on_checkpoint=disabled keyword, allowing a step to be never be checkpointed.
 - Add the $${checkpointing_enabled} global variable, value is "true" or "false" whether checkpointing is enabled or not.
 - Fix error in kameleon info: variable not found $${checkpointing_enabled} / $${persistent_cache}.
-- Cosmetic fixes.
+- Make the context_reload command less verbose by default, and some other commands by side effects.
+- Other cosmetic fixes.
 
 Version 2.10.9
 --------------
