@@ -79,7 +79,7 @@ module Kameleon
       end
       unless @options[:no_create_build_dir]
         begin
-          Kameleon.ui.info("Creating kameleon build directory : #{@cwd}")
+          Kameleon.ui.info("Creating kameleon build directory: #{@cwd}")
           FileUtils.mkdir_p @cwd
         rescue
           raise BuildError, "Failed to create build directory #{@cwd}"
@@ -203,7 +203,7 @@ module Kameleon
         macrostep.sequence do |microstep|
           microstep_time = Time.now.to_i
           microstep_checkpoint_duration = 0
-          step_prefix = "Step #{ microstep.order } : "
+          step_prefix = "Step #{ microstep.order }: "
           Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
           if @checkpointing
             if microstep.on_checkpoint == "skip"
@@ -226,7 +226,7 @@ module Kameleon
                 if @microstep_checkpoint == "all" or not checkpointed
                   if checkpoint_enabled?
                     microstep_checkpoint_time = Time.now.to_i
-                    Kameleon.ui.msg("--> Creating checkpoint : #{ microstep.identifier }")
+                    Kameleon.ui.msg("--> Creating checkpoint: #{ microstep.identifier }")
                     create_checkpoint(microstep.identifier)
                     checkpointed = true
                     microstep_checkpoint_duration = Time.now.to_i - microstep_checkpoint_time
@@ -284,7 +284,7 @@ module Kameleon
         context = "exec_" + cmd.value
         expected_names = map.keys.map { |k| k.gsub "exec_", "" }
         unless map.keys.include? context
-          Kameleon.ui.error("Invalid context name arguments. Expected : "\
+          Kameleon.ui.error("Invalid context name arguments. Expected: "\
                            "#{expected_names}")
           fail ExecError
         else
@@ -302,7 +302,7 @@ module Kameleon
         execute = true
         [first_cmd.key, second_cmd.key].each do |key|
           unless expected_cmds.include?(key)
-            Kameleon.ui.error("Invalid pipe arguments. Expected : "\
+            Kameleon.ui.error("Invalid pipe arguments. Expected: "\
                               "#{expected_cmds}")
             fail ExecError
           end
@@ -355,7 +355,7 @@ module Kameleon
            exec_cmd(cmd, kwargs)
          end
       else
-        Kameleon.ui.warn("Unknown command : #{cmd.key}")
+        Kameleon.ui.warn("Unknown command: #{cmd.key}")
       end
     end
 
@@ -413,7 +413,7 @@ module Kameleon
     end
 
     def rescue_exec_error(cmd)
-      message = "Error occured when executing the following command :\n"
+      message = "Error occured when executing the following command:\n"
       cmd.string_cmd.split( /\r?\n/ ).each {|m| message << "\n> #{m}" }
       if Kameleon.env.script?
         raise ExecError, message
@@ -429,7 +429,7 @@ module Kameleon
           begin
             exec_cmd(cmd, kwargs)
           rescue
-            Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
+            Kameleon.ui.warn("An error occurred while executing: #{cmd.value}")
           end
         end
       end
@@ -450,7 +450,7 @@ module Kameleon
             begin
               exec_cmd(cmd, kwargs)
             rescue
-              Kameleon.ui.warn("An error occurred while executing : #{cmd.value}")
+              Kameleon.ui.warn("An error occurred while executing: #{cmd.value}")
             end
           end
         end
@@ -571,13 +571,13 @@ module Kameleon
           @from_checkpoint = list_checkpoints.last
         else
           unless list_checkpoints.include?@from_checkpoint
-            fail BuildError, "Unknown checkpoint hash : #{@from_checkpoint}." \
+            fail BuildError, "Unknown checkpoint hash: #{@from_checkpoint}." \
                              " Use checkpoints command to find a valid" \
                              " checkpoint"
           end
         end
         unless @from_checkpoint.nil?
-          Kameleon.ui.info("Restoring last build from step : #{@from_checkpoint}")
+          Kameleon.ui.info("Restoring last build from step: #{@from_checkpoint}")
           apply_checkpoint @from_checkpoint
           @recipe.microsteps.each do |microstep|
             microstep.in_cache = true

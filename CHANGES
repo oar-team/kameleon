@@ -9,9 +9,10 @@ Unreleased
 - Set kameleon build --microstep-checkpoint option to all by default.
 - Rework the kameleon checkpoint documentation and more.
 - Rework the kameleon build options.
-- Add the on_checkpoint=only keywork, allowing a step to be run only when checkpoint is activated
-- Add the $${checkpointing_enabled} global variable, value is "true" or "false" whether checkpointing is enabled or not
-- Fix error in kameleon info: variable not found $${checkpointing_enabled} / $${persistent_cache}
+- Add the on_checkpoint=only keywork, allowing a step to be run only when checkpoint is activated.
+- Add the $${checkpointing_enabled} global variable, value is "true" or "false" whether checkpointing is enabled or not.
+- Fix error in kameleon info: variable not found $${checkpointing_enabled} / $${persistent_cache}.
+- Cosmetic fixes.
 
 Version 2.10.9
 --------------
@@ -384,7 +385,7 @@ Released on Oct 16th 2014
 - Handled Ctrl-C to make a breakpoint instead of quitting. (Fixed #29)
 - Stored kameleon user configuration file in ``~/.kameleon.d/config`` (Fixed #24)
 - Fixed ``kameleon new`` to take an absolute or relative path and place the recipe in a subdir (Fixed #22)
-- Moved builtin recipes to an external repository : See [http://kameleon.imag.fr/repository.html](Docs) (Fixed #24)
+- Moved builtin recipes to an external repository: See [http://kameleon.imag.fr/repository.html](Docs) (Fixed #24)
 - Renamed ``--cache`` option to ``--enable-cache``
 - Renamed ``--checkpoint`` option to ``--enable-checkpoint``
 - Removed ``kameleon import`` command
@@ -494,7 +495,7 @@ Released on July 20th 2014
 - [template] Do not run qemu with nohup (Use ``-daemonize`` instead)
 - [template] Improved context_out/in log readability
 - [template] Removed fedora-rawhide templates
-- [template] Added new templates :
+- [template] Added new templates:
 
   - qemu/archlinux-desktop-i686
   - qemu/archlinux-i686
@@ -559,7 +560,7 @@ Released on June 12th 2014
 - [core] Set the variable ``KAMELEON_WORKDIR`` for all contexts
 - [core] Used ``KAMELEON_WORKDIR`` when working with PIPE
 - [core] Added persistent cache feature to Kameleon, So far it is caching just packages comming from the network using Polipo
-- [template] Added new templates :
+- [template] Added new templates:
 
   - archlinux
   - archlinux-desktop

@@ -79,7 +79,7 @@ module Kameleon
         do_log(out, log_level) unless out.nil?
         do_log(err, "error") unless err.nil?
       end
-      Kameleon.ui.verbose("Exit status : #{exit_status}")
+      Kameleon.ui.verbose("Exit status: #{exit_status}")
       fail ExecError unless exit_status.eql? 0
     rescue ShellError, Errno::EPIPE  => e
       Kameleon.ui.verbose("Shell cmd failed to launch: #{@shell.shell_cmd}")

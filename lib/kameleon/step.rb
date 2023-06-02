@@ -33,7 +33,7 @@ module Kameleon
       @key
     rescue
       lines = @string_cmd.split( /\r?\n/ ).map {|l| "> #{l}" }
-      fail RecipeError, "Syntax error for microstep #{@microstep_name} : \n"\
+      fail RecipeError, "Syntax error for microstep #{@microstep_name}: \n"\
                         "#{ lines.join "\n"}"
     end
 

@@ -454,7 +454,7 @@ module Kameleon
         total_time = Time.now.to_i - start_time
         Kameleon.ui.info("")
         Kameleon.ui.info("Successfully built '#{recipe_path}'")
-        Kameleon.ui.info("Total duration : #{total_time} secs")
+        Kameleon.ui.info("Total duration: #{total_time} secs")
       end
     end
 

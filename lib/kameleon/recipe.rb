@@ -91,7 +91,7 @@ module Kameleon
     def load!(kwargs = {})
       # Find recipe path
       Kameleon.ui.verbose("Loading #{@path}")
-      fail RecipeError, "Could not find this following recipe : #{@path}" \
+      fail RecipeError, "Could not find this following recipe: #{@path}" \
          unless File.file? @path
       yaml_recipe = YAML.load_file @path
       unless yaml_recipe.kind_of? Hash
@@ -240,7 +240,7 @@ module Kameleon
       update_steps_dirs()
 
       base_recipe_path << ".yaml" unless base_recipe_path.end_with? ".yaml"
-      fail RecipeError, "Could not find this following recipe : #{@recipe_path}" \
+      fail RecipeError, "Could not find this following recipe: #{@recipe_path}" \
          unless File.file? path
       base_yaml_recipe = YAML.load_file base_recipe_path
       unless yaml_recipe.kind_of? Hash
@@ -558,7 +558,7 @@ module Kameleon
       Kameleon.ui.verbose("Resolving aliases")
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
-          # First pass : resolve aliases
+          # First pass: resolve aliases
           Kameleon.ui.debug("Resolving aliases for macrostep '#{macrostep.name}'")
           macrostep.microsteps.each do |microstep|
             microstep.commands.map! do |cmd|
@@ -579,7 +579,7 @@ module Kameleon
 
       @sections.values.each do |section|
         section.macrosteps.each do |macrostep|
-          # Second pass : resolve variables + clean/init hooks
+          # Second pass: resolve variables + clean/init hooks
           macrostep.microsteps.each do |microstep|
             microstep.commands.map! do |cmd|
               resolve_hooks(cmd, macrostep, microstep)
@@ -732,7 +732,7 @@ module Kameleon
             end
           end
         end
-        fail RecipeError, "Invalid command : '#{cmd.key}'"
+        fail RecipeError, "Invalid command: '#{cmd.key}'"
       else
         return cmd
       end

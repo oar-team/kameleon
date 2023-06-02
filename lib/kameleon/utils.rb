@@ -6,7 +6,7 @@ module Kameleon
     @@warned_vars = Array.new
     def self.warn_var(var)
       if ! @@warned_vars.include?(var)
-        Kameleon.ui.warn("Warning : variable $$#{var[0]} is not enclosed with braces, which may cause errors. Please prefer using $${#{var[0]}}.")
+        Kameleon.ui.warn("Warning: variable $$#{var[0]} is not enclosed with braces, which may cause errors. Please prefer using $${#{var[0]}}.")
         @@warned_vars.push(var)
       end
     end
