@@ -241,8 +241,11 @@ kameleon_uuid
 kameleon_short_uuid
     Shorter version of the identifier, basically the end of the uuid.  (eg. 93983b14555d)
 
+checkpointing_enabled
+    'true' if the checkpointing mechanism is enabled for the build, otherwise 'false'.
+
 persistent_cache
-    'true' if the user enabled the cache, otherwise 'false'.
+    'true' if the cache mechanism is enabled for the build, otherwise 'false'.
 
 .. _data:
 
