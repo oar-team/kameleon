@@ -4,7 +4,7 @@ Kameleon CHANGELOG
 Version 2.10.10
 --------------
 
-Unreleased
+Released on June 13 2023
 
 - Set kameleon build --microstep-checkpoint option to "all" by default.
 - Rework the kameleon checkpoint documentation and more.
