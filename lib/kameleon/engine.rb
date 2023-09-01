@@ -28,8 +28,6 @@ module Kameleon
         end
       end
       @checkpointing = @options[:enable_checkpointing]
-      @checkpointing = true unless @options[:from_checkpoint].nil?
-      @microstep_checkpoint = @options[:microstep_checkpoints]
       # Check if the recipe have checkpoint entry
       if @checkpointing && @recipe.checkpoint.nil?
         fail BuildError, "Checkpoint is unavailable for this recipe"
@@ -165,22 +163,18 @@ module Kameleon
       end
     end
 
-    def list_all_checkpoints
-      list = ""
-      @recipe.checkpoint["list"].each do |cmd|
-        safe_exec_cmd(cmd, :stdout => list)
-      end
-      return list.split(/\r?\n/)
-    end
-
     def list_checkpoints
       if @list_checkpoints.nil?
-        checkpoints = list_all_checkpoints
-        all_microsteps_ids = @recipe.microsteps.map { |m| m.identifier }
+        # get existing checkpoints on the system
+        existing_checkpoint_str = ""
+        @recipe.checkpoint["list"].each do |cmd|
+          safe_exec_cmd(cmd, :stdout => existing_checkpoint_str)
+        end
+        existing_checkpoint_ids = existing_checkpoint_str.split(/\r?\n/)
         # get sorted checkpoints by microsteps order
         @list_checkpoints = []
-        all_microsteps_ids.each do |id|
-          @list_checkpoints.push(id) if checkpoints.include?(id)
+        @recipe.all_checkpoints.each do |checkpoint|
+          @list_checkpoints.push(checkpoint) if existing_checkpoint_ids.include?(checkpoint["id"])
         end
       end
       return @list_checkpoints
@@ -210,7 +204,7 @@ module Kameleon
               Kameleon.ui.msg("--> Skipped because checkpointing is enabled")
               next
             end
-            if microstep.in_cache and microstep.on_checkpoint != "redo"
+            if microstep.has_checkpoint_ahead and microstep.on_checkpoint != "redo"
               Kameleon.ui.msg("--> Checkpoint ahead, do nothing")
             else
               begin
@@ -223,15 +217,17 @@ module Kameleon
                 breakpoint(nil)
               end
               if checkpoint_enabled?
-                if (@microstep_checkpoint == "first" and checkpointed)
-                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: macrostep was already checkpointed once")
+                if (@options[:microstep_checkpoints].downcase == "first" and checkpointed)
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: macrostep already checkpointed once")
                 elsif microstep.on_checkpoint == "redo"
-                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: it must be redone everytime")
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: must be redone everytime")
                 elsif microstep.on_checkpoint == "disabled"
-                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: it is disabled")
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: disabled")
+                elsif !microstep.to_checkpoint
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: wait until step '#{@first_checkpoint['step']}'" )
                 else
                   microstep_checkpoint_time = Time.now.to_i
-                  Kameleon.ui.msg("--> Creating checkpoint: #{ microstep.identifier }")
+                  Kameleon.ui.msg("--> Creating checkpoint: '#{microstep.slug}' (#{ microstep.identifier })")
                   create_checkpoint(microstep.identifier)
                   checkpointed = true
                   microstep_checkpoint_duration = Time.now.to_i - microstep_checkpoint_time
@@ -470,28 +466,37 @@ module Kameleon
           return path
         end
       end
-      Kameleon.ui.shell.say ""
-      Kameleon.ui.shell.say "#{ @recipe.name } ", :bold
-      Kameleon.ui.shell.say "(#{ relative_or_absolute_path(@recipe.path) })", :cyan
-      ["bootstrap", "setup", "export"].each do |section_name|
-        section = @recipe.sections.fetch(section_name)
-        Kameleon.ui.shell.say "[" << section.name.capitalize << "]", :red
-        section.sequence do |macrostep|
-          Kameleon.ui.shell.say "  "
-          Kameleon.ui.shell.say "#{macrostep.name} ", :bold
-          if macrostep.path
-            Kameleon.ui.shell.say "(#{ relative_or_absolute_path(macrostep.path) })", :cyan
-          else
-            Kameleon.ui.shell.say "(internal)", :cyan
-          end
-          macrostep.sequence do |microstep|
-            Kameleon.ui.shell.say "  --> ", :magenta
-            Kameleon.ui.shell.say "#{ microstep.order } ", :green
-            Kameleon.ui.shell.say "#{ microstep.name }", :yellow
+      if @options[:show_checkpoints]
+        if @recipe.all_checkpoints.empty?
+          Kameleon.ui.shell.say "No checkpoints would be created by recipe '#{recipe.name}':"
+        else
+          Kameleon.ui.shell.say "The following checkpoints would be created by recipe '#{recipe.name}':"
+          tp @recipe.all_checkpoints, {"id" => {:width => 20}}, { "step" => {:width => 60}}
+        end
+      else
+        Kameleon.ui.shell.say ""
+        Kameleon.ui.shell.say "#{ @recipe.name } ", :bold
+        Kameleon.ui.shell.say "(#{ relative_or_absolute_path(@recipe.path) })", :cyan
+        ["bootstrap", "setup", "export"].each do |section_name|
+          section = @recipe.sections.fetch(section_name)
+          Kameleon.ui.shell.say "[" << section.name.capitalize << "]", :red
+          section.sequence do |macrostep|
+            Kameleon.ui.shell.say "  "
+            Kameleon.ui.shell.say "#{macrostep.name} ", :bold
+            if macrostep.path
+              Kameleon.ui.shell.say "(#{ relative_or_absolute_path(macrostep.path) })", :cyan
+            else
+              Kameleon.ui.shell.say "(internal)", :cyan
+            end
+            macrostep.sequence do |microstep|
+              Kameleon.ui.shell.say "  --> ", :magenta
+              Kameleon.ui.shell.say "#{ microstep.order } ", :green
+              Kameleon.ui.shell.say "#{ microstep.name }", :yellow
+            end
           end
         end
+        Kameleon.ui.shell.say ""
       end
-      Kameleon.ui.shell.say ""
     end
 
     def dag(graph, color, recipes_only)
@@ -570,24 +575,44 @@ module Kameleon
 
     def build
       if @checkpointing
-        @from_checkpoint = @options[:from_checkpoint]
-        if @from_checkpoint.nil? || @from_checkpoint == "last"
+        if @options[:from_checkpoint].nil? || @options[:from_checkpoint] == "last"
           @from_checkpoint = list_checkpoints.last
         else
-          unless list_checkpoints.include?@from_checkpoint
-            fail BuildError, "Unknown checkpoint hash: #{@from_checkpoint}." \
+          @from_checkpoint = list_checkpoints.select {|c|
+            c["id"] == @options[:from_checkpoint] || c["step"] == @options[:from_checkpoint]
+          }.last
+          if @from_checkpoint.nil?
+            fail BuildError, "Unknown checkpoint '#{@options[:from_checkpoint]}'." \
                              " Use checkpoints command to find a valid" \
                              " checkpoint"
           end
         end
-        unless @from_checkpoint.nil?
-          Kameleon.ui.info("Restoring last build from step: #{@from_checkpoint}")
-          apply_checkpoint @from_checkpoint
+        unless @from_checkpoint.nil? # no checkpoint available at all
+          Kameleon.ui.info("Restoring last build from step: #{@from_checkpoint["step"]}")
+          apply_checkpoint @from_checkpoint["id"]
           @recipe.microsteps.each do |microstep|
-            microstep.in_cache = true
-            if microstep.identifier == @from_checkpoint
+            microstep.has_checkpoint_ahead = true
+            if microstep.identifier == @from_checkpoint["id"]
               break
             end
+          end
+        end
+        unless @options[:first_checkpoint].nil?
+          @first_checkpoint = @recipe.all_checkpoints.select {|c|
+            c["id"] == @options[:first_checkpoint] || c["step"] == @options[:first_checkpoint]
+          }.last
+          if @first_checkpoint.nil?
+            fail BuildError, "Unknown checkpoint '#{@options[:first_checkpoint]}'." \
+                             " Use checkpoints command to find a valid" \
+                             " checkpoint"
+          end
+        end
+        unless @first_checkpoint.nil?
+          @recipe.microsteps.each do |microstep|
+            if microstep.identifier == @first_checkpoint["id"]
+              break
+            end
+            microstep.to_checkpoint = false
           end
         end
       end
@@ -633,29 +658,12 @@ module Kameleon
     end
 
     def pretty_checkpoints_list
-      def find_microstep_slug_by_id(id)
-        @recipe.microsteps.each do |m|
-          return m.slug if m.identifier == id
-        end
-      end
-      dict_checkpoints = []
-      unless @recipe.checkpoint.nil?
-        list_checkpoints.each do |id|
-          slug = find_microstep_slug_by_id id
-          unless slug.nil?
-            dict_checkpoints.push({
-              "id" => id,
-              "step" => slug
-            })
-          end
-        end
-      end
-      if dict_checkpoints.empty?
-        puts "No checkpoint available for the recipe '#{recipe.name}'"
+      list_checkpoints
+      if list_checkpoints.empty?
+        Kameleon.ui.shell.say "No checkpoint found for recipe '#{recipe.name}'"
       else
-        puts "The following checkpoints are available for  " \
-                 "the recipe '#{recipe.name}':"
-        tp dict_checkpoints, {"id" => {:width => 20}}, { "step" => {:width => 60}}
+        Kameleon.ui.shell.say "The following checkpoints are available for recipe '#{recipe.name}':"
+        tp list_checkpoints, {"id" => {:width => 20}}, { "step" => {:width => 60}}
       end
     end
   end

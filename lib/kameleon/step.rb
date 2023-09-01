@@ -103,13 +103,15 @@ module Kameleon
     attr_accessor :name
     attr_accessor :identifier
     attr_accessor :slug
-    attr_accessor :in_cache
+    attr_accessor :has_checkpoint_ahead
+    attr_accessor :to_checkpoint
     attr_accessor :on_checkpoint
     attr_accessor :order
 
     def initialize(string_or_hash)
       @identifier = nil
-      @in_cache = false
+      @has_checkpoint_ahead = false
+      @to_checkpoint = true
       @on_checkpoint = "use_cache"
       @commands = []
       @name, cmd_list = string_or_hash.first

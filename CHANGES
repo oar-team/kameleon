@@ -1,6 +1,17 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.11
+--------------
+
+Released on 
+
+- Rework the checkpointing code.
+- Make build --from-checkpoint not activate the checkpointing without the --enable-checkpointing option.
+- Add the -F alias for the build --from-checkpoint option and allow passing the microstrep slug instead of it's id.
+- Add the build --first-checkpoint option that allows delaying when to start creating checkpoints.
+- Add the dryrun --show-checkpoints option, to show possible checkpoints.
+
 Version 2.10.10
 --------------
 

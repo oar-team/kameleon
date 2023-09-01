@@ -753,6 +753,25 @@ module Kameleon
       return @microsteps
     end
 
+    def all_checkpoints
+      if @all_checkpoints.nil?
+        @all_checkpoints = []
+        microsteps.each do |m|
+          step = m.slug
+          while @all_checkpoints.map{|c| c["step"]}.include?(step) do
+            prefix, suffix = step.split("%")
+            step = if suffix.nil?
+                     "#{prefix}%1"
+                   else
+                     "#{prefix}%#{suffix.to_i+1}"
+                   end
+          end
+          @all_checkpoints.push({ 'id' => m.identifier, 'step' => step })
+        end
+      end
+      return @all_checkpoints
+    end
+
     def calculate_step_identifiers
       Kameleon.ui.debug("Calculating microstep identifiers")
       base_salt = ""

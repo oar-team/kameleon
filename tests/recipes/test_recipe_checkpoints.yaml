@@ -61,6 +61,8 @@ setup:
   - MC:
     - MC1:
       - exec_local: echo MicroStepC1
+    - MC1:
+      - exec_local: echo MicroStepC1
     - MC2:
       - on_checkpoint: only
       - exec_local: echo MicroStepC2

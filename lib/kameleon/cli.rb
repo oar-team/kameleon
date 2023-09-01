@@ -326,6 +326,9 @@ module Kameleon
     method_option :relative, :type => :boolean,
                   :default => false,
                   :desc => "Make pathnames relative to the current working directory"
+    method_option :show_checkpoints, :type => :boolean,
+                  :default => false, :aliases=> "-c",
+                  :desc => "Show possible checkpoints"
     def dryrun(*recipe_paths)
       raise ArgumentError if recipe_paths.empty?
       recipe_paths.each do |path|
@@ -384,9 +387,12 @@ module Kameleon
     method_option :clean, :type => :boolean,
                   :default => false,
                   :desc => "Run the command `kameleon clean` first"
-    method_option :from_checkpoint, :type => :string,
+    method_option :from_checkpoint, :type => :string, :aliases => "-F",
                   :default => nil,
-                  :desc => "Restart a build from a specific checkpoint, instead of the latest one"
+                  :desc => "Restart the build from a specific checkpointed step, instead of the latest one"
+    method_option :first_checkpoint, :type => :string, :aliases => "-S",
+                  :default => nil,
+                  :desc => "Only create new checkpoints after the given step"
     method_option :enable_checkpointing, :type => :boolean, :aliases => "-c",
                   :default => false,
                   :desc => "Enable creating and using checkpoints"
