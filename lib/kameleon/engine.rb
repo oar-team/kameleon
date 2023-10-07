@@ -479,7 +479,7 @@ module Kameleon
           return path
         end
       end
-      if @options[:show_checkpoints]
+      if @options[:list_checkpoints]
         if @recipe.all_checkpoints.empty?
           Kameleon.ui.shell.say "No checkpoints would be created by recipe '#{recipe.name}':"
         else

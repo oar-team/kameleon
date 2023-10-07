@@ -319,24 +319,6 @@ module Kameleon
       Kameleon.ui.info("Generated GraphViz #{format} file: #{options[:file]}")
     end
 
-    desc "dryrun <RECIPE_PATH>", "Show the steps the build would process"
-    method_option :global, :type => :hash,
-                  :default => {},  :aliases => "-g",
-                  :desc => "Set custom global variables"
-    method_option :relative, :type => :boolean,
-                  :default => false,
-                  :desc => "Make pathnames relative to the current working directory"
-    method_option :show_checkpoints, :type => :boolean,
-                  :default => false, :aliases=> "-c",
-                  :desc => "Show possible checkpoints"
-    def dryrun(*recipe_paths)
-      raise ArgumentError if recipe_paths.empty?
-      recipe_paths.each do |path|
-        recipe = Kameleon::Recipe.new(path)
-        Kameleon::Engine.new(recipe, options.dup.merge({no_create_build_dir: true}).freeze).dryrun
-      end
-    end
-
     desc "export <RECIPE_PATH> <EXPORT_PATH>", "Export the given recipe with its steps and data to a given directory"
     method_option :global, :type => :hash,
                   :default => {},  :aliases => "-g",
@@ -387,6 +369,12 @@ module Kameleon
     method_option :clean, :type => :boolean,
                   :default => false,
                   :desc => "Run the command `kameleon clean` first"
+    method_option :dryrun, :type => :boolean, :aliases => "-d",
+                  :default => false,
+                  :desc => "Dry run, only show what would run"
+    method_option :relative, :type => :boolean,
+                  :default => false,
+                  :desc => "Make dryrun show pathnames relative to the current working directory"
     method_option :from_checkpoint, :type => :string, :aliases => "-F",
                   :default => nil,
                   :desc => "Restart the build from a specific checkpointed step, instead of the latest one"
@@ -405,7 +393,7 @@ module Kameleon
                   :desc => "Create checkpoint of the first microstep only, or all"
     method_option :list_checkpoints, :type => :boolean, :aliases => "-l",
                   :default => false,
-                  :desc => "List all availables checkpoints"
+                  :desc => "List availables checkpoints"
     method_option :enable_cache, :type => :boolean, :aliases => "-C",
                   :default => false,
                   :desc => "Generate a persistent cache for the appliance"
@@ -445,7 +433,9 @@ module Kameleon
       end
       raise BuildError, "A recipe file or a persistent cache archive " \
                         "is required to run this command." if recipe_path.nil?
-      if options[:clean]
+      if options[:dryrun]
+        Kameleon::Engine.new(Kameleon::Recipe.new(recipe_path), options.dup.merge({no_create_build_dir: true}).freeze).dryrun
+      elsif options[:clean]
         opts = Hash.new.merge options
         opts[:lazyload] = false
         opts[:fail_silently] = true
