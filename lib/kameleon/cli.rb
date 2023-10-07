@@ -390,9 +390,12 @@ module Kameleon
     method_option :from_checkpoint, :type => :string, :aliases => "-F",
                   :default => nil,
                   :desc => "Restart the build from a specific checkpointed step, instead of the latest one"
-    method_option :first_checkpoint, :type => :string, :aliases => "-S",
+    method_option :begin_checkpoint, :type => :string, :aliases => "-B",
                   :default => nil,
-                  :desc => "Only create new checkpoints after the given step"
+                  :desc => "Only create checkpoints after the given step"
+    method_option :end_checkpoint, :type => :string, :aliases => "-E",
+                  :default => nil,
+                  :desc => "Do not create checkpoints after the given step"
     method_option :enable_checkpointing, :type => :boolean, :aliases => "-c",
                   :default => false,
                   :desc => "Enable creating and using checkpoints"

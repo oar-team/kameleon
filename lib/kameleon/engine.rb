@@ -201,7 +201,7 @@ module Kameleon
           Kameleon.ui.info("#{step_prefix}#{ microstep.slug }")
           if @checkpointing
             if microstep.on_checkpoint == "skip"
-              Kameleon.ui.msg("--> Skipped because checkpointing is enabled")
+              Kameleon.ui.msg("--> Skip microstep as requested when checkpointing is activated")
               next
             end
             if microstep.has_checkpoint_ahead and microstep.on_checkpoint != "redo"
@@ -220,25 +220,38 @@ module Kameleon
                 if (@options[:microstep_checkpoints].downcase == "first" and checkpointed)
                   Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: macrostep already checkpointed once")
                 elsif microstep.on_checkpoint == "redo"
-                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: must be redone everytime")
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: always redo microstep")
                 elsif microstep.on_checkpoint == "disabled"
-                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: disabled")
-                elsif !microstep.to_checkpoint
-                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: wait until step '#{@first_checkpoint['step']}'" )
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: disabled in the microstep definition")
+                elsif not microstep.in_checkpoint_window
+                  if @end_checkpoint.nil?
+                    unless @begin_checkpoint.nil?
+                      msg = "only after step '#{@begin_checkpoint['step']}'"
+                    end
+                  else
+                    if @begin_checkpoint.nil?
+                      msg = "not after step '#{@end_checkpoint['step']}'"
+                    else
+                      msg = "only between steps '#{@begin_checkpoint['step']}' and '#{@end_checkpoint['step']}'"
+                    end
+                  end
+                  Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: #{msg}")
                 else
                   microstep_checkpoint_time = Time.now.to_i
-                  Kameleon.ui.msg("--> Creating checkpoint: '#{microstep.slug}' (#{ microstep.identifier })")
+                  Kameleon.ui.msg("--> Creating checkpoint: '#{@recipe.all_checkpoints.select{|c| c['id'] == microstep.identifier}.first['step']}' (#{microstep.identifier})")
                   create_checkpoint(microstep.identifier)
                   checkpointed = true
                   microstep_checkpoint_duration = Time.now.to_i - microstep_checkpoint_time
                   macrostep_checkpoint_duration += microstep_checkpoint_duration
                   Kameleon.ui.verbose("Checkpoint creation for MicroStep #{microstep.name} took: #{microstep_checkpoint_duration} secs")
                 end
+              else
+                Kameleon.ui.msg("--> Do not create a checkpoint for this microstep: disabled in backend")
               end
             end
           else
             if microstep.on_checkpoint == "only"
-              Kameleon.ui.msg("--> Skipped because checkpointing is not enabled")
+              Kameleon.ui.msg("--> Skip microstep as requested when checkpointing is not activated")
               next
             else
               begin
@@ -583,8 +596,7 @@ module Kameleon
           }.last
           if @from_checkpoint.nil?
             fail BuildError, "Unknown checkpoint '#{@options[:from_checkpoint]}'." \
-                             " Use checkpoints command to find a valid" \
-                             " checkpoint"
+              " You may use the list checkpoints option to find a valid checkpoint."
           end
         end
         unless @from_checkpoint.nil? # no checkpoint available at all
@@ -597,22 +609,34 @@ module Kameleon
             end
           end
         end
-        unless @options[:first_checkpoint].nil?
-          @first_checkpoint = @recipe.all_checkpoints.select {|c|
-            c["id"] == @options[:first_checkpoint] || c["step"] == @options[:first_checkpoint]
-          }.last
-          if @first_checkpoint.nil?
-            fail BuildError, "Unknown checkpoint '#{@options[:first_checkpoint]}'." \
-                             " Use checkpoints command to find a valid" \
-                             " checkpoint"
+        @begin_checkpoint = nil
+        unless @options[:begin_checkpoint].nil?
+          @begin_checkpoint = @recipe.all_checkpoints.select {|c|
+            c["id"] == @options[:begin_checkpoint] || c["step"] == @options[:begin_checkpoint]
+          }.first
+          if @begin_checkpoint.nil?
+            fail BuildError, "Unknown checkpoint '#{@options[:begin_checkpoint]}'." \
+              " You may use the dryrun and list checkpoints options to find a valid checkpoint."
           end
         end
-        unless @first_checkpoint.nil?
-          @recipe.microsteps.each do |microstep|
-            if microstep.identifier == @first_checkpoint["id"]
-              break
-            end
-            microstep.to_checkpoint = false
+        @end_checkpoint = nil
+        unless @options[:end_checkpoint].nil?
+          @end_checkpoint = @recipe.all_checkpoints.select {|c|
+            c["id"] == @options[:end_checkpoint] || c["step"] == @options[:end_checkpoint]
+          }.last
+          if @end_checkpoint.nil?
+            fail BuildError, "Unknown checkpoint '#{@options[:end_checkpoint]}'." \
+              " You may use the dryrun and list checkpoints options to find a valid checkpoint."
+          end
+        end
+        do_checkpoint = @begin_checkpoint.nil?
+        @recipe.microsteps.each do |microstep|
+          if not do_checkpoint and not @begin_checkpoint.nil? and @begin_checkpoint["id"] == microstep.identifier
+            do_checkpoint = true
+          end
+          microstep.in_checkpoint_window = do_checkpoint
+          if do_checkpoint and not @end_checkpoint.nil? and @end_checkpoint["id"] == microstep.identifier
+            do_checkpoint = false
           end
         end
       end
