@@ -83,7 +83,8 @@ module Kameleon
       steps_dirs = []
       subdirs.reverse_each do |p|
         steps_dirs.push(File.expand_path(File.join(p.to_s, 'steps')))
-        steps_dirs.push(File.expand_path(File.join(p.to_s, '.steps')))
+        steps_dirs.push(File.expand_path(File.join(p.to_s, '_steps_')))
+        steps_dirs.push(File.expand_path(File.join(p.to_s, 'STEPS')))
       end
       steps_dirs.select! { |x| File.exist? x }
     end
@@ -155,7 +156,9 @@ module Kameleon
         dir_to_search = @steps_dirs.map do |steps_dir|
           include_steps.map do |path|
             [File.join(steps_dir, section.name, path),
-              File.join(steps_dir, path)]
+             File.join(steps_dir, "_#{section.name}_", path),
+             File.join(steps_dir, section.name.upcase, path),
+             File.join(steps_dir, path)]
           end
         end.flatten.select { |x| File.exist? x }
         Kameleon.ui.debug("Directory to search for steps:  #{dir_to_search}")
@@ -311,7 +314,9 @@ module Kameleon
         global_file << ".yaml" unless global_file.end_with? ".yaml"
 
         dir_search = @steps_dirs.map do |steps_dir|
-          File.join(steps_dir, "global")
+          [File.join(steps_dir, 'global'),
+           File.join(steps_dir, '_global_'),
+           File.join(steps_dir, 'GLOBAL')]
         end.flatten
         dir_search.unshift(File.join(File.dirname(recipe_path)))
         # try relative/absolute path
@@ -370,7 +375,9 @@ module Kameleon
     def load_aliases(yaml_recipe)
       def load_aliases_file(aliases_file)
         dir_search = @steps_dirs.map do |steps_dir|
-          File.join(steps_dir, "aliases")
+          [File.join(steps_dir, 'aliases'),
+           File.join(steps_dir, '_aliases_'),
+           File.join(steps_dir, 'ALIASES')]
         end.flatten
         dir_search.each do |dir_path|
           path = Pathname.new(File.join(dir_path, aliases_file))
@@ -400,7 +407,9 @@ module Kameleon
     def load_env_files(yaml_recipe)
       def add_env_file(env_file)
         dir_search = @steps_dirs.map do |steps_dir|
-          File.join(steps_dir, "env")
+          [File.join(steps_dir, 'env'),
+           File.join(steps_dir, '_env_'),
+           File.join(steps_dir, 'ENV')]
         end.flatten
         dir_search.each do |dir_path|
           path = Pathname.new(File.join(dir_path, env_file))
@@ -433,7 +442,9 @@ module Kameleon
           @checkpoint["path"] = @path
         elsif checkpoint.kind_of? String
           dir_search = @steps_dirs.map do |steps_dir|
-              File.join(steps_dir, "checkpoints")
+            [File.join(steps_dir, 'checkpoints'),
+             File.join(steps_dir, '_checkpoints_'),
+             File.join(steps_dir, 'CHECKPOINTS')]
           end.flatten
           dir_search.each do |dir_path|
             path = Pathname.new(File.join(dir_path, checkpoint))
@@ -527,7 +538,9 @@ module Kameleon
     def resolve_data_path(partial_path, step_path)
       Kameleon.ui.verbose("Looking for data '#{partial_path}'")
       dir_search = @steps_dirs.map do |steps_dir|
-          File.join(steps_dir, "data")
+        [File.join(steps_dir, 'data'),
+         File.join(steps_dir, '_data_'),
+         File.join(steps_dir, 'DATA')]
       end.flatten
       dir_search.each do |dir_path|
         real_path = Pathname.new(File.join(dir_path, partial_path)).cleanpath
