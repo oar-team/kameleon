@@ -155,6 +155,7 @@ module Kameleon
         dir_to_search = @steps_dirs.map do |steps_dir|
           include_steps.map do |path|
             [File.join(steps_dir, section.name, path),
+              File.join(steps_dir, "_#{section.name}", path),
               File.join(steps_dir, path)]
           end
         end.flatten.select { |x| File.exist? x }
@@ -370,7 +371,7 @@ module Kameleon
     def load_aliases(yaml_recipe)
       def load_aliases_file(aliases_file)
         dir_search = @steps_dirs.map do |steps_dir|
-          File.join(steps_dir, "aliases")
+          [ File.join(steps_dir, "aliases"), File.join(steps_dir, "_aliases")]
         end.flatten
         dir_search.each do |dir_path|
           path = Pathname.new(File.join(dir_path, aliases_file))
@@ -400,7 +401,7 @@ module Kameleon
     def load_env_files(yaml_recipe)
       def add_env_file(env_file)
         dir_search = @steps_dirs.map do |steps_dir|
-          File.join(steps_dir, "env")
+          [File.join(steps_dir, "env"), File.join(steps_dir, "_env")]
         end.flatten
         dir_search.each do |dir_path|
           path = Pathname.new(File.join(dir_path, env_file))
@@ -433,7 +434,7 @@ module Kameleon
           @checkpoint["path"] = @path
         elsif checkpoint.kind_of? String
           dir_search = @steps_dirs.map do |steps_dir|
-              File.join(steps_dir, "checkpoints")
+            [File.join(steps_dir, "checkpoints"), File.join(steps_dir, "_checkpoints")]
           end.flatten
           dir_search.each do |dir_path|
             path = Pathname.new(File.join(dir_path, checkpoint))
@@ -527,7 +528,7 @@ module Kameleon
     def resolve_data_path(partial_path, step_path)
       Kameleon.ui.verbose("Looking for data '#{partial_path}'")
       dir_search = @steps_dirs.map do |steps_dir|
-          File.join(steps_dir, "data")
+          [File.join(steps_dir, "data"), File.join(steps_dir, "_data")]
       end.flatten
       dir_search.each do |dir_path|
         real_path = Pathname.new(File.join(dir_path, partial_path)).cleanpath
