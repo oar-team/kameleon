@@ -276,9 +276,9 @@ output with every information about one or possibly several recipes. For instanc
      -> user_password: kameleon
 
 You can also inspect the steps involed in your recipe using either 
-``kameleon dryrun``, or ``kameleon dag``.
+``kameleon build --dryrun``, or ``kameleon dag``.
 
-``kameleon dryrun`` run through the sections and steps that the ``kameleon build`` will actually execute.
+``kameleon build --dryrun`` run through the sections and steps that the ``kameleon build`` will actually execute.
 
 ``kameleon dag`` draws a direct acyclic graph of a recipe inheritance and steps for one or possibly many recipes all at once. The DAG can be converted to a image or pdf file when using either the ``--file`` or ``--format`` option.
 
