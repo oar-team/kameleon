@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.description   = %q{The mindful appliance builder}
   s.summary       = %q{Kameleon is a tool to build system appliances from scratch}
   s.homepage      = 'http://kameleon.imag.fr/'
-  s.license       = 'GPL-2.0'
+  s.license       = 'GPL-2.0-or-later'
 
   s.files         = `git ls-files`.split($/)
   s.files.reject! { |file| file.start_with?('docs/') }
@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_dependency 'childprocess', '~> 0.5.3', '>= 0.3.0'
-  s.add_dependency 'thor', '~> 0.19', '>= 0.15.0'
+  s.add_dependency 'thor', '~> 1'
   s.add_dependency 'table_print', '~> 1.5'
   s.add_dependency 'psych', '~> 2.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2'
