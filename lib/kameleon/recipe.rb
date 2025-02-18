@@ -85,7 +85,7 @@ module Kameleon
         steps_dirs.push(File.expand_path(File.join(p.to_s, 'steps')))
         steps_dirs.push(File.expand_path(File.join(p.to_s, '.steps')))
       end
-      steps_dirs.select! { |x| File.exists? x }
+      steps_dirs.select! { |x| File.exist? x }
     end
 
     def load!(kwargs = {})
@@ -157,7 +157,7 @@ module Kameleon
             [File.join(steps_dir, section.name, path),
               File.join(steps_dir, path)]
           end
-        end.flatten.select { |x| File.exists? x }
+        end.flatten.select { |x| File.exist? x }
         Kameleon.ui.debug("Directory to search for steps:  #{dir_to_search}")
 
         if yaml_recipe.key? section.name

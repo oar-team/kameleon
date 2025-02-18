@@ -40,7 +40,7 @@ module Kameleon
 
     def userdir
       @userdir ||= Pathname.new(File.join('~', '.kameleon.d'))
-      Dir.mkdir(File.expand_path(@userdir.to_s)) unless File.exists?(File.expand_path(@userdir.to_s))
+      Dir.mkdir(File.expand_path(@userdir.to_s)) unless File.exist?(File.expand_path(@userdir.to_s))
       @userdir
     end
 
@@ -49,7 +49,7 @@ module Kameleon
     end
 
     def init_userconf()
-      if not File.exists?(Kameleon.userconf_path) or File.zero?(Kameleon.userconf_path)
+      if not File.exist?(Kameleon.userconf_path) or File.zero?(Kameleon.userconf_path)
         File.open(Kameleon.userconf_path, 'w+') do |file|
           userconf_erb = File.join(Kameleon.erb_dirpath, "userconf.yaml.erb")
           erb = ERB.new(File.open(userconf_erb, 'rb') { |f| f.read })
@@ -60,7 +60,7 @@ module Kameleon
     end
 
     def load_userconf
-      if File.exists?(Kameleon.userconf_path) and not File.zero?(Kameleon.userconf_path)
+      if File.exist?(Kameleon.userconf_path) and not File.zero?(Kameleon.userconf_path)
         yaml_conf = YAML.load_file Kameleon.userconf_path
         unless yaml_conf.kind_of? Hash
           yaml_conf = {}

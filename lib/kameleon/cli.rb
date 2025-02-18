@@ -345,7 +345,7 @@ module Kameleon
           end
       end
       Kameleon.ui.info("Export recipe #{recipe_path} to directory: #{dest_path}")
-      if File.exists?(dest_path)
+      if File.exist?(dest_path)
         unless options[:add]
           raise if Kameleon.ui.level("verbose")
           raise ExportError, "Target export directory '#{dest_path}' already "\
