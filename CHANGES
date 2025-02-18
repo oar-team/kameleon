@@ -1,6 +1,15 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.12
+---------------
+
+Released on February 18th 2025
+
+- Fix AUTHORS: update maintainer.
+- Fix bug with File.exists? (removed from ruby 3.3), use File.exist?
+- Fix gemspec: License and update Thor to remove the DidYouMean::SPELL_CHECKERS warning.
+
 Version 2.10.11
 ---------------
 
