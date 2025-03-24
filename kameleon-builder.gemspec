@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_dependency 'childprocess', '~> 4.0'
-  s.add_dependency 'psych', '~> 3.1'
+  s.add_dependency 'psych', '~> 5.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2'
   s.add_dependency 'ruby-progressbar', '~> 1.10'
   s.add_dependency 'table_print', '~> 1.5'
