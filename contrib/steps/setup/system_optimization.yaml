@@ -1,8 +1,0 @@
-# System optimization
-# WARNING: this step override your sysctl configuration
-- config_swap:
-  - write_in:
-    - /etc/sysctl.conf
-    - |
-      vm.swappiness=10
-      vm.vfs_cache_pressure=50
