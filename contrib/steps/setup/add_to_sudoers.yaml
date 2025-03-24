@@ -1,5 +1,0 @@
-- add_group_to_sudoers:
-  - append_in:
-    - /etc/sudoers
-    - |
-      %$$group ALL=(ALL:ALL) ALL

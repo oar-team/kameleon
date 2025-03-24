@@ -1,6 +1,0 @@
-# Add Timestamp
-- timestamping:
-  - exec_out: date +%s > timestamp
-  - out2in:
-    - timestamp
-    - /timestamp
