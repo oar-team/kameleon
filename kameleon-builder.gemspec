@@ -29,12 +29,12 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ['lib']
 
-  s.add_dependency 'childprocess', '~> 0.5.3', '>= 0.3.0'
-  s.add_dependency 'thor', '~> 1'
-  s.add_dependency 'table_print', '~> 1.5'
-  s.add_dependency 'psych', '~> 2.0'
+  s.add_dependency 'childprocess', '~> 4.0'
+  s.add_dependency 'psych', '~> 3.1'
   s.add_dependency 'ruby-graphviz', '~> 1.2'
-  s.add_dependency 'progressbar', '~> 1'
+  s.add_dependency 'ruby-progressbar', '~> 1.10'
+  s.add_dependency 'table_print', '~> 1.5'
+  s.add_dependency 'thor', '~> 1.0'
 
-  s.requirements = ['polipo 1.0.3, or greater', 'graphviz 2.38.0 or greater']
+  s.requirements = ['graphviz 2.38.0 or greater']
 end
