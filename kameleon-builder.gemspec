@@ -1,5 +1,6 @@
 # coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
+
+lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'kameleon/version'
 
@@ -17,8 +18,8 @@ Gem::Specification.new do |s|
                      'camilo1729@gmail.com',
                      'pierre.neyron@imag.fr',
                      'bruno.bzeznik@imag.fr']
-  s.description   = %q{The mindful appliance builder}
-  s.summary       = %q{Kameleon is a tool to build system appliances from scratch}
+  s.symmary       = 'The mindful appliance builder'
+  s.description   = 'Kameleon is a tool to build system appliances, possibly from scratch'
   s.homepage      = 'http://kameleon.imag.fr/'
   s.license       = 'GPL-2.0-or-later'
 
