@@ -23,7 +23,7 @@ module Kameleon
 
     def key
       if @key.nil?
-        object = YAML.load(@string_cmd)
+        object = YAML.unsafe_load(@string_cmd)
         if object.kind_of? String
           @key = object
         else
@@ -40,7 +40,7 @@ module Kameleon
     def value
       if @value.nil?
         Kameleon.ui.debug("Parsed string = #{@string_cmd}")
-        object = YAML.load(@string_cmd)
+        object = YAML.unsafe_load(@string_cmd)
         if object.kind_of? Command
           @value = object
         elsif object.kind_of? String
@@ -192,7 +192,7 @@ module Kameleon
                                            @path,
                                            tmp_resolved_vars.merge(global),
                                            recipe)
-        tmp_resolved_vars.merge! YAML.load(yaml_resolved.chomp)
+        tmp_resolved_vars.merge! YAML.unsafe_load(yaml_resolved.chomp)
       end
       @variables.merge! tmp_resolved_vars
       @microsteps.each do |m|

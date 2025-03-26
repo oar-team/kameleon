@@ -61,7 +61,7 @@ module Kameleon
 
     def load_userconf
       if File.exist?(Kameleon.userconf_path) and not File.zero?(Kameleon.userconf_path)
-        yaml_conf = YAML.load_file Kameleon.userconf_path
+        yaml_conf = YAML.unsafe_load_file Kameleon.userconf_path
         unless yaml_conf.kind_of? Hash
           yaml_conf = {}
         end

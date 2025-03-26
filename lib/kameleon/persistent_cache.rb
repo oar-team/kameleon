@@ -258,7 +258,7 @@ module Kameleon
         end
         ## We have to load the file
         metadata_dir = File.join(@cache_dir,"metadata")
-        @cmd_cached = YAML.load(File.read("#{metadata_dir}/cache_cmd_index"))
+        @cmd_cached = YAML.unsafe_load(File.read("#{metadata_dir}/cache_cmd_index"))
       end
       @activated = true
       #@cached_recipe_dir = @cache_dir

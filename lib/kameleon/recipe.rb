@@ -93,7 +93,7 @@ module Kameleon
       Kameleon.ui.verbose("Loading #{@path}")
       fail RecipeError, "Could not find this following recipe: #{@path}" \
          unless File.file? @path
-      yaml_recipe = YAML.load_file @path
+      yaml_recipe = YAML.unsafe_load_file @path
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml: #{@path}"
       end
@@ -137,7 +137,7 @@ module Kameleon
 
       # Resolve dynamically-defined variables !!
       resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self, kwargs)
-      resolved_global = @global.merge YAML.load(resolved_global)
+      resolved_global = @global.merge YAML.unsafe_load(resolved_global)
       Kameleon.ui.debug("Resolved_global: #{resolved_global}")
       # Loads aliases
       load_aliases(yaml_recipe)
@@ -242,7 +242,7 @@ module Kameleon
       base_recipe_path << ".yaml" unless base_recipe_path.end_with? ".yaml"
       fail RecipeError, "Could not find this following recipe: #{@recipe_path}" \
          unless File.file? path
-      base_yaml_recipe = YAML.load_file base_recipe_path
+      base_yaml_recipe = YAML.unsafe_load_file base_recipe_path
       unless yaml_recipe.kind_of? Hash
         fail RecipeError, "Invalid yaml: #{base_yaml_recipe}"
       end
@@ -298,7 +298,7 @@ module Kameleon
       def load_global_file(global_file, recipe_path)
         def try_to_load(absolute_path)
           if File.file?(absolute_path)
-            global_to_include = YAML.load_file(absolute_path)
+            global_to_include = YAML.unsafe_load_file(absolute_path)
             if global_to_include.kind_of? Hash
               @step_files.push(absolute_path)
               return global_to_include
@@ -376,7 +376,7 @@ module Kameleon
           path = Pathname.new(File.join(dir_path, aliases_file))
           if File.file?(path)
             Kameleon.ui.verbose("Loading aliases #{path}")
-            @aliases.merge!(YAML.load_file(path))
+            @aliases.merge!(YAML.unsafe_load_file(path))
             @step_files.push(path)
             return path
           end
@@ -439,7 +439,7 @@ module Kameleon
             path = Pathname.new(File.join(dir_path, checkpoint))
             if File.file?(path)
               Kameleon.ui.verbose("Loading checkpoint configuration #{path}")
-              @checkpoint = YAML.load_file(path)
+              @checkpoint = YAML.unsafe_load_file(path)
               @checkpoint["path"] = path.to_s
               @step_files.push(path)
               break
@@ -461,7 +461,7 @@ module Kameleon
         macrostep_yaml = args
         step_path = @path
       else
-        macrostep_yaml = YAML.load_file(step_path)
+        macrostep_yaml = YAML.unsafe_load_file(step_path)
         # Basic macrostep syntax check
         if not macrostep_yaml.kind_of? Array
           fail RecipeError, "The macrostep #{step_path} is not valid "
@@ -550,7 +550,7 @@ module Kameleon
       end
       # Resolve dynamically-defined variables !!
       resolved_global = Utils.resolve_vars(@global.to_yaml, @path, @global, self, kwargs)
-      @global.merge! YAML.load(resolved_global)
+      @global.merge! YAML.unsafe_load(resolved_global)
 
       consistency_check
       resolve_checkpoint unless @checkpoint.nil?
@@ -652,7 +652,7 @@ module Kameleon
         Kameleon.ui.debug("Resolving alias '#{name}'")
         aliases_cmd = @aliases.fetch(name).clone
         aliases_cmd_str = aliases_cmd.to_yaml
-        args = YAML.load(cmd.string_cmd)[name]
+        args = YAML.unsafe_load(cmd.string_cmd)[name]
         args = [].push(args).flatten  # convert args to array
         expected_args_number = aliases_cmd_str.scan(/@\d+/).uniq.count
         if expected_args_number != args.count

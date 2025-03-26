@@ -675,7 +675,7 @@ module Kameleon
 
     def load_build_recipe
       if File.file?(@build_recipe_path)
-        result = YAML.load_file(@build_recipe_path)
+        result = YAML.unsafe_load_file(@build_recipe_path)
         return result if result
       end
       return nil
