@@ -36,5 +36,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'table_print', '~> 1.5'
   s.add_dependency 'thor', '~> 1.0'
 
-  s.requirements = ['graphviz 2.38.0 or greater']
+  s.requirements << 'git'
+  s.requirements << 'graphviz'
 end
