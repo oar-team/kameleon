@@ -1,6 +1,17 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.13
+---------------
+
+Released on March 26th 2025
+
+- Drop useless contrib directory.
+- Rework gem summary and description.
+- Update gem dependencies for gem install on Debian 11 and 13.
+- Adapt sources to Ruby 3.1 - Psych's YAML: explicitly use YAML.unsafe_load.
+- Add git to requirements, need for kameleon repo commands.
+
 Version 2.10.12
 ---------------
 
