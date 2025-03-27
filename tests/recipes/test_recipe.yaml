@@ -1,0 +1,72 @@
+#===============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#===============================================================================
+#
+# DESCRIPTION: This is a test recipe made for unit testing
+#
+#===============================================================================
+---
+# Loads some helpful aliases
+extend: ../test2/test2.yaml
+aliases: defaults.yaml
+checkpoint: test.yaml
+#== Global variables use by Kameleon engine and the steps
+global:
+
+  include_steps:
+    - $${distrib}
+
+  ## User varibales : used by the recipe
+  user_name: kameleon_user
+  user_password: $${user_name}
+
+  # test overload
+  toto: $${toto} tata
+
+  # Distribution
+  distrib: linux
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps:
+    - $${distrib}
+
+  bootstrap_packages: >
+    less vim python
+    sl sudo
+
+  version: 12.2
+  variant: toto-tata
+
+  uuid: $${kameleon_uuid}
+
+  appliance_filename: $${kameleon_recipe_name}_$${kameleon_short_uuid}
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+  - enable_something
+  - bootstrap:
+    - include_pkg: $${bootstrap_packages}
+
+setup:
+  - software_install
+  - inline_step:
+    - do_something:
+      - exec_local: >
+          echo $${toto} ;\
+            echo titi
+    - do_something_else:
+      - exec_local: |
+          echo $${toto} $${user_name}
+    - test_data:
+      - exec_local: cat $${kameleon_data_dir}/mydata.txt
+      - exec_local: cat $${kameleon_data_dir}/mydata.txt
+  - local_variables
+
+  - test_uuid_step:
+    - my_uuid: $${kameleon_uuid}_$${kameleon_recipe_name}
+
+export:
+  - save_appliance:
+    - save_as_raw
+    # - save_as_vmdk

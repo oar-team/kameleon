@@ -1,0 +1,77 @@
+#===============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#===============================================================================
+#
+# DESCRIPTION: This is a test recipe made for unit testing
+#
+#===============================================================================
+---
+# Loads some helpful aliases
+extend: ../test2/test2.yaml
+aliases: defaults.yaml
+checkpoint: test.yaml
+#== Global variables use by Kameleon engine and the steps
+global:
+
+  include_steps:
+    - $${distrib}
+
+  ## User varibales : used by the recipe
+  user_name: kameleon_user
+  user_password: $${user_name}
+
+  # test overload
+  toto: $${toto} tata
+
+  # Distribution
+  distrib: linux
+
+  ## System variables. Required by kameleon engine
+  # Include specific steps
+  include_steps:
+    - $${distrib}
+
+  bootstrap_packages: >
+    less vim python
+    sl sudo
+
+  version: 12.2
+  variant: toto-tata
+
+  uuid: $${kameleon_uuid}
+
+  appliance_filename: $${kameleon_recipe_name}_$${kameleon_short_uuid}
+
+#== Bootstrap the new system and create the 'in_context'
+bootstrap:
+
+setup:
+  - MA:
+    - MA1:
+      - on_checkpoint: redo
+      - exec_local: echo "MicroStepA1 ($${checkpointing_enabled}, $${persistent_cache})"
+  - MB:
+    - MB1:
+      - exec_local: echo MicroStepB1; cp; echo coucou
+    - MB2:
+      - on_checkpoint: skip
+      - exec_local: echo MicroStepB2
+    - MB3:
+      - exec_local: echo MicroStepB3
+  - MC:
+    - MC1:
+      - exec_local: echo MicroStepC1
+    - MC1:
+      - exec_local: echo MicroStepC1
+    - MC2:
+      - on_checkpoint: only
+      - exec_local: echo MicroStepC2
+    - MC3:
+      - exec_local: echo MicroStepC3
+  - MD:
+    - MD1:
+      - on_checkpoint: use_cache
+      - exec_local: echo MicroStepD1
+
+
+export:

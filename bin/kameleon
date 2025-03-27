@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+# Exit cleanly from an early interrupt
+Signal.trap("INT") { exit 1 }
+
+# Stdout/stderr should not buffer output
+$stdout.sync = true
+$stderr.sync = true
+
+require 'thor/error'
+require 'kameleon'
+
+# Force Thor to raise exceptions so we can exit non-zero.
+ENV["THOR_DEBUG"] = "1"
+
+begin
+  Kameleon.init_userconf
+  Kameleon::Main.start
+rescue Exception  => e
+  Kameleon.ui.error("Error: #{e}")
+  if Kameleon.env.debug
+    raise e
+  else
+    begin
+      raise e
+    rescue Kameleon::Exit => e
+      exit e.status_code
+    rescue Kameleon::Error => e
+      Kameleon.ui.trace(e)
+      exit e.status_code
+    rescue Thor::UndefinedTaskError => e
+      Kameleon.ui.trace(e)
+      exit 15
+    rescue Thor::Error => e
+      Kameleon.ui.trace(e)
+      exit 15
+    rescue SystemExit, Interrupt => e
+      Kameleon.ui.error("Quitting...")
+      exit 1
+    rescue Errno::ENOENT => e
+      Kameleon.ui.trace(e)
+      exit 16
+    rescue Psych::SyntaxError => e
+      Kameleon.ui.trace(e)
+      exit 17
+    rescue Exception => e
+      msg = "Unfortunately, a fatal error has occurred : "\
+              "#{e.message}.\nUse --debug option for more details\n"
+        Kameleon.ui.error(msg)
+      exit 666
+    end
+  end
+end

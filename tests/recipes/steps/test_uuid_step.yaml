@@ -1,0 +1,12 @@
+- my_uuid: $${kameleon_short_uuid}
+- TEST_VAR: toto_tata
+- version: 12.2
+- variant: toto-tata
+- my_distrib: $${version}-$${variant}
+
+
+- do_bug:
+  - exec_local: |
+      echo my_uuid: $${my_uuid}
+      echo TEST_VAR: $${TEST_VAR}
+      echo $${my_distrib}
