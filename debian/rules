@@ -5,3 +5,19 @@ export DH_RUBY = --gem-install
 
 %:
 	dh $@ --buildsystem=ruby --with ruby
+
+execute_after_dh_auto_build:
+	mkdir $(CURDIR)/debian/home
+	env RUBYLIB=lib \
+            HOME=$(CURDIR)/debian/home \
+		bin/kameleon --help
+	env RUBYLIB=lib \
+            HOME=$(CURDIR)/debian/home \
+		help2man \
+		    --include debian/kameleon.1.add \
+		    --no-info \
+		    --name "Mindful appliance builder" \
+		    bin/kameleon > debian/kameleon.1
+
+execute_after_dh_auto_clean:
+	$(RM) -rv debian/kameleon.1 debian/home

@@ -1,5 +1,5 @@
-kameleon (2.10.13-1) UNRELEASED; urgency=medium
+kameleon (2.10.13-1) experimental; urgency=medium
 
-  * Initial release (Closes: #nnnn)
+  * Initial release (Closes: #1101801)
 
  -- Vincent Danjean <vdanjean@debian.org>  Thu, 27 Mar 2025 08:32:24 +0100

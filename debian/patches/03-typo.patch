@@ -1,0 +1,16 @@
+Description: For typos
+Author: Vincent Danjean <vdanjean@debian.org>
+Forwarded: yes
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/lib/kameleon/cli.rb
++++ b/lib/kameleon/cli.rb
+@@ -157,7 +157,7 @@
+     class_option :verbose, :type => :boolean, :default => Kameleon.default_values[:verbose],
+                  :desc => "Enable verbose output for kameleon users"
+     class_option :debug, :type => :boolean, :default => Kameleon.default_values[:debug],
+-                 :desc => "Enable debug output for kameleon developpers"
++                 :desc => "Enable debug output for kameleon developers"
+     class_option :script, :type => :boolean, :default => Kameleon.default_values[:script],
+                  :desc => "Never prompt for user intervention",
+                  :aliases => "-s"

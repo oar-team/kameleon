@@ -1,0 +1,17 @@
+Description: remove for-upstream repo only scripts from gem
+ scripts/bumpversion.py works with upstream git tags, no use in the gem
+ (and it is a python2 script)
+Author: Vincent Danjean <vdanjean@debian.org>
+Forwarded: yes
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/kameleon-builder.gemspec
++++ b/kameleon-builder.gemspec
+@@ -25,6 +25,7 @@
+ 
+   s.files         = `git ls-files`.split($/)
+   s.files.reject! { |file| file.start_with?('docs/') }
++  s.files.reject! { |file| file.start_with?('scripts/bumpversion.py') }
+   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
+   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
+   s.require_paths = ['lib']

@@ -1,8 +1,9 @@
 Source: kameleon
-Section: FIXME
+Section: science
 Priority: optional
-Maintainer: Debian Ruby Team <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
-Uploaders: <vdanjean@debian.org>
+#Maintainer: Debian Ruby Team <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
+#Uploaders: Vincent Danjean <vdanjean@debian.org>
+Maintainer: Vincent Danjean <vdanjean@debian.org>
 Build-Depends: debhelper-compat (= 13),
                gem2deb (>= 1),
                ruby,
@@ -11,10 +12,11 @@ Build-Depends: debhelper-compat (= 13),
                ruby-progressbar (>= 1.10),
                ruby-psych (>= 5.0),
                ruby-table-print (>= 1.5),
-               ruby-thor (>= 1.0)
-Standards-Version: 4.6.1
-Vcs-Git: https://salsa.debian.org/ruby-team/kameleon.git
-Vcs-Browser: https://salsa.debian.org/ruby-team/kameleon
+               ruby-thor (>= 1.0),
+               help2man
+Standards-Version: 4.7.2
+#Vcs-Git: https://salsa.debian.org/ruby-team/kameleon.git
+#Vcs-Browser: https://salsa.debian.org/ruby-team/kameleon
 Homepage: http://kameleon.imag.fr/
 Testsuite: autopkgtest-pkg-ruby
 Rules-Requires-Root: no
@@ -24,5 +26,45 @@ Architecture: all
 Depends: ${misc:Depends},
          ${ruby:Depends},
          ${shlibs:Depends}
-Description: The mindful appliance builder
- Kameleon is a tool to build system appliances, possibly from scratch
+Recommends:
+  libguestfs-tools,
+  qemu-utils,
+  socat,
+  docker.io,
+  podman,
+  ssh,
+  parted,
+  fdisk,
+  wget,
+  curl,
+  python3,
+  python3-html5-parser,
+  python3-urllib3,
+  vnc-viewer,
+  pigz,
+  zstd,
+  xz-utils,
+# Arch-all packages cannot have per-arch Recommends...
+# amd64
+  qemu-system-x86,
+  seabios,
+  ovmf,
+# arm64
+  qemu-system-aarch64,
+  qemu-efi-aarch64,
+  qemu-efi-arm,
+# ppc64
+  qemu-system-ppc64
+Description: Mindful appliance builder
+ Kameleon is a simple but powerful tool to generate customized software
+ appliances. A software appliances is a complete operating system image with
+ your tools and libraries indside. With Kameleon, you can make a recipe that
+ describes how to create step by step your own OS distribution, or you can
+ extend a template to only add a few packages to a standard Linux distribution.
+ Kameleon can then generate an image in any format from the same recipe build:
+ Docker, VirtualBox, KVM, Grid’5000, …
+ .
+ Kameleon is made to improve reproducibility in computer science and
+ engineering by giving you tool that achieve complete reconstructability of
+ your appliances with ease using cache, checkpointing and interactive
+ breakpoint.

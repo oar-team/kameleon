@@ -1,0 +1,6 @@
+# scripts in contrib/* are kameleon input files (with substitutions to occur),
+# not plain scripts
+script-not-executable [usr/share/rubygems-integration/all/gems/kameleon-builder-*/contrib/*.sh]
+shell-script-fails-syntax-check [usr/share/rubygems-integration/all/gems/kameleon-builder-*/contrib/*.sh]
+example-shell-script-fails-syntax-check [usr/share/doc/kameleon/examples/contrib/kameleon_exec_cmd.sh]
+example-shell-script-fails-syntax-check [usr/share/doc/kameleon/examples/contrib/kameleon_exec_cmd_wrapper.sh]
