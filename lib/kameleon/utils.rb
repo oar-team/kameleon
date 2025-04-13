@@ -158,7 +158,7 @@ module Kameleon
       end
       unless recipes_hash.empty?
         name_width = recipes_hash.map { |k| k['name'].size }.max
-        desc_width = Kameleon.ui.shell.terminal_width - name_width - 3
+        desc_width = Thor::Shell::Terminal.terminal_width - name_width - 3
         desc_width = (80 - name_width - 3) if desc_width < 0
       end
       repo_str_old = nil
@@ -180,7 +180,7 @@ module Kameleon
         if r["description"].to_s.length > desc_width - 4
           r["description"] = r["description"][0..(desc_width - 4)] + "..."
         end
-        Kameleon.ui.shell.say sprintf("%-#{desc_width}s", r["description"]), :blue
+        Kameleon.ui.shell.say r["description"], :blue
       end
     end
 
