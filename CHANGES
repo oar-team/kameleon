@@ -1,6 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.15
+---------------
+
+Released on April 13th 2025
+
+- Fix terminal width issue with latest Thor
+
 Version 2.10.14
 ---------------
 
