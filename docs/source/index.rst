@@ -13,16 +13,26 @@ Kameleon documentation
 About
 -----
 
-Kameleon is a simple but powerful tool to generate customized software
-appliances. A software appliances is a complete operating system image
-with your tools and libraries indside. With Kameleon, you can make a recipe
-that describes how to create step by step your own OS distribution, or you
-can extend a template to only add a few packages to a standard Linux
-distribution. Kameleon can then generate an image in any format from the
-same recipe build: Docker, VirtualBox, KVM, Grid'5000,...  Kameleon is made
-to improve reproducibility in computer science and engineering by giving
-you tool that achieve complete *reconstructability* of your appliances with
-ease using cache, checkpointing and interactive breakpoint.
+Kameleon is a simple but powerful tool to generate customized operating system
+images, based on traceable recipes.
+
+Thanks to Kameleon, one can write recipes that describe how to create, step by
+step, customized operating systems in any desired target format, and then cook
+them (build them), just like GNU make cooks sources using a Makefile to build
+binary programs.
+
+For instance, Kameleon can create custom operating system images for QEMU/KVM,
+VirtualBox, docker, LXC or bootable ISO. It can support creating such images
+for any machine architecture (x86, ARM64, PPC64, ... ).
+
+In fact, since the Kameleon engine by itself is very generic by design, a lot
+more can be done, because most of the specialization happens in the recipes,
+written in Kameleon's powerful recipe language (YAML based DSL).
+
+Kameleon was initially developed to improve reproducibility in computer science
+and engineering, providing a tool that achieves complete *reconstructability*
+of system images with cache, checkpointing and interactive breakpoint
+mechanisms.
 
 Have a look to the :doc:`getting_started` to start using Kameleon.
 
@@ -30,26 +40,38 @@ Have a look to the :doc:`getting_started` to start using Kameleon.
 Kameleon in science
 -------------------
 
-Kameleon was made to make experiments in computer science reproducible. If
-you use it in you experiment process, please cite the last publication
-about Kameleon that can be found on the HAL open archive:
+One of Kameleon's initial goals is to foster Reproducible Research in Computer Science.
+
+If you take benefits of using Kameleon in you research work, please cite the latest publication
+about Kameleon, available in the HAL open archive at the following URL:
 
 https://hal.inria.fr/hal-01334135
 
+-------
+Recipes
+-------
 
-------------------
-External resources
-------------------
+Kameleon's default recipes are provided at the following URL:
 
-This repository is made for the user to share their recipes and steps:
+https://github.com/oar-team/kameleon-recipes
+
+Also, since Kameleon is the Operating System image builder of Grid'5000, many additional recipes can be found at the following URL:
+
+https://github.com/grid5000/environments-recipes
+
+And the related documentations in the Grid'5000 web site at:
+
+https://www.grid5000.fr/w/Environment_creation
+
+---------------
+Other resources
+---------------
+
+The following repository and wiki is available for users to share recipes:
 
 https://github.com/oar-team/kameleon-contrib
 
-Your are strongly invited to encouraged to share your steps in this repo
-and to complete the wiki with links to your own Kameleon recipes:
-
 https://github.com/oar-team/kameleon-contrib/wiki
-
 
 ------------
 Report a bug
