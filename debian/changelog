@@ -1,9 +1,10 @@
-kameleon (2.10.13-2) UNRELEASED; urgency=medium
+kameleon (2.10.14-1) unstable; urgency=medium
 
+  * upload to unstable
   * reword description using upstream website
   * setup d/control for a ruby team package
 
- -- Vincent Danjean <vdanjean@debian.org>  Mon, 14 Apr 2025 22:05:31 +0200
+ -- Vincent Danjean <vdanjean@debian.org>  Mon, 14 Apr 2025 22:07:21 +0200
 
 kameleon (2.10.13-1) experimental; urgency=medium
 
