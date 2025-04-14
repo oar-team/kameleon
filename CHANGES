@@ -1,6 +1,14 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.14
+---------------
+
+Released on April 13th 2025
+
+- Fix graphviz and progress bar dependencies.
+- Rework README.rst and the documentation front page.
+
 Version 2.10.13
 ---------------
 
