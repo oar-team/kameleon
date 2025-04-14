@@ -1,9 +1,8 @@
 Source: kameleon
 Section: science
 Priority: optional
-#Maintainer: Debian Ruby Team <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
-#Uploaders: Vincent Danjean <vdanjean@debian.org>
-Maintainer: Vincent Danjean <vdanjean@debian.org>
+Maintainer: Debian Ruby Team <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
+Uploaders: Vincent Danjean <vdanjean@debian.org>
 Build-Depends: debhelper-compat (= 13),
                gem2deb (>= 1),
                ruby,
@@ -15,8 +14,8 @@ Build-Depends: debhelper-compat (= 13),
                ruby-thor (>= 1.0),
                help2man
 Standards-Version: 4.7.2
-#Vcs-Git: https://salsa.debian.org/ruby-team/kameleon.git
-#Vcs-Browser: https://salsa.debian.org/ruby-team/kameleon
+Vcs-Git: https://salsa.debian.org/ruby-team/kameleon.git
+Vcs-Browser: https://salsa.debian.org/ruby-team/kameleon
 Homepage: http://kameleon.imag.fr/
 Testsuite: autopkgtest-pkg-ruby
 Rules-Requires-Root: no

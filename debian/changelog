@@ -1,6 +1,7 @@
 kameleon (2.10.13-2) UNRELEASED; urgency=medium
 
   * reword description using upstream website
+  * setup d/control for a ruby team package
 
  -- Vincent Danjean <vdanjean@debian.org>  Mon, 14 Apr 2025 22:05:31 +0200
 
