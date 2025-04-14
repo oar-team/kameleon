@@ -1,3 +1,4 @@
 01-fix-completion.patch
 02-files-not-for-gem.patch
 03-typo.patch
+04-fix-gem-name-in-debian.patch
