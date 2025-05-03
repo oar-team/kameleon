@@ -2,7 +2,7 @@ require 'kameleon/engine'
 require 'kameleon/recipe'
 require 'kameleon/utils'
 require 'tempfile'
-require 'graphviz'
+require 'graphviz' # ruby-graphviz gem (GraphViz class), not the graphviz gem (Graphviz module)
 
 module Kameleon
 

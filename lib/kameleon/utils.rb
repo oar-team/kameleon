@@ -1,4 +1,8 @@
-require 'progressbar'
+# The progressbar and ruby-progressbar gems are the same code from
+# https://github.com/jfelchner/ruby-progressbar/tree/master
+# Only the head file is named either progressbar.rb or ruby-progressbar.rb
+# The ruby-progressbar gem seems more popular, use it.
+require 'ruby-progressbar'
 
 module Kameleon
   module Utils
