@@ -1,6 +1,13 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.17
+---------------
+
+Released on May 4th 2025
+
+- Fix the require to ruby-progressbar, and comment the code...
+
 Version 2.10.16
 ---------------
 
