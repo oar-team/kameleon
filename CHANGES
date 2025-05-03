@@ -1,6 +1,16 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.10.16
+---------------
+
+Released on May 3rd 2025
+
+- Enable command aliases in the definition of checkpoint actions.
+- Enable command aliases with no args.
+- Fix dependencies to ruby-progressbar and ruby-graphviz (the "ruby-" prefix matters!).
+- Some other minor changes.
+
 Version 2.10.15
 ---------------
 
