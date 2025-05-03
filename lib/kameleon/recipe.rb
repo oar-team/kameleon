@@ -637,6 +637,9 @@ module Kameleon
 
     def resolve_checkpoint()
       (@checkpoint.keys - ["path"]).each do |key|
+        @checkpoint[key].map! do |cmd|
+          resolve_alias(cmd)
+        end.flatten!
         @checkpoint[key].each do |cmd|
           cmd.string_cmd = Utils.resolve_vars(cmd.string_cmd,
                                               @checkpoint["path"],
