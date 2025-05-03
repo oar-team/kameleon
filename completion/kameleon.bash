@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 _kameleon() {
     COMPREPLY=()
     local i=1
