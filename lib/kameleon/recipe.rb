@@ -648,32 +648,34 @@ module Kameleon
 
     def resolve_alias(cmd)
       name = cmd.key
-      if @aliases.keys.include?(name) 
+      if @aliases.keys.include?(name)
         Kameleon.ui.debug("Resolving alias '#{name}'")
         aliases_cmd = @aliases.fetch(name).clone
         aliases_cmd_str = aliases_cmd.to_yaml
-        args = YAML.unsafe_load(cmd.string_cmd)[name]
-        args = [].push(args).flatten  # convert args to array
+        yaml = YAML.unsafe_load(cmd.string_cmd)
+        args = []
+        if yaml.is_a?(Hash) # if cmd is an alias with no args, yaml is a String
+          args.push(yaml[name]).flatten # convert args to array
+        end
         expected_args_number = aliases_cmd_str.scan(/@\d+/).uniq.count
         if expected_args_number != args.count
-          if args.length == 0
-            msg = "#{name} takes no arguments (#{args.count} given)"
-          else
-            msg = "#{name} takes exactly #{expected_args_number} arguments"
-                  " (#{args.count} given)"
-          end
+          msg = if expected_args_number.zero?
+                  "#{name} takes no arguments (#{args.count} given)"
+                else
+                  "#{name} takes exactly #{expected_args_number} arguments (#{args.count} given)"
+                end
           raise RecipeError, msg
         end
         aliases_cmd.map do |c|
           nc = Command.new(c, cmd.microstep_name)
           args.each_with_index do |arg, i|
-            nc.gsub!("@#{i+1}", arg)
+            nc.gsub!("@#{i + 1}", arg)
           end
           resolve_alias(nc)
-        end 
-      elsif cmd.value.kind_of?(Array)
+        end
+      elsif cmd.value.is_a?(Array)
         Kameleon.ui.debug("Search for aliases in the sub-commands of '#{name}'")
-        cmd.value.map!{ |cmd| resolve_alias(cmd) }.flatten!
+        cmd.value.map! { |c| resolve_alias(c) }.flatten!
         cmd.remaster_string_cmd_from_value!
       else
         Kameleon.ui.debug("Leaf command '#{name}' is not an alias")
