@@ -1,37 +1,18 @@
 Kameleon CHANGELOG
 ==================
 
-Version 2.10.17
----------------
+Version 2.10.14 → 2.11.0
+------------------------
 
 Released on May 4th 2025
 
-- Fix the require to ruby-progressbar, and comment the code...
-
-Version 2.10.16
----------------
-
-Released on May 3rd 2025
-
 - Enable command aliases in the definition of checkpoint actions.
 - Enable command aliases with no args.
-- Fix dependencies to ruby-progressbar and ruby-graphviz (the "ruby-" prefix matters!).
-- Some other minor changes.
-
-Version 2.10.15
----------------
-
-Released on April 13th 2025
-
-- Fix terminal width issue with latest Thor
-
-Version 2.10.14
----------------
-
-Released on April 13th 2025
-
+- Fix dependencies to progressbar and ruby-graphviz (the "ruby-" prefix matters!).
+- Fix terminal width issue with latest Thor.
 - Fix graphviz and progress bar dependencies.
 - Rework README.rst and the documentation front page.
+- Some other minor changes.
 
 Version 2.10.13
 ---------------
