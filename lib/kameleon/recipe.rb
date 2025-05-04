@@ -658,7 +658,7 @@ module Kameleon
         yaml = YAML.unsafe_load(cmd.string_cmd)
         args = []
         if yaml.is_a?(Hash) # if cmd is an alias with no args, yaml is a String
-          args.push(yaml[name]).flatten # convert args to array
+          args.push(yaml[name]).flatten! # convert args to array
         end
         expected_args_number = aliases_cmd_str.scan(/@\d+/).uniq.count
         if expected_args_number != args.count
