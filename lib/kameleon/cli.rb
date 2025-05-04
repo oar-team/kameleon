@@ -2,7 +2,7 @@ require 'kameleon/engine'
 require 'kameleon/recipe'
 require 'kameleon/utils'
 require 'tempfile'
-require 'graphviz'
+require 'graphviz' # ruby-graphviz gem (GraphViz class), not the graphviz gem (Graphviz module)
 
 module Kameleon
 
@@ -157,7 +157,7 @@ module Kameleon
     class_option :verbose, :type => :boolean, :default => Kameleon.default_values[:verbose],
                  :desc => "Enable verbose output for kameleon users"
     class_option :debug, :type => :boolean, :default => Kameleon.default_values[:debug],
-                 :desc => "Enable debug output for kameleon developpers"
+                 :desc => "Enable debug output for kameleon developers"
     class_option :script, :type => :boolean, :default => Kameleon.default_values[:script],
                  :desc => "Never prompt for user intervention",
                  :aliases => "-s"

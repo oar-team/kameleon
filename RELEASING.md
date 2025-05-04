@@ -11,21 +11,23 @@ Assuming work is done in the devel branch.
 For stable releases:
 --------------------
 
-## Merge devel into master:
+## Switch and update the master branch
 ```
-git checkout master
-git merge devel
+git switch master
+git pull -r
 ```
+Do whatever changes needed in the code (possibly merging a branch or a pull request).
+Commit.
 
-## Fix anything needed
-Should be no conflict but...
-Make sure changelog is up to date.
+## Update changelog
+Edit the `CHANGES` file.
+Commit.
 
 ## Bump version
-***Warning*** Make sure that there is no dirty file (not committed) before the following.
+Edit the `lib/kameleon/version.rb` file and bump the version.
+Commit:
 ```
-./scripts/bumpversion.py release  # will do 2.7.0.dev -> 2.7.0 + git tag + changelog
-git push
+git commit -m "v2.10.16 → v.2.10.17" lib/kameleon/version.rb
 ```
 
 ## Build gem
@@ -33,9 +35,28 @@ git push
 gem build kameleon-builder.gemspec
 ```
 
+## Test
+Manually install:
+```
+gem install --user ./kameleon-builder-2.10.17.gem
+```
+Test, test, test.
+
+## Tag
+If everything is ok, tag:
+```
+git tag -s 'v2.10.17' -m 'v2.10.17'
+```
+
+## Push git push
+```
+git push
+```
+
+
 ## Push to Ruby gem repository
 ```
-  gem push kameleon-builder-2.7.0.gem
+gem push kameleon-builder-2.10.17.gem
 ```
 
 Note: You need a rubygem account and the owner has to give you permissions so that you can push.
@@ -43,27 +64,23 @@ To do so, create an account on https://rubygems.org/ and ask an owner to do
 the following command::
 
 ```
-  gem owner kameleon-builder -a your@email.com
+gem owner kameleon-builder -a your@email.com
 ```
 
 That's all :)
 
-For devel releases:
--------------------
-
-## Move to the devel branch and rebase on master
+## In case a release is buggy
+Yank it to remove it from the rubygems index.
 ```
-git checkout devel
-git rebase master
+gem yank kameleon-builder -v 2.10.16
 ```
 
-## Prepare the new version 
-Create the new devel version (e.g. 2.7.0 dev)
+For developments:
+-----------------
+
+Changes can be tested by locally installing the gem after building it:
 ```
-  ./scripts/bumpversion.py newversion patch  # 2.6.7 -> 2.7.0.dev
+gem build kameleon-builder.gemspec && gem install --user ./kameleon-builder-2.10.17.gem
 ```
 
-At this point, do work, commit, and so on.
-And same as above to build "devel" gem and use them locally, or push them if really wanted.
-
-Up to the time to build a new stable version.
+Using git branches, github pull requests, aso, is of course good.
