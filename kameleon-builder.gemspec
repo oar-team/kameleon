@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'psych', '~> 5.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2'
   s.add_dependency 'table_print', '~> 1.5'
-  s.add_dependency 'thor', '~> 1.0'
+  s.add_dependency 'thor', '~> 1.3'
 
   s.requirements << 'git'
   s.requirements << 'graphviz'
