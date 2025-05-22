@@ -30,9 +30,9 @@ more can be done, because most of the specialization happens in the recipes,
 written in Kameleon's powerful recipe language (YAML based DSL).
 
 Kameleon was initially developed to improve reproducibility in computer science
-and engineering, providing a tool that achieves complete *reconstructability*
-of system images with cache, checkpointing and interactive breakpoint
-mechanisms.
+research and engineering, providing a tool that achieves complete
+*reconstructability* of system images with cache, checkpointing and interactive
+breakpoint mechanisms.
 
 Have a look to the :doc:`getting_started` to start using Kameleon.
 
