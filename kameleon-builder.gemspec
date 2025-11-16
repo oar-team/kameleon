@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(tests|s|features)/})
   s.require_paths = ['lib']
 
-  s.add_dependency 'childprocess', '~> 4.0'
+  s.add_dependency 'childprocess', '~> 5.1'
   s.add_dependency 'ruby-progressbar', '~> 1.10'
   s.add_dependency 'psych', '~> 5.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2'
