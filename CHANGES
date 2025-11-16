@@ -1,6 +1,15 @@
 Kameleon CHANGELOG
 ==================
 
+Version 2.11.1
+------------------------
+
+Released on November 23rd 2025
+
+- Fix dependency name for ruby-progressbar (to please Debian).
+- Bump version of childprocess (to please Debian).
+- Fix process execution: remove buggy/useless call to source the default bashrc.
+
 Version 2.10.14 → 2.11.0
 ------------------------
 
