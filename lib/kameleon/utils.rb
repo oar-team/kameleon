@@ -1,9 +1,10 @@
 # The progressbar and ruby-progressbar gems are the same code from
 # https://github.com/jfelchner/ruby-progressbar/tree/master
 # Only the lib head file is named progressbar.rb vs. ruby-progressbar.rb.
-# The progressbar gem is the one packaged as ruby-progressbar in Debian.
-# Using that one (see gemspec) and require "progressbar" not "ruby-progessbar".
-require 'progressbar'
+# On Debian, the ruby-progressbar is installed, but patched in order to provide
+# not only ruby-progressbar.rb but also progressbar.rb (same content)
+# Using ruby-progessbar that seems more frequently used.
+require 'ruby-progressbar'
 
 module Kameleon
   module Utils
