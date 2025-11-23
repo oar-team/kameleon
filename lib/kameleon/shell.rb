@@ -49,10 +49,8 @@ module Kameleon
       ## Changing the default bashrc if the cache is activated
       @cache = Kameleon::Persistent_cache.instance
 
-      @shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
-                   "#{@cmd} --rcfile #{@bashrc_file}"
-      @interactive_shell_cmd = "source #{@default_bashrc_file} 2> /dev/null; "\
-                   "#{@interactive_cmd} --rcfile #{@bashrc_file}"
+      @shell_cmd = "#{@cmd} --rcfile #{@bashrc_file}"
+      @interactive_shell_cmd = "#{@interactive_cmd} --rcfile #{@bashrc_file}"
 
       Kameleon.ui.debug("Initialize shell (#{self})")
       # Injecting all variables of the options and assign the variables
